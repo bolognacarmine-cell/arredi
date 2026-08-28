@@ -1,0 +1,10 @@
+{
+  "description": "Showcase custom furniture designs for barbers, offices, shops, and schools while facilitating project inquiries and quotes through an intuitive interface.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
