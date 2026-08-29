@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import HeroBackgroundEffect from "../components/HeroBackgroundEffect";
 import { SECTORS, PROJECTS } from "../data";
 
 const services = [
@@ -19,17 +20,13 @@ export default function Home() {
   return (
     <div className="bg-[#F7F5F0]">
       {/* HERO */}
-      <section className="relative min-h-screen flex items-end pb-20 overflow-hidden">
-        <div className="absolute inset-0">
-          <img
-            src="https://images.unsplash.com/photo-1547609434-b732edfee020?w=1600&h=900&fit=crop&auto=format"
-            alt="Laboratorio ArtigianaLegno"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#1A1A18]/85 via-[#1A1A18]/40 to-transparent" />
-        </div>
-
-        <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 w-full">
+      <HeroBackgroundEffect
+        img1="/home-bg-1.png"
+        img2="/home-bg-2.png"
+        durationSec={12}
+        className="min-h-screen flex items-end pb-20"
+      >
+        <div className="max-w-7xl mx-auto px-6 lg:px-10 w-full">
           <div className="max-w-3xl">
             <span className="inline-block text-[#B5965A] text-xs font-semibold tracking-widest uppercase mb-6">
               Arredo su misura · Bologna
@@ -61,7 +58,7 @@ export default function Home() {
           <span className="w-12 h-px bg-white/20" />
           <span>Scroll per scoprire</span>
         </div>
-      </section>
+      </HeroBackgroundEffect>
 
       {/* SECTORS */}
       <section className="py-24 max-w-7xl mx-auto px-6 lg:px-10">
@@ -238,3 +235,4 @@ export default function Home() {
     </div>
   );
 }
+
