@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import HeroBackgroundEffect from "../components/HeroBackgroundEffect";
 import { SECTORS, PROJECTS } from "../data";
 
 const services = [
@@ -20,13 +19,49 @@ export default function Home() {
   return (
     <div className="bg-[#F7F5F0]">
       {/* HERO */}
-      <HeroBackgroundEffect
-        img1="/home-bg-1.png"
-        img2="/home-bg-2.png"
-        durationSec={12}
-        className="min-h-screen flex items-end pb-20"
-      >
-        <div className="max-w-7xl mx-auto px-6 lg:px-10 w-full">
+      <section className="relative min-h-screen flex items-end pb-20 overflow-hidden">
+        <div className="absolute inset-0">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+            poster="https://images.unsplash.com/photo-1547609434-b732edfee020?w=1920&h=1080&fit=crop&auto=format"
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              const v = e.currentTarget;
+              v.style.display = "none";
+              const p = v.nextElementSibling as HTMLImageElement | null;
+              if (p && p.classList.contains("hero-fallback-img")) p.style.display = "block";
+            }}
+          >
+            <source src="/videos/farcom-hero.mp4" type="video/mp4" />
+          </video>
+          <img
+            src="https://images.unsplash.com/photo-1547609434-b732edfee020?w=1920&h=1080&fit=crop&auto=format"
+            alt="Laboratorio arredamenti Farcom Bologna"
+            className="hero-fallback-img w-full h-full object-cover hidden"
+            aria-hidden="true"
+          />
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background:
+                "radial-gradient(1200px 600px at 25% 30%, rgba(92,170,255,0.18), transparent 60%), radial-gradient(900px 520px at 80% 50%, rgba(255,90,130,0.08), transparent 62%), linear-gradient(to bottom, rgba(10,14,22,0.20), rgba(10,14,22,0.82))",
+            }}
+          />
+          <div
+            className="absolute inset-0 pointer-events-none opacity-35 mix-blend-overlay"
+            style={{
+              backgroundImage:
+                "repeating-linear-gradient(0deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 3px)",
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#1A1A18]/85 via-[#1A1A18]/40 to-transparent" />
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 w-full">
           <div className="max-w-3xl">
             <span className="inline-block text-[#B5965A] text-xs font-semibold tracking-widest uppercase mb-6">
               Arredo su misura · Bologna
@@ -58,7 +93,7 @@ export default function Home() {
           <span className="w-12 h-px bg-white/20" />
           <span>Scroll per scoprire</span>
         </div>
-      </HeroBackgroundEffect>
+      </section>
 
       {/* SECTORS */}
       <section className="py-24 max-w-7xl mx-auto px-6 lg:px-10">
@@ -235,4 +270,3 @@ export default function Home() {
     </div>
   );
 }
-
