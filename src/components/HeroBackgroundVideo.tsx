@@ -87,7 +87,6 @@ export default function HeroBackgroundVideo({
           controls={false}
           preload={priority ? "auto" : "none"}
           poster={poster}
-          decoding="async"
           onError={onVideoError}
           style={{
             imageRendering: "auto",
