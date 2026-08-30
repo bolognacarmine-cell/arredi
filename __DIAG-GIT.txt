@@ -1,0 +1,101 @@
+
+====================================================================================================
+  INFO AMBIENTE
+====================================================================================================
+Date: 2026-08-30T01:18:35.997Z
+Platform: win32 x64
+HOME dir: C:\Users\Acer
+CWD repo: C:\Users\Acer\Desktop\arredi
+Git version (PATH): git version 2.53.0.windows.1
+where git: C:\Program Files\Git\cmd\git.exe
+PATH first 8 entries:
+  c:\\Users\\Acer\\.trae\\tools\\trae-gopls\\current
+  c:\\Users\\Acer\\.trae\\sdks\\workspaces\\c0cdbdb2\\versions\\node\\current
+  c:\\Users\\Acer\\.trae\\sdks\\versions\\node\\current
+  c:\Users\Acer\.trae\tools\trae-gopls\current
+  c:\Users\Acer\.trae\sdks\workspaces\c0cdbdb2\versions\node\current
+  c:\Users\Acer\.trae\sdks\versions\node\current
+  C:\Python314\Scripts\
+  C:\Python314\
+
+====================================================================================================
+  GIT CONFIG — 3 LIVELLI (system / global / local)
+====================================================================================================
+
+— SYSTEM (flag: --system)
+  exit=0
+  file:C:/Program Files/Git/etc/gitconfig	http.sslbackend=schannel
+  file:C:/Program Files/Git/etc/gitconfig	credential.helper=manager
+  file:C:/Program Files/Git/etc/gitconfig	credential.https://dev.azure.com.usehttppath=true
+
+— GLOBAL (flag: --global)
+  exit=0
+  file:C:/Users/Acer/.gitconfig	user.name=bolognacarmine-cell
+  file:C:/Users/Acer/.gitconfig	user.email=bologna.carmine@gmail.com
+
+— LOCAL (flag: --local  (repo .git/config))
+  exit=129
+  (nessuna voce rilevante per auth/push trovata — list completo: 54 righe)
+
+====================================================================================================
+  FILE FISICI — .ssh + .gitconfig su disco (solo percorsi+hash dimensioni, NO contenuti CHIAVI PRIVATE)
+====================================================================================================
+  FILE         249B  C:\Users\Acer\.gitconfig
+  FILE          89B  C:\Users\Acer\.ssh\config
+  FILE         102B  C:\Users\Acer\.ssh\id_ed25519.pub
+  FILE         411B  C:\Users\Acer\.ssh\id_ed25519
+  NOT FOUND  — C:\Users\Acer\.ssh\id_rsa.pub
+  NOT FOUND  — C:\Users\Acer\.ssh\id_rsa
+  FILE         831B  C:\Users\Acer\.ssh\known_hosts
+
+— Contenuto ~/.gitconfig (C:\Users\Acer\.gitconfig):
+  [filter "lfs"]
+  	clean = git-lfs clean -- %f
+  	smudge = git-lfs smudge -- %f
+  	process = git-lfs filter-process
+  	required = true
+  [user]
+  	name = bolognacarmine-cell
+  	email = bologna.carmine@gmail.com
+  [safe]
+  	directory = *
+  [push]
+  	autoSetupRemote = true
+  
+
+— Contenuto ~/.ssh/config (C:\Users\Acer\.ssh\config):
+  Host github.com:bolognacarmine-cell
+    HostName github.com:bolognacarmine-cell
+    User git
+  
+
+— Contenuto id_ed25519.pub (CHIAVE PUBBLICA) (C:\Users\Acer\.ssh\id_ed25519.pub):
+  ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEqfxyt7vHqopnCcoahiCAXidqNCkyGvecXrwJBFCbnp ciaptciopt58-dotcom
+  
+
+====================================================================================================
+  REMOTE URL + TENTATIVO PUSH ASCIUTTO (senza mandare nulla: --dry-run)
+====================================================================================================
+git remote -v: exit=0
+  origin	https://github.com/bolognacarmine-cell/arredi.git (fetch)
+origin	https://github.com/bolognacarmine-cell/arredi.git (push)
+
+git push --dry-run origin main  (dry = NON invia nulla, solo autentica):
+  exit=0
+  STDERR:     Everything up-to-date
+
+→ INTERPRETAZIONE exit dry-run:
+  ✅ 0 — AUTENTICAZIONE RIUSCITA + nessun push pendente (tutto pushato) — tutto OK.
+
+====================================================================================================
+  CREDENTIAL HELPER ATTIVO (quello che Git usera' per chiedere/salvare password/Token)
+====================================================================================================
+credential.helper impostati: exit=0
+  file:C:/Program Files/Git/etc/gitconfig	manager
+
+====================================================================================================
+  SUMMARY PUNTO PER PUNTO — Possibili cause push fallisce in sandbox
+====================================================================================================
+✅ A. In questo ambiente, push asciutto riesce — se fallivi prima era per PSReadLine che crashava la console, NON per git.
+
+Link file diagnostica completa: C:\Users\Acer\Desktop\arredi\__DIAG-GIT.txt

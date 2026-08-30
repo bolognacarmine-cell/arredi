@@ -1,0 +1,70 @@
+============================================================
+ STATO REPO POST-PUSH  2026-08-30T16:02:03.408Z
+============================================================
+HEAD locale   : 8f32695604cf9dd545d3f979585e51ed7a608b8f
+origin/main   : 8f32695604cf9dd545d3f979585e51ed7a608b8f
+
+👉 CONFRONTO HASH:
+✅ IDENTICI = PUSH RIUSCITO. GitHub è AGGIORNATO.
+
+============================================================
+ ULTIMI 4 COMMIT (oneline):
+============================================================
+8f32695 Sostituisci video hero + fix rendering completo: - Nuovo farcom-hero.mp4 (447KB) sostituisce vecchio 1.06MB - HeroBackgroundVideo: wrapper absolute inset-0 (non Fragment) per rendering stabile - Home hero: z-index espliciti video z-0, overlay z-[1], testi z-10 - Rimosse sorgenti <source> inesistenti (-hq, -vp9, -av1) per eliminare 404 log - TypeScript: rimosso decoding='async' da <video> (attributo valido solo su <img>)
+8a58711 Fix video invisibile (2): wrapper absolute inset-0 per HeroBackgroundVideo, z-index espliciti (video z-0, overlay z-1, testi z-10) - prima era Fragment senza posizionamento
+d291bd4 Fix video invisibile: sorgenti ordine H264 primo, rimozione codec string errata, src diretto fallback sul tag video
+5d71450 Qualità hero: componente HeroBackgroundVideo multi-source, overlay singolo, remove layer degradanti + lazy IO
+
+============================================================
+ CONTENUTO ULTIMO COMMIT (ultimo commit che hai fatto tu):
+============================================================
+commit 8f32695604cf9dd545d3f979585e51ed7a608b8f
+Author: bolognacarmine-cell <bologna.carmine@gmail.com>
+Date:   Sun Aug 30 03:15:03 2026 +0200
+
+    Sostituisci video hero + fix rendering completo:
+    - Nuovo farcom-hero.mp4 (447KB) sostituisce vecchio 1.06MB
+    - HeroBackgroundVideo: wrapper absolute inset-0 (non Fragment) per rendering stabile
+    - Home hero: z-index espliciti video z-0, overlay z-[1], testi z-10
+    - Rimosse sorgenti <source> inesistenti (-hq, -vp9, -av1) per eliminare 404 log
+    - TypeScript: rimosso decoding='async' da <video> (attributo valido solo su <img>)
+
+ public/videos/farcom-hero.mp4          | 4 ++--
+ src/components/HeroBackgroundVideo.tsx | 1 -
+ 2 files changed, 2 insertions(+), 3 deletions(-)
+
+============================================================
+ FILE FISICO OGGI public/videos/farcom-hero.mp4 (dimensione):
+============================================================
+PATH: C:\Users\Acer\Desktop\arredi\public\videos\farcom-hero.mp4
+BYTES: 2751043  (2687 KB)
+MTIME: 2026-08-30T15:39:24.612Z
+
+============================================================
+ GIT STATUS (working tree pulito?):
+============================================================
+## main...origin/main
+ M public/videos/farcom-hero.mp4
+?? !PUSH-DA-QUI-DOPPIO-CLICK.cmd
+?? !RECODE-1-H264-HQ.cmd
+?? !RECODE-2-VP9-WEBM.cmd
+?? 1-BUILD.cmd
+?? 2-COMMIT.cmd
+?? 3-PUSH.cmd
+?? DIAG-CMD-VERO.txt
+?? ESEGUI-QUI.cmd
+?? STATO-POST-PUSH.txt
+?? __CMD-VERO-DIAG.cmd
+?? __DIAG-GIT.cjs
+?? __DIAG-GIT.txt
+?? __PUSH-RISULTATO.txt
+?? __postpush.cjs
+?? push-main.cmd
+
+============================================================
+ Remote URL:
+============================================================
+origin	https://github.com/bolognacarmine-cell/arredi.git (fetch)
+origin	https://github.com/bolognacarmine-cell/arredi.git (push)
+
+FINE. log file: C:\Users\Acer\Desktop\arredi\STATO-POST-PUSH.txt

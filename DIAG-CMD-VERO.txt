@@ -1,0 +1,54 @@
+START 
+============================================================ 
+ DIAGNOSTICA CMD VERO - 30/08/2026  3:28:15,17                      
+ CARTELLA DOVE SONO IO: C:\Users\Acer\Desktop\arredi\                              
+============================================================ 
+ 
+[1] GIT VERSIONE 
+git version 2.53.0.windows.1
+EXIT=0 
+ 
+[2] REMOTE URL 
+origin	https://github.com/bolognacarmine-cell/arredi.git (fetch)
+origin	https://github.com/bolognacarmine-cell/arredi.git (push)
+EXIT=0 
+ 
+[3] PUSH DRY-RUN (non invia nulla) 
+Everything up-to-date
+EXIT=0 
+ 
+[4] CREDENTIAL HELPER 
+file:C:/Program Files/Git/etc/gitconfig	credential.helper=manager
+file:C:/Program Files/Git/etc/gitconfig	credential.https://dev.azure.com.usehttppath=true
+EXIT=0 
+ 
+[5] HASH LOCALE vs GITHUB 
+HEAD locale:   
+8f32695604cf9dd545d3f979585e51ed7a608b8f
+origin/main:   
+8f32695604cf9dd545d3f979585e51ed7a608b8f
+ 
+[6] ULTIMI 3 COMMIT 
+8f32695 Sostituisci video hero + fix rendering completo: - Nuovo farcom-hero.mp4 (447KB) sostituisce vecchio 1.06MB - HeroBackgroundVideo: wrapper absolute inset-0 (non Fragment) per rendering stabile - Home hero: z-index espliciti video z-0, overlay z-[1], testi z-10 - Rimosse sorgenti <source> inesistenti (-hq, -vp9, -av1) per eliminare 404 log - TypeScript: rimosso decoding='async' da <video> (attributo valido solo su <img>)
+8a58711 Fix video invisibile (2): wrapper absolute inset-0 per HeroBackgroundVideo, z-index espliciti (video z-0, overlay z-1, testi z-10) - prima era Fragment senza posizionamento
+d291bd4 Fix video invisibile: sorgenti ordine H264 primo, rimozione codec string errata, src diretto fallback sul tag video
+ 
+[7] GIT STATUS -sb 
+## main...origin/main
+?? !PUSH-DA-QUI-DOPPIO-CLICK.cmd
+?? !RECODE-1-H264-HQ.cmd
+?? !RECODE-2-VP9-WEBM.cmd
+?? 1-BUILD.cmd
+?? 2-COMMIT.cmd
+?? 3-PUSH.cmd
+?? DIAG-CMD-VERO.txt
+?? ESEGUI-QUI.cmd
+?? __CMD-VERO-DIAG.cmd
+?? __DIAG-GIT.cjs
+?? __DIAG-GIT.txt
+?? __PUSH-RISULTATO.txt
+?? push-main.cmd
+ 
+============================================================ 
+FINE DIAGNOSTICA - 30/08/2026  3:28:21,91                            
+============================================================ 
