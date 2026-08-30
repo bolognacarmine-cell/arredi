@@ -21,22 +21,22 @@ export default function Home() {
     <div className="bg-[#F7F5F0]">
       {/* HERO */}
       <section className="relative min-h-screen flex items-end pb-20 overflow-hidden bg-black">
-        <div className="absolute inset-0" aria-hidden="false">
-          <HeroBackgroundVideo
-            basePath="/videos/farcom-hero"
-            poster="https://images.unsplash.com/photo-1547609434-b732edfee020?w=1920&h=1080&fit=crop&auto=format"
-            fallbackImg="https://images.unsplash.com/photo-1547609434-b732edfee020?w=2560&h=1440&fit=crop&auto=format"
-            priority
-          />
-          {/* Overlay SINGOLO (no 4 layer sovrapposti!) → preserva colori video + leggibilità testo */}
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background:
-                "linear-gradient(180deg, rgba(10,14,22,0.25) 0%, rgba(10,14,22,0.15) 35%, rgba(10,14,22,0.60) 72%, rgba(26,26,24,0.92) 100%)",
-            }}
-          />
-        </div>
+        {/* Video background (componente già absolute inset-0 autosufficiente) */}
+        <HeroBackgroundVideo
+          className="z-0"
+          basePath="/videos/farcom-hero"
+          poster="https://images.unsplash.com/photo-1547609434-b732edfee020?w=1920&h=1080&fit=crop&auto=format"
+          fallbackImg="https://images.unsplash.com/photo-1547609434-b732edfee020?w=2560&h=1440&fit=crop&auto=format"
+          priority
+        />
+        {/* Overlay SINGOLO: sopra il video (z-1), sotto i testi (z-10). Preserva colori video + leggibilità testo */}
+        <div
+          className="pointer-events-none absolute inset-0 z-[1]"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(10,14,22,0.25) 0%, rgba(10,14,22,0.15) 35%, rgba(10,14,22,0.60) 72%, rgba(26,26,24,0.92) 100%)",
+          }}
+        />
 
         <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 w-full">
           <div className="max-w-3xl">

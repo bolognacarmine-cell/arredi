@@ -57,16 +57,17 @@ export default function HeroBackgroundVideo({
     if (videoRef.current) videoRef.current.style.display = "none";
   };
 
-  // NOTA: i source in ordine COMPATIBILITÀ (H264→HQ→VP9→AV1).
-  // Il browser sceglie il PRIMO che riesce a decodificare. src diretto sul tag come fallback ultimo.
+  // NOTA: sorgenti ELENCATE SOLO se il file esiste davvero in public/videos.
+  // Al browser piace una sorgente sola ben definita invece di 4 sorgenti inesistenti che generano 404.
+  // src diretto sul tag <video> come fallback finale se anche <source> fallisce.
   return (
-    <>
+    <div className={`${className} absolute inset-0 overflow-hidden bg-black`} aria-hidden="true">
       {/* Fallback IMG se nessun video è supportato o errore MP4 */}
       <img
         src={fallbackImg}
         alt=""
         aria-hidden="true"
-        className={`${className} w-full h-full object-cover ${
+        className={`absolute inset-0 w-full h-full object-cover ${
           showFallback ? "block" : "hidden"
         }`}
         decoding="async"
@@ -75,7 +76,7 @@ export default function HeroBackgroundVideo({
         <video
           ref={videoRef}
           src={`${basePath}.mp4`}
-          className={`${className} w-full h-full object-cover ${
+          className={`absolute inset-0 w-full h-full object-cover ${
             showFallback ? "hidden" : "block"
           }`}
           autoPlay
@@ -94,20 +95,17 @@ export default function HeroBackgroundVideo({
           }}
         >
           <source src={`${basePath}.mp4`} type="video/mp4" />
-          <source src={`${basePath}-hq.mp4`} type="video/mp4" />
-          <source src={`${basePath}-vp9.webm`} type="video/webm" />
-          <source src={`${basePath}.av1.mp4`} type="video/mp4" />
         </video>
       ) : (
-        // Postero placeholder finché non entra in viewport
+        // Poster placeholder finché non entra in viewport (lazy)
         <img
           src={poster}
           alt=""
           aria-hidden="true"
-          className={`${className} w-full h-full object-cover block`}
+          className="absolute inset-0 w-full h-full object-cover block"
           decoding="async"
         />
       )}
-    </>
+    </div>
   );
 }
