@@ -57,8 +57,8 @@ export default function HeroBackgroundVideo({
     if (videoRef.current) videoRef.current.style.display = "none";
   };
 
-  // NOTA: i source in ordine QUALITÀ/PESO (AV1→VP9→H264).
-  // Il browser sceglie il PRIMO che riesce a decodificare.
+  // NOTA: i source in ordine COMPATIBILITÀ (H264→HQ→VP9→AV1).
+  // Il browser sceglie il PRIMO che riesce a decodificare. src diretto sul tag come fallback ultimo.
   return (
     <>
       {/* Fallback IMG se nessun video è supportato o errore MP4 */}
@@ -74,6 +74,7 @@ export default function HeroBackgroundVideo({
       {loadVideo ? (
         <video
           ref={videoRef}
+          src={`${basePath}.mp4`}
           className={`${className} w-full h-full object-cover ${
             showFallback ? "hidden" : "block"
           }`}
@@ -88,14 +89,14 @@ export default function HeroBackgroundVideo({
           decoding="async"
           onError={onVideoError}
           style={{
-            imageRendering: "auto", // nessun smoothing aggressivo di default
-            transform: "translateZ(0)", // compositing layer separato
+            imageRendering: "auto",
+            transform: "translateZ(0)",
           }}
         >
-          <source src={`${basePath}.av1.mp4`} type="video/mp4; codecs=av01.0.08M.08" />
-          <source src={`${basePath}-vp9.webm`} type="video/webm; codecs=vp9,opus" />
-          <source src={`${basePath}.mp4`} type="video/mp4; codecs=avc1.640028,mp4a.40.2" />
+          <source src={`${basePath}.mp4`} type="video/mp4" />
           <source src={`${basePath}-hq.mp4`} type="video/mp4" />
+          <source src={`${basePath}-vp9.webm`} type="video/webm" />
+          <source src={`${basePath}.av1.mp4`} type="video/mp4" />
         </video>
       ) : (
         // Postero placeholder finché non entra in viewport
