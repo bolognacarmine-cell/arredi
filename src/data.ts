@@ -108,12 +108,11 @@ export const PROJECTS: Project[] = [
     client: "The Craft Milano",
     description:
       "Progetto completo per un barbershop di fascia alta nel centro di Milano. Bancone reception in noce canaletto con piano in ottone, 4 postazioni taglio con specchiere retroilluminate, zona attesa con sedute su misura in pelle naturale.",
-    image:
-      "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=800&h=600&fit=crop",
+    image: "/barber-farcom.jpg",
     gallery: [
+      "/barber-farcom.jpg",
       "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=1200&h=800&fit=crop",
       "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?w=1200&h=800&fit=crop",
-      "https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=1200&h=800&fit=crop",
     ],
     tags: ["Bancone", "Specchiere", "Zona attesa"],
     materials:
