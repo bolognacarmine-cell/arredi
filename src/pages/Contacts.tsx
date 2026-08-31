@@ -61,18 +61,18 @@ export default function Contacts() {
               ))}
             </div>
 
-            {/* Map placeholder */}
+            {/* Google Maps */}
             <div className="relative bg-[#EAE7E0] h-72 overflow-hidden">
-              <img
-                src="https://images.unsplash.com/photo-1597960194599-22929afc25b1?w=700&h=400&fit=crop&auto=format"
-                alt="Farcom Srl - Macerata Campania"
-                className="w-full h-full object-cover opacity-60"
+              <iframe
+                src="https://www.google.com/maps?q=Via+P.+Vertaldi,+27,+81050+Macerata+Campania+CE&output=embed"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Farcom Srl - Via P. Vertaldi, 27 Macerata Campania"
               />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="bg-[#E69138] text-white px-6 py-3 text-sm font-medium">
-                  📍 Via P. Vertaldi, 27 — Macerata Campania (CE)
-                </div>
-              </div>
             </div>
 
             {/* Social */}
