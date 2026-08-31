@@ -41,7 +41,7 @@ export default function Home() {
         <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 w-full">
           <div className="max-w-3xl">
             <span className="inline-block text-[#B5965A] text-xs font-semibold tracking-widest uppercase mb-6">
-              Arredo su misura · Bologna
+              Arredo su misura
             </span>
             <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-light text-white leading-[1.1] mb-6">
               Arredi su misura per barbieri, uffici, negozi e scuole

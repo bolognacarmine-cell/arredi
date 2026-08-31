@@ -30,11 +30,12 @@ export default function Navbar() {
       }`}
     >
       <nav className="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-16 lg:h-20">
-        <Link to="/" className="flex items-center gap-2.5">
-          <span className="w-6 h-6 bg-[#1B4332] rounded-sm" />
-          <span className="font-display text-lg font-medium tracking-tight text-[#1A1A18]">
-            Artigiana<span className="text-[#1B4332]">Legno</span>
-          </span>
+        <Link to="/" className="flex items-center">
+          <img
+            src="/logo-farcom.png"
+            alt="Farcom Società Cooperativa"
+            className="h-10 w-auto object-contain lg:h-12"
+          />
         </Link>
 
         <ul className="hidden lg:flex items-center gap-8">
