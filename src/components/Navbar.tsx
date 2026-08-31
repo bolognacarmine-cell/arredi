@@ -74,6 +74,7 @@ export default function Navbar() {
 
         <Link
           to="/preventivo"
+          translate="no"
           className="hidden lg:inline-flex items-center gap-2 bg-[#E69138] text-[#1A1A2E] text-sm font-semibold px-5 py-2.5 hover:bg-[#D67F28] hover:scale-105 hover:shadow-lg hover:shadow-[#E69138]/30 transition-all duration-300 ease-out"
         >
           Richiedi preventivo
@@ -116,6 +117,7 @@ export default function Navbar() {
           ))}
           <Link
             to="/preventivo"
+            translate="no"
             onClick={() => setOpen(false)}
             className="inline-flex items-center justify-center bg-[#E69138] text-[#1A1A2E] text-sm font-semibold px-5 py-3 mt-2 hover:bg-[#D67F28] hover:scale-105 hover:shadow-lg hover:shadow-[#E69138]/30 transition-all duration-300 ease-out"
           >
