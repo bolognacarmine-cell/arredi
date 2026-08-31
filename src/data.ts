@@ -183,9 +183,9 @@ export const PROJECTS: Project[] = [
     year: 2023,
     description:
       "Salone di parrucchieri con 8 postazioni lavoro, zona shampoo con 4 lavandini integrati e reception panoramica.",
-    image: "/barber-farcom.jpg",
+    image: "/barber-farcom1.jpg",
     gallery: [
-      "/barber-farcom.jpg",
+      "/barber-farcom1.jpg",
     ],
     tags: ["Postazioni", "Lavandini", "Reception"],
     materials: "Laccato opaco bianco, acciaio inox, vetro fumé",
