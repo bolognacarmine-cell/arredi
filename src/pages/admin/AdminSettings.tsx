@@ -9,10 +9,10 @@ import {
 } from "../../siteConfig"
 
 const users = [
-  { id: 1, nome: "Marco Ferretti", email: "marco@artigianalegno.it", ruolo: "admin" },
-  { id: 2, nome: "Giulia Ferretti", email: "giulia@artigianalegno.it", ruolo: "editor" },
-  { id: 3, nome: "Sara Moretti", email: "sara@artigianalegno.it", ruolo: "editor" },
-  { id: 4, nome: "Anna Conti", email: "anna@artigianalegno.it", ruolo: "viewer" },
+  { id: 1, nome: "Ugo", email: "admin@farcom.com", ruolo: "admin" },
+  { id: 2, nome: "Giulia", email: "giulia@farcom.com", ruolo: "editor" },
+  { id: 3, nome: "Sara", email: "sara@farcom.com", ruolo: "editor" },
+  { id: 4, nome: "Anna", email: "anna@farcom.com", ruolo: "viewer" },
 ]
 
 const roleColor: Record<string, string> = {

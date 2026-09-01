@@ -25,7 +25,7 @@ export default function AdminLayout() {
           <span className="w-5 h-5 bg-[#B5965A] rounded-sm flex-shrink-0" />
           {sideOpen && (
             <span className="font-display text-sm font-medium text-white truncate">
-              ArtigianaLegno
+              Farcom
             </span>
           )}
         </div>
@@ -78,9 +78,9 @@ export default function AdminLayout() {
             ☰
           </button>
           <div className="flex items-center gap-4">
-            <span className="text-xs text-[#888580]">Marco Ferretti</span>
+            <span className="text-xs text-[#888580]">Ugo</span>
             <div className="w-8 h-8 bg-[#1B4332] rounded-full flex items-center justify-center text-white text-xs font-medium">
-              MF
+              U
             </div>
           </div>
         </header>
