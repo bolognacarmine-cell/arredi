@@ -9,7 +9,7 @@ export default function Footer() {
 
   return (
     <footer className="bg-[#1A1A2E] text-white">
-      <div className="max-w-7xl mx-auto px-6 md:px-8 lg:px-16 py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+      <div className="max-w-7xl mx-auto px-6 md:px-8 lg:px-16 py-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         <div className="lg:col-span-1">
           <Link to="/" className="flex items-center mb-5">
             <img
@@ -153,7 +153,7 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="border-t border-white/10 max-w-7xl mx-auto px-6 md:px-8 lg:px-16 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#6B7280]">
+      <div className="border-t border-white/10 max-w-7xl mx-auto px-6 md:px-8 lg:px-16 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#6B7280]">
         <span>© 2025 Farcom Srl – P.IVA IT00000000000</span>
         <div className="flex gap-6">
           <a href="#" className="hover:text-white transition-colors">
