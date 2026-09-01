@@ -11,6 +11,16 @@ import {
 
 type UploadCategory = "hero" | "sector" | "project" | "gallery"
 
+type RecentUpload = {
+  id: string
+  publicId: string
+  secureUrl: string
+  category: UploadCategory
+  timestamp: number
+  width: number
+  height: number
+}
+
 const categoryConfig: Record<
   UploadCategory,
   { label: string; folder: string; desc: string }
@@ -43,6 +53,31 @@ type AutoAssign = {
   id: string
   field: "hero" | "cover" | "gallery"
   index: number
+}
+
+const RECENT_UPLOADS_KEY = "farcom-recent-uploads"
+
+function getRecentUploads(): RecentUpload[] {
+  if (typeof window === "undefined") return []
+  try {
+    const stored = window.localStorage.getItem(RECENT_UPLOADS_KEY)
+    if (!stored) return []
+    return JSON.parse(stored) as RecentUpload[]
+  } catch {
+    return []
+  }
+}
+
+function saveRecentUpload(upload: RecentUpload) {
+  if (typeof window === "undefined") return
+  const recent = getRecentUploads()
+  const updated = [upload, ...recent].slice(0, 20) // Keep last 20
+  window.localStorage.setItem(RECENT_UPLOADS_KEY, JSON.stringify(updated))
+}
+
+function clearRecentUploads() {
+  if (typeof window === "undefined") return
+  window.localStorage.removeItem(RECENT_UPLOADS_KEY)
 }
 
 function copyToClipboard(text: string) {
@@ -189,6 +224,8 @@ export default function AdminMedia() {
     message: string
     backupPath?: string | null
   } | null>(null)
+  const [recentUploads, setRecentUploads] = useState<RecentUpload[]>([])
+  const [recentFilter, setRecentFilter] = useState<UploadCategory | "all">("all")
 
   const mainFileInputRef = useRef<HTMLInputElement | null>(null)
   const gridFileInputRef = useRef<HTMLInputElement | null>(null)
@@ -201,7 +238,27 @@ export default function AdminMedia() {
   const presetOk = Boolean(CLOUDINARY_UPLOAD_PRESET)
   const everythingReady = file && configured && presetOk && !busy
 
-  // Log env per debug in console (F12)
+  // Carica upload recenti all'avvio
+  useEffect(() => {
+    setRecentUploads(getRecentUploads())
+  }, [])
+
+  // Salva upload quando completato con successo
+  useEffect(() => {
+    if (lastResult && !error) {
+      const newUpload: RecentUpload = {
+        id: `${lastResult.public_id}-${Date.now()}`,
+        publicId: lastResult.public_id,
+        secureUrl: lastResult.secure_url,
+        category,
+        timestamp: Date.now(),
+        width: lastResult.width,
+        height: lastResult.height,
+      }
+      saveRecentUpload(newUpload)
+      setRecentUploads(getRecentUploads())
+    }
+  }, [lastResult, error, category])
   useEffect(() => {
     // eslint-disable-next-line no-console
     console.group("🖼️  Admin Cloudinary — stato env")
@@ -1156,6 +1213,83 @@ export default function AdminMedia() {
       </div>
 
       {/* GALLERY ESISTENTI */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-display text-lg font-medium text-[#1A1A18]">
+            Upload recenti
+          </h2>
+          <div className="flex gap-2">
+            {(["all", "hero", "sector", "project", "gallery"] as const).map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setRecentFilter(cat)}
+                className={`text-xs px-3 py-1 rounded-full transition-colors ${
+                  recentFilter === cat
+                    ? "bg-[#1B4332] text-white"
+                    : "bg-white border border-[#DDD9D0] text-[#4A4A46] hover:border-[#1B4332]"
+                }`}
+              >
+                {cat === "all" ? "Tutti" : categoryConfig[cat as UploadCategory].label}
+              </button>
+            ))}
+            {recentUploads.length > 0 && (
+              <button
+                onClick={() => {
+                  clearRecentUploads()
+                  setRecentUploads([])
+                }}
+                className="text-xs px-3 py-1 rounded-full bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
+              >
+                Pulisci
+              </button>
+            )}
+          </div>
+        </div>
+        
+        {recentUploads.length === 0 ? (
+          <div className="bg-[#F7F5F0] border border-[#DDD9D0] rounded-lg p-8 text-center text-[#888580]">
+            <p className="text-sm">Nessun upload recente</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            {recentUploads
+              .filter((u) => recentFilter === "all" || u.category === recentFilter)
+              .map((upload) => (
+                <div
+                  key={upload.id}
+                  className="group relative bg-[#EAE7E0] aspect-square overflow-hidden border border-[#DDD9D0] hover:border-[#1B4332] transition-colors"
+                >
+                  <img
+                    src={upload.secureUrl}
+                    alt={upload.publicId}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-end p-2">
+                    <div className="w-full">
+                      <p className="text-white text-xs font-medium truncate">
+                        {categoryConfig[upload.category].label}
+                      </p>
+                      <p className="text-white/80 text-[10px] truncate">
+                        {upload.width}×{upload.height}
+                      </p>
+                      <button
+                        onClick={() => {
+                          const ok = copyToClipboard(upload.secureUrl)
+                          showToast(ok ? "📋 URL copiato!" : "Copia fallita", ok ? "ok" : "err")
+                        }}
+                        className="mt-1 w-full text-[10px] bg-white/20 hover:bg-white/30 text-white px-2 py-1 rounded transition-colors"
+                      >
+                        Copia URL
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+          </div>
+        )}
+      </div>
+
+      {/* ULTIMI PROGETTI */}
       <div>
         <h2 className="font-display text-lg font-medium text-[#1A1A18] mb-4">
           Ultimi progetti (anteprima)
