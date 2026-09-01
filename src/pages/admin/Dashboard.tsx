@@ -1,112 +1,69 @@
 import { Link } from "react-router-dom"
-
-const kpis = [
-  {
-    label: "Preventivi ricevuti",
-    value: "14",
-    sub: "ultimi 30 giorni",
-    color: "#1B4332",
-    delta: "+3",
-  },
-  {
-    label: "Progetti in lavorazione",
-    value: "6",
-    sub: "in corso",
-    color: "#B5965A",
-    delta: "0",
-  },
-  {
-    label: "Progetti completati",
-    value: "58",
-    sub: "anno 2025",
-    color: "#4A4A46",
-    delta: "+12",
-  },
-  {
-    label: "Lead da contattare",
-    value: "4",
-    sub: "in attesa risposta",
-    color: "#C0392B",
-    delta: "-1",
-  },
-]
-
-const recentQuotes = [
-  {
-    id: 1,
-    nome: "Luca Bernardi",
-    azienda: "Barberia Moderna",
-    settore: "Barbieri",
-    data: "24/08/2025",
-    stato: "nuovo",
-  },
-  {
-    id: 2,
-    nome: "Marta Vitali",
-    azienda: "Studio V",
-    settore: "Uffici",
-    data: "23/08/2025",
-    stato: "contattato",
-  },
-  {
-    id: 3,
-    nome: "Roberto Greco",
-    azienda: "Boutique Greco",
-    settore: "Negozi",
-    data: "21/08/2025",
-    stato: "contattato",
-  },
-  {
-    id: 4,
-    nome: "Istituto Pacinotti",
-    azienda: "—",
-    settore: "Scuole",
-    data: "19/08/2025",
-    stato: "chiuso",
-  },
-]
-
-const recentProjects = [
-  {
-    id: "barber-milano",
-    titolo: "The Craft Barbershop",
-    settore: "Barbieri",
-    stato: "completato",
-    anno: 2024,
-  },
-  {
-    id: "studio-legale-torino",
-    titolo: "Studio Legale Marchetti",
-    settore: "Uffici",
-    stato: "completato",
-    anno: 2024,
-  },
-  {
-    id: "startup-hub-genova",
-    titolo: "Innovation Hub Liguria",
-    settore: "Uffici",
-    stato: "in lavorazione",
-    anno: 2025,
-  },
-]
-
-const statusColor: Record<string, string> = {
-  nuovo: "bg-blue-100 text-blue-700",
-  contattato: "bg-amber-100 text-amber-700",
-  chiuso: "bg-green-100 text-green-700",
-  "in lavorazione": "bg-amber-100 text-amber-700",
-  completato: "bg-green-100 text-green-700",
-  bozza: "bg-gray-100 text-gray-600",
-}
+import { useProjects } from "../../projectStore"
+import { useQuotes } from "../../quoteStore"
 
 export default function Dashboard() {
+  const projects = useProjects()
+  const quotes = useQuotes()
+
+  // Calcolo KPI da dati reali
+  const kpis = [
+    {
+      label: "Preventivi ricevuti",
+      value: String(quotes.length),
+      sub: "ultimi 30 giorni",
+      color: "#1B4332",
+      delta: quotes.filter(q => q.stato === "nuovo").length > 0 ? `+${quotes.filter(q => q.stato === "nuovo").length}` : "0",
+    },
+    {
+      label: "Progetti in lavorazione",
+      value: String(projects.filter(p => p.status === "in lavorazione").length),
+      sub: "in corso",
+      color: "#B5965A",
+      delta: "0",
+    },
+    {
+      label: "Progetti completati",
+      value: String(projects.filter(p => p.status === "completato").length),
+      sub: `anno ${new Date().getFullYear()}`,
+      color: "#4A4A46",
+      delta: "+0",
+    },
+    {
+      label: "Lead da contattare",
+      value: String(quotes.filter(q => q.stato === "nuovo").length),
+      sub: "in attesa risposta",
+      color: "#C0392B",
+      delta: quotes.filter(q => q.stato === "nuovo").length > 0 ? `+${quotes.filter(q => q.stato === "nuovo").length}` : "0",
+    },
+  ]
+
+  const recentQuotes = quotes.slice(0, 5)
+  const recentProjects = projects.slice(0, 3)
+
+  const statusColor: Record<string, string> = {
+    nuovo: "bg-blue-100 text-blue-700",
+    contattato: "bg-amber-100 text-amber-700",
+    chiuso: "bg-green-100 text-green-700",
+    "in lavorazione": "bg-amber-100 text-amber-700",
+    completato: "bg-green-100 text-green-700",
+    bozza: "bg-gray-100 text-gray-600",
+  }
+
+  const today = new Date().toLocaleDateString("it-IT", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  })
+
   return (
     <div>
       <div className="mb-8">
         <h1 className="font-display text-3xl font-light text-[#1A1A18]">
           Dashboard
         </h1>
-        <p className="text-[#888580] text-sm mt-1">Mercoledì, 27 agosto 2025</p>
+        <p className="text-[#888580] text-sm mt-1">{today}</p>
       </div>
 
       {/* KPI */}
@@ -173,7 +130,7 @@ export default function Dashboard() {
                 >
                   <td className="px-5 py-3">
                     <div className="font-medium text-[#1A1A18] text-sm">
-                      {q.nome}
+                      {q.nome} {q.cognome}
                     </div>
                     <div className="text-[#888580] text-xs">{q.azienda}</div>
                   </td>
@@ -226,18 +183,18 @@ export default function Dashboard() {
                 >
                   <td className="px-5 py-3">
                     <div className="font-medium text-[#1A1A18] text-sm">
-                      {p.titolo}
+                      {p.title}
                     </div>
-                    <div className="text-[#888580] text-xs">{p.anno}</div>
+                    <div className="text-[#888580] text-xs">{p.year}</div>
                   </td>
                   <td className="px-5 py-3 hidden sm:table-cell text-[#4A4A46] text-xs">
-                    {p.settore}
+                    {p.sector}
                   </td>
                   <td className="px-5 py-3">
                     <span
-                      className={`text-xs px-2.5 py-1 font-medium rounded-full ${statusColor[p.stato]}`}
+                      className={`text-xs px-2.5 py-1 font-medium rounded-full ${statusColor[p.status]}`}
                     >
-                      {p.stato}
+                      {p.status}
                     </span>
                   </td>
                   <td className="px-5 py-3">
