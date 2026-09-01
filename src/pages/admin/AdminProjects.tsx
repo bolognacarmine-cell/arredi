@@ -1,8 +1,16 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
-import { PROJECTS, SECTORS } from "../../data"
+import { SECTORS } from "../../data"
+import {
+  defaultProjects,
+  resetProjects,
+  saveProjects,
+  saveProjectsToProject,
+  useProjects,
+  type ProjectRecord,
+} from "../../projectStore"
 
-const statusColor: Record<string, string> = {
+const statusColor: Record<ProjectRecord["status"], string> = {
   "in lavorazione": "bg-amber-100 text-amber-700",
   completato: "bg-green-100 text-green-700",
   bozza: "bg-gray-100 text-gray-600",
@@ -14,9 +22,13 @@ type FormState = {
   cliente: string
   citta: string
   anno: string
-  stato: string
+  stato: ProjectRecord["status"]
   descrizione: string
   evidenza: boolean
+  immagine: string
+  materiali: string
+  tagText: string
+  galleryText: string
 }
 
 const emptyForm: FormState = {
@@ -28,137 +40,366 @@ const emptyForm: FormState = {
   stato: "bozza",
   descrizione: "",
   evidenza: false,
+  immagine: "",
+  materiali: "",
+  tagText: "",
+  galleryText: "",
+}
+
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+}
+
+function projectToForm(project: ProjectRecord): FormState {
+  return {
+    titolo: project.title,
+    settore: project.sectorId,
+    cliente: project.client ?? "",
+    citta: project.location,
+    anno: String(project.year),
+    stato: project.status,
+    descrizione: project.description,
+    evidenza: project.featured,
+    immagine: project.image,
+    materiali: project.materials,
+    tagText: project.tags.join(", "),
+    galleryText: project.gallery.join("\n"),
+  }
+}
+
+function toProjectRecord(
+  form: FormState,
+  currentProjects: ProjectRecord[],
+  editingId: string | null,
+): ProjectRecord {
+  const selectedSector = SECTORS.find((sector) => sector.id === form.settore)
+  const fallbackId = `${form.settore || "progetto"}-${slugify(form.titolo || "nuovo-progetto")}`
+  const nextId = editingId ?? fallbackId
+  const uniqueId = editingId
+    ? editingId
+    : currentProjects.some((project) => project.id === nextId)
+      ? `${nextId}-${Date.now()}`
+      : nextId
+  const gallery = form.galleryText
+    .split("\n")
+    .map((item) => item.trim())
+    .filter(Boolean)
+  const normalizedGallery =
+    gallery.length > 0
+      ? gallery
+      : form.immagine.trim()
+        ? [form.immagine.trim()]
+        : ["https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=800&fit=crop"]
+
+  return {
+    id: uniqueId,
+    title: form.titolo.trim(),
+    sector: selectedSector?.label ?? "Settore da definire",
+    sectorId: form.settore,
+    location: form.citta.trim(),
+    year: Number(form.anno) || new Date().getFullYear(),
+    client: form.cliente.trim() || undefined,
+    description: form.descrizione.trim(),
+    image: form.immagine.trim() || normalizedGallery[0],
+    gallery: normalizedGallery,
+    tags: form.tagText
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean),
+    materials: form.materiali.trim() || "Materiali da definire",
+    status: form.stato,
+    featured: form.evidenza,
+  }
 }
 
 export default function AdminProjects() {
+  const projects = useProjects()
   const [filter, setFilter] = useState("all")
   const [stateFilter, setStateFilter] = useState("all")
   const [showForm, setShowForm] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [saved, setSaved] = useState(false)
+  const [statusMessage, setStatusMessage] = useState("")
+  const [statusTone, setStatusTone] = useState<"success" | "warning">("success")
   const [form, setForm] = useState<FormState>(emptyForm)
 
-  const set = (k: keyof FormState, v: string | boolean) =>
-    setForm((f) => ({ ...f, [k]: v }))
+  const set = (key: keyof FormState, value: string | boolean) =>
+    setForm((current) => ({ ...current, [key]: value }))
 
-  const projects = PROJECTS.map((p) => ({ ...p, stato: "completato" }))
   const filtered = projects
-    .filter((p) => filter === "all" || p.sectorId === filter)
-    .filter((p) => stateFilter === "all" || p.stato === stateFilter)
+    .filter((project) => filter === "all" || project.sectorId === filter)
+    .filter((project) => stateFilter === "all" || project.status === stateFilter)
+
+  const showSavedState = () => {
+    setSaved(true)
+    window.setTimeout(() => setSaved(false), 2000)
+  }
+
+  const showStatus = (message: string, tone: "success" | "warning") => {
+    setStatusMessage(message)
+    setStatusTone(tone)
+  }
+
+  const openCreateForm = () => {
+    setEditingId(null)
+    setForm(emptyForm)
+    setShowForm(true)
+  }
+
+  const closeForm = () => {
+    setEditingId(null)
+    setForm(emptyForm)
+    setShowForm(false)
+  }
+
+  const persistProjects = async (
+    nextProjects: ProjectRecord[],
+    successMessage: string,
+    fallbackMessage: string,
+  ) => {
+    try {
+      await saveProjectsToProject(nextProjects)
+      saveProjects(nextProjects)
+      showStatus(successMessage, "success")
+    } catch {
+      saveProjects(nextProjects)
+      showStatus(fallbackMessage, "warning")
+    }
+
+    showSavedState()
+  }
+
+  const handleSave = async () => {
+    const nextProject = toProjectRecord(form, projects, editingId)
+    const nextProjects = editingId
+      ? projects.map((project) => (project.id === editingId ? nextProject : project))
+      : [nextProject, ...projects]
+
+    await persistProjects(
+      nextProjects,
+      editingId
+        ? "Progetto aggiornato nel progetto e sincronizzato nel browser."
+        : "Nuovo progetto salvato nel progetto e sincronizzato nel browser.",
+      editingId
+        ? "Modifica salvata solo nel browser corrente."
+        : "Nuovo progetto salvato solo nel browser corrente.",
+    )
+
+    closeForm()
+  }
+
+  const handleEdit = (project: ProjectRecord) => {
+    setEditingId(project.id)
+    setForm(projectToForm(project))
+    setShowForm(true)
+  }
+
+  const handleDelete = async (projectId: string) => {
+    const project = projects.find((item) => item.id === projectId)
+    if (!project) return
+    if (!window.confirm(`Eliminare il progetto "${project.title}"?`)) return
+
+    const nextProjects = projects.filter((item) => item.id !== projectId)
+
+    await persistProjects(
+      nextProjects,
+      "Progetto eliminato e archivio aggiornato nel progetto.",
+      "Progetto eliminato solo nel browser corrente.",
+    )
+  }
+
+  const handleReset = async () => {
+    if (!window.confirm("Ripristinare l'archivio progetti di base?")) return
+
+    try {
+      await saveProjectsToProject(defaultProjects)
+      resetProjects()
+      showStatus("Archivio progetti ripristinato nel progetto.", "success")
+    } catch {
+      saveProjects(defaultProjects)
+      showStatus(
+        "Ripristino applicato solo nel browser corrente.",
+        "warning",
+      )
+    }
+
+    showSavedState()
+    closeForm()
+  }
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="font-display text-3xl font-light text-[#1A1A18]">
             Progetti
           </h1>
-          <p className="text-[#888580] text-sm mt-0.5">
+          <p className="mt-0.5 text-sm text-[#888580]">
             {projects.length} progetti totali
           </p>
         </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="bg-[#1B4332] text-white text-sm font-medium px-5 py-2.5 hover:bg-[#143326] transition-colors"
-        >
-          + Nuovo progetto
-        </button>
+        <div className="flex flex-wrap gap-3">
+          <button
+            onClick={handleReset}
+            className="border border-[#DDD9D0] px-5 py-2.5 text-sm font-medium text-[#4A4A46] transition-colors hover:border-[#1B4332] hover:text-[#1B4332]"
+          >
+            Ripristina archivio base
+          </button>
+          <button
+            onClick={openCreateForm}
+            className="bg-[#1B4332] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#143326]"
+          >
+            + Nuovo progetto
+          </button>
+        </div>
       </div>
 
-      {/* New project form */}
+      <div className="mb-6 border border-[#DDD9D0] bg-[#F7F5F0] p-4 text-sm text-[#4A4A46]">
+        In sviluppo i progetti vengono salvati direttamente in
+        <span className="font-medium text-[#1A1A18]"> `src/data.ts` </span>
+        con backup automatico. Se il file non e scrivibile, il pannello usa il
+        fallback nel browser.
+      </div>
+
       {showForm && (
-        <div className="bg-white border border-[#DDD9D0] p-6 mb-6">
-          <h2 className="font-display text-xl font-light text-[#1A1A18] mb-5">
-            Nuovo progetto
+        <div className="mb-6 border border-[#DDD9D0] bg-white p-6">
+          <h2 className="mb-5 font-display text-xl font-light text-[#1A1A18]">
+            {editingId ? "Modifica progetto" : "Nuovo progetto"}
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {(["titolo", "cliente", "citta"] as const).map((k) => (
-              <div key={k}>
-                <label className="block text-xs text-[#888580] uppercase tracking-wide mb-1">
-                  {k}
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {([
+              ["titolo", "Titolo"],
+              ["cliente", "Cliente"],
+              ["citta", "Citta"],
+              ["immagine", "Immagine copertina"],
+              ["materiali", "Materiali"],
+            ] as const).map(([key, label]) => (
+              <div key={key}>
+                <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">
+                  {label}
                 </label>
                 <input
                   type="text"
-                  value={form[k]}
-                  onChange={(e) => set(k, e.target.value)}
-                  className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:outline-none focus:border-[#1B4332]"
+                  value={form[key]}
+                  onChange={(e) => set(key, e.target.value)}
+                  className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
                 />
               </div>
             ))}
+
             <div>
-              <label className="block text-xs text-[#888580] uppercase tracking-wide mb-1">
+              <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">
                 Settore
               </label>
               <select
                 value={form.settore}
                 onChange={(e) => set("settore", e.target.value)}
-                className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:outline-none focus:border-[#1B4332]"
+                className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
               >
                 <option value="">Seleziona...</option>
-                {SECTORS.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.label}
+                {SECTORS.map((sector) => (
+                  <option key={sector.id} value={sector.id}>
+                    {sector.label}
                   </option>
                 ))}
               </select>
             </div>
+
             <div>
-              <label className="block text-xs text-[#888580] uppercase tracking-wide mb-1">
+              <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">
                 Anno
               </label>
               <input
                 type="number"
                 value={form.anno}
                 onChange={(e) => set("anno", e.target.value)}
-                className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:outline-none focus:border-[#1B4332]"
+                className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
               />
             </div>
+
             <div>
-              <label className="block text-xs text-[#888580] uppercase tracking-wide mb-1">
+              <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">
                 Stato
               </label>
               <select
                 value={form.stato}
-                onChange={(e) => set("stato", e.target.value)}
-                className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:outline-none focus:border-[#1B4332]"
+                onChange={(e) =>
+                  set("stato", e.target.value as ProjectRecord["status"])
+                }
+                className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
               >
                 <option value="bozza">Bozza</option>
                 <option value="in lavorazione">In lavorazione</option>
                 <option value="completato">Completato</option>
               </select>
             </div>
+
             <div className="sm:col-span-2">
-              <label className="block text-xs text-[#888580] uppercase tracking-wide mb-1">
+              <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">
                 Descrizione
               </label>
               <textarea
-                rows={3}
+                rows={4}
                 value={form.descrizione}
                 onChange={(e) => set("descrizione", e.target.value)}
-                className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:outline-none focus:border-[#1B4332] resize-none"
+                className="w-full resize-none border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
               />
             </div>
+
+            <div className="sm:col-span-2">
+              <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">
+                Tag separati da virgola
+              </label>
+              <input
+                type="text"
+                value={form.tagText}
+                onChange={(e) => set("tagText", e.target.value)}
+                className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
+              />
+            </div>
+
+            <div className="sm:col-span-2">
+              <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">
+                Gallery URL, una per riga
+              </label>
+              <textarea
+                rows={4}
+                value={form.galleryText}
+                onChange={(e) => set("galleryText", e.target.value)}
+                className="w-full resize-none border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
+              />
+            </div>
+
             <div className="sm:col-span-2 flex items-center gap-3">
               <input
                 type="checkbox"
                 id="evidenza"
                 checked={form.evidenza}
                 onChange={(e) => set("evidenza", e.target.checked)}
-                className="w-4 h-4 accent-[#1B4332]"
+                className="h-4 w-4 accent-[#1B4332]"
               />
               <label htmlFor="evidenza" className="text-sm text-[#4A4A46]">
                 Mostra in evidenza nella home
               </label>
             </div>
           </div>
-          <div className="flex gap-3 mt-5">
+
+          <div className="mt-5 flex flex-wrap gap-3">
             <button
-              onClick={() => setShowForm(false)}
-              className="bg-[#1B4332] text-white text-sm font-medium px-5 py-2.5 hover:bg-[#143326] transition-colors"
+              onClick={handleSave}
+              className="bg-[#1B4332] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#143326]"
             >
-              Salva progetto
+              {saved ? "✓ Salvato" : editingId ? "Aggiorna progetto" : "Salva progetto"}
             </button>
             <button
-              onClick={() => setShowForm(false)}
-              className="border border-[#DDD9D0] text-[#4A4A46] text-sm px-5 py-2.5 hover:bg-[#EAE7E0] transition-colors"
+              onClick={closeForm}
+              className="border border-[#DDD9D0] px-5 py-2.5 text-sm text-[#4A4A46] transition-colors hover:bg-[#EAE7E0]"
             >
               Annulla
             </button>
@@ -166,101 +407,124 @@ export default function AdminProjects() {
         </div>
       )}
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-3 mb-5">
+      {statusMessage && (
+        <div
+          className={`mb-5 text-sm ${
+            statusTone === "success" ? "text-[#1B4332]" : "text-amber-700"
+          }`}
+        >
+          {statusMessage}
+        </div>
+      )}
+
+      <div className="mb-5 flex flex-wrap gap-3">
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          className="border border-[#DDD9D0] bg-white px-4 py-2 text-sm text-[#4A4A46] focus:outline-none focus:border-[#1B4332]"
+          className="border border-[#DDD9D0] bg-white px-4 py-2 text-sm text-[#4A4A46] focus:border-[#1B4332] focus:outline-none"
         >
           <option value="all">Tutti i settori</option>
-          {SECTORS.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.label}
+          {SECTORS.map((sector) => (
+            <option key={sector.id} value={sector.id}>
+              {sector.label}
             </option>
           ))}
         </select>
+
         <select
           value={stateFilter}
           onChange={(e) => setStateFilter(e.target.value)}
-          className="border border-[#DDD9D0] bg-white px-4 py-2 text-sm text-[#4A4A46] focus:outline-none focus:border-[#1B4332]"
+          className="border border-[#DDD9D0] bg-white px-4 py-2 text-sm text-[#4A4A46] focus:border-[#1B4332] focus:outline-none"
         >
           <option value="all">Tutti gli stati</option>
           <option value="bozza">Bozza</option>
           <option value="in lavorazione">In lavorazione</option>
           <option value="completato">Completato</option>
         </select>
-        <span className="text-[#888580] text-xs self-center">
+
+        <span className="self-center text-xs text-[#888580]">
           {filtered.length} risultati
         </span>
       </div>
 
-      {/* Table */}
-      <div className="bg-white border border-[#DDD9D0] overflow-hidden">
+      <div className="overflow-hidden border border-[#DDD9D0] bg-white">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-[#F7F5F0] text-[#888580] text-xs uppercase tracking-wide border-b border-[#DDD9D0]">
-              <th className="text-left px-5 py-3">Progetto</th>
-              <th className="text-left px-5 py-3 hidden md:table-cell">
+            <tr className="border-b border-[#DDD9D0] bg-[#F7F5F0] text-xs uppercase tracking-wide text-[#888580]">
+              <th className="px-5 py-3 text-left">Progetto</th>
+              <th className="hidden px-5 py-3 text-left md:table-cell">
                 Settore
               </th>
-              <th className="text-left px-5 py-3 hidden lg:table-cell">
+              <th className="hidden px-5 py-3 text-left lg:table-cell">
                 Cliente
               </th>
-              <th className="text-left px-5 py-3 hidden sm:table-cell">Anno</th>
-              <th className="text-left px-5 py-3">Stato</th>
-              <th className="text-left px-5 py-3">Azioni</th>
+              <th className="hidden px-5 py-3 text-left sm:table-cell">Anno</th>
+              <th className="px-5 py-3 text-left">Stato</th>
+              <th className="px-5 py-3 text-left">Azioni</th>
             </tr>
           </thead>
           <tbody>
-            {filtered.map((p) => (
+            {filtered.map((project) => (
               <tr
-                key={p.id}
-                className="border-t border-[#EAE7E0] hover:bg-[#F7F5F0] transition-colors"
+                key={project.id}
+                className="border-t border-[#EAE7E0] transition-colors hover:bg-[#F7F5F0]"
               >
                 <td className="px-5 py-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-[#EAE7E0] flex-shrink-0 overflow-hidden">
+                    <div className="h-10 w-10 flex-shrink-0 overflow-hidden bg-[#EAE7E0]">
                       <img
-                        src={p.image}
+                        src={project.image}
                         alt=""
-                        className="w-full h-full object-cover"
+                        className="h-full w-full object-cover"
                       />
                     </div>
-                    <span className="font-medium text-[#1A1A18]">
-                      {p.title}
-                    </span>
+                    <div>
+                      <span className="block font-medium text-[#1A1A18]">
+                        {project.title}
+                      </span>
+                      {project.featured && (
+                        <span className="text-[11px] uppercase tracking-wide text-[#1B4332]">
+                          In evidenza
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </td>
-                <td className="px-5 py-3 hidden md:table-cell text-[#4A4A46] text-xs">
-                  {p.sector}
+                <td className="hidden px-5 py-3 text-xs text-[#4A4A46] md:table-cell">
+                  {project.sector}
                 </td>
-                <td className="px-5 py-3 hidden lg:table-cell text-[#4A4A46] text-xs">
-                  {p.client || "—"}
+                <td className="hidden px-5 py-3 text-xs text-[#4A4A46] lg:table-cell">
+                  {project.client || "—"}
                 </td>
-                <td className="px-5 py-3 hidden sm:table-cell text-[#888580] text-xs">
-                  {p.year}
+                <td className="hidden px-5 py-3 text-xs text-[#888580] sm:table-cell">
+                  {project.year}
                 </td>
                 <td className="px-5 py-3">
                   <span
-                    className={`text-xs px-2.5 py-1 font-medium rounded-full ${statusColor[p.stato] || "bg-gray-100 text-gray-600"}`}
+                    className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusColor[project.status]}`}
                   >
-                    {p.stato}
+                    {project.status}
                   </span>
                 </td>
                 <td className="px-5 py-3">
                   <div className="flex gap-3">
                     <Link
-                      to={`/progetti/${p.id}`}
+                      to={`/progetti/${project.id}`}
                       target="_blank"
-                      className="text-xs text-[#888580] hover:text-[#1B4332] transition-colors"
+                      className="text-xs text-[#888580] transition-colors hover:text-[#1B4332]"
                     >
                       Anteprima
                     </Link>
-                    <button className="text-xs text-[#888580] hover:text-[#1B4332] transition-colors">
+                    <button
+                      onClick={() => handleEdit(project)}
+                      className="text-xs text-[#888580] transition-colors hover:text-[#1B4332]"
+                    >
                       Modifica
                     </button>
-                    <button className="text-xs text-red-400 hover:text-red-600 transition-colors">
+                    <button
+                      onClick={() => handleDelete(project.id)}
+                      className="text-xs text-red-400 transition-colors hover:text-red-600"
+                    >
                       Elimina
                     </button>
                   </div>

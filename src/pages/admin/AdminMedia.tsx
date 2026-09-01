@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import { PROJECTS, SECTORS } from "../../data"
+import { SECTORS } from "../../data"
+import { useProjects } from "../../projectStore"
 import {
   isCloudinaryConfigured,
   CLOUDINARY_CLOUD_NAME,
@@ -44,10 +45,6 @@ type AutoAssign = {
   index: number
 }
 
-const allImages = PROJECTS.flatMap((p) =>
-  p.gallery.map((url, i) => ({ url, project: p.title, id: `${p.id}-${i}` })),
-)
-
 function copyToClipboard(text: string) {
   try {
     if (navigator.clipboard?.writeText) {
@@ -70,12 +67,15 @@ function cleanTitleForPublicId(title: string): string | null {
   return cleaned || null
 }
 
-function describeTarget(a: AutoAssign): string {
+function describeTarget(
+  a: AutoAssign,
+  projects: Array<{ id: string; title: string }>,
+): string {
   if (a.collection === "sector") {
     const s = SECTORS.find((s) => s.id === a.id)
     return `Settore "${s?.label ?? a.id}" → heroImageCloudinaryPublicId`
   }
-  const p = PROJECTS.find((p) => p.id === a.id)
+  const p = projects.find((p) => p.id === a.id)
   const base = `Progetto "${p?.title ?? a.id}" → `
   if (a.field === "cover") return base + "imageCloudinaryPublicId"
   if (a.field === "gallery") return base + `galleryCloudinaryPublicIds[${a.index}]`
@@ -156,6 +156,10 @@ async function uploadToCloudinary(
 }
 
 export default function AdminMedia() {
+  const projects = useProjects()
+  const allImages = projects.flatMap((p) =>
+    p.gallery.map((url, i) => ({ url, project: p.title, id: `${p.id}-${i}` })),
+  )
   const runningOnLocalhostDev =
     typeof window !== "undefined" &&
     (window.location.hostname === "localhost" ||
@@ -176,7 +180,7 @@ export default function AdminMedia() {
   const [autoAssign, setAutoAssign] = useState<AutoAssign>({
     enabled: canWriteDataTsLocally, // on Render / Prod, disattivato di default
     collection: "project",
-    id: PROJECTS[0]?.id ?? "",
+    id: projects[0]?.id ?? "",
     field: "cover",
     index: 0,
   })
@@ -286,7 +290,7 @@ export default function AdminMedia() {
         ...prev,
         collection: "project",
         field: "cover",
-        id: prev.collection === "project" ? prev.id : PROJECTS[0]?.id ?? "",
+        id: prev.collection === "project" ? prev.id : projects[0]?.id ?? "",
         enabled: true,
       }))
     } else if (category === "gallery") {
@@ -294,7 +298,7 @@ export default function AdminMedia() {
         ...prev,
         collection: "project",
         field: "gallery",
-        id: prev.collection === "project" ? prev.id : PROJECTS[0]?.id ?? "",
+        id: prev.collection === "project" ? prev.id : projects[0]?.id ?? "",
         enabled: true,
       }))
     } else {
@@ -337,7 +341,7 @@ export default function AdminMedia() {
           ok: true,
           message: `data.ts AGGIORNATO automaticamente! Campo scritto: ${
             autoAssign.collection === "sector" ? "SECTORS" : "PROJECTS"
-          } → ${describeTarget(autoAssign)}`,
+          } → ${describeTarget(autoAssign, projects)}`,
           backupPath: (payload as { backupPath?: string | null }).backupPath ?? null,
         })
         return { ok: true, skipped: false as const }
@@ -764,7 +768,7 @@ export default function AdminMedia() {
                             id:
                               coll === "sector"
                                 ? SECTORS[0]?.id ?? ""
-                                : PROJECTS[0]?.id ?? "",
+                                : projects[0]?.id ?? "",
                             field: coll === "sector" ? "hero" : "cover",
                             index: 0,
                           }))
@@ -787,7 +791,7 @@ export default function AdminMedia() {
                         }
                         className="w-full px-3 py-2 rounded-md bg-white border border-[#DDD9D0] text-sm focus:outline-none focus:border-[#1B4332] focus:ring-2 focus:ring-[#1B4332]/20"
                       >
-                        {(autoAssign.collection === "sector" ? SECTORS : PROJECTS).map(
+                        {(autoAssign.collection === "sector" ? SECTORS : projects).map(
                           (item) => (
                             <option key={item.id} value={item.id}>
                               {"label" in item ? item.label : (item as { title: string }).title}
@@ -852,7 +856,7 @@ export default function AdminMedia() {
                             Anteprima destinazione
                           </p>
                           <p className="text-[12px] text-[#1A1A18] mt-0.5 font-medium truncate">
-                            {describeTarget(autoAssign)}
+                            {describeTarget(autoAssign, projects)}
                           </p>
                         </div>
                       </div>
@@ -864,7 +868,7 @@ export default function AdminMedia() {
                       ✓ Destinazione finale
                     </p>
                     <p className="text-[12px] text-[#1A1A18] mt-0.5 font-medium break-words">
-                      {describeTarget(autoAssign)}
+                      {describeTarget(autoAssign, projects)}
                     </p>
                     <p className="text-[11px] text-[#5a5854] mt-0.5">
                       (Nota: viene creato un backup <code>data.ts.backup-*.ts</code> prima di

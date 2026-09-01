@@ -4,6 +4,7 @@ import react from "@vitejs/plugin-react"
 
 import tailwindcss from "@tailwindcss/vite"
 
+import fs from "node:fs"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 
@@ -38,6 +39,8 @@ export default defineConfig(({ mode }) => {
 
       farcomDataApiPlugin(),
 
+      siteSettingsAdminApi(),
+      projectsAdminApi(),
       figmaSiteConfiguration(siteConfiguration),
 
       figmaErrorOverlayReplay(),
@@ -72,6 +75,150 @@ export default defineConfig(({ mode }) => {
     },
   }
 })
+
+function siteSettingsAdminApi(): Plugin {
+  const route = '/__admin/site-settings'
+  const settingsFilePath = path.resolve(import.meta.dirname, './src/siteSettings.json')
+  const backupDirPath = path.resolve(import.meta.dirname, './src/siteSettings.backups')
+
+  function sendJson(res: NodeJS.WritableStream & { setHeader(name: string, value: string): void }, statusCode: number, payload: unknown) {
+    ;(res as typeof res & { statusCode: number }).statusCode = statusCode
+    res.setHeader('Content-Type', 'application/json; charset=utf-8')
+    res.write(JSON.stringify(payload))
+    res.end()
+  }
+
+  function readRequestBody(req: NodeJS.ReadableStream): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const chunks: Buffer[] = []
+      req.on('data', (chunk) => chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)))
+      req.on('end', () => resolve(Buffer.concat(chunks).toString('utf-8')))
+      req.on('error', reject)
+    })
+  }
+
+  return {
+    name: 'site-settings-admin-api',
+    apply: 'serve',
+    configureServer(server) {
+      server.middlewares.use(async (req, res, next) => {
+        const url = req.url?.split('?')[0]
+        if (url !== route) return next()
+
+        if (req.method !== 'POST') {
+          return sendJson(res, 405, { ok: false, message: 'Metodo non consentito.' })
+        }
+
+        try {
+          const rawBody = await readRequestBody(req)
+          const parsedBody = JSON.parse(rawBody) as Record<string, unknown>
+
+          if (!parsedBody || Array.isArray(parsedBody)) {
+            return sendJson(res, 400, { ok: false, message: 'Payload non valido.' })
+          }
+
+          let backupPath: string | null = null
+
+          if (fs.existsSync(settingsFilePath)) {
+            fs.mkdirSync(backupDirPath, { recursive: true })
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+            backupPath = path.join(backupDirPath, `siteSettings.${timestamp}.json`)
+            fs.copyFileSync(settingsFilePath, backupPath)
+          }
+
+          fs.writeFileSync(
+            settingsFilePath,
+            `${JSON.stringify(parsedBody, null, 2)}\n`,
+            'utf-8',
+          )
+
+          sendJson(res, 200, {
+            ok: true,
+            filePath: settingsFilePath,
+            backupPath,
+          })
+        } catch (error) {
+          const message =
+            error instanceof Error ? error.message : 'Errore durante il salvataggio.'
+          sendJson(res, 500, { ok: false, message })
+        }
+      })
+    },
+  }
+}
+
+function projectsAdminApi(): Plugin {
+  const route = '/__admin/projects'
+  const dataFilePath = path.resolve(import.meta.dirname, './src/data.ts')
+  const backupDirPath = path.resolve(import.meta.dirname, './src/data.backups')
+
+  function sendJson(res: NodeJS.WritableStream & { setHeader(name: string, value: string): void }, statusCode: number, payload: unknown) {
+    ;(res as typeof res & { statusCode: number }).statusCode = statusCode
+    res.setHeader('Content-Type', 'application/json; charset=utf-8')
+    res.write(JSON.stringify(payload))
+    res.end()
+  }
+
+  function readRequestBody(req: NodeJS.ReadableStream): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const chunks: Buffer[] = []
+      req.on('data', (chunk) => chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)))
+      req.on('end', () => resolve(Buffer.concat(chunks).toString('utf-8')))
+      req.on('error', reject)
+    })
+  }
+
+  return {
+    name: 'projects-admin-api',
+    apply: 'serve',
+    configureServer(server) {
+      server.middlewares.use(async (req, res, next) => {
+        const url = req.url?.split('?')[0]
+        if (url !== route) return next()
+
+        if (req.method !== 'POST') {
+          return sendJson(res, 405, { ok: false, message: 'Metodo non consentito.' })
+        }
+
+        try {
+          const rawBody = await readRequestBody(req)
+          const parsedBody = JSON.parse(rawBody) as unknown
+
+          if (!Array.isArray(parsedBody)) {
+            return sendJson(res, 400, { ok: false, message: 'Payload progetti non valido.' })
+          }
+
+          const currentDataFile = fs.readFileSync(dataFilePath, 'utf-8')
+          const projectsArrayPattern = /export const PROJECTS: Project\[] = \[[\s\S]*?\n\]/m
+
+          if (!projectsArrayPattern.test(currentDataFile)) {
+            return sendJson(res, 500, { ok: false, message: 'Impossibile trovare PROJECTS in src/data.ts.' })
+          }
+
+          fs.mkdirSync(backupDirPath, { recursive: true })
+          const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+          const backupPath = path.join(backupDirPath, `data.${timestamp}.ts`)
+          fs.copyFileSync(dataFilePath, backupPath)
+
+          const serializedProjects = `export const PROJECTS: Project[] = ${JSON.stringify(parsedBody, null, 2)}`
+          const updatedDataFile = currentDataFile.replace(projectsArrayPattern, serializedProjects)
+
+          fs.writeFileSync(dataFilePath, updatedDataFile, 'utf-8')
+
+          sendJson(res, 200, {
+            ok: true,
+            filePath: dataFilePath,
+            backupPath,
+          })
+        } catch (error) {
+          const message =
+            error instanceof Error ? error.message : 'Errore durante il salvataggio dei progetti.'
+          sendJson(res, 500, { ok: false, message })
+        }
+      })
+    },
+  }
+}
 
 type FigmaSiteConfiguration = {
   title?: string

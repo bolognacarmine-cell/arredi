@@ -21,3 +21,5 @@ logs/
 
 # Local skill collection (keep on disk only, never commit)
 trae-skills-collection/
+src/siteSettings.backups/
+src/data.backups/
