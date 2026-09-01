@@ -59,7 +59,7 @@ export default function Footer() {
 
       <div className="relative mx-auto max-w-7xl px-6 py-10 md:px-8 lg:px-16 lg:py-12">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
-          <div className="lg:col-span-5">
+          <div className="lg:col-span-4">
             <Link to="/" className="inline-flex items-center">
               <img
                 src="/logo-farcom.png"
@@ -82,28 +82,40 @@ export default function Footer() {
                 </span>
               ))}
             </div>
+          </div>
 
-            <div className="mt-8 grid gap-3 sm:grid-cols-2">
-              {footerContactLinks.map(({ label, value, href, external }) => (
+          <div className="lg:col-span-3">
+            <h3 className="text-xs font-semibold uppercase tracking-[0.22em] text-white/42">
+              Riferimenti
+            </h3>
+
+            <div className="mt-5 space-y-4 text-sm text-white/78">
+              <p>
+                {siteConfig.addressLine1}
+                <br />
+                {siteConfig.addressLine2}
+              </p>
+              <p>{siteConfig.hoursWeek}</p>
+              <p>{siteConfig.hoursExtra}</p>
+            </div>
+
+            <div className="mt-6 flex flex-wrap gap-3">
+              {socialLinks.map(({ label, href, icon }) => (
                 <a
                   key={label}
                   href={href}
-                  target={external ? "_blank" : undefined}
-                  rel={external ? "noopener noreferrer" : undefined}
-                  className="group border border-white/10 bg-white/[0.04] p-4 transition-colors hover:border-[#E69138]/50 hover:bg-white/[0.06]"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 border border-white/12 bg-white/5 px-4 py-2.5 text-sm text-white/76 transition-colors hover:border-[#E69138] hover:text-[#E69138]"
                 >
-                  <span className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#E69138]">
-                    {label}
-                  </span>
-                  <span className="mt-2 block text-sm text-white/88 transition-colors group-hover:text-white">
-                    {value}
-                  </span>
+                  {icon}
+                  <span>{label}</span>
                 </a>
               ))}
             </div>
           </div>
 
-          <div className="lg:col-span-2 lg:col-start-7">
+          <div className="lg:col-span-2">
             <h3 className="text-xs font-semibold uppercase tracking-[0.22em] text-white/42">
               Settori
             </h3>
@@ -139,32 +151,25 @@ export default function Footer() {
             </ul>
           </div>
 
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-1">
             <h3 className="text-xs font-semibold uppercase tracking-[0.22em] text-white/42">
-              Riferimenti
+              Contatti
             </h3>
-
-            <div className="mt-5 space-y-4 text-sm text-white/78">
-              <p>
-                {siteConfig.addressLine1}
-                <br />
-                {siteConfig.addressLine2}
-              </p>
-              <p>{siteConfig.hoursWeek}</p>
-              <p>{siteConfig.hoursExtra}</p>
-            </div>
-
-            <div className="mt-6 flex flex-wrap gap-3">
-              {socialLinks.map(({ label, href, icon }) => (
+            <div className="mt-5 grid gap-3">
+              {footerContactLinks.map(({ label, value, href, external }) => (
                 <a
                   key={label}
                   href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 border border-white/12 bg-white/5 px-4 py-2.5 text-sm text-white/76 transition-colors hover:border-[#E69138] hover:text-[#E69138]"
+                  target={external ? "_blank" : undefined}
+                  rel={external ? "noopener noreferrer" : undefined}
+                  className="group border border-white/10 bg-white/[0.04] p-3 transition-colors hover:border-[#E69138]/50 hover:bg-white/[0.06]"
                 >
-                  {icon}
-                  <span>{label}</span>
+                  <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-[#E69138]">
+                    {label}
+                  </span>
+                  <span className="mt-1 block text-xs text-white/88 transition-colors group-hover:text-white">
+                    {value}
+                  </span>
                 </a>
               ))}
             </div>
