@@ -136,14 +136,16 @@ const generalFields = [
   type: string
 }>
 
+type SettingsTab = "generali" | "seo" | "email" | "sicurezza" | "backup" | "utenti"
+
 export default function AdminSettings() {
-  const [activeTab, setActiveTab] = useState<"generale" | "utenti">("generale")
-  const [saved, setSaved] = useState(false)
-  const [statusMessage, setStatusMessage] = useState("")
-  const [statusTone, setStatusTone] = useState<"success" | "warning">("success")
+  const [activeTab, setActiveTab] = useState<SettingsTab>("generali")
   const [form, setForm] = useState<SiteSettingsFormState>(() =>
     toFormState(readSiteSettings()),
   )
+  const [saved, setSaved] = useState(false)
+  const [statusMessage, setStatusMessage] = useState("")
+  const [statusTone, setStatusTone] = useState<"success" | "warning">("success")
 
   const updateField = (key: keyof SiteSettingsFormState, value: string) => {
     setForm((current) => ({ ...current, [key]: value }))
@@ -212,7 +214,7 @@ export default function AdminSettings() {
       </div>
 
       <div className="mb-6 flex gap-1 border-b border-[#DDD9D0]">
-        {(["generale", "utenti"] as const).map((tab) => (
+        {(["generali", "seo", "email", "sicurezza", "backup", "utenti"] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -227,7 +229,7 @@ export default function AdminSettings() {
         ))}
       </div>
 
-      {activeTab === "generale" && (
+      {activeTab === "generali" && (
         <div className="max-w-4xl space-y-6">
           <div className="border border-[#DDD9D0] bg-[#F7F5F0] p-4 text-sm text-[#4A4A46]">
             In sviluppo le impostazioni vengono salvate anche su file del
@@ -326,6 +328,215 @@ export default function AdminSettings() {
                 {statusMessage}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {activeTab === "seo" && (
+        <div className="max-w-4xl space-y-6">
+          <div className="border border-[#DDD9D0] bg-[#F7F5F0] p-4 text-sm text-[#4A4A46]">
+            Configurazione SEO globale del sito. Questi valori vengono utilizzati nei meta tag delle pagine.
+          </div>
+          <div className="space-y-6 border border-[#DDD9D0] bg-white p-6">
+            <div>
+              <h2 className="font-display text-2xl font-light text-[#1A1A18]">
+                Meta tag globali
+              </h2>
+              <p className="mt-1 text-sm text-[#888580]">
+                Titolo e descrizione predefiniti per le pagine senza configurazione specifica.
+              </p>
+            </div>
+            <div>
+              <label className="mb-1.5 block text-xs uppercase tracking-wide text-[#888580]">
+                Meta title predefinito
+              </label>
+              <input
+                type="text"
+                placeholder="Farcom - Arredamenti su misura"
+                className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2.5 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-xs uppercase tracking-wide text-[#888580]">
+                Meta description predefinita
+              </label>
+              <textarea
+                rows={3}
+                placeholder="Descrizione del sito per i motori di ricerca"
+                maxLength={160}
+                className="w-full resize-none border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2.5 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
+              />
+            </div>
+            <div className="flex gap-3 border-t border-[#EAE7E0] pt-4">
+              <button className="bg-[#1B4332] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#143326]">
+                Salva impostazioni SEO
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === "email" && (
+        <div className="max-w-4xl space-y-6">
+          <div className="border border-[#DDD9D0] bg-[#F7F5F0] p-4 text-sm text-[#4A4A46]">
+            Configurazione invio email per notifiche preventivi e contatti.
+          </div>
+          <div className="space-y-6 border border-[#DDD9D0] bg-white p-6">
+            <div>
+              <h2 className="font-display text-2xl font-light text-[#1A1A18]">
+                Configurazione SMTP
+              </h2>
+              <p className="mt-1 text-sm text-[#888580]">
+                Imposta il server SMTP per l'invio automatico delle email.
+              </p>
+            </div>
+            <div className="grid gap-5 md:grid-cols-2">
+              <div>
+                <label className="mb-1.5 block text-xs uppercase tracking-wide text-[#888580]">
+                  Host SMTP
+                </label>
+                <input
+                  type="text"
+                  placeholder="smtp.example.com"
+                  className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2.5 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs uppercase tracking-wide text-[#888580]">
+                  Porta
+                </label>
+                <input
+                  type="number"
+                  placeholder="587"
+                  className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2.5 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs uppercase tracking-wide text-[#888580]">
+                  Username
+                </label>
+                <input
+                  type="text"
+                  placeholder="noreply@farcom.com"
+                  className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2.5 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs uppercase tracking-wide text-[#888580]">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2.5 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 border-t border-[#EAE7E0] pt-4">
+              <button className="bg-[#1B4332] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#143326]">
+                Salva configurazione email
+              </button>
+              <button className="border border-[#DDD9D0] px-6 py-2.5 text-sm font-medium text-[#1A1A18] transition-colors hover:border-[#1B4332] hover:text-[#1B4332]">
+                Invia email di test
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === "sicurezza" && (
+        <div className="max-w-4xl space-y-6">
+          <div className="border border-[#DDD9D0] bg-[#F7F5F0] p-4 text-sm text-[#4A4A46]">
+            Impostazioni di sicurezza del pannello admin.
+          </div>
+          <div className="space-y-6 border border-[#DDD9D0] bg-white p-6">
+            <div>
+              <h2 className="font-display text-2xl font-light text-[#1A1A18]">
+                Autenticazione
+              </h2>
+              <p className="mt-1 text-sm text-[#888580]">
+                Configura le opzioni di accesso al pannello.
+              </p>
+            </div>
+            <div className="flex items-center justify-between py-3 border-b border-[#EAE7E0]">
+              <div>
+                <p className="font-medium text-[#1A1A18]">Autenticazione a due fattori (2FA)</p>
+                <p className="text-sm text-[#888580]">Richiede codice OTP aggiuntivo per l'accesso</p>
+              </div>
+              <button className="px-4 py-2 text-sm border border-[#DDD9D0] rounded hover:border-[#1B4332] transition-colors">
+                Configura
+              </button>
+            </div>
+            <div className="flex items-center justify-between py-3 border-b border-[#EAE7E0]">
+              <div>
+                <p className="font-medium text-[#1A1A18]">Timeout sessione</p>
+                <p className="text-sm text-[#888580]">Disconnessione automatica dopo inattività</p>
+              </div>
+              <select className="px-4 py-2 text-sm border border-[#DDD9D0] rounded bg-white focus:border-[#1B4332] focus:outline-none">
+                <option>15 minuti</option>
+                <option>30 minuti</option>
+                <option>1 ora</option>
+                <option>4 ore</option>
+              </select>
+            </div>
+            <div className="flex items-center justify-between py-3">
+              <div>
+                <p className="font-medium text-[#1A1A18]">Log accessi</p>
+                <p className="text-sm text-[#888580]">Registra tutti gli accessi al pannello</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" defaultChecked className="sr-only peer" />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#1B4332]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#1B4332]"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === "backup" && (
+        <div className="max-w-4xl space-y-6">
+          <div className="border border-[#DDD9D0] bg-[#F7F5F0] p-4 text-sm text-[#4A4A46]">
+            Gestione backup e ripristino dei dati del sito.
+          </div>
+          <div className="space-y-6 border border-[#DDD9D0] bg-white p-6">
+            <div>
+              <h2 className="font-display text-2xl font-light text-[#1A1A18]">
+                Backup automatici
+              </h2>
+              <p className="mt-1 text-sm text-[#888580]">
+                Configura la frequenza dei backup automatici dei dati.
+              </p>
+            </div>
+            <div className="flex items-center justify-between py-3 border-b border-[#EAE7E0]">
+              <div>
+                <p className="font-medium text-[#1A1A18]">Backup giornaliero</p>
+                <p className="text-sm text-[#888580]">Salvataggio automatico ogni 24 ore</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" defaultChecked className="sr-only peer" />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#1B4332]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#1B4332]"></div>
+              </label>
+            </div>
+            <div className="flex items-center justify-between py-3 border-b border-[#EAE7E0]">
+              <div>
+                <p className="font-medium text-[#1A1A18]">Ultimo backup</p>
+                <p className="text-sm text-[#888580]">Mai eseguito</p>
+              </div>
+              <button className="px-4 py-2 text-sm bg-[#1B4332] text-white rounded hover:bg-[#143326] transition-colors">
+                Crea backup ora
+              </button>
+            </div>
+            <div>
+              <h3 className="font-medium text-[#1A1A18] mb-3">Ripristino</h3>
+              <div className="flex gap-3">
+                <button className="px-4 py-2 text-sm border border-[#DDD9D0] rounded hover:border-[#1B4332] transition-colors">
+                  Carica backup
+                </button>
+                <button className="px-4 py-2 text-sm border border-[#DDD9D0] rounded hover:border-[#1B4332] transition-colors">
+                  Ripristina default
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
