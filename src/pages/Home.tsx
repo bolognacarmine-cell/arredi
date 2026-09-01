@@ -2,7 +2,8 @@ import { Link } from "react-router-dom"
 
 import { useEffect, useState } from "react"
 
-import { SECTORS, PROJECTS } from "../data"
+import { SECTORS } from "../data"
+import { useProjects } from "../projectStore"
 
 import Hero from "../components/Hero"
 import { resolveImageUrl } from "../lib/cloudinary"
@@ -96,6 +97,11 @@ const whys = [
 ]
 
 export default function Home() {
+  const projects = useProjects()
+  const featuredProjects = projects.filter((project) => project.featured).slice(0, 6)
+  const displayedProjects =
+    featuredProjects.length > 0 ? featuredProjects : projects.slice(0, 6)
+
   return (
     <div className="bg-[#FAFAFA]">
       <CustomCursor />
@@ -227,7 +233,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {PROJECTS.slice(0, 6).map((p, index) => (
+            {displayedProjects.map((p, index) => (
               <Link
                 key={p.id}
                 to={`/progetti/${p.id}`}

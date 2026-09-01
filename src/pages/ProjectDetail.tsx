@@ -1,12 +1,17 @@
-import { useState } from "react"
-import { useParams, Link } from "react-router-dom"
-import { PROJECTS } from "../data"
-import { resolveImageUrl } from "../lib/cloudinary"
+import { useEffect, useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import { resolveImageUrl } from "../lib/cloudinary";
+import { useProjects } from "../projectStore";
 
 export default function ProjectDetail() {
-  const { id } = useParams<{ id: string }>()
-  const project = PROJECTS.find((p) => p.id === id)
-  const [activeImg, setActiveImg] = useState(0)
+  const { id } = useParams<{ id: string }>();
+  const projects = useProjects()
+  const project = projects.find((p) => p.id === id);
+  const [activeImg, setActiveImg] = useState(0);
+
+  useEffect(() => {
+    setActiveImg(0)
+  }, [id])
 
   if (!project) {
     return (
@@ -26,9 +31,7 @@ export default function ProjectDetail() {
     )
   }
 
-  const related = PROJECTS.filter(
-    (p) => p.sectorId === project.sectorId && p.id !== project.id,
-  ).slice(0, 3)
+  const related = projects.filter((p) => p.sectorId === project.sectorId && p.id !== project.id).slice(0, 3);
 
   return (
     <div className="bg-[#F7F5F0] min-h-screen pt-24">

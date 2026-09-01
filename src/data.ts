@@ -23,6 +23,8 @@ export type Project = {
   galleryCloudinaryPublicIds?: string[]
   tags: string[]
   materials: string
+  status?: "bozza" | "in lavorazione" | "completato"
+  featured?: boolean
 }
 
 export const SECTORS: Sector[] = [

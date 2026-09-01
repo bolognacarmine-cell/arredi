@@ -1,7 +1,8 @@
-import { useState } from "react"
-import { Link } from "react-router-dom"
-import { PROJECTS, SECTORS } from "../data"
-import { resolveImageUrl } from "../lib/cloudinary"
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { resolveImageUrl } from "../lib/cloudinary";
+import { SECTORS } from "../data";
+import { useProjects } from "../projectStore";
 
 const filters = [
   { id: "all", label: "Tutti" },
@@ -9,10 +10,10 @@ const filters = [
 ]
 
 export default function Projects() {
-  const [active, setActive] = useState("all")
+  const [active, setActive] = useState("all");
+  const projects = useProjects()
 
-  const visible =
-    active === "all" ? PROJECTS : PROJECTS.filter((p) => p.sectorId === active)
+  const visible = active === "all" ? projects : projects.filter((p) => p.sectorId === active);
 
   return (
     <div className="bg-[#F7F5F0] min-h-screen pt-24">

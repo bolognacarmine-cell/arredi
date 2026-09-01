@@ -198,11 +198,8 @@ export default function Quote() {
             />
             <label htmlFor="privacy" className="text-sm text-[#4A4A46]">
               Ho letto e accetto la{" "}
-              <a href="#" className="text-[#1B4332] underline">
-                Privacy Policy
-              </a>{" "}
-              e acconsento al trattamento dei dati personali per finalità
-              commerciali. *
+              <a href="/privacy" className="text-[#1B4332] underline">Privacy Policy</a>
+              {" "}e acconsento al trattamento dei dati personali per finalità commerciali. *
             </label>
           </div>
 

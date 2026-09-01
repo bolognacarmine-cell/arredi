@@ -1,6 +1,7 @@
-import { useParams, Link } from "react-router-dom"
-import { SECTORS, PROJECTS } from "../data"
-import { resolveImageUrl } from "../lib/cloudinary"
+import { useParams, Link } from "react-router-dom";
+import { resolveImageUrl } from "../lib/cloudinary";
+import { SECTORS } from "../data";
+import { useProjects } from "../projectStore";
 
 const steps = [
   {
@@ -26,8 +27,9 @@ const steps = [
 ]
 
 export default function SectorPage() {
-  const { id } = useParams<{ id: string }>()
-  const sector = SECTORS.find((s) => s.id === id)
+  const { id } = useParams<{ id: string }>();
+  const sector = SECTORS.find((s) => s.id === id);
+  const projects = useProjects()
 
   if (!sector) {
     return (
@@ -44,7 +46,7 @@ export default function SectorPage() {
     )
   }
 
-  const sectorProjects = PROJECTS.filter((p) => p.sectorId === id)
+  const sectorProjects = projects.filter((p) => p.sectorId === id);
 
   return (
     <div className="bg-[#F7F5F0]">
