@@ -231,5 +231,17 @@ h1, h2, h3, h4 {
   .animate-title-reveal {
     animation: title-reveal 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
+  .animate-fade-in {
+    animation: fade-in 400ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 

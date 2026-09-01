@@ -9,6 +9,7 @@ import {
   useProjects,
   type ProjectRecord,
 } from "../../projectStore"
+import Loading from "../../components/Loading"
 
 const statusColor: Record<ProjectRecord["status"], string> = {
   "in lavorazione": "bg-amber-100 text-amber-700",
@@ -147,6 +148,8 @@ export default function AdminProjects() {
   const [statusTone, setStatusTone] = useState<"success" | "warning">("success")
   const [draggedId, setDraggedId] = useState<string | null>(null)
   const [form, setForm] = useState<FormState>(emptyForm)
+  const [isSaving, setIsSaving] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const set = (key: keyof FormState, value: string | boolean) =>
     setForm((current) => ({ ...current, [key]: value }))
@@ -226,6 +229,7 @@ export default function AdminProjects() {
   }
 
   const handleSave = async () => {
+    setIsSaving(true)
     const nextProject = toProjectRecord(form, projects, editingId)
     const nextProjects = editingId
       ? projects.map((project) => (project.id === editingId ? nextProject : project))
@@ -241,6 +245,7 @@ export default function AdminProjects() {
         : "Nuovo progetto salvato solo nel browser corrente.",
     )
 
+    setIsSaving(false)
     closeForm()
   }
 
@@ -255,6 +260,7 @@ export default function AdminProjects() {
     if (!project) return
     if (!window.confirm(`Eliminare il progetto "${project.title}"?`)) return
 
+    setIsDeleting(true)
     const nextProjects = projects.filter((item) => item.id !== projectId)
 
     await persistProjects(
@@ -262,6 +268,7 @@ export default function AdminProjects() {
       "Progetto eliminato e archivio aggiornato nel progetto.",
       "Progetto eliminato solo nel browser corrente.",
     )
+    setIsDeleting(false)
   }
 
   const handleReset = async () => {
@@ -318,10 +325,18 @@ export default function AdminProjects() {
       </div>
 
       {showForm && (
-        <div className="mb-6 border border-[#DDD9D0] bg-white p-6">
-          <h2 className="mb-5 font-display text-xl font-light text-[#1A1A18]">
-            {editingId ? "Modifica progetto" : "Nuovo progetto"}
-          </h2>
+        <div className="mb-8 border border-[#DDD9D0] bg-white p-6 animate-fade-in">
+          <div className="mb-5 flex items-center justify-between">
+            <h2 className="font-display text-xl font-medium text-[#1A1A18]">
+              {editingId ? "Modifica progetto" : "Nuovo progetto"}
+            </h2>
+            <button
+              onClick={closeForm}
+              className="text-sm text-[#888580] transition-colors hover:text-[#1A1A18]"
+            >
+              ✕ Chiudi
+            </button>
+          </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {([
@@ -486,13 +501,26 @@ export default function AdminProjects() {
           <div className="mt-5 flex flex-wrap gap-3">
             <button
               onClick={handleSave}
-              className="bg-[#1B4332] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#143326]"
+              disabled={isSaving}
+              className="bg-[#1B4332] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#143326] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
-              {saved ? "✓ Salvato" : editingId ? "Aggiorna progetto" : "Salva progetto"}
+              {isSaving ? (
+                <>
+                  <Loading size="sm" />
+                  Salvataggio...
+                </>
+              ) : saved ? (
+                "✓ Salvato"
+              ) : editingId ? (
+                "Aggiorna progetto"
+              ) : (
+                "Salva progetto"
+              )}
             </button>
             <button
               onClick={closeForm}
-              className="border border-[#DDD9D0] px-5 py-2.5 text-sm text-[#4A4A46] transition-colors hover:bg-[#EAE7E0]"
+              disabled={isSaving}
+              className="border border-[#DDD9D0] px-5 py-2.5 text-sm text-[#4A4A46] transition-colors hover:bg-[#EAE7E0] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Annulla
             </button>
@@ -623,9 +651,10 @@ export default function AdminProjects() {
                     </button>
                     <button
                       onClick={() => handleDelete(project.id)}
-                      className="text-xs text-red-400 transition-colors hover:text-red-600"
+                      disabled={isDeleting}
+                      className="text-xs text-red-600 transition-colors hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                     >
-                      Elimina
+                      {isDeleting ? <Loading size="sm" /> : "Elimina"}
                     </button>
                   </div>
                 </td>
