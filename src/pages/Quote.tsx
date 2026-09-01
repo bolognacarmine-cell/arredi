@@ -1,23 +1,31 @@
-import { useState } from "react";
-import { useSearchParams, Link } from "react-router-dom";
-import { SECTORS } from "../data";
+import { useState } from "react"
+import { useSearchParams, Link } from "react-router-dom"
+import { SECTORS } from "../data"
 
 export default function Quote() {
-  const [params] = useSearchParams();
-  const preselect = params.get("settore") || "";
-  const [submitted, setSubmitted] = useState(false);
+  const [params] = useSearchParams()
+  const preselect = params.get("settore") || ""
+  const [submitted, setSubmitted] = useState(false)
   const [form, setForm] = useState({
-    nome: "", cognome: "", azienda: "", email: "", telefono: "",
-    settore: preselect, arredo: "", metratura: "", messaggio: "",
+    nome: "",
+    cognome: "",
+    azienda: "",
+    email: "",
+    telefono: "",
+    settore: preselect,
+    arredo: "",
+    metratura: "",
+    messaggio: "",
     privacy: false,
-  });
+  })
 
-  const set = (k: string, v: string | boolean) => setForm((f) => ({ ...f, [k]: v }));
+  const set = (k: string, v: string | boolean) =>
+    setForm((f) => ({ ...f, [k]: v }))
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitted(true);
-  };
+    e.preventDefault()
+    setSubmitted(true)
+  }
 
   if (submitted) {
     return (
@@ -30,7 +38,9 @@ export default function Quote() {
             Richiesta inviata con successo
           </h1>
           <p className="text-[#888580] leading-relaxed mb-8">
-            Grazie per la tua richiesta. Il nostro team ti contatterà entro 24 ore lavorative per discutere il tuo progetto e, se necessario, fissare un sopralluogo gratuito.
+            Grazie per la tua richiesta. Il nostro team ti contatterà entro 24
+            ore lavorative per discutere il tuo progetto e, se necessario,
+            fissare un sopralluogo gratuito.
           </p>
           <Link
             to="/"
@@ -40,19 +50,22 @@ export default function Quote() {
           </Link>
         </div>
       </div>
-    );
+    )
   }
 
   return (
     <div className="bg-[#F7F5F0] min-h-screen pt-24">
       <div className="max-w-4xl mx-auto px-6 lg:px-10 py-16">
         <div className="mb-12">
-          <span className="text-[#888580] text-xs tracking-widest uppercase font-semibold">Sopralluogo gratuito</span>
+          <span className="text-[#888580] text-xs tracking-widest uppercase font-semibold">
+            Sopralluogo gratuito
+          </span>
           <h1 className="font-display text-5xl font-light text-[#1A1A18] mt-2 mb-4">
             Richiedi un preventivo
           </h1>
           <p className="text-[#888580] max-w-lg leading-relaxed">
-            Compila il modulo e ti ricontatteremo entro 24 ore. Il sopralluogo e la prima consulenza sono sempre gratuiti e senza impegno.
+            Compila il modulo e ti ricontatteremo entro 24 ore. Il sopralluogo e
+            la prima consulenza sono sempre gratuiti e senza impegno.
           </p>
         </div>
 
@@ -70,14 +83,17 @@ export default function Quote() {
                 ["email", "Email *", "email", true],
                 ["telefono", "Telefono *", "tel", true],
               ].map(([k, label, type, req]) => (
-                <div key={k as string} className={k === "azienda" ? "sm:col-span-2" : ""}>
+                <div
+                  key={k as string}
+                  className={k === "azienda" ? "sm:col-span-2" : ""}
+                >
                   <label className="block text-xs text-[#888580] uppercase tracking-wide mb-1.5">
                     {label as string}
                   </label>
                   <input
                     type={type as string}
                     required={req as boolean}
-                    value={form[k as keyof typeof form] as string}
+                    value={form[(k as keyof typeof form)] as string}
                     onChange={(e) => set(k as string, e.target.value)}
                     className="w-full border border-[#DDD9D0] bg-white px-4 py-3 text-sm text-[#1A1A18] focus:outline-none focus:border-[#1B4332] transition-colors"
                   />
@@ -104,7 +120,9 @@ export default function Quote() {
                 >
                   <option value="">Seleziona settore</option>
                   {SECTORS.map((s) => (
-                    <option key={s.id} value={s.id}>{s.label}</option>
+                    <option key={s.id} value={s.id}>
+                      {s.label}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -154,9 +172,16 @@ export default function Quote() {
                   <span>Trascina qui i file o </span>
                   <label className="text-[#1B4332] underline cursor-pointer">
                     sfoglia
-                    <input type="file" multiple className="hidden" accept="image/*,.pdf" />
+                    <input
+                      type="file"
+                      multiple
+                      className="hidden"
+                      accept="image/*,.pdf"
+                    />
                   </label>
-                  <span className="block text-xs mt-1 text-[#888580]">JPG, PNG, PDF – max 10MB</span>
+                  <span className="block text-xs mt-1 text-[#888580]">
+                    JPG, PNG, PDF – max 10MB
+                  </span>
                 </div>
               </div>
             </div>
@@ -173,8 +198,11 @@ export default function Quote() {
             />
             <label htmlFor="privacy" className="text-sm text-[#4A4A46]">
               Ho letto e accetto la{" "}
-              <a href="#" className="text-[#1B4332] underline">Privacy Policy</a>
-              {" "}e acconsento al trattamento dei dati personali per finalità commerciali. *
+              <a href="#" className="text-[#1B4332] underline">
+                Privacy Policy
+              </a>{" "}
+              e acconsento al trattamento dei dati personali per finalità
+              commerciali. *
             </label>
           </div>
 
@@ -187,5 +215,5 @@ export default function Quote() {
         </form>
       </div>
     </div>
-  );
+  )
 }

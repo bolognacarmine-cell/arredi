@@ -3,6 +3,7 @@ export type Sector = {
   label: string
   description: string
   heroImage: string
+  heroImageCloudinaryPublicId?: string
   items: string[]
   color: string
 }
@@ -17,7 +18,9 @@ export type Project = {
   client?: string
   description: string
   image: string
+  imageCloudinaryPublicId?: string
   gallery: string[]
+  galleryCloudinaryPublicIds?: string[]
   tags: string[]
   materials: string
 }
@@ -108,13 +111,13 @@ export const PROJECTS: Project[] = [
     client: "The Craft Milano",
     description:
       "Progetto completo per un barbershop di fascia alta nel centro di Milano. Bancone reception in noce canaletto con piano in ottone, 4 postazioni taglio con specchiere retroilluminate, zona attesa con sedute su misura in pelle naturale.",
-    image: "/barber-farcom.jpg",
-    gallery: [
+    image: "/barber-farcom.jpg",imageCloudinaryPublicId: "farcom/progetti/davinci____image1_utilizza_l_immagine_allegata_come_riferi-png",gallery: [
       "/barber-farcom.jpg",
       "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=1200&h=800&fit=crop",
       "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?w=1200&h=800&fit=crop",
     ],
-    tags: ["Bancone", "Specchiere", "Zona attesa"],
+    galleryCloudinaryPublicIds: ["farcom/progetti/arredo-2-jpg"],
+tags: ["Bancone", "Specchiere", "Zona attesa"],
     materials:
       "Noce canaletto, ottone satinato, pelle naturale conciata al vegetale",
   },

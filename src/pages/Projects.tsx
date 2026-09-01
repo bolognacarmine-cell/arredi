@@ -1,25 +1,33 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { PROJECTS, SECTORS } from "../data";
+import { useState } from "react"
+import { Link } from "react-router-dom"
+import { PROJECTS, SECTORS } from "../data"
+import { resolveImageUrl } from "../lib/cloudinary"
 
-const filters = [{ id: "all", label: "Tutti" }, ...SECTORS.map((s) => ({ id: s.id, label: s.label }))];
+const filters = [
+  { id: "all", label: "Tutti" },
+  ...SECTORS.map((s) => ({ id: s.id, label: s.label })),
+]
 
 export default function Projects() {
-  const [active, setActive] = useState("all");
+  const [active, setActive] = useState("all")
 
-  const visible = active === "all" ? PROJECTS : PROJECTS.filter((p) => p.sectorId === active);
+  const visible =
+    active === "all" ? PROJECTS : PROJECTS.filter((p) => p.sectorId === active)
 
   return (
     <div className="bg-[#F7F5F0] min-h-screen pt-24">
       <div className="max-w-7xl mx-auto px-6 lg:px-10">
         {/* Header */}
         <div className="pt-12 pb-14">
-          <span className="text-[#888580] text-xs tracking-widest uppercase font-semibold">Portfolio</span>
+          <span className="text-[#888580] text-xs tracking-widest uppercase font-semibold">
+            Portfolio
+          </span>
           <h1 className="font-display text-5xl lg:text-6xl font-light text-[#1A1A18] mt-2 mb-6">
             I nostri progetti
           </h1>
           <p className="text-[#888580] max-w-xl leading-relaxed">
-            Oltre 500 realizzazioni in tutta Italia. Ogni progetto è unico, ogni spazio ha una storia da raccontare.
+            Oltre 500 realizzazioni in tutta Italia. Ogni progetto è unico, ogni
+            spazio ha una storia da raccontare.
           </p>
         </div>
 
@@ -50,7 +58,18 @@ export default function Projects() {
             >
               <div className="relative overflow-hidden aspect-[4/3] bg-[#EAE7E0]">
                 <img
-                  src={p.image}
+                  src={resolveImageUrl(
+                    {
+                      src: p.image,
+                      publicId: p.imageCloudinaryPublicId ?? null,
+                    },
+                    {
+                      width: 1200,
+                      height: 900,
+                      objectFit: "cover",
+                      gravity: "auto",
+                    },
+                  )}
                   alt={p.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
@@ -59,9 +78,15 @@ export default function Projects() {
                 </span>
               </div>
               <div className="p-6">
-                <h3 className="font-display text-xl font-light text-[#1A1A18] mb-1">{p.title}</h3>
-                <p className="text-[#888580] text-xs mb-3">{p.location} · {p.year}</p>
-                <p className="text-[#4A4A46] text-sm leading-relaxed line-clamp-2">{p.description}</p>
+                <h3 className="font-display text-xl font-light text-[#1A1A18] mb-1">
+                  {p.title}
+                </h3>
+                <p className="text-[#888580] text-xs mb-3">
+                  {p.location} · {p.year}
+                </p>
+                <p className="text-[#4A4A46] text-sm leading-relaxed line-clamp-2">
+                  {p.description}
+                </p>
                 <span className="mt-4 inline-block text-[#1B4332] text-xs font-semibold tracking-wide group-hover:tracking-widest transition-all">
                   Vedi progetto →
                 </span>
@@ -71,5 +96,5 @@ export default function Projects() {
         </div>
       </div>
     </div>
-  );
+  )
 }

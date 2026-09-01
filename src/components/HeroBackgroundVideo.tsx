@@ -1,12 +1,16 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react"
 
 type Props = {
-  basePath?: string; // default "/videos/farcom-hero"
-  poster?: string;
-  fallbackImg?: string;
-  className?: string;
-  priority?: boolean; // true = carica SUBITO (per hero above the fold), false = lazy con IO
-};
+  basePath?: string // default "/videos/farcom-hero"
+
+  poster?: string
+
+  fallbackImg?: string
+
+  className?: string
+
+  priority?: boolean // true = carica SUBITO (per hero above the fold), false = lazy con IO
+}
 
 /**
  * HeroBackgroundVideo — qualità MIGLIORE possibile per hero section:
@@ -16,52 +20,98 @@ type Props = {
  * - decoding="async" → non blocca il paint
  * - CSS "image-rendering" unset (nessun upscaling aggressivo) e transition fluide
  */
+
 export default function HeroBackgroundVideo({
   basePath = "/videos/farcom-hero",
+
   poster = "https://images.unsplash.com/photo-1547609434-b732edfee020?w=1920&h=1080&fit=crop&auto=format",
+
   fallbackImg = "https://images.unsplash.com/photo-1547609434-b732edfee020?w=1920&h=1080&fit=crop&auto=format",
+
   className = "",
+
   priority = true,
 }: Props) {
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [showFallback, setShowFallback] = useState(false);
-  const ioRef = useRef<IntersectionObserver | null>(null);
-  const [loadVideo, setLoadVideo] = useState(priority);
+  const videoRef = useRef<HTMLVideoElement | null>(null)
+
+  const [showFallback, setShowFallback] = useState(false)
+
+  const ioRef = useRef<IntersectionObserver | null>(null)
+
+  const [loadVideo, setLoadVideo] = useState(priority)
 
   // Lazy load con IntersectionObserver (solo se priority=false)
+
   useEffect(() => {
-    if (priority) return;
-    if (loadVideo) return;
-    if (!videoRef.current) return;
+    if (priority) return
+
+    if (loadVideo) return
+
+    if (!videoRef.current) return
+
     if (typeof IntersectionObserver === "undefined") {
-      setLoadVideo(true);
-      return;
+      setLoadVideo(true)
+
+      return
     }
+
     ioRef.current = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {
           if (e.isIntersecting) {
-            setLoadVideo(true);
-            ioRef.current?.disconnect();
+            setLoadVideo(true)
+
+            ioRef.current?.disconnect()
           }
-        });
+        })
       },
-      { rootMargin: "300px 0px", threshold: 0.01 }
-    );
-    ioRef.current.observe(videoRef.current);
-    return () => ioRef.current?.disconnect();
-  }, [priority, loadVideo]);
+
+      { rootMargin: "300px 0px", threshold: 0.01 },
+    )
+
+    ioRef.current.observe(videoRef.current)
+
+    return () => ioRef.current?.disconnect()
+  }, [priority, loadVideo])
+
+  // Forza play immediato + auto-show quando priority=true
+  // (alcuni browser non fanno partire autoPlay senza esplicito .play() dopo la build)
+  useEffect(() => {
+    if (!priority) return
+    const v = videoRef.current
+    if (!v) return
+    // Mostriamo subito (non aspettiamo canplay) — se non carica passa al fallback
+    v.style.display = "block"
+    try {
+      const p = v.play()
+      if (p && typeof p.catch === "function") {
+        p.catch(() => {
+          // Autoplay bloccato dal browser (raro perché video muto),
+          // lasciamo che l'utente lo scrolli comunque e il poster si vede
+        })
+      }
+    } catch {
+      // non fatal
+    }
+  }, [priority])
 
   const onVideoError = () => {
-    setShowFallback(true);
-    if (videoRef.current) videoRef.current.style.display = "none";
-  };
+    setShowFallback(true)
+
+    if (videoRef.current) videoRef.current.style.display = "none"
+  }
 
   // NOTA: sorgenti ELENCATE SOLO se il file esiste davvero in public/videos.
+
   // Al browser piace una sorgente sola ben definita invece di 4 sorgenti inesistenti che generano 404.
+
   // src diretto sul tag <video> come fallback finale se anche <source> fallisce.
+
   return (
-    <div className={`${className} absolute inset-0 overflow-hidden bg-black`} aria-hidden="true">
+    <div
+      className={`${className} absolute inset-0 overflow-hidden bg-black`}
+      aria-hidden="true"
+    >
       {/* Fallback IMG se nessun video è supportato o errore MP4 */}
       <img
         src={fallbackImg}
@@ -90,6 +140,7 @@ export default function HeroBackgroundVideo({
           onError={onVideoError}
           style={{
             imageRendering: "auto",
+
             transform: "translateZ(0)",
           }}
         >
@@ -97,6 +148,7 @@ export default function HeroBackgroundVideo({
         </video>
       ) : (
         // Poster placeholder finché non entra in viewport (lazy)
+
         <img
           src={poster}
           alt=""
@@ -106,5 +158,5 @@ export default function HeroBackgroundVideo({
         />
       )}
     </div>
-  );
+  )
 }

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useLocation, Outlet } from "react-router-dom";
+import { useState } from "react"
+import { Link, useLocation, Outlet } from "react-router-dom"
 
 const nav = [
   { to: "/admin", label: "Dashboard", icon: "▦" },
@@ -7,17 +7,19 @@ const nav = [
   { to: "/admin/preventivi", label: "Preventivi", icon: "◱" },
   { to: "/admin/media", label: "Media", icon: "◧" },
   { to: "/admin/impostazioni", label: "Impostazioni", icon: "⚙" },
-];
+]
 
 export default function AdminLayout() {
-  const location = useLocation();
-  const [sideOpen, setSideOpen] = useState(true);
+  const location = useLocation()
+  const [sideOpen, setSideOpen] = useState(true)
 
   return (
     <div className="min-h-screen flex bg-[#F0EDE6]">
       {/* SIDEBAR */}
       <aside
-        className={`${sideOpen ? "w-56" : "w-14"} flex-shrink-0 bg-[#1A1A18] flex flex-col transition-all duration-200 fixed h-full z-40`}
+        className={`${
+          sideOpen ? "w-56" : "w-14"
+        } flex-shrink-0 bg-[#1A1A18] flex flex-col transition-all duration-200 fixed h-full z-40`}
       >
         <div className="h-14 flex items-center gap-3 px-4 border-b border-white/10">
           <span className="w-5 h-5 bg-[#B5965A] rounded-sm flex-shrink-0" />
@@ -30,7 +32,9 @@ export default function AdminLayout() {
 
         <nav className="flex-1 py-6 space-y-1 px-2">
           {nav.map((item) => {
-            const active = location.pathname === item.to || (item.to !== "/admin" && location.pathname.startsWith(item.to));
+            const active =
+              location.pathname === item.to ||
+              (item.to !== "/admin" && location.pathname.startsWith(item.to))
             return (
               <Link
                 key={item.to}
@@ -44,7 +48,7 @@ export default function AdminLayout() {
                 <span className="text-base flex-shrink-0">{item.icon}</span>
                 {sideOpen && <span>{item.label}</span>}
               </Link>
-            );
+            )
           })}
         </nav>
 
@@ -60,7 +64,11 @@ export default function AdminLayout() {
       </aside>
 
       {/* MAIN */}
-      <div className={`${sideOpen ? "ml-56" : "ml-14"} flex-1 flex flex-col transition-all duration-200`}>
+      <div
+        className={`${
+          sideOpen ? "ml-56" : "ml-14"
+        } flex-1 flex flex-col transition-all duration-200`}
+      >
         {/* Header */}
         <header className="h-14 bg-white border-b border-[#DDD9D0] flex items-center justify-between px-6 sticky top-0 z-30">
           <button
@@ -82,5 +90,5 @@ export default function AdminLayout() {
         </main>
       </div>
     </div>
-  );
+  )
 }
