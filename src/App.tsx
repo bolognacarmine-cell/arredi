@@ -24,16 +24,16 @@ export default function App() {
       <Navbar />
       <Routes>
         {/* PUBLIC */}
-        <Route path="/" element={<><Home /><Footer /></>} />
-        <Route path="/settori/:id" element={<><SectorPage /><Footer /></>} />
-        <Route path="/progetti" element={<><Projects /><Footer /></>} />
-        <Route path="/progetti/:id" element={<><ProjectDetail /><Footer /></>} />
-        <Route path="/preventivo" element={<><Quote /><Footer /></>} />
-        <Route path="/chi-siamo" element={<><About /><Footer /></>} />
-        <Route path="/contatti" element={<><Contacts /><Footer /></>} />
-        <Route path="/privacy" element={<><PrivacyPage /><Footer /></>} />
-        <Route path="/cookie" element={<><CookiePage /><Footer /></>} />
-        <Route path="/note-legali" element={<><LegalNotesPage /><Footer /></>} />
+        <Route path="/" element={<Home />} />
+        <Route path="/settori/:id" element={<SectorPage />} />
+        <Route path="/progetti" element={<Projects />} />
+        <Route path="/progetti/:id" element={<ProjectDetail />} />
+        <Route path="/preventivo" element={<Quote />} />
+        <Route path="/chi-siamo" element={<About />} />
+        <Route path="/contatti" element={<Contacts />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/cookie" element={<CookiePage />} />
+        <Route path="/note-legali" element={<LegalNotesPage />} />
 
         {/* ADMIN */}
         <Route path="/admin" element={<AdminLayout />}>
@@ -44,6 +44,7 @@ export default function App() {
           <Route path="impostazioni" element={<AdminSettings />} />
         </Route>
       </Routes>
+      <Footer />
     </BrowserRouter>
   )
 }
