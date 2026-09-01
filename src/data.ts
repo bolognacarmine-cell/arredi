@@ -25,6 +25,11 @@ export type Project = {
   materials: string
   status?: "bozza" | "in lavorazione" | "completato"
   featured?: boolean
+  seo?: {
+    metaTitle: string
+    metaDescription: string
+    slug: string
+  }
 }
 
 export const SECTORS: Sector[] = [

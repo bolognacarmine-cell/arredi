@@ -29,6 +29,9 @@ type FormState = {
   materiali: string
   tagText: string
   galleryText: string
+  seoMetaTitle: string
+  seoMetaDescription: string
+  seoSlug: string
 }
 
 const emptyForm: FormState = {
@@ -44,6 +47,9 @@ const emptyForm: FormState = {
   materiali: "",
   tagText: "",
   galleryText: "",
+  seoMetaTitle: "",
+  seoMetaDescription: "",
+  seoSlug: "",
 }
 
 function slugify(value: string) {
@@ -69,6 +75,9 @@ function projectToForm(project: ProjectRecord): FormState {
     materiali: project.materials,
     tagText: project.tags.join(", "),
     galleryText: project.gallery.join("\n"),
+    seoMetaTitle: project.seo?.metaTitle ?? "",
+    seoMetaDescription: project.seo?.metaDescription ?? "",
+    seoSlug: project.seo?.slug ?? "",
   }
 }
 
@@ -96,6 +105,11 @@ function toProjectRecord(
         ? [form.immagine.trim()]
         : ["https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=800&fit=crop"]
 
+  // SEO fields - auto-generate slug from title if empty
+  const seoSlug = form.seoSlug.trim() || slugify(form.titolo || "")
+  const seoMetaTitle = form.seoMetaTitle.trim() || form.titolo.trim()
+  const seoMetaDescription = form.seoMetaDescription.trim() || form.descrizione.trim().substring(0, 160)
+
   return {
     id: uniqueId,
     title: form.titolo.trim(),
@@ -114,6 +128,11 @@ function toProjectRecord(
     materials: form.materiali.trim() || "Materiali da definire",
     status: form.stato,
     featured: form.evidenza,
+    seo: {
+      metaTitle: seoMetaTitle,
+      metaDescription: seoMetaDescription,
+      slug: seoSlug,
+    },
   }
 }
 
@@ -126,6 +145,7 @@ export default function AdminProjects() {
   const [saved, setSaved] = useState(false)
   const [statusMessage, setStatusMessage] = useState("")
   const [statusTone, setStatusTone] = useState<"success" | "warning">("success")
+  const [draggedId, setDraggedId] = useState<string | null>(null)
   const [form, setForm] = useState<FormState>(emptyForm)
 
   const set = (key: keyof FormState, value: string | boolean) =>
@@ -137,7 +157,38 @@ export default function AdminProjects() {
 
   const showSavedState = () => {
     setSaved(true)
-    window.setTimeout(() => setSaved(false), 2000)
+    setTimeout(() => setSaved(false), 2000)
+  }
+
+  const handleDragStart = (e: React.DragEvent, id: string) => {
+    setDraggedId(id)
+    e.dataTransfer.effectAllowed = "move"
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = "move"
+  }
+
+  const handleDrop = (e: React.DragEvent, targetId: string) => {
+    e.preventDefault()
+    if (!draggedId || draggedId === targetId) return
+
+    const draggedIndex = filtered.findIndex((p) => p.id === draggedId)
+    const targetIndex = filtered.findIndex((p) => p.id === targetId)
+
+    if (draggedIndex === -1 || targetIndex === -1) return
+
+    const newProjects = [...projects]
+    const [draggedProject] = newProjects.splice(draggedIndex, 1)
+    newProjects.splice(targetIndex, 0, draggedProject)
+
+    saveProjects(newProjects)
+    setDraggedId(null)
+  }
+
+  const handleDragEnd = () => {
+    setDraggedId(null)
   }
 
   const showStatus = (message: string, tone: "success" | "warning") => {
@@ -376,6 +427,48 @@ export default function AdminProjects() {
               />
             </div>
 
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-medium text-[#4A4A46] mb-1.5">
+                SEO
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs text-[#888580] mb-1">Meta Title</label>
+                  <input
+                    type="text"
+                    value={form.seoMetaTitle}
+                    onChange={(e) => set("seoMetaTitle", e.target.value)}
+                    placeholder="Titolo per SEO (es: The Craft Barbershop - Farcom)"
+                    className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-[#888580] mb-1">Slug</label>
+                  <input
+                    type="text"
+                    value={form.seoSlug}
+                    onChange={(e) => set("seoSlug", e.target.value)}
+                    placeholder="URL slug (es: the-craft-barbershop)"
+                    className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
+                  />
+                </div>
+              </div>
+              <div className="mt-3">
+                <label className="block text-xs text-[#888580] mb-1">Meta Description</label>
+                <textarea
+                  rows={2}
+                  value={form.seoMetaDescription}
+                  onChange={(e) => set("seoMetaDescription", e.target.value)}
+                  placeholder="Descrizione per SEO (max 160 caratteri)"
+                  maxLength={160}
+                  className="w-full resize-none border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
+                />
+                <div className="text-xs text-[#888580] mt-1">
+                  {form.seoMetaDescription.length}/160
+                </div>
+              </div>
+            </div>
+
             <div className="sm:col-span-2 flex items-center gap-3">
               <input
                 type="checkbox"
@@ -467,7 +560,14 @@ export default function AdminProjects() {
             {filtered.map((project) => (
               <tr
                 key={project.id}
-                className="border-t border-[#EAE7E0] transition-colors hover:bg-[#F7F5F0]"
+                draggable
+                onDragStart={(e) => handleDragStart(e, project.id)}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, project.id)}
+                onDragEnd={handleDragEnd}
+                className={`border-t border-[#EAE7E0] transition-colors hover:bg-[#F7F5F0] cursor-move ${
+                  draggedId === project.id ? "opacity-50" : ""
+                }`}
               >
                 <td className="px-5 py-3">
                   <div className="flex items-center gap-3">
