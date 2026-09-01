@@ -1,115 +1,85 @@
 import { useState } from "react"
+import { useQuotes, saveQuotes, type QuoteRecord } from "../../quoteStore"
 
-const quotes = [
-  {
-    id: 1,
-    nome: "Luca Bernardi",
-    cognome: "Bernardi",
-    azienda: "Barberia Moderna",
-    settore: "Barbieri",
-    email: "luca.b@email.it",
-    telefono: "333 1234567",
-    data: "24/08/2025",
-    stato: "nuovo",
-    metratura: "45",
-    arredo: "Banco reception, 3 postazioni taglio, zona attesa",
-    messaggio:
-      "Sto aprendo un nuovo barbershop a Milano, in zona Navigli. Ho già un locale di circa 45mq. Ho bisogno di un'idea completa.",
-  },
-  {
-    id: 2,
-    nome: "Marta Vitali",
-    cognome: "Vitali",
-    azienda: "Studio V Architettura",
-    settore: "Uffici",
-    email: "m.vitali@studiov.it",
-    telefono: "02 9876543",
-    data: "23/08/2025",
-    stato: "contattato",
-    metratura: "120",
-    arredo: "Reception, sala riunioni, 6 postazioni",
-    messaggio:
-      "Nuovo ufficio al quarto piano, edificio ristrutturato. Vogliamo uno stile minimal e funzionale.",
-  },
-  {
-    id: 3,
-    nome: "Roberto Greco",
-    cognome: "Greco",
-    azienda: "Boutique Greco",
-    settore: "Negozi",
-    email: "r.greco@boutique.it",
-    telefono: "055 7654321",
-    data: "21/08/2025",
-    stato: "contattato",
-    metratura: "60",
-    arredo: "Espositori, banco cassa, camerini",
-    messaggio:
-      "Abbigliamento donna luxury, Firenze centro storico. Budget non è il primo criterio.",
-  },
-  {
-    id: 4,
-    nome: "Istituto Pacinotti",
-    cognome: "",
-    azienda: "Istituto Tecnico Pacinotti",
-    settore: "Scuole",
-    email: "segreteria@pacinotti.edu.it",
-    telefono: "051 456789",
-    data: "19/08/2025",
-    stato: "chiuso",
-    metratura: "400",
-    arredo: "20 aule, mensa, biblioteca",
-    messaggio:
-      "Ristrutturazione completa. Gara d'appalto vinta. Procedere con la progettazione.",
-  },
-  {
-    id: 5,
-    nome: "Federica Amato",
-    cognome: "Amato",
-    azienda: "Amato Hair Studio",
-    settore: "Barbieri",
-    email: "f.amato@hair.it",
-    telefono: "349 8765432",
-    data: "17/08/2025",
-    stato: "nuovo",
-    metratura: "30",
-    arredo: "3 postazioni, banco shampoo, reception",
-    messaggio: "",
-  },
-]
-
-const statusColor: Record<string, string> = {
+const statusColor: Record<QuoteRecord["stato"], string> = {
   nuovo: "bg-blue-100 text-blue-700",
   contattato: "bg-amber-100 text-amber-700",
   chiuso: "bg-green-100 text-green-700",
 }
 
-const statuses = ["nuovo", "contattato", "chiuso"]
+const statuses: QuoteRecord["stato"][] = ["nuovo", "contattato", "chiuso"]
 
 export default function AdminQuotes() {
-  const [filter, setFilter] = useState("all")
-  const [selected, setSelected] = useState<typeof quotes[0] | null>(null)
+  const quotes = useQuotes()
+  const [filter, setFilter] = useState<QuoteRecord["stato"] | "all">("all")
+  const [selectedQuote, setSelectedQuote] = useState<QuoteRecord | null>(null)
   const [nota, setNota] = useState("")
 
   const filtered =
     filter === "all" ? quotes : quotes.filter((q) => q.stato === filter)
 
+  const handleStatusChange = (quoteId: number, newStatus: QuoteRecord["stato"]) => {
+    const updatedQuotes = quotes.map((q) =>
+      q.id === quoteId ? { ...q, stato: newStatus } : q
+    )
+    saveQuotes(updatedQuotes)
+  }
+
+  const handleExportCSV = () => {
+    const headers = ["ID", "Nome", "Cognome", "Azienda", "Settore", "Email", "Telefono", "Data", "Stato", "Metratura", "Arredo", "Messaggio"]
+    const rows = filtered.map((q) => [
+      q.id,
+      q.nome,
+      q.cognome,
+      q.azienda,
+      q.settore,
+      q.email,
+      q.telefono,
+      q.data,
+      q.stato,
+      q.metratura,
+      q.arredo,
+      q.messaggio,
+    ])
+    
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(",")),
+    ].join("\n")
+    
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement("a")
+    link.setAttribute("href", url)
+    link.setAttribute("download", `preventivi_${new Date().toISOString().split("T")[0]}.csv`)
+    link.click()
+  }
+
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="font-display text-3xl font-light text-[#1A1A18]">
-          Preventivi & Lead
-        </h1>
-        <p className="text-[#888580] text-sm mt-0.5">
-          {quotes.length} richieste totali
-        </p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="font-display text-3xl font-light text-[#1A1A18]">
+            Preventivi & Lead
+          </h1>
+          <p className="text-[#888580] text-sm mt-0.5">
+            {quotes.length} richieste totali
+          </p>
+        </div>
+        <button
+          onClick={handleExportCSV}
+          className="border border-[#DDD9D0] px-5 py-2.5 text-sm font-medium text-[#4A4A46] transition-colors hover:border-[#1B4332] hover:text-[#1B4332]"
+        >
+          Export CSV
+        </button>
       </div>
 
       {/* Filter tabs */}
       <div className="flex gap-1 mb-5">
-        {[
+        {([
           ["all", "Tutti"],
           ...statuses.map((s) => [s, s.charAt(0).toUpperCase() + s.slice(1)]),
-        ].map(([k, l]) => (
+        ] as const).map(([k, l]) => (
           <button
             key={k}
             onClick={() => setFilter(k)}
@@ -125,7 +95,7 @@ export default function AdminQuotes() {
       </div>
 
       <div
-        className={`grid gap-5 ${selected ? "lg:grid-cols-[1fr_360px]" : ""}`}
+        className={`grid gap-5 ${selectedQuoteQuote ? "lg:grid-cols-[1fr_360px]" : ""}`}
       >
         {/* Table */}
         <div className="bg-white border border-[#DDD9D0] overflow-hidden">
@@ -147,9 +117,9 @@ export default function AdminQuotes() {
               {filtered.map((q) => (
                 <tr
                   key={q.id}
-                  onClick={() => setSelected(q)}
+                  onClick={() => setSelectedQuote(q)}
                   className={`border-t border-[#EAE7E0] cursor-pointer transition-colors ${
-                    selected?.id === q.id
+                    selectedQuote?.id === q.id
                       ? "bg-[#EAE7E0]"
                       : "hover:bg-[#F7F5F0]"
                   }`}
@@ -177,7 +147,7 @@ export default function AdminQuotes() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
-                        setSelected(q)
+                        setSelectedQuote(q)
                       }}
                       className="text-xs text-[#1B4332] hover:underline"
                     >
@@ -191,14 +161,14 @@ export default function AdminQuotes() {
         </div>
 
         {/* Detail panel */}
-        {selected && (
+        {selectedQuote && (
           <div className="bg-white border border-[#DDD9D0] p-6 h-fit">
             <div className="flex items-center justify-between mb-5">
               <h2 className="font-display text-lg font-light text-[#1A1A18]">
-                {selected.nome} {selected.cognome}
+                {selectedQuote.nome} {selectedQuote.cognome}
               </h2>
               <button
-                onClick={() => setSelected(null)}
+                onClick={() => setSelectedQuote(null)}
                 className="text-[#888580] text-xs hover:text-[#1A1A18]"
               >
                 ✕
@@ -207,16 +177,16 @@ export default function AdminQuotes() {
 
             <dl className="space-y-3 text-sm mb-5">
               {[
-                ["Azienda", selected.azienda || "—"],
-                ["Settore", selected.settore],
-                ["Email", selected.email],
-                ["Telefono", selected.telefono],
-                ["Data richiesta", selected.data],
+                ["Azienda", selectedQuote.azienda || "—"],
+                ["Settore", selectedQuote.settore],
+                ["Email", selectedQuote.email],
+                ["Telefono", selectedQuote.telefono],
+                ["Data richiesta", selectedQuote.data],
                 [
                   "Metratura",
-                  selected.metratura ? `${selected.metratura} m²` : "—",
+                  selectedQuote.metratura ? `${selectedQuote.metratura} m²` : "—",
                 ],
-                ["Arredi richiesti", selected.arredo || "—"],
+                ["Arredi richiesti", selectedQuote.arredo || "—"],
               ].map(([l, v]) => (
                 <div
                   key={l as string}
@@ -230,9 +200,9 @@ export default function AdminQuotes() {
               ))}
             </dl>
 
-            {selected.messaggio && (
+            {selectedQuote.messaggio && (
               <div className="bg-[#F7F5F0] p-4 mb-5 text-sm text-[#4A4A46] leading-relaxed">
-                "{selected.messaggio}"
+                "{selectedQuote.messaggio}"
               </div>
             )}
 
@@ -244,8 +214,9 @@ export default function AdminQuotes() {
                 {statuses.map((s) => (
                   <button
                     key={s}
+                    onClick={() => handleStatusChange(selectedQuote.id, s)}
                     className={`px-3 py-1.5 text-xs font-medium border transition-colors ${
-                      selected.stato === s
+                      selectedQuote.stato === s
                         ? "border-[#1B4332] bg-[#1B4332] text-white"
                         : "border-[#DDD9D0] text-[#4A4A46] hover:border-[#1B4332]"
                     }`}
