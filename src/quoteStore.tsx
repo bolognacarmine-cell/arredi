@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import * as quotesApi from "./api/quotesApi"
 
 export type QuoteRecord = {
   id: number
@@ -135,6 +136,38 @@ export function useQuotes() {
       window.removeEventListener(QUOTES_EVENT, syncQuotes)
       window.removeEventListener("storage", syncQuotes)
     }
+  }, [])
+
+  // Load quotes from API on mount
+  useEffect(() => {
+    async function loadQuotesFromApi() {
+      try {
+        const apiQuotes = await quotesApi.getQuotes()
+        // Convert API quotes to local format
+        const convertedQuotes: QuoteRecord[] = apiQuotes.map((q, index) => ({
+          id: index + 1,
+          nome: q.customerName.split(" ")[0] || "",
+          cognome: q.customerName.split(" ").slice(1).join(" ") || "",
+          azienda: "",
+          settore: "",
+          email: q.customerEmail,
+          telefono: q.customerPhone || "",
+          data: new Date(q.createdAt).toLocaleDateString("it-IT"),
+          stato: q.status === "confirmed" ? "contattato" : q.status === "cancelled" ? "chiuso" : "nuovo",
+          metratura: "",
+          arredo: q.items.map(item => item.productName).join(", "),
+          messaggio: q.notes || "",
+          note: q.notes,
+        }))
+        setQuotes(convertedQuotes.length > 0 ? convertedQuotes : defaultQuotes)
+      } catch (err) {
+        console.error("Error loading quotes from API:", err)
+        // Fallback to localStorage if API fails
+        setQuotes(readQuotes())
+      }
+    }
+
+    loadQuotesFromApi()
   }, [])
 
   return quotes

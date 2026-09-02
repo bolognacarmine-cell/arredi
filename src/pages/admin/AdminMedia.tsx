@@ -10,13 +10,10 @@ import {
 } from "../../lib/cloudinary"
 import {
   getPendingProjectImageIds,
-  getRecentUploads,
   markPendingForNextNewProject,
-  saveRecentUpload,
-  saveRecentUploads,
-  type RecentUpload,
   type UploadCategory,
 } from "../../lib/mediaRecent"
+import { getMedia, createMedia, type Media } from "../../api/mediaApi"
 
 const categoryConfig: Record<
   UploadCategory,
@@ -170,9 +167,9 @@ async function uploadToCloudinary(
 }
 
 export default function AdminMedia() {
-  const projects = useProjects()
+  const { projects } = useProjects() as { projects: any[] }
   const allImages = projects.flatMap((p) =>
-    p.gallery.map((url, i) => ({ url, project: p.title, id: `${p.id}-${i}` })),
+    p.gallery.map((url: string, i: number) => ({ url, project: p.title, id: `${p.id}-${i}` })),
   )
   const runningOnLocalhostDev =
     typeof window !== "undefined" &&
@@ -203,7 +200,7 @@ export default function AdminMedia() {
     message: string
     backupPath?: string | null
   } | null>(null)
-  const [recentUploads, setRecentUploads] = useState<RecentUpload[]>([])
+  const [recentUploads, setRecentUploads] = useState<Media[]>([])
   const [recentFilter, setRecentFilter] = useState<UploadCategory | "all">("all")
 
   const mainFileInputRef = useRef<HTMLInputElement | null>(null)
@@ -218,35 +215,44 @@ export default function AdminMedia() {
   const everythingReady = file && configured && presetOk && !busy
   const [lastUploadIdRef, setLastUploadIdRef] = useState<string | null>(null)
 
-  // Carica upload recenti all'avvio
+  // Carica upload recenti all'avvio dall'API
   useEffect(() => {
-    setRecentUploads(getRecentUploads())
+    async function loadRecentUploads() {
+      try {
+        const media = await getMedia()
+        setRecentUploads(media)
+      } catch (error) {
+        console.error("Error loading recent uploads:", error)
+      }
+    }
+    loadRecentUploads()
   }, [])
 
-  // Salva upload quando completato con successo
+  // Salva upload nel database quando completato con successo
   useEffect(() => {
-    if (lastResult && !error) {
-      const uploadId = `${lastResult.public_id}-${Date.now()}`
-      const newUpload: RecentUpload = {
-        id: uploadId,
-        publicId: lastResult.public_id,
-        secureUrl: lastResult.secure_url,
-        category,
-        timestamp: Date.now(),
-        width: lastResult.width,
-        height: lastResult.height,
-        titleHint: title.trim() || undefined,
-        targetFieldHint:
-          autoAssign.collection === "project" && autoAssign.field === "gallery"
-            ? "gallery"
-            : autoAssign.collection === "project"
-              ? "cover"
-              : undefined,
+    async function saveToDatabase() {
+      if (lastResult && !error) {
+        try {
+          const newMedia = await createMedia({
+            cloudinaryUrl: lastResult.secure_url,
+            cloudinaryPublicId: lastResult.public_id,
+            title: title.trim() || undefined,
+            category,
+            width: lastResult.width,
+            height: lastResult.height,
+            format: lastResult.format,
+            bytes: lastResult.bytes,
+          })
+          // Refresh recent uploads
+          const media = await getMedia()
+          setRecentUploads(media)
+          setLastUploadIdRef(newMedia._id)
+        } catch (error) {
+          console.error("Error saving media to database:", error)
+        }
       }
-      saveRecentUpload(newUpload)
-      setRecentUploads(getRecentUploads())
-      setLastUploadIdRef(uploadId)
     }
+    saveToDatabase()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastResult, error])
   useEffect(() => {
@@ -497,32 +503,12 @@ export default function AdminMedia() {
         title || file.name,
         setProgress,
       )
-      const uploadId = `${result.public_id}-${Date.now()}`
-      const targetHint =
-        autoAssign.collection === "project" && autoAssign.field === "gallery"
-          ? "gallery"
-          : autoAssign.collection === "project"
-            ? "cover"
-            : undefined
-      const newUploadRec: RecentUpload = {
-        id: uploadId,
-        publicId: result.public_id,
-        secureUrl: result.secure_url,
-        category,
-        timestamp: Date.now(),
-        width: result.width,
-        height: result.height,
-        titleHint: title.trim() || undefined,
-        targetFieldHint: targetHint,
-      }
-      saveRecentUpload(newUploadRec)
-      setRecentUploads(getRecentUploads())
       setLastResult(result)
       setFile(null)
       setTitle("")
       // — Se l'utente vuole auto-assegnare → aggiorna data.ts in automatico
       if (autoAssign.enabled) {
-        const assign = await handleAssignToData(result.public_id, uploadId)
+        const assign = await handleAssignToData(result.public_id, result.public_id)
         if (assign.ok && !assign.skipped) {
           if (autoAssign.id === NEW_PROJECT_ID) {
             const what =
@@ -1283,7 +1269,6 @@ export default function AdminMedia() {
             {recentUploads.length > 0 && (
               <button
                 onClick={() => {
-                  clearRecentUploads()
                   setRecentUploads([])
                 }}
                 className="text-xs px-3 py-1 rounded-full bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
@@ -1304,12 +1289,12 @@ export default function AdminMedia() {
               .filter((u) => recentFilter === "all" || u.category === recentFilter)
               .map((upload) => (
                 <div
-                  key={upload.id}
+                  key={upload._id}
                   className="group relative bg-[#EAE7E0] aspect-square overflow-hidden border border-[#DDD9D0] hover:border-[#1B4332] transition-colors"
                 >
                   <img
-                    src={upload.secureUrl}
-                    alt={upload.publicId}
+                    src={upload.cloudinaryUrl}
+                    alt={upload.cloudinaryPublicId}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-end p-2">
@@ -1322,7 +1307,7 @@ export default function AdminMedia() {
                       </p>
                       <button
                         onClick={() => {
-                          const ok = copyToClipboard(upload.secureUrl)
+                          const ok = copyToClipboard(upload.cloudinaryUrl)
                           showToast(ok ? "📋 URL copiato!" : "Copia fallita", ok ? "ok" : "err")
                         }}
                         className="mt-1 w-full text-[10px] bg-white/20 hover:bg-white/30 text-white px-2 py-1 rounded transition-colors"

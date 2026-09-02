@@ -1,8 +1,10 @@
-// Mock API prodotti + offerte showroom (persistenza localStorage, activitySector + tipologie per settore)
+// API prodotti + offerte showroom (API server + fallback localStorage)
 import { useEffect, useState } from "react"
 import type { Product, Offer } from "../types/showroom"
 import type { ActivitySector } from "../constants/showroomSectors"
 import { SECTORS, furnitureTypesFor } from "../constants/showroomSectors"
+import * as productsApi from "../api/productsApi"
+import * as offersApi from "../api/offersApi"
 
 const P_KEY = "farcom-showroom-products-v2"
 const O_KEY = "farcom-showroom-offers-v2"
@@ -361,95 +363,163 @@ const delay = <T>(v: T, min = 120, max = 500) =>
   )
 
 export async function getProducts(): Promise<Product[]> {
-  return delay(read<Product[]>(P_KEY, seedProducts))
+  try {
+    return await productsApi.getProducts()
+  } catch (error) {
+    console.error("Error fetching products from API, falling back to localStorage:", error)
+    return read<Product[]>(P_KEY, seedProducts)
+  }
 }
 export async function getProductById(id: string): Promise<Product | null> {
-  return delay(read<Product[]>(P_KEY, seedProducts).find((p) => p.id === id) ?? null)
+  try {
+    return await productsApi.getProductById(id)
+  } catch (error) {
+    console.error("Error fetching product from API, falling back to localStorage:", error)
+    return read<Product[]>(P_KEY, seedProducts).find((p) => p.id === id) ?? null
+  }
 }
 export async function getProductBySlug(slug: string): Promise<Product | null> {
-  return delay(
-    read<Product[]>(P_KEY, seedProducts).find((p) => p.slug === slug) ?? null,
-  )
+  try {
+    return await productsApi.getProductBySlug(slug)
+  } catch (error) {
+    console.error("Error fetching product from API, falling back to localStorage:", error)
+    return read<Product[]>(P_KEY, seedProducts).find((p) => p.slug === slug) ?? null
+  }
 }
 export async function createProduct(
   data: Omit<Product, "id" | "createdAt" | "updatedAt" | "slug"> & {
     slug?: string
   },
 ): Promise<Product> {
-  const list = read<Product[]>(P_KEY, seedProducts)
-  const p: Product = {
-    ...data,
-    id: "p" + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-3),
-    slug: data.slug || slugify(data.name) + "-" + Math.random().toString(36).slice(2, 6),
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
+  try {
+    const p: Product = {
+      ...data,
+      id: "p" + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-3),
+      slug: data.slug || slugify(data.name) + "-" + Math.random().toString(36).slice(2, 6),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+    return await productsApi.createProduct(p)
+  } catch (error) {
+    console.error("Error creating product via API, falling back to localStorage:", error)
+    const list = read<Product[]>(P_KEY, seedProducts)
+    const p: Product = {
+      ...data,
+      id: "p" + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-3),
+      slug: data.slug || slugify(data.name) + "-" + Math.random().toString(36).slice(2, 6),
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    }
+    const next = [p, ...list]
+    write(P_KEY, next)
+    return delay(p)
   }
-  const next = [p, ...list]
-  write(P_KEY, next)
-  return delay(p)
 }
 export async function updateProduct(
   id: string,
   patch: Partial<Omit<Product, "id" | "createdAt" | "updatedAt">>,
 ): Promise<Product | null> {
-  const list = read<Product[]>(P_KEY, seedProducts)
-  const i = list.findIndex((p) => p.id === id)
-  if (i === -1) return delay(null)
-  const updated: Product = {
-    ...list[i],
-    ...patch,
-    slug: patch.name ? slugify(patch.name) + "-" + list[i].id.slice(-3) : list[i].slug,
-    updatedAt: Date.now(),
+  try {
+    return await productsApi.updateProduct(id, patch)
+  } catch (error) {
+    console.error("Error updating product via API, falling back to localStorage:", error)
+    const list = read<Product[]>(P_KEY, seedProducts)
+    const i = list.findIndex((p) => p.id === id)
+    if (i === -1) return delay(null)
+    const updated: Product = {
+      ...list[i],
+      ...patch,
+      slug: patch.name ? slugify(patch.name) + "-" + list[i].id.slice(-3) : list[i].slug,
+      updatedAt: Date.now(),
+    }
+    list[i] = updated
+    write(P_KEY, list)
+    return delay(updated)
   }
-  list[i] = updated
-  write(P_KEY, list)
-  return delay(updated)
 }
 export async function deleteProduct(id: string): Promise<boolean> {
-  const list = read<Product[]>(P_KEY, seedProducts)
-  const before = list.length
-  const next = list.filter((p) => p.id !== id)
-  if (next.length < before) write(P_KEY, next)
-  return delay(next.length < before)
+  try {
+    await productsApi.deleteProduct(id)
+    return true
+  } catch (error) {
+    console.error("Error deleting product via API, falling back to localStorage:", error)
+    const list = read<Product[]>(P_KEY, seedProducts)
+    const before = list.length
+    const next = list.filter((p) => p.id !== id)
+    if (next.length < before) write(P_KEY, next)
+    return delay(next.length < before)
+  }
 }
 
 export async function getOffers(): Promise<Offer[]> {
-  return delay(read<Offer[]>(O_KEY, seedOffers))
+  try {
+    return await offersApi.getOffers()
+  } catch (error) {
+    console.error("Error fetching offers from API, falling back to localStorage:", error)
+    return read<Offer[]>(O_KEY, seedOffers)
+  }
 }
 export async function getOfferById(id: string): Promise<Offer | null> {
-  return delay(read<Offer[]>(O_KEY, seedOffers).find((o) => o.id === id) ?? null)
+  try {
+    return await offersApi.getOfferById(id)
+  } catch (error) {
+    console.error("Error fetching offer from API, falling back to localStorage:", error)
+    return read<Offer[]>(O_KEY, seedOffers).find((o) => o.id === id) ?? null
+  }
 }
 export async function createOffer(
   data: Omit<Offer, "id" | "createdAt" | "updatedAt">,
 ): Promise<Offer> {
-  const list = read<Offer[]>(O_KEY, seedOffers)
-  const o: Offer = {
-    ...data,
-    id: "o" + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-3),
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
+  try {
+    const o: Offer = {
+      ...data,
+      id: "o" + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-3),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+    return await offersApi.createOffer(o)
+  } catch (error) {
+    console.error("Error creating offer via API, falling back to localStorage:", error)
+    const list = read<Offer[]>(O_KEY, seedOffers)
+    const o: Offer = {
+      ...data,
+      id: "o" + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-3),
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    }
+    write(O_KEY, [o, ...list])
+    return delay(o)
   }
-  write(O_KEY, [o, ...list])
-  return delay(o)
 }
 export async function updateOffer(
   id: string,
   patch: Partial<Omit<Offer, "id" | "createdAt" | "updatedAt">>,
 ): Promise<Offer | null> {
-  const list = read<Offer[]>(O_KEY, seedOffers)
-  const i = list.findIndex((o) => o.id === id)
-  if (i === -1) return delay(null)
-  const updated: Offer = { ...list[i], ...patch, updatedAt: Date.now() }
-  list[i] = updated
-  write(O_KEY, list)
-  return delay(updated)
+  try {
+    return await offersApi.updateOffer(id, patch)
+  } catch (error) {
+    console.error("Error updating offer via API, falling back to localStorage:", error)
+    const list = read<Offer[]>(O_KEY, seedOffers)
+    const i = list.findIndex((o) => o.id === id)
+    if (i === -1) return delay(null)
+    const updated: Offer = { ...list[i], ...patch, updatedAt: Date.now() }
+    list[i] = updated
+    write(O_KEY, list)
+    return delay(updated)
+  }
 }
 export async function deleteOffer(id: string): Promise<boolean> {
-  const list = read<Offer[]>(O_KEY, seedOffers)
-  const before = list.length
-  const next = list.filter((o) => o.id !== id)
-  if (next.length < before) write(O_KEY, next)
-  return delay(next.length < before)
+  try {
+    await offersApi.deleteOffer(id)
+    return true
+  } catch (error) {
+    console.error("Error deleting offer via API, falling back to localStorage:", error)
+    const list = read<Offer[]>(O_KEY, seedOffers)
+    const before = list.length
+    const next = list.filter((o) => o.id !== id)
+    if (next.length < before) write(O_KEY, next)
+    return delay(next.length < before)
+  }
 }
 
 export interface EffectivePrice {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { PROJECTS, type Project } from "./data"
+import { getProjects as getProjectsApi, type Project as ApiProject } from "./api/projectsApi"
 
 export type ProjectRecord = Project & {
   status: "bozza" | "in lavorazione" | "completato"
@@ -10,7 +11,7 @@ const PROJECTS_STORAGE_KEY = "farcom-projects"
 const PROJECTS_EVENT = "farcom-projects-updated"
 const PROJECTS_API_PATH = "/__admin/projects"
 
-function normalizeProject(project: Project, index: number): ProjectRecord {
+function normalizeProject(project: Project | ApiProject, index: number): ProjectRecord {
   return {
     ...project,
     status: project.status ?? "completato",
@@ -20,7 +21,7 @@ function normalizeProject(project: Project, index: number): ProjectRecord {
 
 export const defaultProjects: ProjectRecord[] = PROJECTS.map(normalizeProject)
 
-function normalizeProjects(projects: Project[]): ProjectRecord[] {
+function normalizeProjects(projects: (Project | ApiProject)[]): ProjectRecord[] {
   return projects.map(normalizeProject)
 }
 
@@ -88,6 +89,22 @@ export function useProjects() {
       window.removeEventListener(PROJECTS_EVENT, syncProjects)
       window.removeEventListener("storage", syncProjects)
     }
+  }, [])
+
+  // Load projects from API on mount
+  useEffect(() => {
+    async function loadProjectsFromApi() {
+      try {
+        const apiProjects = await getProjectsApi()
+        setProjects(normalizeProjects(apiProjects))
+      } catch (err) {
+        console.error("Error loading projects from API:", err)
+        // Fallback to localStorage if API fails
+        setProjects(readProjects())
+      }
+    }
+
+    loadProjectsFromApi()
   }, [])
 
   return projects

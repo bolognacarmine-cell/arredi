@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import persistedSiteSettings from "./siteSettings.json"
+import * as siteConfigApi from "./api/siteConfigApi"
 
 export type SiteSettings = {
   brandName: string
@@ -151,6 +152,47 @@ export function useSiteSettings() {
       window.removeEventListener(SITE_SETTINGS_EVENT, syncSettings)
       window.removeEventListener("storage", syncSettings)
     }
+  }, [])
+
+  // Load site settings from API on mount
+  useEffect(() => {
+    async function loadSiteSettingsFromApi() {
+      try {
+        const apiConfig = await siteConfigApi.getSiteConfig()
+        // Convert API config to local format
+        const convertedSettings: SiteSettings = {
+          brandName: apiConfig.companyName,
+          legalName: apiConfig.companyName,
+          logoAlt: apiConfig.companyName,
+          claim: fallbackSiteSettings.claim,
+          footerIntro: fallbackSiteSettings.footerIntro,
+          footerDescription: fallbackSiteSettings.footerDescription,
+          footerBadges: fallbackSiteSettings.footerBadges,
+          addressLine1: apiConfig.address || fallbackSiteSettings.addressLine1,
+          addressLine2: fallbackSiteSettings.addressLine2,
+          hoursWeek: fallbackSiteSettings.hoursWeek,
+          hoursExtra: fallbackSiteSettings.hoursExtra,
+          phone: apiConfig.contactPhone,
+          phoneHref: `tel:${apiConfig.contactPhone}`,
+          whatsapp: fallbackSiteSettings.whatsapp,
+          whatsappHref: fallbackSiteSettings.whatsappHref,
+          whatsappLabel: fallbackSiteSettings.whatsappLabel,
+          email: apiConfig.contactEmail,
+          emailHref: `mailto:${apiConfig.contactEmail}`,
+          instagramHref: apiConfig.socialLinks?.instagram || fallbackSiteSettings.instagramHref,
+          facebookHref: apiConfig.socialLinks?.facebook || fallbackSiteSettings.facebookHref,
+          mapEmbedSrc: fallbackSiteSettings.mapEmbedSrc,
+          mapTitle: fallbackSiteSettings.mapTitle,
+        }
+        setSettings(normalizeSiteSettings(convertedSettings))
+      } catch (err) {
+        console.error("Error loading site settings from API:", err)
+        // Fallback to localStorage if API fails
+        setSettings(readSiteSettings())
+      }
+    }
+
+    loadSiteSettingsFromApi()
   }, [])
 
   return settings
