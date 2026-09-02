@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { Quote } from '../models/Quote';
+import { Quote } from '../models/Quote.js';
 
 const router = Router();
 
