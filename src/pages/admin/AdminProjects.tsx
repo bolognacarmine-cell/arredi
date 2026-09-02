@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom"
 import { SECTORS } from "../../data"
 import {
@@ -10,6 +10,12 @@ import {
   type ProjectRecord,
 } from "../../projectStore"
 import Loading from "../../components/Loading"
+import {
+  getRecentUploads,
+  takePendingProjectImages,
+  type RecentUpload,
+} from "../../lib/mediaRecent"
+import { resolveImageUrl } from "../../lib/cloudinary"
 
 const statusColor: Record<ProjectRecord["status"], string> = {
   "in lavorazione": "bg-amber-100 text-amber-700",
@@ -171,12 +177,36 @@ export default function AdminProjects() {
   const [form, setForm] = useState<FormState>(emptyForm)
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [autoLoadedImagesCount, setAutoLoadedImagesCount] = useState<number>(0)
+  const [showMediaPicker, setShowMediaPicker] = useState<
+    "cover" | "gallery" | null
+  >(null)
+  const [recentUploads, setRecentUploads] = useState<RecentUpload[]>([])
+  const [galleryDragIndex, setGalleryDragIndex] = useState<number | null>(null)
 
   useEffect(() => {
     const isNuovo = location.pathname === "/admin/progetti/nuovo"
     if (isNuovo) {
+      const pending = takePendingProjectImages()
+      const gallery =
+        pending.gallery.length > 0
+          ? pending.gallery.map((g) => g.secureUrl).join("\n")
+          : ""
+      const galleryPids =
+        pending.gallery.length > 0
+          ? pending.gallery.map((g) => g.publicId).join("\n")
+          : ""
+      const loadedCount =
+        (pending.cover ? 1 : 0) + pending.gallery.length
+      setAutoLoadedImagesCount(loadedCount)
       setEditingId(null)
-      setForm(emptyForm)
+      setForm({
+        ...emptyForm,
+        immagine: pending.cover?.secureUrl ?? "",
+        imageCloudinaryPublicId: pending.cover?.publicId ?? "",
+        galleryText: gallery,
+        galleryCloudinaryPublicIdsText: galleryPids,
+      })
       setShowForm(true)
     } else if (routeId) {
       const existing = projects.find((project) => project.id === routeId)
@@ -185,15 +215,90 @@ export default function AdminProjects() {
         setForm(projectToForm(existing))
         setShowForm(true)
       }
+      setAutoLoadedImagesCount(0)
     } else {
       setShowForm(false)
       setEditingId(null)
       setForm(emptyForm)
+      setAutoLoadedImagesCount(0)
     }
   }, [location.pathname, routeId, projects])
 
+  useEffect(() => {
+    if (showForm || showMediaPicker) {
+      setRecentUploads(getRecentUploads())
+    }
+  }, [showForm, showMediaPicker])
+
   const set = (key: keyof FormState, value: string | boolean) =>
     setForm((current) => ({ ...current, [key]: value }))
+
+  const galleryItems = useMemo<
+    Array<{ url: string; publicId: string }>
+  >(() => {
+    const urls = form.galleryText
+      .split("\n")
+      .map((s) => s.trim())
+      .filter(Boolean)
+    const pids = form.galleryCloudinaryPublicIdsText
+      .split("\n")
+      .map((s) => s.trim())
+      .filter(Boolean)
+    return urls.map((url, i) => ({ url, publicId: pids[i] ?? "" }))
+  }, [form.galleryText, form.galleryCloudinaryPublicIdsText])
+
+  const writeGalleryItems = (
+    items: Array<{ url: string; publicId: string }>,
+  ) => {
+    setForm((current) => ({
+      ...current,
+      galleryText: items.map((it) => it.url).join("\n"),
+      galleryCloudinaryPublicIdsText: items
+        .map((it) => it.publicId)
+        .join("\n"),
+    }))
+  }
+
+  const pickAsCover = (upload: RecentUpload) => {
+    setForm((current) => ({
+      ...current,
+      immagine: upload.secureUrl,
+      imageCloudinaryPublicId: upload.publicId,
+    }))
+    setShowMediaPicker(null)
+  }
+
+  const addToGallery = (upload: RecentUpload) => {
+    const next = [
+      ...galleryItems,
+      { url: upload.secureUrl, publicId: upload.publicId },
+    ]
+    writeGalleryItems(next)
+  }
+
+  const removeFromGallery = (index: number) => {
+    const next = galleryItems.filter((_, i) => i !== index)
+    writeGalleryItems(next)
+  }
+
+  const moveInGallery = (from: number, to: number) => {
+    if (from === to || from < 0 || to < 0) return
+    if (to >= galleryItems.length) return
+    const next = [...galleryItems]
+    const [item] = next.splice(from, 1)
+    next.splice(to, 0, item)
+    writeGalleryItems(next)
+  }
+
+  const setCoverFromGalleryIndex = (index: number) => {
+    const item = galleryItems[index]
+    if (!item) return
+    setForm((current) => ({
+      ...current,
+      immagine: item.url,
+      imageCloudinaryPublicId: item.publicId,
+    }))
+  }
 
   const filtered = projects
     .filter((project) => filter === "all" || project.sectorId === filter)
@@ -370,24 +475,32 @@ export default function AdminProjects() {
 
       {showForm && (
         <div className="mb-8 border border-[#DDD9D0] bg-white p-6 animate-fade-in">
-          <div className="mb-5 flex items-center justify-between">
+          <div className="mb-5 flex items-center justify-between gap-3 flex-wrap">
             <h2 className="font-display text-xl font-medium text-[#1A1A18]">
               {editingId ? "Modifica progetto" : "Nuovo progetto"}
             </h2>
-            <button
-              onClick={closeForm}
-              className="text-sm text-[#888580] transition-colors hover:text-[#1A1A18]"
-            >
-              ✕ Chiudi
-            </button>
+            <div className="flex items-center gap-3">
+              {!editingId && autoLoadedImagesCount > 0 && (
+                <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#1B4332]/10 text-[#1B4332] text-xs font-semibold">
+                  <span>📸</span> {autoLoadedImagesCount} foto{" "}
+                  {autoLoadedImagesCount === 1 ? "caricata" : "caricate"}
+                  &nbsp;automaticamente dalla Libreria Media
+                </span>
+              )}
+              <button
+                onClick={closeForm}
+                className="text-sm text-[#888580] transition-colors hover:text-[#1A1A18]"
+              >
+                ✕ Chiudi
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {([
               ["titolo", "Titolo"],
               ["cliente", "Cliente"],
-              ["citta", "Citta"],
-              ["immagine", "Immagine copertina"],
+              ["citta", "Città"],
               ["materiali", "Materiali"],
             ] as const).map(([key, label]) => (
               <div key={key}>
@@ -402,6 +515,60 @@ export default function AdminProjects() {
                 />
               </div>
             ))}
+
+            <div className="sm:col-span-2">
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs uppercase tracking-wide text-[#888580]">
+                  Immagine copertina
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowMediaPicker("cover")}
+                  className="text-xs text-[#1B4332] font-medium hover:underline"
+                >
+                  🖼️ Scegli dalla Libreria Media
+                </button>
+              </div>
+              <div className="flex gap-3 items-start">
+                <div className="h-32 w-44 flex-shrink-0 overflow-hidden border border-[#DDD9D0] bg-[#F7F5F0] flex items-center justify-center">
+                  {form.immagine ? (
+                    <img
+                      src={resolveImageUrl(
+                        {
+                          src: form.immagine,
+                          publicId: form.imageCloudinaryPublicId || null,
+                        },
+                        { width: 480, height: 320, objectFit: "cover" },
+                      )}
+                      alt="Copertina"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-xs text-[#888580] px-2 text-center">
+                      Nessuna immagine
+                    </span>
+                  )}
+                </div>
+                <div className="flex-1 space-y-2">
+                  <input
+                    type="text"
+                    value={form.immagine}
+                    onChange={(e) => set("immagine", e.target.value)}
+                    placeholder="Oppure incolla qui l'URL immagine"
+                    className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
+                  />
+                  <input
+                    type="text"
+                    value={form.imageCloudinaryPublicId}
+                    onChange={(e) =>
+                      set("imageCloudinaryPublicId", e.target.value)
+                    }
+                    placeholder="Cloudinary Public ID (opzionale)"
+                    className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none font-mono text-xs"
+                  />
+                </div>
+              </div>
+            </div>
 
             <div>
               <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">
@@ -475,41 +642,118 @@ export default function AdminProjects() {
             </div>
 
             <div className="sm:col-span-2">
-              <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">
-                Gallery URL, una per riga
-              </label>
-              <textarea
-                rows={4}
-                value={form.galleryText}
-                onChange={(e) => set("galleryText", e.target.value)}
-                className="w-full resize-none border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
-              />
-            </div>
+              <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+                <label className="block text-xs uppercase tracking-wide text-[#888580]">
+                  Gallery Progetto
+                  {galleryItems.length > 0 && (
+                    <span className="ml-2 text-[#1B4332] font-medium normal-case">
+                      · {galleryItems.length}{" "}
+                      {galleryItems.length === 1 ? "immagine" : "immagini"} ·
+                      diventeranno un{" "}
+                      <strong>carosello</strong> nel dettaglio progetto
+                    </span>
+                  )}
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowMediaPicker("gallery")}
+                  className="text-xs text-[#1B4332] font-medium hover:underline"
+                >
+                  ＋ Aggiungi da Libreria Media
+                </button>
+              </div>
 
-            <div>
-              <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">
-                Cloudinary Public ID · Copertina
-              </label>
-              <input
-                type="text"
-                value={form.imageCloudinaryPublicId}
-                onChange={(e) => set("imageCloudinaryPublicId", e.target.value)}
-                placeholder="es. farcom/progetti/barber-cover"
-                className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none font-mono"
-              />
-            </div>
+              {galleryItems.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-3">
+                  {galleryItems.map((item, i) => (
+                    <div
+                      key={`${item.url}-${i}`}
+                      draggable
+                      onDragStart={() => setGalleryDragIndex(i)}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={() => {
+                        if (galleryDragIndex !== null) {
+                          moveInGallery(galleryDragIndex, i)
+                        }
+                        setGalleryDragIndex(null)
+                      }}
+                      onDragEnd={() => setGalleryDragIndex(null)}
+                      className={`relative aspect-square overflow-hidden border bg-[#F7F5F0] transition-all group ${
+                        galleryDragIndex === i
+                          ? "opacity-40 scale-95"
+                          : "border-[#DDD9D0] hover:border-[#1B4332] cursor-move"
+                      }`}
+                    >
+                      <img
+                        src={resolveImageUrl(
+                          { src: item.url, publicId: item.publicId || null },
+                          { width: 360, height: 360, objectFit: "cover" },
+                        )}
+                        alt={`Gallery ${i + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-1 left-1 bg-white/90 backdrop-blur px-1.5 py-0.5 text-[10px] font-medium text-[#4A4A46]">
+                        {i === 0 ? "Cover · 1" : i + 1}
+                      </div>
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                        <div className="flex flex-col gap-1.5">
+                          {i > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => setCoverFromGalleryIndex(i)}
+                              className="bg-white text-[#1B4332] text-[10px] font-semibold px-2 py-1 rounded whitespace-nowrap"
+                            >
+                              ⭐ Imposta copertina
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => removeFromGallery(i)}
+                            className="bg-red-600 text-white text-[10px] font-semibold px-2 py-1 rounded whitespace-nowrap"
+                          >
+                            ✕ Rimuovi
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="border-2 border-dashed border-[#DDD9D0] bg-[#F7F5F0] p-6 text-center mb-3">
+                  <div className="text-4xl text-[#DDD9D0] mb-2">🎞️</div>
+                  <p className="text-sm text-[#4A4A46] mb-1">
+                    Nessuna immagine nella gallery
+                  </p>
+                  <p className="text-xs text-[#888580]">
+                    Clicca &quot;＋ Aggiungi da Libreria Media&quot; per caricare foto
+                    dal Media Manager — o incolla gli URL nel campo sotto.
+                  </p>
+                </div>
+              )}
 
-            <div className="sm:col-span-2">
-              <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">
-                Cloudinary Public ID · Gallery (uno per riga, stesso ordine delle URL sopra)
-              </label>
-              <textarea
-                rows={4}
-                value={form.galleryCloudinaryPublicIdsText}
-                onChange={(e) => set("galleryCloudinaryPublicIdsText", e.target.value)}
-                placeholder="es. farcom/progetti/gallery-1&#10;farcom/progetti/gallery-2"
-                className="w-full resize-none border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none font-mono"
-              />
+              <details className="border border-[#EAE7E0] bg-[#FAFAF7] rounded">
+                <summary className="px-3 py-2 text-xs cursor-pointer text-[#888580] hover:text-[#1A1A18]">
+                  ⚙️ Modo manuale: URL Gallery e Public ID
+                </summary>
+                <div className="p-3 pt-1 space-y-3">
+                  <textarea
+                    rows={3}
+                    value={form.galleryText}
+                    onChange={(e) => set("galleryText", e.target.value)}
+                    placeholder="URL immagini, una per riga"
+                    className="w-full resize-none border border-[#DDD9D0] bg-white px-3 py-2 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
+                  />
+                  <textarea
+                    rows={3}
+                    value={form.galleryCloudinaryPublicIdsText}
+                    onChange={(e) =>
+                      set("galleryCloudinaryPublicIdsText", e.target.value)
+                    }
+                    placeholder="Cloudinary Public ID · Gallery (uno per riga, stesso ordine delle URL sopra)"
+                    className="w-full resize-none border border-[#DDD9D0] bg-white px-3 py-2 text-xs text-[#1A1A18] focus:border-[#1B4332] focus:outline-none font-mono"
+                  />
+                </div>
+              </details>
             </div>
 
             <div className="sm:col-span-2">
@@ -595,6 +839,172 @@ export default function AdminProjects() {
               Annulla
             </button>
           </div>
+
+          {showMediaPicker && (
+            <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 animate-fade-in">
+              <div className="bg-white w-full max-w-5xl max-h-[85vh] overflow-hidden border border-[#DDD9D0] shadow-2xl flex flex-col">
+                <div className="flex items-center justify-between px-5 py-4 border-b border-[#EAE7E0]">
+                  <div>
+                    <h3 className="font-display text-lg font-medium text-[#1A1A18]">
+                      {showMediaPicker === "cover"
+                        ? "Scegli immagine di copertina"
+                        : "Aggiungi immagini alla Gallery"}
+                    </h3>
+                    <p className="text-xs text-[#888580] mt-0.5">
+                      {showMediaPicker === "cover"
+                        ? "Clicca su una foto per usarla come copertina del progetto"
+                        : "Clicca su una o più foto per aggiungerle alla gallery (il carosello del progetto)"}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-[#888580]">
+                      {recentUploads.length}{" "}
+                      {recentUploads.length === 1
+                        ? "elemento"
+                        : "elementi"}
+                      {" "}nella libreria
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setShowMediaPicker(null)}
+                      className="text-sm text-[#888580] hover:text-[#1A1A18] transition-colors"
+                    >
+                      ✕ Chiudi
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-5 bg-[#F7F5F0]">
+                  {recentUploads.length === 0 ? (
+                    <div className="text-center py-16">
+                      <div className="text-5xl text-[#DDD9D0] mb-4">🗂️</div>
+                      <p className="text-[#4A4A46] mb-2">
+                        Libreria Media ancora vuota
+                      </p>
+                      <p className="text-xs text-[#888580] mb-4">
+                        Vai in{" "}
+                        <span className="font-medium">
+                          Admin → Libreria Media
+                        </span>{" "}
+                        per caricare le prime immagini su Cloudinary.
+                      </p>
+                      <Link
+                        to="/admin/media"
+                        className="inline-block bg-[#1B4332] text-white text-sm px-4 py-2 hover:bg-[#143326] transition-colors"
+                      >
+                        → Vai a Libreria Media
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                      {recentUploads.map((upload) => {
+                        const inGallery = galleryItems.some(
+                          (it) => it.url === upload.secureUrl,
+                        )
+                        const isCover =
+                          showMediaPicker === "cover" &&
+                          form.immagine === upload.secureUrl
+                        return (
+                          <button
+                            key={upload.id}
+                            type="button"
+                            onClick={() =>
+                              showMediaPicker === "cover"
+                                ? pickAsCover(upload)
+                                : addToGallery(upload)
+                            }
+                            className={`relative aspect-square overflow-hidden border-2 transition-all group ${
+                              isCover
+                                ? "border-[#1B4332] ring-2 ring-[#1B4332]/40"
+                                : inGallery
+                                  ? "border-[#1B4332]/60 opacity-70"
+                                  : "border-transparent hover:border-[#1B4332]"
+                            }`}
+                          >
+                            <img
+                              src={resolveImageUrl(
+                                {
+                                  src: upload.secureUrl,
+                                  publicId: upload.publicId,
+                                },
+                                {
+                                  width: 480,
+                                  height: 480,
+                                  objectFit: "cover",
+                                },
+                              )}
+                              alt=""
+                              className="w-full h-full object-cover"
+                            />
+                            {isCover && (
+                              <div className="absolute inset-0 bg-[#1B4332]/70 flex items-center justify-center">
+                                <span className="text-white text-xs font-bold">
+                                  ✓ Copertina attuale
+                                </span>
+                              </div>
+                            )}
+                            {!isCover && (
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                <span className="bg-white text-[#1B4332] text-xs font-bold px-3 py-1.5 rounded shadow">
+                                  {showMediaPicker === "cover"
+                                    ? "Usa come copertina"
+                                    : inGallery
+                                      ? "Aggiungi ancora"
+                                      : "＋ Aggiungi"}
+                                </span>
+                              </div>
+                            )}
+                            <div className="absolute bottom-1 left-1 right-1 flex justify-between items-end">
+                              <span
+                                className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${
+                                  upload.category === "project"
+                                    ? "bg-[#1B4332]/80 text-white"
+                                    : upload.category === "gallery"
+                                      ? "bg-[#B5965A]/80 text-white"
+                                      : upload.category === "sector"
+                                        ? "bg-[#4A4A46]/80 text-white"
+                                        : "bg-[#888580]/80 text-white"
+                                }`}
+                              >
+                                {upload.category}
+                              </span>
+                              <span className="text-[10px] bg-white/90 px-1.5 py-0.5 rounded text-[#4A4A46]">
+                                {upload.width}×{upload.height}
+                              </span>
+                            </div>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {showMediaPicker === "gallery" && galleryItems.length > 0 && (
+                  <div className="border-t border-[#EAE7E0] px-5 py-3 bg-white flex items-center justify-between">
+                    <span className="text-sm text-[#4A4A46]">
+                      {galleryItems.length}{" "}
+                      {galleryItems.length === 1
+                        ? "immagine"
+                        : "immagini"}{" "}
+                      nella gallery ·{" "}
+                      <span className="text-[#1B4332] font-medium">
+                        {galleryItems.length > 1
+                          ? "saranno mostrate come carosello ✓"
+                          : "aggiungine almeno un'altra per il carosello"}
+                      </span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setShowMediaPicker(null)}
+                      className="bg-[#1B4332] text-white text-sm px-4 py-2 hover:bg-[#143326] transition-colors"
+                    >
+                      Fatto ✓
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

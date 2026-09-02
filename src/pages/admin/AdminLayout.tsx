@@ -4,6 +4,8 @@ import { Link, useLocation, Outlet } from "react-router-dom"
 const nav = [
   { to: "/admin", label: "Dashboard", icon: "▦" },
   { to: "/admin/progetti", label: "Progetti", icon: "◫" },
+  { to: "/admin/showroom/products", label: "Showroom Prodotti", icon: "▧" },
+  { to: "/admin/showroom/offers", label: "Showroom Offerte", icon: "🏷" },
   { to: "/admin/preventivi", label: "Preventivi", icon: "◱" },
   { to: "/admin/media", label: "Media", icon: "◧" },
   { to: "/admin/impostazioni", label: "Impostazioni", icon: "⚙" },

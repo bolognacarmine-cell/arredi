@@ -8,18 +8,15 @@ import {
   useCloudinaryUpload,
   type CloudinaryUploadResult,
 } from "../../lib/cloudinary"
-
-type UploadCategory = "hero" | "sector" | "project" | "gallery"
-
-type RecentUpload = {
-  id: string
-  publicId: string
-  secureUrl: string
-  category: UploadCategory
-  timestamp: number
-  width: number
-  height: number
-}
+import {
+  getPendingProjectImageIds,
+  getRecentUploads,
+  markPendingForNextNewProject,
+  saveRecentUpload,
+  saveRecentUploads,
+  type RecentUpload,
+  type UploadCategory,
+} from "../../lib/mediaRecent"
 
 const categoryConfig: Record<
   UploadCategory,
@@ -55,30 +52,7 @@ type AutoAssign = {
   index: number
 }
 
-const RECENT_UPLOADS_KEY = "farcom-recent-uploads"
-
-function getRecentUploads(): RecentUpload[] {
-  if (typeof window === "undefined") return []
-  try {
-    const stored = window.localStorage.getItem(RECENT_UPLOADS_KEY)
-    if (!stored) return []
-    return JSON.parse(stored) as RecentUpload[]
-  } catch {
-    return []
-  }
-}
-
-function saveRecentUpload(upload: RecentUpload) {
-  if (typeof window === "undefined") return
-  const recent = getRecentUploads()
-  const updated = [upload, ...recent].slice(0, 20) // Keep last 20
-  window.localStorage.setItem(RECENT_UPLOADS_KEY, JSON.stringify(updated))
-}
-
-function clearRecentUploads() {
-  if (typeof window === "undefined") return
-  window.localStorage.removeItem(RECENT_UPLOADS_KEY)
-}
+export const NEW_PROJECT_ID = "__nuovo-progetto__"
 
 function copyToClipboard(text: string) {
   try {
@@ -109,6 +83,11 @@ function describeTarget(
   if (a.collection === "sector") {
     const s = SECTORS.find((s) => s.id === a.id)
     return `Settore "${s?.label ?? a.id}" → heroImageCloudinaryPublicId`
+  }
+  if (a.id === NEW_PROJECT_ID) {
+    if (a.field === "gallery")
+      return `⏳ Nuovo Progetto → galleryCloudinaryPublicIds[${a.index}] (si collega quando clicchi "+ Nuovo progetto")`
+    return `⏳ Nuovo Progetto → imageCloudinaryPublicId (si collega quando clicchi "+ Nuovo progetto")`
   }
   const p = projects.find((p) => p.id === a.id)
   const base = `Progetto "${p?.title ?? a.id}" → `
@@ -237,6 +216,7 @@ export default function AdminMedia() {
   const configured = isCloudinaryConfigured
   const presetOk = Boolean(CLOUDINARY_UPLOAD_PRESET)
   const everythingReady = file && configured && presetOk && !busy
+  const [lastUploadIdRef, setLastUploadIdRef] = useState<string | null>(null)
 
   // Carica upload recenti all'avvio
   useEffect(() => {
@@ -246,19 +226,29 @@ export default function AdminMedia() {
   // Salva upload quando completato con successo
   useEffect(() => {
     if (lastResult && !error) {
+      const uploadId = `${lastResult.public_id}-${Date.now()}`
       const newUpload: RecentUpload = {
-        id: `${lastResult.public_id}-${Date.now()}`,
+        id: uploadId,
         publicId: lastResult.public_id,
         secureUrl: lastResult.secure_url,
         category,
         timestamp: Date.now(),
         width: lastResult.width,
         height: lastResult.height,
+        titleHint: title.trim() || undefined,
+        targetFieldHint:
+          autoAssign.collection === "project" && autoAssign.field === "gallery"
+            ? "gallery"
+            : autoAssign.collection === "project"
+              ? "cover"
+              : undefined,
       }
       saveRecentUpload(newUpload)
       setRecentUploads(getRecentUploads())
+      setLastUploadIdRef(uploadId)
     }
-  }, [lastResult, error, category])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastResult, error])
   useEffect(() => {
     // eslint-disable-next-line no-console
     console.group("🖼️  Admin Cloudinary — stato env")
@@ -364,8 +354,20 @@ export default function AdminMedia() {
     }
   }, [category])
 
-  const handleAssignToData = async (publicId: string) => {
+  const handleAssignToData = async (publicId: string, newUploadId: string) => {
     if (!autoAssign.enabled) return { ok: true, skipped: true as const }
+
+    if (autoAssign.id === NEW_PROJECT_ID) {
+      markPendingForNextNewProject([newUploadId])
+      setApiResponse({
+        ok: true,
+        message:
+          autoAssign.field === "gallery"
+            ? "⏳ Pronta per il NUOVO PROGETTO: appena clicchi \"+ Nuovo progetto\" in Admin Progetti, questa foto finirà automaticamente nella GALLERY del nuovo progetto!"
+            : "⏳ Pronta per il NUOVO PROGETTO: appena clicchi \"+ Nuovo progetto\" in Admin Progetti, questa foto diventerà la COPERTINA del nuovo progetto!",
+      })
+      return { ok: true, skipped: false as const }
+    }
 
     if (!canWriteDataTsLocally) {
       setApiResponse({
@@ -495,18 +497,48 @@ export default function AdminMedia() {
         title || file.name,
         setProgress,
       )
+      const uploadId = `${result.public_id}-${Date.now()}`
+      const targetHint =
+        autoAssign.collection === "project" && autoAssign.field === "gallery"
+          ? "gallery"
+          : autoAssign.collection === "project"
+            ? "cover"
+            : undefined
+      const newUploadRec: RecentUpload = {
+        id: uploadId,
+        publicId: result.public_id,
+        secureUrl: result.secure_url,
+        category,
+        timestamp: Date.now(),
+        width: result.width,
+        height: result.height,
+        titleHint: title.trim() || undefined,
+        targetFieldHint: targetHint,
+      }
+      saveRecentUpload(newUploadRec)
+      setRecentUploads(getRecentUploads())
       setLastResult(result)
       setFile(null)
       setTitle("")
       // — Se l'utente vuole auto-assegnare → aggiorna data.ts in automatico
       if (autoAssign.enabled) {
-        const assign = await handleAssignToData(result.public_id)
+        const assign = await handleAssignToData(result.public_id, uploadId)
         if (assign.ok && !assign.skipped) {
-          showToast(
-            "🎉 UPLOAD OK + AGGIORNATO IN data.ts! F5 per vedere la nuova foto",
-            "ok",
-            6000,
-          )
+          if (autoAssign.id === NEW_PROJECT_ID) {
+            const what =
+              autoAssign.field === "gallery" ? "GALLERY" : "COPERTINA"
+            showToast(
+              `✅ UPLOAD OK · Foto collegata al prossimo NUOVO PROGETTO (${what}) — vai su + Nuovo progetto per vederla!`,
+              "ok",
+              7000,
+            )
+          } else {
+            showToast(
+              "🎉 UPLOAD OK + AGGIORNATO IN data.ts! F5 per vedere la nuova foto",
+              "ok",
+              6000,
+            )
+          }
         } else if (assign.ok && assign.skipped) {
           showToast("✅ Upload completato! (Auto-assegna disattivato)", "ok", 4500)
         } else {
@@ -848,14 +880,30 @@ export default function AdminMedia() {
                         }
                         className="w-full px-3 py-2 rounded-md bg-white border border-[#DDD9D0] text-sm focus:outline-none focus:border-[#1B4332] focus:ring-2 focus:ring-[#1B4332]/20"
                       >
-                        {(autoAssign.collection === "sector" ? SECTORS : projects).map(
-                          (item) => (
-                            <option key={item.id} value={item.id}>
-                              {"label" in item ? item.label : (item as { title: string }).title}
+                        {autoAssign.collection === "project" ? (
+                          <>
+                            <option value={NEW_PROJECT_ID}>✨ ⏳ Nuovo Progetto (in arrivo)</option>
+                            {projects.map((project) => (
+                              <option key={project.id} value={project.id}>
+                                {project.title}
+                              </option>
+                            ))}
+                          </>
+                        ) : (
+                          SECTORS.map((sector) => (
+                            <option key={sector.id} value={sector.id}>
+                              {sector.label}
                             </option>
-                          ),
+                          ))
                         )}
                       </select>
+                      {autoAssign.collection === "project" &&
+                        autoAssign.id === NEW_PROJECT_ID &&
+                        getPendingProjectImageIds().length > 0 && (
+                          <p className="mt-1.5 text-[11px] text-[#1B4332] font-medium">
+                            ⏳ {getPendingProjectImageIds().length} foto in attesa per il nuovo progetto
+                          </p>
+                        )}
                     </div>
                   </div>
 

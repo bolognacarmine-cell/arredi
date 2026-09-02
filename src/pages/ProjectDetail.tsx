@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { resolveImageUrl } from "../lib/cloudinary";
 import { useProjects } from "../projectStore";
@@ -12,6 +12,26 @@ export default function ProjectDetail() {
   useEffect(() => {
     setActiveImg(0)
   }, [id])
+
+  const total = project?.gallery.length ?? 0
+
+  const goPrev = useCallback(() => {
+    setActiveImg((i) => (i <= 0 ? total - 1 : i - 1))
+  }, [total])
+
+  const goNext = useCallback(() => {
+    setActiveImg((i) => (i >= total - 1 ? 0 : i + 1))
+  }, [total])
+
+  useEffect(() => {
+    if (!project || total <= 1) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") goPrev()
+      if (e.key === "ArrowRight") goNext()
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [project, total, goPrev, goNext])
 
   if (!project) {
     return (
@@ -45,58 +65,145 @@ export default function ProjectDetail() {
           </Link>
         </div>
 
-        {/* Gallery */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4 mb-14">
-          <div className="relative overflow-hidden bg-[#EAE7E0] aspect-[16/9]">
-            <img
-              src={resolveImageUrl(
-                {
-                  src: project.gallery[activeImg],
-                  publicId:
-                    project.galleryCloudinaryPublicIds?.[activeImg] ?? null,
-                },
-                {
-                  width: 2400,
-                  height: 1350,
-                  objectFit: "cover",
-                  gravity: "auto",
-                },
+        {/* Carosello Gallery */}
+        <div className="mb-14">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4">
+            <div className="relative overflow-hidden bg-[#EAE7E0] aspect-[16/9] group">
+              <img
+                key={`${project.id}-${activeImg}`}
+                src={resolveImageUrl(
+                  {
+                    src: project.gallery[activeImg],
+                    publicId:
+                      project.galleryCloudinaryPublicIds?.[activeImg] ??
+                      null,
+                  },
+                  {
+                    width: 2400,
+                    height: 1350,
+                    objectFit: "cover",
+                    gravity: "auto",
+                  },
+                )}
+                alt={`${project.title} — foto ${activeImg + 1} di ${total}`}
+                className="w-full h-full object-cover animate-fade-in"
+              />
+
+              {total > 1 && (
+                <>
+                  <button
+                    type="button"
+                    aria-label="Foto precedente"
+                    onClick={goPrev}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/80 backdrop-blur border border-[#DDD9D0] flex items-center justify-center text-[#1A1A18] opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all hover:bg-white hover:scale-105 shadow-lg"
+                  >
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Foto successiva"
+                    onClick={goNext}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/80 backdrop-blur border border-[#DDD9D0] flex items-center justify-center text-[#1A1A18] opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all hover:bg-white hover:scale-105 shadow-lg"
+                  >
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                  </button>
+
+                  <div className="absolute top-3 right-3 bg-black/55 text-white text-xs font-medium px-2.5 py-1 rounded backdrop-blur">
+                    {activeImg + 1} / {total}
+                  </div>
+
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                    {project.gallery.map((_, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        aria-label={`Vai alla foto ${i + 1}`}
+                        onClick={() => setActiveImg(i)}
+                        className={`h-1.5 rounded-full transition-all ${
+                          activeImg === i
+                            ? "w-6 bg-white shadow-md"
+                            : "w-1.5 bg-white/55 hover:bg-white/80"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </>
               )}
-              alt={project.title}
-              className="w-full h-full object-cover"
-            />
-          </div>
-          {project.gallery.length > 1 && (
-            <div className="flex lg:flex-col gap-3">
-              {project.gallery.map((img, i) => (
-                <button
-                  key={i}
-                  onClick={() => setActiveImg(i)}
-                  className={`relative overflow-hidden w-20 h-20 flex-shrink-0 border-2 transition-all ${
-                    activeImg === i
-                      ? "border-[#1B4332]"
-                      : "border-transparent opacity-60 hover:opacity-100"
-                  }`}
-                >
-                  <img
-                    src={resolveImageUrl(
-                      {
-                        src: img,
-                        publicId: project.galleryCloudinaryPublicIds?.[i] ?? null,
-                      },
-                      {
-                        width: 240,
-                        height: 240,
-                        objectFit: "cover",
-                        gravity: "auto",
-                      },
-                    )}
-                    alt=""
-                    className="w-full h-full object-cover"
-                  />
-                </button>
-              ))}
             </div>
+
+            {total > 1 && (
+              <div className="flex lg:flex-col gap-3 max-h-[520px] overflow-y-auto lg:max-h-none pr-0 lg:pr-1 scrollbar-thin">
+                {project.gallery.map((img, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setActiveImg(i)}
+                    aria-label={`Visualizza foto ${i + 1}`}
+                    className={`relative overflow-hidden w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 flex-shrink-0 border-2 transition-all ${
+                      activeImg === i
+                        ? "border-[#1B4332] shadow-md"
+                        : "border-transparent opacity-65 hover:opacity-100 hover:border-[#1B4332]/50"
+                    }`}
+                  >
+                    <img
+                      src={resolveImageUrl(
+                        {
+                          src: img,
+                          publicId:
+                            project.galleryCloudinaryPublicIds?.[i] ?? null,
+                        },
+                        {
+                          width: 240,
+                          height: 240,
+                          objectFit: "cover",
+                          gravity: "auto",
+                        },
+                      )}
+                      alt=""
+                      className="w-full h-full object-cover"
+                      loading={i > 3 ? "lazy" : "eager"}
+                    />
+                    {activeImg === i && (
+                      <div className="absolute inset-0 ring-2 ring-[#1B4332] ring-inset pointer-events-none" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {total > 1 && (
+            <p className="text-[11px] text-[#888580] mt-3 text-center lg:text-left">
+              Usa le frecce{" "}
+              <kbd className="px-1.5 py-0.5 mx-0.5 border border-[#DDD9D0] bg-white text-[#4A4A46] text-[10px] font-mono rounded">
+                ←
+              </kbd>{" "}
+              <kbd className="px-1.5 py-0.5 mx-0.5 border border-[#DDD9D0] bg-white text-[#4A4A46] text-[10px] font-mono rounded">
+                →
+              </kbd>{" "}
+              della tastiera oppure i pallini per navigare nel carosello.
+            </p>
           )}
         </div>
 

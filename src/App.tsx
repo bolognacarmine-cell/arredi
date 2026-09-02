@@ -18,37 +18,51 @@ import AdminProjects from "./pages/admin/AdminProjects";
 import AdminQuotes from "./pages/admin/AdminQuotes";
 import AdminMedia from "./pages/admin/AdminMedia";
 import AdminSettings from "./pages/admin/AdminSettings";
+import {
+  ShowroomGuard,
+  ShowroomIndexRedirect,
+  ProductsList as ShowroomProducts,
+  OffersList as ShowroomOffers,
+} from "./routes/adminShowroomRoutes";
+import { AdminAuthProvider } from "./hooks/useAdminAuth";
 
 export default function App() {
   return (
     <BrowserRouter>
-      <ScrollToTop />
-      <Navbar />
-      <Routes>
-        {/* PUBLIC */}
-        <Route path="/" element={<Home />} />
-        <Route path="/settori/:id" element={<SectorPage />} />
-        <Route path="/progetti" element={<Projects />} />
-        <Route path="/progetti/:id" element={<ProjectDetail />} />
-        <Route path="/preventivo" element={<Quote />} />
-        <Route path="/chi-siamo" element={<About />} />
-        <Route path="/contatti" element={<Contacts />} />
-        <Route path="/privacy" element={<PrivacyPage />} />
-        <Route path="/cookie" element={<CookiePage />} />
-        <Route path="/note-legali" element={<LegalNotesPage />} />
+      <AdminAuthProvider>
+        <ScrollToTop />
+        <Navbar />
+        <Routes>
+          {/* PUBLIC */}
+          <Route path="/" element={<Home />} />
+          <Route path="/settori/:id" element={<SectorPage />} />
+          <Route path="/progetti" element={<Projects />} />
+          <Route path="/progetti/:id" element={<ProjectDetail />} />
+          <Route path="/preventivo" element={<Quote />} />
+          <Route path="/chi-siamo" element={<About />} />
+          <Route path="/contatti" element={<Contacts />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/cookie" element={<CookiePage />} />
+          <Route path="/note-legali" element={<LegalNotesPage />} />
 
-        {/* ADMIN */}
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="progetti" element={<AdminProjects />} />
-          <Route path="progetti/nuovo" element={<AdminProjects />} />
-          <Route path="progetti/:id" element={<AdminProjects />} />
-          <Route path="preventivi" element={<AdminQuotes />} />
-          <Route path="media" element={<AdminMedia />} />
-          <Route path="impostazioni" element={<AdminSettings />} />
-        </Route>
-      </Routes>
-      <Footer />
+          {/* ADMIN */}
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="progetti" element={<AdminProjects />} />
+            <Route path="progetti/nuovo" element={<AdminProjects />} />
+            <Route path="progetti/:id" element={<AdminProjects />} />
+            <Route path="preventivi" element={<AdminQuotes />} />
+            <Route path="media" element={<AdminMedia />} />
+            <Route path="impostazioni" element={<AdminSettings />} />
+            <Route path="showroom" element={<ShowroomGuard />}>
+              <Route index element={<ShowroomIndexRedirect />} />
+              <Route path="products" element={<ShowroomProducts />} />
+              <Route path="offers" element={<ShowroomOffers />} />
+            </Route>
+          </Route>
+        </Routes>
+        <Footer />
+      </AdminAuthProvider>
     </BrowserRouter>
   )
 }
