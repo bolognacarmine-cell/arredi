@@ -24,8 +24,9 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files from dist/
-app.use(express.static(path.join(__dirname, '../dist')));
+// Serve static files from dist/ (parent directory of server/dist)
+const staticPath = path.resolve(__dirname, '../../dist');
+app.use(express.static(staticPath));
 
 // API Routes
 app.use('/api/media', mediaRoutes);
@@ -37,12 +38,13 @@ app.use('/api/site-config', siteConfigRoutes);
 
 // Serve index.html for all other routes (SPA) - Express 5 syntax
 app.get('{/:path}', (req, res) => {
-  res.sendFile(path.join(__dirname, '../dist/index.html'));
+  res.sendFile(path.resolve(__dirname, '../../dist/index.html'));
 });
 
 // Start server after DB connection
 connectDB().then(() => {
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
+    console.log(`📁 Serving static files from ${staticPath}`);
   });
 });
