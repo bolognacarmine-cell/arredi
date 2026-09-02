@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Link, useNavigate, useParams } from "react-router-dom"
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom"
 import { SECTORS } from "../../data"
 import {
   defaultProjects,
@@ -158,6 +158,7 @@ function toProjectRecord(
 export default function AdminProjects() {
   const { id: routeId } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const location = useLocation()
   const projects = useProjects()
   const [filter, setFilter] = useState("all")
   const [stateFilter, setStateFilter] = useState("all")
@@ -172,7 +173,8 @@ export default function AdminProjects() {
   const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
-    if (routeId === "nuovo") {
+    const isNuovo = location.pathname === "/admin/progetti/nuovo"
+    if (isNuovo) {
       setEditingId(null)
       setForm(emptyForm)
       setShowForm(true)
@@ -183,8 +185,12 @@ export default function AdminProjects() {
         setForm(projectToForm(existing))
         setShowForm(true)
       }
+    } else {
+      setShowForm(false)
+      setEditingId(null)
+      setForm(emptyForm)
     }
-  }, [routeId, projects])
+  }, [location.pathname, routeId, projects])
 
   const set = (key: keyof FormState, value: string | boolean) =>
     setForm((current) => ({ ...current, [key]: value }))
