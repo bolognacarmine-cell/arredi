@@ -1,60 +1,18 @@
-import mongoose, { Schema, models } from "mongoose"
+import mongoose from 'mongoose';
+
+const { Schema } = mongoose;
 
 const OfferSchema = new Schema({
-  id: {
-    type: String,
-    required: true,
-    unique: true
-  },
-  title: {
-    type: String,
-    required: true
-  },
-  description: {
-    type: String,
-    required: true
-  },
-  activitySector: {
-    type: String,
-    required: true
-  },
-  furnitureType: {
-    type: String,
-    required: true
-  },
-  furnitureTypeOther: {
-    type: String,
-    default: ""
-  },
-  discountType: {
-    type: String,
-    enum: ["percent", "fixed"],
-    required: true
-  },
-  discountValue: {
-    type: Number,
-    required: true
-  },
-  productIds: {
-    type: [String],
-    default: []
-  },
-  startDate: {
-    type: String,
-    required: true
-  },
-  endDate: {
-    type: String,
-    required: true
-  },
-  active: {
-    type: Boolean,
-    default: true
-  }
-}, {
-  timestamps: true
-})
+  productId: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
+  name: { type: String, required: true },
+  description: { type: String, default: '' },
+  price: { type: Number, required: true },
+  discountPrice: { type: Number, default: 0 },
+  images: [{ type: String }],
+  category: { type: String, default: '' },
+  inStock: { type: Boolean, default: true },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+});
 
-const Offer = models.Offer || mongoose.model("Offer", OfferSchema)
-
-export default Offer
+export const Offer = mongoose.models.Offer || mongoose.model('Offer', OfferSchema);
