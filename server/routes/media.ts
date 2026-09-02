@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { Media } from '../models/Media';
+import { Media } from '../models/Media.js';
 
 const router = Router();
 
