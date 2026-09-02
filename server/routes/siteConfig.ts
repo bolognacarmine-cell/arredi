@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { SiteConfig } from '../models/SiteConfig';
+import { SiteConfig } from '../models/SiteConfig.js';
 
 const router = Router();
 
