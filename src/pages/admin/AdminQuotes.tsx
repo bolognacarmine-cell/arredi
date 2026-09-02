@@ -95,7 +95,7 @@ export default function AdminQuotes() {
       </div>
 
       <div
-        className={`grid gap-5 ${selectedQuoteQuote ? "lg:grid-cols-[1fr_360px]" : ""}`}
+        className={`grid gap-5 ${selectedQuote ? "lg:grid-cols-[1fr_360px]" : ""}`}
       >
         {/* Table */}
         <div className="bg-white border border-[#DDD9D0] overflow-hidden">
