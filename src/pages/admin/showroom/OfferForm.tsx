@@ -1,10 +1,10 @@
-// Form modale crea/modifica offerta showroom (con campi Other separati)
+// Form modale crea/modifica offerta showroom (activitySector + tipologia dipendente)
 import { useEffect, useMemo, useState } from "react"
 import CategorySelect from "../../../components/admin/showroom/CategorySelect"
 import FurnitureTypeSelect from "../../../components/admin/showroom/FurnitureTypeSelect"
 import type { Offer } from "../../../types/showroom"
-import type { ActivityCategoryOption } from "../../../constants/showroomCategories"
-import type { FurnitureTypeOption } from "../../../constants/furnitureTypes"
+import type { ActivitySector } from "../../../constants/showroomSectors"
+import { FURNITURE_BY_SECTOR } from "../../../constants/showroomSectors"
 import { offerBadge, useProducts } from "../../../services/showroomApi"
 
 interface Props {
@@ -29,9 +29,9 @@ const addDays = (d: string, n: number) => {
 const empty: FS = {
   title: "",
   description: "",
-  activityCategory: "Barberie",
-  activityCategoryOther: "",
-  furnitureType: "Altro",
+  activitySector: "barber",
+  activitySectorOther: "",
+  furnitureType: "Banconi reception",
   furnitureTypeOther: "",
   discountType: "percent",
   discountValue: 10,
@@ -50,7 +50,7 @@ export default function OfferForm({ initial, onCancel, onSave, busy }: Props) {
     if (initial)
       setForm({
         ...initial,
-        activityCategoryOther: initial.activityCategoryOther ?? "",
+        activitySectorOther: initial.activitySectorOther ?? "",
         furnitureTypeOther: initial.furnitureTypeOther ?? "",
       })
     else setForm(empty)
@@ -59,6 +59,16 @@ export default function OfferForm({ initial, onCancel, onSave, busy }: Props) {
 
   const set = <K extends keyof FS>(k: K, v: FS[K]) =>
     setForm((f) => ({ ...f, [k]: v }))
+
+  const changeSector = (next: ActivitySector) => {
+    const currentList = FURNITURE_BY_SECTOR[next] || ["Altro"]
+    const stillValid = currentList.includes(form.furnitureType)
+    setForm((f) => ({
+      ...f,
+      activitySector: next,
+      furnitureType: stillValid ? f.furnitureType : currentList[0] || "Altro",
+    }))
+  }
 
   const badgePreview = useMemo(() => {
     const v = Number(form.discountValue)
@@ -79,9 +89,9 @@ export default function OfferForm({ initial, onCancel, onSave, busy }: Props) {
     const e: Record<string, string> = {}
     if (!form.title.trim()) e.title = "Titolo obbligatorio"
     if (!form.description.trim()) e.description = "Descrizione obbligatoria"
-    if (!form.activityCategory) e.activityCategory = "Categoria obbligatoria"
-    if (form.activityCategory === "Altro" && !form.activityCategoryOther.trim())
-      e.activityCategory = 'Specifica la categoria "Altro"'
+    if (!form.activitySector) e.activitySector = "Settore obbligatorio"
+    if (form.activitySector === "other" && !form.activitySectorOther.trim())
+      e.activitySector = 'Specifica il settore "Altro"'
     if (!form.furnitureType) e.furnitureType = "Tipologia obbligatoria"
     if (form.furnitureType === "Altro" && !form.furnitureTypeOther.trim())
       e.furnitureType = 'Specifica la tipologia "Altro"'
@@ -106,8 +116,8 @@ export default function OfferForm({ initial, onCancel, onSave, busy }: Props) {
       title: form.title.trim(),
       description: form.description.trim(),
       discountValue: Number(form.discountValue),
-      activityCategoryOther:
-        form.activityCategory === "Altro" ? form.activityCategoryOther.trim() : undefined,
+      activitySectorOther:
+        form.activitySector === "other" ? form.activitySectorOther.trim() : undefined,
       furnitureTypeOther:
         form.furnitureType === "Altro" ? form.furnitureTypeOther.trim() : undefined,
     }
@@ -174,20 +184,21 @@ export default function OfferForm({ initial, onCancel, onSave, busy }: Props) {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">Categoria attività *</label>
+              <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">Settore *</label>
               <CategorySelect
-                value={form.activityCategory as ActivityCategoryOption}
-                otherValue={form.activityCategoryOther ?? ""}
-                onChange={(v) => set("activityCategory", v)}
-                onOtherChange={(v) => set("activityCategoryOther", v)}
-                error={errors.activityCategory}
+                value={form.activitySector}
+                otherValue={form.activitySectorOther}
+                onChange={changeSector}
+                onOtherChange={(v) => set("activitySectorOther", v)}
+                error={errors.activitySector}
               />
             </div>
             <div>
               <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">Tipologia arredo *</label>
               <FurnitureTypeSelect
-                value={form.furnitureType as FurnitureTypeOption}
-                otherValue={form.furnitureTypeOther ?? ""}
+                sector={form.activitySector}
+                value={form.furnitureType}
+                otherValue={form.furnitureTypeOther}
                 onChange={(v) => set("furnitureType", v)}
                 onOtherChange={(v) => set("furnitureTypeOther", v)}
                 error={errors.furnitureType}

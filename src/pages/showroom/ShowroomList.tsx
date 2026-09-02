@@ -37,7 +37,7 @@ export default function ShowroomList() {
     return products.filter((p) => {
       if (q && !p.name.toLowerCase().includes(q) && !p.description.toLowerCase().includes(q))
         return false
-      if (filters.activity !== "all" && p.activityCategory !== filters.activity) return false
+      if (filters.sector !== "all" && p.activitySector !== filters.sector) return false
       if (filters.furniture !== "all" && p.furnitureType !== filters.furniture) return false
       if (filters.onlyOffers) {
         const eff = computeEffectivePrice(p, offers)

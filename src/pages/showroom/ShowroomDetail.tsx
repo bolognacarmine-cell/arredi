@@ -10,7 +10,7 @@ import {
   type Product,
 } from "../../services/showroomApi"
 import {
-  displayActivityCategory,
+  displaySector,
   displayFurnitureType,
 } from "../../types/showroom"
 
@@ -201,11 +201,11 @@ export default function ShowroomDetail() {
                 <span className="inline-flex items-center gap-3 px-4 py-1.5 border border-[#B5965A]/30 bg-white">
                   <span className="h-px w-6 bg-[#B5965A]" />
                   <span className="text-[10px] uppercase tracking-[0.18em] font-medium text-[#B5965A]">
-                    {p.activityCategory}
+                    {displaySector(p.activitySector, p.activitySectorOther)}
                   </span>
                 </span>
                 <span className="text-xs text-[#888580] px-2.5 py-1 bg-[#EAE7E0]">
-                  {p.furnitureType}
+                  {displayFurnitureType(p.furnitureType, p.furnitureTypeOther)}
                 </span>
               </div>
 
@@ -248,12 +248,12 @@ export default function ShowroomDetail() {
 
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="p-4 border border-[#DDD9D0] bg-white">
-                <div className="text-[10px] uppercase tracking-wider text-[#888580] mb-1.5">Categoria</div>
-                <div className="font-medium text-[#1A1A18]">{p.activityCategory}</div>
+                <div className="text-[10px] uppercase tracking-wider text-[#888580] mb-1.5">Settore</div>
+                <div className="font-medium text-[#1A1A18]">{displaySector(p.activitySector, p.activitySectorOther)}</div>
               </div>
               <div className="p-4 border border-[#DDD9D0] bg-white">
                 <div className="text-[10px] uppercase tracking-wider text-[#888580] mb-1.5">Tipologia</div>
-                <div className="font-medium text-[#1A1A18]">{p.furnitureType}</div>
+                <div className="font-medium text-[#1A1A18]">{displayFurnitureType(p.furnitureType, p.furnitureTypeOther)}</div>
               </div>
             </div>
 

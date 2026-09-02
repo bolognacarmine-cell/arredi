@@ -1,17 +1,16 @@
-// Filtri pubblici lista showroom (categorie target)
-import { ACTIVITY_CATEGORIES } from "../../constants/showroomCategories"
-import { FURNITURE_TYPES } from "../../constants/furnitureTypes"
+// Filtri pubblici lista showroom (settori + tipologie dipendenti)
+import { SECTORS, furnitureTypesFor, type ActivitySector } from "../../constants/showroomSectors"
 
 export type PublicFilterState = {
   q: string
-  activity: string
+  sector: ActivitySector | "all"
   furniture: string
   onlyOffers: boolean
 }
 
 export const defaultPublicFilters: PublicFilterState = {
   q: "",
-  activity: "all",
+  sector: "all",
   furniture: "all",
   onlyOffers: false,
 }
@@ -27,8 +26,9 @@ export default function ProductFilters({ filters, onChange, matching, total }: P
   const set = <K extends keyof PublicFilterState>(k: K, v: PublicFilterState[K]) =>
     onChange({ ...filters, [k]: v })
 
+  const availableTypes = furnitureTypesFor(filters.sector)
   const hasAny =
-    filters.q || filters.activity !== "all" || filters.furniture !== "all" || filters.onlyOffers
+    filters.q || filters.sector !== "all" || filters.furniture !== "all" || filters.onlyOffers
 
   return (
     <div className="bg-white border border-[#DDD9D0] p-5 mb-10 space-y-5">
@@ -62,14 +62,16 @@ export default function ProductFilters({ filters, onChange, matching, total }: P
 
         <div className="md:col-span-3">
           <select
-            value={filters.activity}
-            onChange={(e) => set("activity", e.target.value)}
+            value={filters.sector}
+            onChange={(e) => {
+              onChange({ ...filters, sector: e.target.value as ActivitySector | "all", furniture: "all" })
+            }}
             className="w-full px-3 py-3 border border-[#DDD9D0] bg-[#FAFAF7] text-sm focus:border-[#1B4332] focus:outline-none appearance-none"
           >
             <option value="all">Tutti i settori</option>
-            {ACTIVITY_CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
+            {SECTORS.map((s) => (
+              <option key={s.value} value={s.value}>
+                {s.label}
               </option>
             ))}
           </select>
@@ -82,7 +84,7 @@ export default function ProductFilters({ filters, onChange, matching, total }: P
             className="w-full px-3 py-3 border border-[#DDD9D0] bg-[#FAFAF7] text-sm focus:border-[#1B4332] focus:outline-none appearance-none"
           >
             <option value="all">Tutte le tipologie</option>
-            {FURNITURE_TYPES.map((t) => (
+            {availableTypes.map((t) => (
               <option key={t} value={t}>
                 {t}
               </option>

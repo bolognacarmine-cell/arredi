@@ -1,8 +1,8 @@
-// Tabella admin offerte con sorting e paginazione (mostra anche campi Other)
+// Tabella admin offerte con sorting e paginazione (activitySector + campi Other)
 import { useMemo, useState } from "react"
-import type { Offer, Product } from "../../../types/showroom"
+import type { Offer, Product } from "../../../services/showroomApi"
 import { offerBadge } from "../../../services/showroomApi"
-import { displayActivityCategory, displayFurnitureType } from "../../../types/showroom"
+import { displaySector, displayFurnitureType } from "../../../types/showroom"
 
 interface Props {
   offers: Offer[]
@@ -47,7 +47,7 @@ export default function OfferTable({
       return {
         o,
         phase,
-        activityLabel: displayActivityCategory(o.activityCategory, o.activityCategoryOther),
+        sectorLabel: displaySector(o.activitySector, o.activitySectorOther),
         furnitureLabel: displayFurnitureType(o.furnitureType, o.furnitureTypeOther),
         prods: o.productIds
           .map((id) => products.find((p) => p.id === id))
@@ -131,7 +131,7 @@ export default function OfferTable({
                 </td>
               </tr>
             ) : (
-              paged.map(({ o, phase, prods, activityLabel, furnitureLabel }) => (
+              paged.map(({ o, phase, prods, sectorLabel, furnitureLabel }) => (
                 <tr key={o.id} className="border-t border-[#EAE7E0] hover:bg-[#F7F5F0]">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
@@ -152,7 +152,7 @@ export default function OfferTable({
                     </div>
                   </td>
                   <td className="px-4 py-3 text-xs text-[#4A4A46] text-center">
-                    <div>{activityLabel}</div>
+                    <div>{sectorLabel}</div>
                     <div className="text-[#888580]">{furnitureLabel}</div>
                   </td>
                   <td className="px-4 py-3 text-center tabular-nums">
@@ -240,7 +240,7 @@ export default function OfferTable({
               Nessuna offerta
             </div>
           ) : (
-            paged.map(({ o, phase, activityLabel, furnitureLabel }) => (
+            paged.map(({ o, phase, sectorLabel, furnitureLabel }) => (
               <div key={o.id} className="p-4 space-y-2">
                 <div className="flex items-start gap-3">
                   <span
@@ -254,7 +254,7 @@ export default function OfferTable({
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-sm truncate">{o.title}</div>
                     <div className="text-xs text-[#888580]">
-                      {activityLabel} · {furnitureLabel}
+                      {sectorLabel} · {furnitureLabel}
                     </div>
                   </div>
                 </div>

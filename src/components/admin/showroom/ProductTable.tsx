@@ -1,4 +1,4 @@
-// Tabella admin prodotti con sorting e paginazione (mostra anche campi Other)
+// Tabella admin prodotti con sorting e paginazione (activitySector + campi Other)
 import { useMemo, useState } from "react"
 import {
   computeEffectivePrice,
@@ -6,7 +6,7 @@ import {
   type Product,
 } from "../../../services/showroomApi"
 import {
-  displayActivityCategory,
+  displaySector,
   displayFurnitureType,
   type SortDirection,
 } from "../../../types/showroom"
@@ -26,7 +26,7 @@ const eur = (n: number) =>
     maximumFractionDigits: 0,
   })
 
-type SK = "name" | "basePrice" | "createdAt" | "activityCategory" | "furnitureType"
+type SK = "name" | "basePrice" | "createdAt" | "activitySector" | "furnitureType"
 
 export default function ProductTable({
   products,
@@ -45,7 +45,7 @@ export default function ProductTable({
       products.map((p) => ({
         p,
         eff: computeEffectivePrice(p, offers),
-        activityLabel: displayActivityCategory(p.activityCategory, p.activityCategoryOther),
+        sectorLabel: displaySector(p.activitySector, p.activitySectorOther),
         furnitureLabel: displayFurnitureType(p.furnitureType, p.furnitureTypeOther),
       })),
     [products, offers],
@@ -60,8 +60,8 @@ export default function ProductTable({
           return a.p.name.localeCompare(b.p.name) * d
         case "basePrice":
           return (a.p.basePrice - b.p.basePrice) * d
-        case "activityCategory":
-          return a.activityLabel.localeCompare(b.activityLabel) * d
+        case "activitySector":
+          return a.sectorLabel.localeCompare(b.sectorLabel) * d
         case "furnitureType":
           return a.furnitureLabel.localeCompare(b.furnitureLabel) * d
         default:
@@ -103,7 +103,7 @@ export default function ProductTable({
           <thead>
             <tr className="border-b border-[#DDD9D0] bg-[#F7F5F0]">
               {hdr("Prodotto", "name")}
-              {hdr("Categoria", "activityCategory")}
+              {hdr("Settore", "activitySector")}
               {hdr("Tipologia", "furnitureType")}
               {hdr("Prezzo", "basePrice", "right")}
               <th className="px-4 py-3 text-center text-[11px] uppercase tracking-wide text-[#888580]">
@@ -126,7 +126,7 @@ export default function ProductTable({
                 </td>
               </tr>
             ) : (
-              paged.map(({ p, eff, activityLabel, furnitureLabel }) => (
+              paged.map(({ p, eff, sectorLabel, furnitureLabel }) => (
                 <tr
                   key={p.id}
                   className="border-t border-[#EAE7E0] hover:bg-[#F7F5F0]"
@@ -148,7 +148,7 @@ export default function ProductTable({
                   </td>
                   <td className="px-4 py-3">
                     <span className="inline-block text-xs px-2 py-1 bg-[#EAE7E0] text-[#4A4A46]">
-                      {activityLabel}
+                      {sectorLabel}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-xs text-[#4A4A46]">{furnitureLabel}</td>
@@ -220,7 +220,7 @@ export default function ProductTable({
               Nessun prodotto
             </div>
           ) : (
-            paged.map(({ p, eff, activityLabel, furnitureLabel }) => (
+            paged.map(({ p, eff, sectorLabel, furnitureLabel }) => (
               <div key={p.id} className="p-4 space-y-2">
                 <div className="flex gap-3">
                   <div className="h-14 w-14 overflow-hidden border bg-[#F7F5F0]">
@@ -231,7 +231,7 @@ export default function ProductTable({
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-sm truncate">{p.name}</div>
                     <div className="text-xs text-[#888580]">
-                      {activityLabel} · {furnitureLabel}
+                      {sectorLabel} · {furnitureLabel}
                     </div>
                     <div className="mt-1 text-sm">
                       {eff.savings > 0 ? (

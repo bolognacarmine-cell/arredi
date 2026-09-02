@@ -1,8 +1,8 @@
-// Card prodotto per lista pubblica showroom (supporta campi Other)
+// Card prodotto per lista pubblica showroom (activitySector + campi Other)
 import { Link } from "react-router-dom"
-import type { Product, Offer } from "../../types/showroom"
+import type { Product, Offer } from "../../services/showroomApi"
 import { computeEffectivePrice } from "../../services/showroomApi"
-import { displayActivityCategory, displayFurnitureType } from "../../types/showroom"
+import { displaySector, displayFurnitureType } from "../../types/showroom"
 
 interface Props {
   product: Product
@@ -18,7 +18,7 @@ const eur = (n: number) =>
 
 export default function ProductCard({ product, offers }: Props) {
   const eff = computeEffectivePrice(product, offers)
-  const activityLabel = displayActivityCategory(product.activityCategory, product.activityCategoryOther)
+  const sectorLabel = displaySector(product.activitySector, product.activitySectorOther)
   const furnitureLabel = displayFurnitureType(product.furnitureType, product.furnitureTypeOther)
 
   return (
@@ -60,7 +60,7 @@ export default function ProductCard({ product, offers }: Props) {
       <div className="p-4 sm:p-5 space-y-2.5">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-[10px] uppercase tracking-wider font-medium px-2 py-0.5 bg-[#EAE7E0] text-[#4A4A46]">
-            {activityLabel}
+            {sectorLabel}
           </span>
           <span className="text-[10px] text-[#888580]">
             {furnitureLabel}
