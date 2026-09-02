@@ -27,7 +27,7 @@ app.use(express.urlencoded({ extended: true }));
 // Serve static files from dist/
 app.use(express.static(path.join(__dirname, '../dist')));
 
-// Routes
+// API Routes
 app.use('/api/media', mediaRoutes);
 app.use('/api/offers', offerRoutes);
 app.use('/api/products', productRoutes);
@@ -35,8 +35,8 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/quotes', quoteRoutes);
 app.use('/api/site-config', siteConfigRoutes);
 
-// Serve index.html for all other routes (SPA)
-app.get('*', (req, res) => {
+// Serve index.html for all other routes (SPA) - Express 5 syntax
+app.get('{/:path}', (req, res) => {
   res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
