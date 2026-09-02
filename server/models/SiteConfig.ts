@@ -1,66 +1,13 @@
-import mongoose, { Schema, models } from "mongoose"
+import mongoose from 'mongoose';
 
-const SocialLinksSchema = new Schema({
-  facebook: {
-    type: String,
-    default: ""
-  },
-  instagram: {
-    type: String,
-    default: ""
-  },
-  linkedin: {
-    type: String,
-    default: ""
-  }
-})
-
-const SeoConfigSchema = new Schema({
-  defaultTitle: {
-    type: String,
-    default: ""
-  },
-  defaultDescription: {
-    type: String,
-    default: ""
-  }
-})
+const { Schema } = mongoose;
 
 const SiteConfigSchema = new Schema({
-  id: {
-    type: String,
-    required: true,
-    unique: true,
-    default: "default"
-  },
-  companyName: {
-    type: String,
-    required: true
-  },
-  contactEmail: {
-    type: String,
-    required: true
-  },
-  contactPhone: {
-    type: String,
-    required: true
-  },
-  address: {
-    type: String,
-    default: ""
-  },
-  socialLinks: {
-    type: SocialLinksSchema,
-    default: {}
-  },
-  seo: {
-    type: SeoConfigSchema,
-    default: {}
-  }
-}, {
-  timestamps: true
-})
+  key: { type: String, required: true, unique: true },
+  value: { type: String, required: true },
+  description: { type: String, default: '' },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+});
 
-const SiteConfig = models.SiteConfig || mongoose.model("SiteConfig", SiteConfigSchema)
-
-export default SiteConfig
+export const SiteConfig = mongoose.models.SiteConfig || mongoose.model('SiteConfig', SiteConfigSchema);
