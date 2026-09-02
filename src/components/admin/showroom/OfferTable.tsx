@@ -1,133 +1,120 @@
-// components/admin/showroom/OfferTable.tsx
-// Tabella offerte promozionali: responsive, paginata.
-// Mostra titolo, numero prodotti coinvolti, tipo/valore sconto, periodo,
-// badge promozionale, stato e azioni.
-
+// Tabella admin offerte con sorting e paginazione
 import { useMemo, useState } from "react"
-import { type Offer, type Product, type SortDirection } from "../../../services/showroomApi"
-
-type SortKey = "title" | "createdAt" | "discountValue" | "productIds"
+import type { Offer, Product } from "../../../types/showroom"
+import { offerBadge } from "../../../services/showroomApi"
 
 interface Props {
   offers: Offer[]
   products: Product[]
   onEdit: (o: Offer) => void
-  onToggleActive: (id: string, next: boolean) => void
   onDelete: (o: Offer) => void
-  pageSize?: number
+  onToggle: (id: string, next: boolean) => void
 }
 
-const itDate = (iso: string) =>
-  new Date(iso + "T00:00:00").toLocaleDateString("it-IT", {
+const itDate = (d: string) =>
+  new Date(d + "T00:00:00").toLocaleDateString("it-IT", {
     day: "2-digit",
     month: "short",
     year: "numeric",
   })
 
+type SK = "title" | "createdAt" | "discountValue"
+
 export default function OfferTable({
   offers,
   products,
   onEdit,
-  onToggleActive,
   onDelete,
-  pageSize = 8,
+  onToggle,
 }: Props) {
-  const [sortKey, setSortKey] = useState<SortKey>("createdAt")
-  const [sortDir, setSortDir] = useState<SortDirection>("desc")
+  const [sortKey, setSortKey] = useState<SK>("createdAt")
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc")
   const [page, setPage] = useState(1)
+  const ps = 8
 
   const enriched = useMemo(() => {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
+    const t = today.getTime()
     return offers.map((o) => {
-      const start = new Date(o.startDate).getTime()
-      const end = new Date(o.endDate + "T23:59:59").getTime()
-      const now = today.getTime()
-      let phase: "upcoming" | "active_window" | "expired"
-      if (now < start) phase = "upcoming"
-      else if (now > end) phase = "expired"
-      else phase = "active_window"
-      const associated = o.productIds
-        .map((id) => products.find((p) => p.id === id))
-        .filter(Boolean) as Product[]
-      return { offer: o, phase, associated }
+      const s = new Date(o.startDate).getTime()
+      const e = new Date(o.endDate + "T23:59:59").getTime()
+      let phase: "active" | "upcoming" | "expired"
+      if (t < s) phase = "upcoming"
+      else if (t > e) phase = "expired"
+      else phase = "active"
+      return {
+        o,
+        phase,
+        prods: o.productIds
+          .map((id) => products.find((p) => p.id === id))
+          .filter(Boolean) as Product[],
+      }
     })
   }, [offers, products])
 
   const sorted = useMemo(() => {
     const arr = [...enriched]
     arr.sort((a, b) => {
-      const dir = sortDir === "asc" ? 1 : -1
+      const d = sortDir === "asc" ? 1 : -1
       switch (sortKey) {
         case "title":
-          return a.offer.title.localeCompare(b.offer.title, "it-IT") * dir
+          return a.o.title.localeCompare(b.o.title) * d
         case "discountValue":
-          return (a.offer.discountValue - b.offer.discountValue) * dir
-        case "productIds":
-          return (a.offer.productIds.length - b.offer.productIds.length) * dir
-        case "createdAt":
+          return (a.o.discountValue - b.o.discountValue) * d
         default:
-          return (a.offer.createdAt - b.offer.createdAt) * dir
+          return (a.o.createdAt - b.o.createdAt) * d
       }
     })
     return arr
   }, [enriched, sortKey, sortDir])
 
-  const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize))
-  const safePage = Math.min(page, totalPages)
-  const paged = sorted.slice((safePage - 1) * pageSize, safePage * pageSize)
+  const tp = Math.max(1, Math.ceil(sorted.length / ps))
+  const sp = Math.min(page, tp)
+  const paged = sorted.slice((sp - 1) * ps, sp * ps)
 
-  const toggleSort = (k: SortKey) => {
-    if (k === sortKey) setSortDir((d) => (d === "asc" ? "desc" : "asc"))
-    else {
-      setSortKey(k)
-      setSortDir(k === "title" ? "asc" : "desc")
-    }
-    setPage(1)
-  }
-
-  const header = (
-    label: string,
-    k: SortKey,
-    align: "left" | "right" | "center" = "left",
-  ) => (
+  const hdr = (label: string, k: SK, align: "left" | "right" | "center" = "left") => (
     <th
-      scope="col"
-      onClick={() => toggleSort(k)}
-      className={`px-5 py-3 text-[11px] uppercase tracking-wide text-[#888580] select-none cursor-pointer hover:text-[#1A1A18] transition-colors ${
-        align === "right"
-          ? "text-right"
-          : align === "center"
-            ? "text-center"
-            : "text-left"
+      onClick={() => {
+        if (k === sortKey) setSortDir((s) => (s === "asc" ? "desc" : "asc"))
+        else {
+          setSortKey(k)
+          setSortDir("asc")
+        }
+        setPage(1)
+      }}
+      className={`px-4 py-3 text-[11px] uppercase tracking-wide text-[#888580] select-none cursor-pointer hover:text-[#1A1A18] ${
+        align === "right" ? "text-right" : align === "center" ? "text-center" : ""
       }`}
     >
-      <span className="inline-flex items-center gap-1">
-        {label}
-        <span className="text-[9px] opacity-60">
-          {sortKey === k ? (sortDir === "asc" ? "▲" : "▼") : "↕"}
-        </span>
+      {label}{" "}
+      <span className="opacity-60 text-[9px]">
+        {sortKey === k ? (sortDir === "asc" ? "▲" : "▼") : "↕"}
       </span>
     </th>
   )
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div className="overflow-hidden border border-[#DDD9D0] bg-white">
-        {/* DESKTOP */}
         <table className="w-full text-sm hidden md:table">
           <thead>
             <tr className="border-b border-[#DDD9D0] bg-[#F7F5F0]">
-              {header("Offerta", "title")}
-              {header("Prodotti", "productIds", "center")}
-              {header("Sconto", "discountValue", "center")}
-              <th className="px-5 py-3 text-left text-[11px] uppercase tracking-wide text-[#888580]">
+              {hdr("Offerta", "title")}
+              <th className="px-4 py-3 text-[11px] uppercase tracking-wide text-[#888580] text-center">
+                Categoria / Tipologia
+              </th>
+              {hdr("Sconto", "discountValue", "center")}
+              <th className="px-4 py-3 text-[11px] uppercase tracking-wide text-[#888580] text-center">
+                N. prodotti
+              </th>
+              <th className="px-4 py-3 text-left text-[11px] uppercase tracking-wide text-[#888580]">
                 Periodo
               </th>
-              <th className="px-5 py-3 text-center text-[11px] uppercase tracking-wide text-[#888580]">
+              <th className="px-4 py-3 text-center text-[11px] uppercase tracking-wide text-[#888580]">
                 Stato
               </th>
-              <th className="px-5 py-3 text-right text-[11px] uppercase tracking-wide text-[#888580]">
+              <th className="px-4 py-3 text-right text-[11px] uppercase tracking-wide text-[#888580]">
                 Azioni
               </th>
             </tr>
@@ -135,113 +122,86 @@ export default function OfferTable({
           <tbody>
             {paged.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-5 py-16 text-center">
+                <td colSpan={7} className="px-4 py-16 text-center">
                   <div className="text-4xl text-[#DDD9D0] mb-3">🏷️</div>
-                  <p className="text-[#4A4A46] mb-1">Nessuna offerta trovata</p>
-                  <p className="text-xs text-[#888580]">
-                    Prova a modificare i filtri oppure crea una nuova offerta.
-                  </p>
+                  <p className="text-[#4A4A46]">Nessuna offerta trovata</p>
                 </td>
               </tr>
             ) : (
-              paged.map(({ offer, phase, associated }) => (
-                <tr
-                  key={offer.id}
-                  className="border-t border-[#EAE7E0] hover:bg-[#F7F5F0] transition-colors"
-                >
-                  <td className="px-5 py-4">
-                    <div className="flex items-start gap-3">
+              paged.map(({ o, phase, prods }) => (
+                <tr key={o.id} className="border-t border-[#EAE7E0] hover:bg-[#F7F5F0]">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
                       <span
-                        className="inline-flex items-center px-2.5 py-1 rounded text-xs font-bold text-white flex-shrink-0"
+                        className="text-xs font-bold px-2 py-1 text-white rounded"
                         style={{
-                          background:
-                            offer.discountType === "percent"
-                              ? "#B5965A"
-                              : "#1B4332",
+                          background: o.discountType === "percent" ? "#B5965A" : "#1B4332",
                         }}
                       >
-                        {offer.badgeText ||
-                          (offer.discountType === "percent"
-                            ? `-${offer.discountValue}%`
-                            : `${offer.discountValue}€ OFF`)}
+                        {offerBadge(o)}
                       </span>
                       <div>
-                        <div className="font-medium text-[#1A1A18]">
-                          {offer.title}
-                        </div>
-                        <div className="text-xs text-[#888580] mt-0.5 line-clamp-1 max-w-md">
-                          {offer.description}
+                        <div className="font-medium">{o.title}</div>
+                        <div className="text-xs text-[#888580] line-clamp-1 max-w-sm">
+                          {o.description}
                         </div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-5 py-4 text-center">
-                    <span className="inline-flex items-center gap-1">
-                      <span className="text-[#1A1A18] font-semibold">
-                        {offer.productIds.length}
-                      </span>
-                      <span className="text-xs text-[#888580]">
-                        {offer.productIds.length === 1
-                          ? "prodotto"
-                          : "prodotti"}
-                      </span>
-                    </span>
-                    {associated.length > 0 && (
-                      <div className="text-[10px] text-[#888580] mt-1 max-w-[220px] mx-auto truncate">
-                        {associated.slice(0, 3).map((p) => p.name).join(", ")}
-                        {associated.length > 3 && `, +${associated.length - 3}`}
+                  <td className="px-4 py-3 text-xs text-[#4A4A46] text-center">
+                    <div>{o.activityCategory}</div>
+                    <div className="text-[#888580]">{o.furnitureType}</div>
+                  </td>
+                  <td className="px-4 py-3 text-center tabular-nums">
+                    <div className="font-medium text-[#1A1A18]">
+                      {o.discountType === "percent"
+                        ? `${o.discountValue}%`
+                        : `${o.discountValue}€`}
+                    </div>
+                    <div className="text-[10px] uppercase tracking-wide text-[#888580]">
+                      {o.discountType === "percent" ? "percentuale" : "fisso"}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <span className="font-semibold">{o.productIds.length}</span>
+                    {prods.length > 0 && (
+                      <div className="text-[10px] text-[#888580] truncate max-w-[200px] mx-auto mt-1">
+                        {prods.slice(0, 2).map((p) => p.name).join(", ")}
+                        {prods.length > 2 ? ` +${prods.length - 2}` : ""}
                       </div>
                     )}
                   </td>
-                  <td className="px-5 py-4 text-center tabular-nums">
-                    <div className="text-[#1A1A18] font-medium">
-                      {offer.discountType === "percent"
-                        ? `${offer.discountValue}%`
-                        : `${offer.discountValue}€`}
-                    </div>
-                    <div className="text-[10px] uppercase tracking-wide text-[#888580] mt-0.5">
-                      {offer.discountType === "percent"
-                        ? "percentuale"
-                        : "importo fisso"}
-                    </div>
+                  <td className="px-4 py-3 text-xs text-[#4A4A46]">
+                    <div>Dal <span className="font-medium">{itDate(o.startDate)}</span></div>
+                    <div className="mt-1">Al <span className="font-medium">{itDate(o.endDate)}</span></div>
                   </td>
-                  <td className="px-5 py-4 text-xs text-[#4A4A46]">
-                    <div>
-                      <span className="text-[#888580]">Dal</span>{" "}
-                      <span className="font-medium">{itDate(offer.startDate)}</span>
-                    </div>
-                    <div className="mt-1">
-                      <span className="text-[#888580]">Al</span>{" "}
-                      <span className="font-medium">{itDate(offer.endDate)}</span>
-                    </div>
-                  </td>
-                  <td className="px-5 py-4 text-center">
+                  <td className="px-4 py-3 text-center">
                     <div className="flex flex-col items-center gap-1.5">
                       <button
-                        onClick={() => onToggleActive(offer.id, !offer.active)}
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
-                          offer.active
-                            ? "bg-green-100 text-green-700 hover:bg-green-200"
-                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        onClick={() => onToggle(o.id, !o.active)}
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                          o.active
+                            ? "bg-green-100 text-green-700"
+                            : "bg-gray-100 text-gray-600"
                         }`}
                       >
                         <span
                           className={`w-1.5 h-1.5 rounded-full ${
-                            offer.active ? "bg-green-600" : "bg-gray-400"
+                            o.active ? "bg-green-600" : "bg-gray-400"
                           }`}
                         />
-                        {offer.active ? "Attiva" : "Disattivata"}
+                        {o.active ? "Attiva" : "Off"}
                       </button>
                       <span
                         className={`text-[10px] px-2 py-0.5 rounded ${
-                          phase === "active_window"
+                          phase === "active"
                             ? "bg-[#1B4332]/10 text-[#1B4332]"
                             : phase === "upcoming"
                               ? "bg-amber-100 text-amber-700"
                               : "bg-gray-100 text-gray-500"
                         }`}
                       >
-                        {phase === "active_window"
+                        {phase === "active"
                           ? "In corso"
                           : phase === "upcoming"
                             ? "In partenza"
@@ -249,17 +209,17 @@ export default function OfferTable({
                       </span>
                     </div>
                   </td>
-                  <td className="px-5 py-4">
+                  <td className="px-4 py-3 text-right">
                     <div className="flex justify-end gap-4 text-xs">
                       <button
-                        onClick={() => onEdit(offer)}
-                        className="text-[#888580] hover:text-[#1B4332] transition-colors"
+                        onClick={() => onEdit(o)}
+                        className="text-[#888580] hover:text-[#1B4332]"
                       >
                         Modifica
                       </button>
                       <button
-                        onClick={() => onDelete(offer)}
-                        className="text-red-600 hover:text-red-700 transition-colors"
+                        onClick={() => onDelete(o)}
+                        className="text-red-600 hover:text-red-700"
                       >
                         Elimina
                       </button>
@@ -271,89 +231,68 @@ export default function OfferTable({
           </tbody>
         </table>
 
-        {/* MOBILE */}
         <div className="md:hidden divide-y divide-[#EAE7E0]">
           {paged.length === 0 ? (
-            <div className="px-5 py-16 text-center">
-              <div className="text-4xl text-[#DDD9D0] mb-3">🏷️</div>
-              <p className="text-[#4A4A46] mb-1">Nessuna offerta trovata</p>
-              <p className="text-xs text-[#888580]">
-                Modifica i filtri oppure crea una nuova offerta.
-              </p>
+            <div className="px-4 py-10 text-center text-sm text-[#888580]">
+              Nessuna offerta
             </div>
           ) : (
-            paged.map(({ offer, phase }) => (
-              <div key={offer.id} className="p-4 space-y-3">
+            paged.map(({ o, phase }) => (
+              <div key={o.id} className="p-4 space-y-2">
                 <div className="flex items-start gap-3">
                   <span
-                    className="inline-flex items-center px-2.5 py-1 rounded text-[11px] font-bold text-white flex-shrink-0"
+                    className="text-xs font-bold px-2 py-1 text-white rounded flex-shrink-0"
                     style={{
-                      background:
-                        offer.discountType === "percent"
-                          ? "#B5965A"
-                          : "#1B4332",
+                      background: o.discountType === "percent" ? "#B5965A" : "#1B4332",
                     }}
                   >
-                    {offer.badgeText ||
-                      (offer.discountType === "percent"
-                        ? `-${offer.discountValue}%`
-                        : `${offer.discountValue}€ OFF`)}
+                    {offerBadge(o)}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-[#1A1A18] text-sm">
-                      {offer.title}
-                    </div>
-                    <div className="text-xs text-[#888580] mt-0.5">
-                      {offer.description.length > 120
-                        ? offer.description.slice(0, 120) + "…"
-                        : offer.description}
+                    <div className="font-medium text-sm truncate">{o.title}</div>
+                    <div className="text-xs text-[#888580]">
+                      {o.activityCategory} · {o.furnitureType}
                     </div>
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-[11px]">
                   <div>
-                    <div className="text-[#888580] uppercase tracking-wide">
-                      Prodotti
-                    </div>
+                    <div className="text-[#888580] uppercase">Sconto</div>
                     <div className="font-semibold text-[#1A1A18] mt-0.5">
-                      {offer.productIds.length}
+                      {o.discountType === "percent"
+                        ? `${o.discountValue}%`
+                        : `${o.discountValue}€`}
                     </div>
                   </div>
                   <div>
-                    <div className="text-[#888580] uppercase tracking-wide">
-                      Sconto
-                    </div>
+                    <div className="text-[#888580] uppercase">Prodotti</div>
                     <div className="font-semibold text-[#1A1A18] mt-0.5">
-                      {offer.discountType === "percent"
-                        ? `${offer.discountValue}%`
-                        : `${offer.discountValue}€`}
+                      {o.productIds.length}
                     </div>
                   </div>
                   <div>
-                    <div className="text-[#888580] uppercase tracking-wide">
-                      Stato
-                    </div>
+                    <div className="text-[#888580] uppercase">Stato</div>
                     <button
-                      onClick={() => onToggleActive(offer.id, !offer.active)}
+                      onClick={() => onToggle(o.id, !o.active)}
                       className={`mt-0.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                        offer.active
+                        o.active
                           ? "bg-green-100 text-green-700"
                           : "bg-gray-100 text-gray-600"
                       }`}
                     >
-                      {offer.active ? "Attiva" : "Off"}
+                      {o.active ? "Attiva" : "Off"}
                     </button>
-                    <div className="mt-1">
+                    <div>
                       <span
                         className={`text-[9px] px-1.5 py-0.5 rounded ${
-                          phase === "active_window"
+                          phase === "active"
                             ? "bg-[#1B4332]/10 text-[#1B4332]"
                             : phase === "upcoming"
                               ? "bg-amber-100 text-amber-700"
                               : "bg-gray-100 text-gray-500"
                         }`}
                       >
-                        {phase === "active_window"
+                        {phase === "active"
                           ? "In corso"
                           : phase === "upcoming"
                             ? "In partenza"
@@ -363,21 +302,14 @@ export default function OfferTable({
                   </div>
                 </div>
                 <div className="text-[11px] text-[#4A4A46]">
-                  <span className="text-[#888580]">Periodo:</span> dal{" "}
-                  <span className="font-medium">{itDate(offer.startDate)}</span>{" "}
-                  al <span className="font-medium">{itDate(offer.endDate)}</span>
+                  Dal <span className="font-medium">{itDate(o.startDate)}</span> al{" "}
+                  <span className="font-medium">{itDate(o.endDate)}</span>
                 </div>
                 <div className="flex justify-end gap-4 text-xs pt-1">
-                  <button
-                    onClick={() => onEdit(offer)}
-                    className="text-[#1B4332] font-medium"
-                  >
+                  <button onClick={() => onEdit(o)} className="text-[#1B4332] font-medium">
                     Modifica
                   </button>
-                  <button
-                    onClick={() => onDelete(offer)}
-                    className="text-red-600 font-medium"
-                  >
+                  <button onClick={() => onDelete(o)} className="text-red-600 font-medium">
                     Elimina
                   </button>
                 </div>
@@ -387,41 +319,30 @@ export default function OfferTable({
         </div>
       </div>
 
-      {/* Paginazione */}
-      {totalPages > 1 && (
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <span className="text-xs text-[#888580]">
-            Pagina <span className="text-[#1A1A18] font-medium">{safePage}</span>{" "}
-            di {totalPages} ·{" "}
-            <span className="text-[#1A1A18] font-medium">{sorted.length}</span>{" "}
-            offerte totali
+      {tp > 1 && (
+        <div className="flex flex-wrap justify-between items-center gap-3 text-xs">
+          <span className="text-[#888580]">
+            Pagina {sp}/{tp} · {sorted.length} offerte
           </span>
           <div className="flex items-center gap-1.5">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={safePage === 1}
-              className="w-9 h-9 border border-[#DDD9D0] bg-white text-sm text-[#4A4A46] hover:bg-[#F7F5F0] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              disabled={sp === 1}
+              className="w-9 h-9 border border-[#DDD9D0] bg-white text-sm disabled:opacity-40"
             >
               ←
             </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1)
-              .filter(
-                (p) =>
-                  Math.abs(p - safePage) <= 1 ||
-                  p === 1 ||
-                  p === totalPages,
-              )
+            {Array.from({ length: tp }, (_, i) => i + 1)
+              .filter((p) => Math.abs(p - sp) <= 1 || p === 1 || p === tp)
               .map((p, idx, arr) => (
-                <span key={p} className="inline-flex items-center gap-1.5">
+                <span key={p} className="inline-flex items-center">
                   {idx > 0 && arr[idx - 1] !== p - 1 && (
-                    <span className="text-xs text-[#888580] w-4 text-center">
-                      …
-                    </span>
+                    <span className="w-4 text-center text-[#888580]">…</span>
                   )}
                   <button
                     onClick={() => setPage(p)}
-                    className={`w-9 h-9 border text-sm transition-colors ${
-                      p === safePage
+                    className={`w-9 h-9 border text-sm ${
+                      p === sp
                         ? "bg-[#1B4332] border-[#1B4332] text-white"
                         : "bg-white border-[#DDD9D0] text-[#4A4A46] hover:bg-[#F7F5F0]"
                     }`}
@@ -431,9 +352,9 @@ export default function OfferTable({
                 </span>
               ))}
             <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={safePage === totalPages}
-              className="w-9 h-9 border border-[#DDD9D0] bg-white text-sm text-[#4A4A46] hover:bg-[#F7F5F0] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              onClick={() => setPage((p) => Math.min(tp, p + 1))}
+              disabled={sp === tp}
+              className="w-9 h-9 border border-[#DDD9D0] bg-white text-sm disabled:opacity-40"
             >
               →
             </button>

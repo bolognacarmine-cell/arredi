@@ -1,26 +1,18 @@
-// components/admin/showroom/ProductTable.tsx
-// Tabella prodotti showroom: responsive, paginata, ordinabile per colonna.
-// Mostra nome, categoria, prezzo base, sconto %, stato offerta (calcolato
-// con `computeEffectivePrice`) e badge attivo/inattivo.
-
+// Tabella admin prodotti con sorting e paginazione
 import { useMemo, useState } from "react"
-import { Link } from "react-router-dom"
 import {
   computeEffectivePrice,
   type Offer,
   type Product,
-  type SortDirection,
 } from "../../../services/showroomApi"
-
-type SortKey = "name" | "category" | "basePrice" | "createdAt" | "active"
+import type { SortDirection } from "../../../types/showroom"
 
 interface Props {
   products: Product[]
   offers: Offer[]
   onEdit: (p: Product) => void
-  onToggleActive: (id: string, next: boolean) => void
   onDelete: (p: Product) => void
-  pageSize?: number
+  onToggle: (id: string, next: boolean) => void
 }
 
 const eur = (n: number) =>
@@ -30,109 +22,91 @@ const eur = (n: number) =>
     maximumFractionDigits: 0,
   })
 
+type SK = "name" | "basePrice" | "createdAt" | "activityCategory" | "furnitureType"
+
 export default function ProductTable({
   products,
   offers,
   onEdit,
-  onToggleActive,
   onDelete,
-  pageSize = 8,
+  onToggle,
 }: Props) {
-  const [sortKey, setSortKey] = useState<SortKey>("createdAt")
+  const [sortKey, setSortKey] = useState<SK>("createdAt")
   const [sortDir, setSortDir] = useState<SortDirection>("desc")
   const [page, setPage] = useState(1)
+  const ps = 8
 
-  const enriched = useMemo(() => {
-    return products.map((p) => {
-      const effective = computeEffectivePrice(p, offers)
-      const discountPct =
-        effective.savings > 0
-          ? Math.round((effective.savings / p.basePrice) * 100)
-          : 0
-      return {
-        product: p,
-        effective,
-        discountPct,
-        inOffer: effective.appliedSource !== "base",
-      }
-    })
-  }, [products, offers])
+  const enriched = useMemo(
+    () =>
+      products.map((p) => ({
+        p,
+        eff: computeEffectivePrice(p, offers),
+      })),
+    [products, offers],
+  )
 
   const sorted = useMemo(() => {
     const arr = [...enriched]
     arr.sort((a, b) => {
-      const dir = sortDir === "asc" ? 1 : -1
+      const d = sortDir === "asc" ? 1 : -1
       switch (sortKey) {
         case "name":
-          return a.product.name.localeCompare(b.product.name, "it-IT") * dir
-        case "category":
-          return a.product.category.localeCompare(b.product.category, "it-IT") * dir
+          return a.p.name.localeCompare(b.p.name) * d
         case "basePrice":
-          return (a.product.basePrice - b.product.basePrice) * dir
-        case "active":
-          return Number(a.product.active) - Number(b.product.active) === 0
-            ? a.product.name.localeCompare(b.product.name) * dir
-            : (Number(a.product.active) - Number(b.product.active)) * dir
-        case "createdAt":
+          return (a.p.basePrice - b.p.basePrice) * d
+        case "activityCategory":
+          return a.p.activityCategory.localeCompare(b.p.activityCategory) * d
+        case "furnitureType":
+          return a.p.furnitureType.localeCompare(b.p.furnitureType) * d
         default:
-          return (a.product.createdAt - b.product.createdAt) * dir
+          return (a.p.createdAt - b.p.createdAt) * d
       }
     })
     return arr
   }, [enriched, sortKey, sortDir])
 
-  const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize))
-  const safePage = Math.min(page, totalPages)
-  const paged = sorted.slice((safePage - 1) * pageSize, safePage * pageSize)
+  const tp = Math.max(1, Math.ceil(sorted.length / ps))
+  const sp = Math.min(page, tp)
+  const paged = sorted.slice((sp - 1) * ps, sp * ps)
 
-  const toggleSort = (k: SortKey) => {
-    if (k === sortKey) {
-      setSortDir((d) => (d === "asc" ? "desc" : "asc"))
-    } else {
-      setSortKey(k)
-      setSortDir(k === "name" || k === "category" ? "asc" : "desc")
-    }
-    setPage(1)
-  }
-
-  const header = (
-    label: string,
-    k: SortKey,
-    align: "left" | "right" | "center" = "left",
-  ) => (
+  const hdr = (label: string, k: SK, align: "left" | "right" | "center" = "left") => (
     <th
-      scope="col"
-      onClick={() => toggleSort(k)}
-      className={`px-5 py-3 text-[11px] uppercase tracking-wide text-[#888580] select-none cursor-pointer hover:text-[#1A1A18] transition-colors ${
-        align === "right"
-          ? "text-right"
-          : align === "center"
-            ? "text-center"
-            : "text-left"
+      onClick={() => {
+        if (k === sortKey) setSortDir((s) => (s === "asc" ? "desc" : "asc"))
+        else {
+          setSortKey(k)
+          setSortDir("asc")
+        }
+        setPage(1)
+      }}
+      className={`px-4 py-3 text-[11px] uppercase tracking-wide text-[#888580] select-none cursor-pointer hover:text-[#1A1A18] ${
+        align === "right" ? "text-right" : align === "center" ? "text-center" : ""
       }`}
     >
-      <span className="inline-flex items-center gap-1">
-        {label}
-        <span className="text-[9px] opacity-60">
-          {sortKey === k ? (sortDir === "asc" ? "▲" : "▼") : "↕"}
-        </span>
+      {label}{" "}
+      <span className="opacity-60 text-[9px]">
+        {sortKey === k ? (sortDir === "asc" ? "▲" : "▼") : "↕"}
       </span>
     </th>
   )
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div className="overflow-hidden border border-[#DDD9D0] bg-white">
-        {/* DESKTOP */}
         <table className="w-full text-sm hidden md:table">
           <thead>
             <tr className="border-b border-[#DDD9D0] bg-[#F7F5F0]">
-              {header("Prodotto", "name")}
-              {header("Categoria", "category")}
-              {header("Prezzo", "basePrice", "right")}
-              {header("Sconto", "createdAt", "center")}
-              {header("Stato", "active", "center")}
-              <th className="px-5 py-3 text-right text-[11px] uppercase tracking-wide text-[#888580]">
+              {hdr("Prodotto", "name")}
+              {hdr("Categoria", "activityCategory")}
+              {hdr("Tipologia", "furnitureType")}
+              {hdr("Prezzo", "basePrice", "right")}
+              <th className="px-4 py-3 text-center text-[11px] uppercase tracking-wide text-[#888580]">
+                Badge
+              </th>
+              <th className="px-4 py-3 text-center text-[11px] uppercase tracking-wide text-[#888580]">
+                Stato
+              </th>
+              <th className="px-4 py-3 text-right text-[11px] uppercase tracking-wide text-[#888580]">
                 Azioni
               </th>
             </tr>
@@ -140,118 +114,89 @@ export default function ProductTable({
           <tbody>
             {paged.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-5 py-16 text-center">
+                <td colSpan={7} className="px-4 py-16 text-center">
                   <div className="text-4xl text-[#DDD9D0] mb-3">📦</div>
-                  <p className="text-[#4A4A46] mb-1">Nessun prodotto trovato</p>
-                  <p className="text-xs text-[#888580]">
-                    Prova a modificare i filtri oppure crea un nuovo prodotto.
-                  </p>
+                  <p className="text-[#4A4A46]">Nessun prodotto trovato</p>
                 </td>
               </tr>
             ) : (
-              paged.map(({ product, effective, discountPct, inOffer }) => (
+              paged.map(({ p, eff }) => (
                 <tr
-                  key={product.id}
-                  className="border-t border-[#EAE7E0] hover:bg-[#F7F5F0] transition-colors"
+                  key={p.id}
+                  className="border-t border-[#EAE7E0] hover:bg-[#F7F5F0]"
                 >
-                  <td className="px-5 py-4">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="h-12 w-12 flex-shrink-0 overflow-hidden border border-[#EAE7E0] bg-[#F7F5F0]">
-                        {product.images[0] ? (
-                          <img
-                            src={product.images[0]}
-                            alt=""
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-xs text-[#888580]">
-                            N/A
-                          </div>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 overflow-hidden border bg-[#F7F5F0]">
+                        {p.images[0] && (
+                          <img src={p.images[0]} alt="" className="w-full h-full object-cover" />
                         )}
                       </div>
                       <div className="min-w-0">
-                        <div className="font-medium text-[#1A1A18] truncate">
-                          {product.name}
-                        </div>
+                        <div className="font-medium truncate">{p.name}</div>
                         <div className="text-xs text-[#888580] truncate">
-                          SKU:{" "}
-                          <span className="font-mono">{product.sku}</span>
-                          {product.images.length > 1 && (
-                            <span className="ml-3">
-                              🖼️ {product.images.length} foto
-                            </span>
-                          )}
+                          SKU <span className="font-mono">{p.sku}</span>
                         </div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-5 py-4">
-                    <span className="inline-block bg-[#EAE7E0] text-[#4A4A46] text-xs px-2.5 py-1">
-                      {product.category}
+                  <td className="px-4 py-3">
+                    <span className="inline-block text-xs px-2 py-1 bg-[#EAE7E0] text-[#4A4A46]">
+                      {p.activityCategory}
                     </span>
                   </td>
-                  <td className="px-5 py-4 text-right tabular-nums">
-                    {inOffer ? (
+                  <td className="px-4 py-3 text-xs text-[#4A4A46]">{p.furnitureType}</td>
+                  <td className="px-4 py-3 text-right tabular-nums">
+                    {eff.savings > 0 ? (
                       <div>
                         <div className="text-xs line-through text-[#888580]">
-                          {eur(product.basePrice)}
+                          {eur(p.basePrice)}
                         </div>
                         <div className="font-semibold text-[#1B4332]">
-                          {eur(effective.finalPrice)}
+                          {eur(eff.finalPrice)}
                         </div>
                       </div>
                     ) : (
-                      <div className="font-medium text-[#1A1A18]">
-                        {eur(product.basePrice)}
-                      </div>
+                      <div className="font-medium">{eur(p.basePrice)}</div>
                     )}
                   </td>
-                  <td className="px-5 py-4 text-center">
-                    {inOffer ? (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#B5965A]/10 text-[#8B6F3A] text-xs font-semibold">
-                        {effective.badgeText || `-${discountPct}%`}
+                  <td className="px-4 py-3 text-center">
+                    {eff.badge ? (
+                      <span className="px-2.5 py-1 rounded-full bg-[#B5965A]/15 text-[#8B6F3A] text-xs font-semibold">
+                        {eff.badge}
                       </span>
                     ) : (
                       <span className="text-xs text-[#888580]">—</span>
                     )}
                   </td>
-                  <td className="px-5 py-4 text-center">
+                  <td className="px-4 py-3 text-center">
                     <button
-                      onClick={() => onToggleActive(product.id, !product.active)}
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
-                        product.active
-                          ? "bg-green-100 text-green-700 hover:bg-green-200"
-                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      onClick={() => onToggle(p.id, !p.active)}
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                        p.active
+                          ? "bg-green-100 text-green-700"
+                          : "bg-gray-100 text-gray-600"
                       }`}
-                      title={product.active ? "Clicca per disattivare" : "Clicca per attivare"}
                     >
                       <span
                         className={`w-1.5 h-1.5 rounded-full ${
-                          product.active ? "bg-green-600" : "bg-gray-400"
+                          p.active ? "bg-green-600" : "bg-gray-400"
                         }`}
                       />
-                      {product.active ? "Attivo" : "Inattivo"}
+                      {p.active ? "Attivo" : "Inattivo"}
                     </button>
                   </td>
-                  <td className="px-5 py-4">
+                  <td className="px-4 py-3 text-right">
                     <div className="flex justify-end gap-4 text-xs">
-                      <Link
-                        to={`/progetti`}
-                        target="_blank"
-                        className="text-[#888580] hover:text-[#1B4332] transition-colors"
-                      >
-                        Anteprima
-                      </Link>
                       <button
-                        onClick={() => onEdit(product)}
-                        className="text-[#888580] hover:text-[#1B4332] transition-colors"
+                        onClick={() => onEdit(p)}
+                        className="text-[#888580] hover:text-[#1B4332]"
                       >
                         Modifica
                       </button>
                       <button
-                        onClick={() => onDelete(product)}
-                        className="text-red-600 hover:text-red-700 transition-colors"
+                        onClick={() => onDelete(p)}
+                        className="text-red-600 hover:text-red-700"
                       >
                         Elimina
                       </button>
@@ -263,86 +208,65 @@ export default function ProductTable({
           </tbody>
         </table>
 
-        {/* MOBILE */}
         <div className="md:hidden divide-y divide-[#EAE7E0]">
           {paged.length === 0 ? (
-            <div className="px-5 py-16 text-center">
-              <div className="text-4xl text-[#DDD9D0] mb-3">📦</div>
-              <p className="text-[#4A4A46] mb-1">Nessun prodotto trovato</p>
-              <p className="text-xs text-[#888580]">
-                Modifica i filtri oppure crea un nuovo prodotto.
-              </p>
+            <div className="px-4 py-10 text-center text-sm text-[#888580]">
+              Nessun prodotto
             </div>
           ) : (
-            paged.map(({ product, effective, discountPct, inOffer }) => (
-              <div key={product.id} className="p-4 space-y-3">
+            paged.map(({ p, eff }) => (
+              <div key={p.id} className="p-4 space-y-2">
                 <div className="flex gap-3">
-                  <div className="h-16 w-16 flex-shrink-0 overflow-hidden border border-[#EAE7E0] bg-[#F7F5F0]">
-                    {product.images[0] && (
-                      <img
-                        src={product.images[0]}
-                        alt=""
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
+                  <div className="h-14 w-14 overflow-hidden border bg-[#F7F5F0]">
+                    {p.images[0] && (
+                      <img src={p.images[0]} alt="" className="w-full h-full object-cover" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-[#1A1A18] text-sm">
-                      {product.name}
+                    <div className="font-medium text-sm truncate">{p.name}</div>
+                    <div className="text-xs text-[#888580]">
+                      {p.activityCategory} · {p.furnitureType}
                     </div>
-                    <div className="text-xs text-[#888580] mt-0.5">
-                      {product.category} ·{" "}
-                      <span className="font-mono">{product.sku}</span>
-                    </div>
-                    <div className="mt-1.5 flex items-center gap-2 flex-wrap">
-                      {inOffer ? (
+                    <div className="mt-1 text-sm">
+                      {eff.savings > 0 ? (
                         <>
-                          <span className="text-xs line-through text-[#888580]">
-                            {eur(product.basePrice)}
+                          <span className="text-xs line-through text-[#888580] mr-2">
+                            {eur(p.basePrice)}
                           </span>
                           <span className="font-semibold text-[#1B4332]">
-                            {eur(effective.finalPrice)}
+                            {eur(eff.finalPrice)}
                           </span>
-                          <span className="px-1.5 py-0.5 rounded-full bg-[#B5965A]/10 text-[#8B6F3A] text-[10px] font-semibold">
-                            {effective.badgeText || `-${discountPct}%`}
-                          </span>
+                          {eff.badge && (
+                            <span className="ml-2 px-2 py-0.5 rounded-full bg-[#B5965A]/15 text-[#8B6F3A] text-[10px] font-semibold">
+                              {eff.badge}
+                            </span>
+                          )}
                         </>
                       ) : (
-                        <span className="font-medium text-[#1A1A18] text-sm">
-                          {eur(product.basePrice)}
-                        </span>
+                        <span className="font-medium">{eur(p.basePrice)}</span>
                       )}
                     </div>
                   </div>
                 </div>
-                <div className="flex justify-between items-center gap-3 pt-1">
+                <div className="flex justify-between items-center gap-3">
                   <button
-                    onClick={() => onToggleActive(product.id, !product.active)}
+                    onClick={() => onToggle(p.id, !p.active)}
                     className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium ${
-                      product.active
-                        ? "bg-green-100 text-green-700"
-                        : "bg-gray-100 text-gray-600"
+                      p.active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"
                     }`}
                   >
                     <span
                       className={`w-1.5 h-1.5 rounded-full ${
-                        product.active ? "bg-green-600" : "bg-gray-400"
+                        p.active ? "bg-green-600" : "bg-gray-400"
                       }`}
                     />
-                    {product.active ? "Attivo" : "Inattivo"}
+                    {p.active ? "Attivo" : "Inattivo"}
                   </button>
                   <div className="flex gap-4 text-xs">
-                    <button
-                      onClick={() => onEdit(product)}
-                      className="text-[#1B4332] font-medium"
-                    >
+                    <button onClick={() => onEdit(p)} className="text-[#1B4332] font-medium">
                       Modifica
                     </button>
-                    <button
-                      onClick={() => onDelete(product)}
-                      className="text-red-600 font-medium"
-                    >
+                    <button onClick={() => onDelete(p)} className="text-red-600 font-medium">
                       Elimina
                     </button>
                   </div>
@@ -353,41 +277,30 @@ export default function ProductTable({
         </div>
       </div>
 
-      {/* Paginazione */}
-      {totalPages > 1 && (
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <span className="text-xs text-[#888580]">
-            Pagina <span className="text-[#1A1A18] font-medium">{safePage}</span>{" "}
-            di {totalPages} ·{" "}
-            <span className="text-[#1A1A18] font-medium">{sorted.length}</span>{" "}
-            prodotti totali
+      {tp > 1 && (
+        <div className="flex flex-wrap justify-between items-center gap-3 text-xs">
+          <span className="text-[#888580]">
+            Pagina {sp}/{tp} · {sorted.length} prodotti
           </span>
           <div className="flex items-center gap-1.5">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={safePage === 1}
-              className="w-9 h-9 border border-[#DDD9D0] bg-white text-sm text-[#4A4A46] hover:bg-[#F7F5F0] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              disabled={sp === 1}
+              className="w-9 h-9 border border-[#DDD9D0] bg-white text-sm disabled:opacity-40"
             >
               ←
             </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1)
-              .filter(
-                (p) =>
-                  Math.abs(p - safePage) <= 1 ||
-                  p === 1 ||
-                  p === totalPages,
-              )
+            {Array.from({ length: tp }, (_, i) => i + 1)
+              .filter((p) => Math.abs(p - sp) <= 1 || p === 1 || p === tp)
               .map((p, idx, arr) => (
-                <span key={p} className="inline-flex items-center gap-1.5">
+                <span key={p} className="inline-flex items-center">
                   {idx > 0 && arr[idx - 1] !== p - 1 && (
-                    <span className="text-xs text-[#888580] w-4 text-center">
-                      …
-                    </span>
+                    <span className="w-4 text-center text-[#888580]">…</span>
                   )}
                   <button
                     onClick={() => setPage(p)}
-                    className={`w-9 h-9 border text-sm transition-colors ${
-                      p === safePage
+                    className={`w-9 h-9 border text-sm ${
+                      p === sp
                         ? "bg-[#1B4332] border-[#1B4332] text-white"
                         : "bg-white border-[#DDD9D0] text-[#4A4A46] hover:bg-[#F7F5F0]"
                     }`}
@@ -397,9 +310,9 @@ export default function ProductTable({
                 </span>
               ))}
             <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={safePage === totalPages}
-              className="w-9 h-9 border border-[#DDD9D0] bg-white text-sm text-[#4A4A46] hover:bg-[#F7F5F0] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              onClick={() => setPage((p) => Math.min(tp, p + 1))}
+              disabled={sp === tp}
+              className="w-9 h-9 border border-[#DDD9D0] bg-white text-sm disabled:opacity-40"
             >
               →
             </button>

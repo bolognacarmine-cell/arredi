@@ -1,595 +1,459 @@
-// servizi/showroomApi.ts — MOCK API
-// Simula il backend per la sezione Admin Showroom.
-// Ogni funzione usa un `setTimeout` per simulare la latenza di rete (200–700ms).
-// Tutti i dati persistono in localStorage (chiave "farcom-showroom") cosi i
-// cambiamenti fatti in Admin sopravvivono ai refresh, esattamente come fanno
-// projectStore / quoteStore nel resto del sito.
-//
-// 🔗 Quando arrivera il backend reale:
-//    1. Sostituisci ogni corpo di funzione con una fetch() / axios verso il tuo server
-//       (es. GET /api/showroom/products, POST /api/showroom/products, ecc.)
-//    2. Mantieni le stesse interfacce Product / Offer in modo da non dover
-//       ritoccare pagine e componenti che le consumano.
-//    3. Se usi TanStack Query (consigliato), wrappa le chiamate dentro
-//       useQuery / useMutation invece di chiamare direttamente le funzioni.
-
+// Mock API prodotti + offerte showroom (persistenza localStorage)
 import { useEffect, useState } from "react"
+import type { Product, Offer } from "../types/showroom"
+import { ACTIVITY_CATEGORIES } from "../constants/showroomCategories"
+import { FURNITURE_TYPES } from "../constants/furnitureTypes"
 
-// ============================================================
-// INTERFACCE
-// ============================================================
+const P_KEY = "farcom-showroom-products-v2"
+const O_KEY = "farcom-showroom-offers-v2"
 
-export interface Product {
-  id: string
-  name: string
-  description: string
-  category: string
-  basePrice: number
-  discountedPrice?: number | null
-  images: string[]
-  sku: string
-  active: boolean
-  createdAt: number
-  updatedAt: number
-}
+const DAY = 86_400_000
+const now = Date.now()
 
-export interface Offer {
-  id: string
-  title: string
-  description: string
+// Utility
+export const slugify = (s: string) =>
+  s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+
+export const discountedPrice = (p: { basePrice: number; discountPct: number | null }) =>
+  p.discountPct && p.discountPct > 0
+    ? Math.round(p.basePrice * (1 - p.discountPct / 100) * 100) / 100
+    : p.basePrice
+
+export const offerBadge = (o: {
   discountType: "percent" | "fixed"
   discountValue: number
-  productIds: string[]
-  startDate: string // YYYY-MM-DD
-  endDate: string // YYYY-MM-DD
-  active: boolean
-  badgeText: string // es. "-20%", "50€ OFF", "Offerta limitata"
-  createdAt: number
-  updatedAt: number
-}
+}) =>
+  o.discountType === "percent" ? `-${Math.round(o.discountValue)}%` : `${Math.round(o.discountValue)}€ OFF`
 
-export type SortDirection = "asc" | "desc"
-
-export interface ProductsFilters {
-  q: string
-  category: string
-  offerStatus: "all" | "in_offer" | "no_offer" | "active" | "inactive"
-  sortKey: keyof Pick<Product, "name" | "category" | "basePrice" | "createdAt">
-  sortDir: SortDirection
-  page: number
-  pageSize: number
-}
-
-export interface OffersFilters {
-  q: string
-  active: "all" | "active" | "inactive"
-  page: number
-  pageSize: number
-}
-
-// ============================================================
-// DATI DI ESEMPIO (seed iniziali)
-// ============================================================
-
-const CATEGORIES = [
-  "Soggiorno",
-  "Cucina",
-  "Camera da letto",
-  "Bagno",
-  "Ufficio",
-  "Esterno",
-  "Su misura",
-]
-
-const now = Date.now()
-const DAY = 86_400_000
+// ==== Seed ====
+const img = (seed: string, bg = "EAE7E0", fg = "1A1A18") =>
+  `https://placehold.co/1200x800/${bg}/${fg}?text=${encodeURIComponent(seed)}`
 
 const seedProducts: Product[] = [
-  {
-    id: "p-001",
-    name: "Divano in pelle Chesterfield 3 posti",
-    description:
-      "Divano classico Chesterfield rivestito in vera pelle italiana, struttura in legno massello, bottoni trapuntati e finiture in bronzo scuro. Perfetto per uno studio o un soggiorno dallo stile tradizionale.",
-    category: "Soggiorno",
-    basePrice: 3890,
-    discountedPrice: 3190,
-    images: [
-      "https://placehold.co/1200x800/EAE7E0/1A1A18?text=Divano+Chesterfield+1",
-      "https://placehold.co/1200x800/F7F5F0/1B4332?text=Divano+Chesterfield+2",
-      "https://placehold.co/1200x800/DDD9D0/4A4A46?text=Divano+Chesterfield+3",
-    ],
-    sku: "FAR-SOG-001",
-    active: true,
-    createdAt: now - 40 * DAY,
-    updatedAt: now - 5 * DAY,
-  },
-  {
-    id: "p-002",
-    name: "Cucina moderna in rovere e acciaio",
-    description:
-      "Cucina lineare 6 metri, pensili in rovere spazzolato, top in quarzo, elettrodomestici da incasso inclusi, isola centrale con top in acciaio inox.",
-    category: "Cucina",
-    basePrice: 12500,
-    discountedPrice: null,
-    images: [
-      "https://placehold.co/1200x800/DDD9D0/1A1A18?text=Cucina+Rovere",
-    ],
-    sku: "FAR-CUC-007",
-    active: true,
-    createdAt: now - 60 * DAY,
-    updatedAt: now - 12 * DAY,
-  },
-  {
-    id: "p-003",
-    name: "Letto matrimoniale con testiera capitonne'",
-    description:
-      "Testiera imbottita e capitonnè in tessuto antimacchia, rete doghe in legno, cassetti contenitori laterali inclusi. Disponibile in oltre 50 varianti di tessuto.",
-    category: "Camera da letto",
-    basePrice: 2190,
-    discountedPrice: 1790,
-    images: [
-      "https://placehold.co/1200x800/F7F5F0/1A1A18?text=Letto+Capitonné+1",
-      "https://placehold.co/1200x800/EAE7E0/1B4332?text=Letto+Capitonné+2",
-    ],
-    sku: "FAR-CAM-012",
-    active: true,
-    createdAt: now - 25 * DAY,
-    updatedAt: now - 2 * DAY,
-  },
-  {
-    id: "p-004",
-    name: "Mobile bagno in legno teak 120cm",
-    description:
-      "Mobile bagno sospeso in legno teak certificato FSC, due cassetti con chiusura soft-close, piano in gres porcellanato effetto pietra, specchio LED incluso.",
-    category: "Bagno",
-    basePrice: 1890,
-    discountedPrice: null,
-    images: [
-      "https://placehold.co/1200x800/EAE7E0/4A4A46?text=Mobile+Bagno+Teak",
-    ],
-    sku: "FAR-BAG-003",
-    active: true,
-    createdAt: now - 70 * DAY,
-    updatedAt: now - 20 * DAY,
-  },
-  {
-    id: "p-005",
-    name: "Scrivania direzionale executive in noce",
-    description:
-      "Scrivania direzionale top 240×110 in noce canaletto, cassettiera laterale con 3 cassetti, finitura opaca cerata a mano. Compresa cable management integrato.",
-    category: "Ufficio",
-    basePrice: 3400,
-    discountedPrice: 2890,
-    images: [
-      "https://placehold.co/1200x800/1A1A18/B5965A?text=Scrivania+Noce+1",
-      "https://placehold.co/1200x800/1B4332/F7F5F0?text=Scrivania+Noce+2",
-      "https://placehold.co/1200x800/4A4A46/B5965A?text=Scrivania+Noce+3",
-      "https://placehold.co/1200x800/888580/1A1A18?text=Scrivania+Noce+4",
-    ],
-    sku: "FAR-UFF-020",
-    active: true,
-    createdAt: now - 90 * DAY,
-    updatedAt: now - 8 * DAY,
-  },
-  {
-    id: "p-006",
-    name: "Salotto giardino outdoor in alluminio",
-    description:
-      "Set 4 posti: divano 2 posti, 2 poltrone, tavolino basso. Struttura in alluminio verniciato a polvere antracite, cuscini in tessuto Sunbrella idrorepellente.",
-    category: "Esterno",
-    basePrice: 2690,
-    discountedPrice: null,
-    images: [
-      "https://placehold.co/1200x800/1B4332/F7F5F0?text=Salotto+Outdoor",
-    ],
-    sku: "FAR-EST-008",
-    active: true,
-    createdAt: now - 50 * DAY,
-    updatedAt: now - 15 * DAY,
-  },
-  {
-    id: "p-007",
-    name: "Libreria a ponte su misura rovere",
-    description:
-      "Libreria a ponte realizzata su misura in rovere sbiancato, elementi sospesi, inserti in marmo statuario, LED integrati. Progetto e preventivo personalizzato.",
-    category: "Su misura",
-    basePrice: 9800,
-    discountedPrice: null,
-    images: [
-      "https://placehold.co/1200x800/B5965A/1A1A18?text=Libreria+Su+Misura+1",
-      "https://placehold.co/1200x800/F7F5F0/1B4332?text=Libreria+Su+Misura+2",
-    ],
-    sku: "FAR-SMS-033",
-    active: true,
-    createdAt: now - 120 * DAY,
-    updatedAt: now - 30 * DAY,
-  },
-  {
-    id: "p-008",
-    name: "Poltrona lounge in velluto bordeaux",
-    description:
-      "Poltrona lounge con schienale alto e poggiapiedi coordinato. Struttura in frassino, rivestimento in velluto di cotone made in Italy color bordeaux.",
-    category: "Soggiorno",
-    basePrice: 1450,
-    discountedPrice: 1160,
-    images: [
-      "https://placehold.co/1200x800/882A3A/F7F5F0?text=Poltrona+Velluto",
-    ],
-    sku: "FAR-SOG-045",
-    active: false,
-    createdAt: now - 150 * DAY,
-    updatedAt: now - 60 * DAY,
-  },
-  {
-    id: "p-009",
-    name: "Tavolo da pranzo allungabile 180–240",
-    description:
-      "Top in vetro temperato e struttura in metallo verniciato bronzo. Sistema di allungo integrato, si estende da 180 a 240 cm in pochi secondi.",
-    category: "Soggiorno",
-    basePrice: 2380,
-    discountedPrice: null,
-    images: [
-      "https://placehold.co/1200x800/EAE7E0/1A1A18?text=Tavolo+Allungabile",
-    ],
-    sku: "FAR-SOG-070",
-    active: true,
-    createdAt: now - 35 * DAY,
-    updatedAt: now - 7 * DAY,
-  },
-  {
-    id: "p-010",
-    name: "Wardrobe cabina armadio walk-in",
-    description:
-      "Cabina armadio walk-in 4×3 metri, moduli in melamina effetto rovere, mensole, cassettiere, aste appenderia, vano scarpe e specchio full-height.",
-    category: "Camera da letto",
-    basePrice: 5600,
-    discountedPrice: 4790,
-    images: [
-      "https://placehold.co/1200x800/4A4A46/B5965A?text=Walk-in+Closet+1",
-      "https://placehold.co/1200x800/DDD9D0/1A1A18?text=Walk-in+Closet+2",
-    ],
-    sku: "FAR-CAM-088",
-    active: true,
-    createdAt: now - 15 * DAY,
-    updatedAt: now - 1 * DAY,
-  },
+  mkP(
+    "p01",
+    "Bancone reception premium rovere",
+    "Bancone reception realizzato in rovere canaletto, finitura opaca, struttura in metallo verniciato bronzo, top in quarzo. Adatto a studi medici, uffici e hotel.",
+    "Uffici",
+    "Banconi reception",
+    4890,
+    10,
+    [img("Bancone+Reception", "EAE7E0", "1A1A18"), img("Bancone+Dettaglio", "1B4332", "F7F5F0")],
+    "FAR-UFF-R01",
+  ),
+  mkP(
+    "p02",
+    "Postazione taglio Duo luce LED",
+    "Postazione taglio 2 posti con specchiera retroilluminata LED integrata, mensole in vetro temperato e presa aria/energia per ogni stazione.",
+    "Parrucchieri",
+    "Postazioni taglio",
+    3200,
+    null,
+    [img("Postazione+Taglio", "DDD9D0", "1A1A18")],
+    "FAR-PAR-T02",
+  ),
+  mkP(
+    "p03",
+    "Specchiera retroilluminata oval 120",
+    "Specchiera da parete cornice alluminio spazzolato, illuminazione perimetrale LED 3000K, anti-appannamento integrato.",
+    "Barberie",
+    "Specchiere retroilluminate",
+    690,
+    15,
+    [img("Specchiera+Oval", "888580", "F7F5F0"), img("Specchiera+Montaggio", "B5965A", "1A1A18")],
+    "FAR-BAR-S03",
+  ),
+  mkP(
+    "p04",
+    "Divano attesa modular 3 posti",
+    "Sistema modulare per zone attesa con sedute removibili, rivestimento in antimacchia, piedini in metallo.",
+    "Studi medici",
+    "Zone attesa",
+    1950,
+    null,
+    [img("Zona+Attesa", "F7F5F0", "1A1A18"), img("Dettaglio+Tessuto", "DDD9D0", "1B4332")],
+    "FAR-MED-A04",
+  ),
+  mkP(
+    "p05",
+    "Armadio barbiere 6 ante mirror",
+    "Armadiatura con ante a specchio, vani a giorno, cassettiera interna e porta attrezzi per barbieri.",
+    "Barberie",
+    "Armadiature",
+    2780,
+    12,
+    [img("Armadio+Barberia", "1A1A18", "B5965A"), img("Armadio+Aperto", "4A4A46", "F7F5F0")],
+    "FAR-BAR-A05",
+  ),
+  mkP(
+    "p06",
+    "Lavandino ceramica white + mobile",
+    "Lavandino integrato in ceramica con miscelatore alto, mobile base in laminato anticalcare, ruote per spostamento.",
+    "Parrucchieri",
+    "Lavandini integrati",
+    1450,
+    null,
+    [img("Lavandino", "F7F5F0", "1A1A18")],
+    "FAR-PAR-L06",
+  ),
+  mkP(
+    "p07",
+    "Vetrina espositiva L200 LED",
+    "Vetrina a tutta altezza con ante in vetro, LED interni 4000K e ripiani regolabili. Perfetta per negozi.",
+    "Negozi",
+    "Vetrine espositive",
+    2190,
+    8,
+    [img("Vetrina+Negozio", "EAE7E0", "1A1A18"), img("Vetrina+Interno", "B5965A", "1A1A18")],
+    "FAR-NEG-V07",
+  ),
+  mkP(
+    "p08",
+    "Poltrona operativa ergonomica",
+    "Seduta ergonomica con supporto lombare, rotelle parquet, braccioli regolabili e reclinazione.",
+    "Uffici",
+    "Sedute operative",
+    720,
+    20,
+    [img("Poltrona+Operativa", "1B4332", "F7F5F0")],
+    "FAR-UFF-S08",
+  ),
+  mkP(
+    "p09",
+    "Scrivania direzionale Top in legno",
+    "Top 180x90 in legno rovere, struttura in metallo, cassettiera mobile inclusa.",
+    "Uffici",
+    "Scrivanie",
+    1690,
+    null,
+    [img("Scrivania+Direz", "DDD9D0", "1A1A18"), img("Scrivania+Lato", "888580", "F7F5F0")],
+    "FAR-UFF-D09",
+  ),
+  mkP(
+    "p10",
+    "Scaffale mensole libreria",
+    "Sistema a scaffalature in metallo e legno, 3 ripiani, carico 80kg per ripiano.",
+    "Scuole",
+    "Scaffalature",
+    590,
+    null,
+    [img("Scaffalature", "F7F5F0", "4A4A46")],
+    "FAR-SCU-F10",
+  ),
+  mkP(
+    "p11",
+    "Faretto LED tecnico per postazioni",
+    "Illuminazione tecnica orientabile 36W con binario, CRI 90, temperatura colore 4000K.",
+    "Parrucchieri",
+    "Illuminazione tecnica",
+    280,
+    null,
+    [img("Faretto+LED", "1A1A18", "B5965A")],
+    "FAR-PAR-I11",
+  ),
+  mkP(
+    "p12",
+    "Sistema modulare accoglienza hotel",
+    "Composizione custom banconi + colonne + vetrine per hall hotel. Configurabile su misura.",
+    "Hotel",
+    "Elementi modulari",
+    8900,
+    null,
+    [img("Sistema+Hotel", "EAE7E0", "1A1A18"), img("Hall+Render", "B5965A", "1A1A18")],
+    "FAR-HOT-M12",
+  ),
 ]
 
 const seedOffers: Offer[] = [
   {
-    id: "o-001",
-    title: "Collezione Autunno — Soggiorni in promo",
-    description:
-      "Promozione dedicata alla stagione autunnale: sconti speciali su tutta la gamma divani e complementi soggiorno. Valida su ordini confermati entro il 30 novembre.",
+    id: "o01",
+    title: "Opening Parrucchieri -15%",
+    description: "Sconto dedicato a nuove aperture di saloni parrucchieri. Postazioni taglio, specchiere e lavandini in promozione.",
+    activityCategory: "Parrucchieri",
+    furnitureType: "Altro",
     discountType: "percent",
-    discountValue: 18,
-    productIds: ["p-001", "p-008", "p-009"],
-    startDate: new Date(now - 3 * DAY).toISOString().slice(0, 10),
-    endDate: new Date(now + 60 * DAY).toISOString().slice(0, 10),
+    discountValue: 15,
+    productIds: ["p02", "p06", "p11"],
+    startDate: ISO(-1),
+    endDate: ISO(30),
     active: true,
-    badgeText: "-18% Autunno",
-    createdAt: now - 3 * DAY,
-    updatedAt: now - 2 * DAY,
+    createdAt: now - 2 * DAY,
+    updatedAt: now - 1 * DAY,
   },
   {
-    id: "o-002",
-    title: "Showroom Demo — 500€ di sconto",
-    description:
-      "Ritiro in showroom di un pezzo esposizione: sconto fisso di 500 euro per tutti gli articoli demo selezionati. Pezzo unico, disponibile fino ad esaurimento.",
+    id: "o02",
+    title: "Pacchetto Barberia Gold",
+    description: "Kit completo per aprire una barberia: specchiera + armadio + 300€ di sconto fisso.",
+    activityCategory: "Barberie",
+    furnitureType: "Altro",
     discountType: "fixed",
-    discountValue: 500,
-    productIds: ["p-005", "p-003"],
-    startDate: new Date(now - 1 * DAY).toISOString().slice(0, 10),
-    endDate: new Date(now + 20 * DAY).toISOString().slice(0, 10),
+    discountValue: 300,
+    productIds: ["p03", "p05"],
+    startDate: ISO(-5),
+    endDate: ISO(45),
     active: true,
-    badgeText: "500€ OFF Demo",
-    createdAt: now - 1 * DAY,
-    updatedAt: now,
-  },
-  {
-    id: "o-003",
-    title: "Black Friday Arredamento",
-    description:
-      "Anteprima Black Friday: 25% su tutti i prodotti selezionati. Iscriviti alla newsletter per ricevere il codice sconto esclusivo.",
-    discountType: "percent",
-    discountValue: 25,
-    productIds: ["p-002", "p-004", "p-010", "p-006"],
-    startDate: new Date(now + 5 * DAY).toISOString().slice(0, 10),
-    endDate: new Date(now + 25 * DAY).toISOString().slice(0, 10),
-    active: false,
-    badgeText: "-25% BF",
     createdAt: now - 5 * DAY,
     updatedAt: now - 3 * DAY,
   },
   {
-    id: "o-004",
-    title: "Fuori Salone 2025 — Edizione Limitata",
-    description:
-      "Prezzo promozionale per i pezzi di edizione limitata presentati durante il Fuori Salone. Consegna immediata disponibile.",
-    discountType: "fixed",
-    discountValue: 1000,
-    productIds: ["p-007"],
-    startDate: new Date(now - 20 * DAY).toISOString().slice(0, 10),
-    endDate: new Date(now + 90 * DAY).toISOString().slice(0, 10),
+    id: "o03",
+    title: "Back to School",
+    description: "Promozione inizio anno scolastico: -10% su scaffalature, arredi scolastici e scrivanie.",
+    activityCategory: "Scuole",
+    furnitureType: "Altro",
+    discountType: "percent",
+    discountValue: 10,
+    productIds: ["p10", "p09"],
+    startDate: ISO(10),
+    endDate: ISO(60),
+    active: false,
+    createdAt: now - 10 * DAY,
+    updatedAt: now - 1 * DAY,
+  },
+  {
+    id: "o04",
+    title: "Rinnova il tuo Studio Medico",
+    description: "Zone attesa e reception per studi medici: -8% + consegna inclusa.",
+    activityCategory: "Studi medici",
+    furnitureType: "Altro",
+    discountType: "percent",
+    discountValue: 8,
+    productIds: ["p04", "p01"],
+    startDate: ISO(-20),
+    endDate: ISO(10),
     active: true,
-    badgeText: "Offerta limitata",
     createdAt: now - 20 * DAY,
-    updatedAt: now - 18 * DAY,
+    updatedAt: now - 10 * DAY,
   },
 ]
 
-// ============================================================
-// STORAGE LAYER (persistenza browser)
-// ============================================================
-
-const PRODUCTS_KEY = "farcom-showroom-products"
-const OFFERS_KEY = "farcom-showroom-offers"
-
-function readLS<T>(key: string, fallback: T): T {
-  if (typeof window === "undefined") return fallback
-  try {
-    const raw = window.localStorage.getItem(key)
-    if (!raw) return fallback
-    return JSON.parse(raw) as T
-  } catch {
-    return fallback
+function mkP(
+  id: string,
+  name: string,
+  description: string,
+  activityCategory: string,
+  furnitureType: string,
+  basePrice: number,
+  discountPct: number | null,
+  images: string[],
+  sku: string,
+): Product {
+  return {
+    id,
+    slug: slugify(name) + "-" + id.slice(-3),
+    name,
+    description,
+    activityCategory,
+    furnitureType,
+    basePrice,
+    discountPct,
+    images,
+    sku,
+    active: true,
+    createdAt: now - Math.floor(Math.random() * 120) * DAY,
+    updatedAt: now - Math.floor(Math.random() * 15) * DAY,
   }
 }
 
-function writeLS<T>(key: string, value: T) {
-  if (typeof window === "undefined") return
-  window.localStorage.setItem(key, JSON.stringify(value))
-  window.dispatchEvent(
-    new CustomEvent<{ key: string }>("farcom-showroom-updated", {
-      detail: { key },
-    }),
+function ISO(offsetDays: number) {
+  const d = new Date(now + offsetDays * DAY)
+  return d.toISOString().slice(0, 10)
+}
+
+// ==== Storage layer ====
+function read<T>(k: string, fb: T): T {
+  try {
+    const r = window.localStorage.getItem(k)
+    return r ? (JSON.parse(r) as T) : fb
+  } catch {
+    return fb
+  }
+}
+function write<T>(k: string, v: T) {
+  try {
+    window.localStorage.setItem(k, JSON.stringify(v))
+    window.dispatchEvent(
+      new CustomEvent("farcom-showroom2-updated", { detail: { k } }),
+    )
+  } catch {}
+}
+const delay = <T>(v: T, min = 120, max = 500) =>
+  new Promise<T>((r) =>
+    setTimeout(() => r(v), Math.floor(Math.random() * (max - min + 1)) + min),
+  )
+
+// ==== API ====
+export async function getProducts(): Promise<Product[]> {
+  return delay(read<Product[]>(P_KEY, seedProducts))
+}
+export async function getProductById(id: string): Promise<Product | null> {
+  return delay(read<Product[]>(P_KEY, seedProducts).find((p) => p.id === id) ?? null)
+}
+export async function getProductBySlug(slug: string): Promise<Product | null> {
+  return delay(
+    read<Product[]>(P_KEY, seedProducts).find((p) => p.slug === slug) ?? null,
   )
 }
-
-function delay<T>(data: T, min = 200, max = 700): Promise<T> {
-  const ms = Math.floor(Math.random() * (max - min + 1)) + min
-  return new Promise((resolve) => setTimeout(() => resolve(data), ms))
-}
-
-function uid(prefix: string) {
-  return `${prefix}-${Math.random().toString(36).slice(2, 8)}${Date.now()
-    .toString(36)
-    .slice(-4)}`
-}
-
-// ============================================================
-// API — PRODUCTS
-// ============================================================
-
-export async function getProducts(): Promise<Product[]> {
-  const list = readLS<Product[]>(PRODUCTS_KEY, seedProducts)
-  return delay(list)
-}
-
-export async function getProductById(id: string): Promise<Product | null> {
-  const list = await getProducts()
-  return delay(list.find((p) => p.id === id) ?? null)
-}
-
 export async function createProduct(
-  data: Omit<Product, "id" | "createdAt" | "updatedAt">,
+  data: Omit<Product, "id" | "createdAt" | "updatedAt" | "slug"> & {
+    slug?: string
+  },
 ): Promise<Product> {
-  const list = readLS<Product[]>(PRODUCTS_KEY, seedProducts)
-  const newProd: Product = {
+  const list = read<Product[]>(P_KEY, seedProducts)
+  const p: Product = {
     ...data,
-    id: uid("p"),
+    id: "p" + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-3),
+    slug: data.slug || slugify(data.name) + "-" + Math.random().toString(36).slice(2, 6),
     createdAt: Date.now(),
     updatedAt: Date.now(),
   }
-  const next = [newProd, ...list]
-  writeLS(PRODUCTS_KEY, next)
-  return delay(newProd)
+  const next = [p, ...list]
+  write(P_KEY, next)
+  return delay(p)
 }
-
 export async function updateProduct(
   id: string,
-  data: Partial<Omit<Product, "id" | "createdAt" | "updatedAt">>,
+  patch: Partial<Omit<Product, "id" | "createdAt" | "updatedAt">>,
 ): Promise<Product | null> {
-  const list = readLS<Product[]>(PRODUCTS_KEY, seedProducts)
-  const idx = list.findIndex((p) => p.id === id)
-  if (idx === -1) return delay(null)
+  const list = read<Product[]>(P_KEY, seedProducts)
+  const i = list.findIndex((p) => p.id === id)
+  if (i === -1) return delay(null)
   const updated: Product = {
-    ...list[idx],
-    ...data,
+    ...list[i],
+    ...patch,
+    slug: patch.name ? slugify(patch.name) + "-" + list[i].id.slice(-3) : list[i].slug,
     updatedAt: Date.now(),
   }
-  list[idx] = updated
-  writeLS(PRODUCTS_KEY, list)
+  list[i] = updated
+  write(P_KEY, list)
   return delay(updated)
 }
-
 export async function deleteProduct(id: string): Promise<boolean> {
-  const list = readLS<Product[]>(PRODUCTS_KEY, seedProducts)
+  const list = read<Product[]>(P_KEY, seedProducts)
+  const before = list.length
   const next = list.filter((p) => p.id !== id)
-  const deleted = next.length !== list.length
-  if (deleted) writeLS(PRODUCTS_KEY, next)
-  return delay(deleted)
+  if (next.length < before) write(P_KEY, next)
+  return delay(next.length < before)
 }
 
-// ============================================================
-// API — OFFERS
-// ============================================================
-
+// Offers
 export async function getOffers(): Promise<Offer[]> {
-  const list = readLS<Offer[]>(OFFERS_KEY, seedOffers)
-  return delay(list)
+  return delay(read<Offer[]>(O_KEY, seedOffers))
 }
-
 export async function getOfferById(id: string): Promise<Offer | null> {
-  const list = await getOffers()
-  return delay(list.find((o) => o.id === id) ?? null)
+  return delay(read<Offer[]>(O_KEY, seedOffers).find((o) => o.id === id) ?? null)
 }
-
 export async function createOffer(
   data: Omit<Offer, "id" | "createdAt" | "updatedAt">,
 ): Promise<Offer> {
-  const list = readLS<Offer[]>(OFFERS_KEY, seedOffers)
-  const newOffer: Offer = {
+  const list = read<Offer[]>(O_KEY, seedOffers)
+  const o: Offer = {
     ...data,
-    id: uid("o"),
+    id: "o" + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-3),
     createdAt: Date.now(),
     updatedAt: Date.now(),
   }
-  const next = [newOffer, ...list]
-  writeLS(OFFERS_KEY, next)
-  return delay(newOffer)
+  write(O_KEY, [o, ...list])
+  return delay(o)
 }
-
 export async function updateOffer(
   id: string,
-  data: Partial<Omit<Offer, "id" | "createdAt" | "updatedAt">>,
+  patch: Partial<Omit<Offer, "id" | "createdAt" | "updatedAt">>,
 ): Promise<Offer | null> {
-  const list = readLS<Offer[]>(OFFERS_KEY, seedOffers)
-  const idx = list.findIndex((o) => o.id === id)
-  if (idx === -1) return delay(null)
-  const updated: Offer = {
-    ...list[idx],
-    ...data,
-    updatedAt: Date.now(),
-  }
-  list[idx] = updated
-  writeLS(OFFERS_KEY, list)
+  const list = read<Offer[]>(O_KEY, seedOffers)
+  const i = list.findIndex((o) => o.id === id)
+  if (i === -1) return delay(null)
+  const updated: Offer = { ...list[i], ...patch, updatedAt: Date.now() }
+  list[i] = updated
+  write(O_KEY, list)
   return delay(updated)
 }
-
 export async function deleteOffer(id: string): Promise<boolean> {
-  const list = readLS<Offer[]>(OFFERS_KEY, seedOffers)
+  const list = read<Offer[]>(O_KEY, seedOffers)
+  const before = list.length
   const next = list.filter((o) => o.id !== id)
-  const deleted = next.length !== list.length
-  if (deleted) writeLS(OFFERS_KEY, next)
-  return delay(deleted)
+  if (next.length < before) write(O_KEY, next)
+  return delay(next.length < before)
 }
 
-// ============================================================
-// BUSINESS LOGIC — PREZZO E SCONTO MIGLIORE
-// ============================================================
-
-/**
- * Calcola il prezzo "finale" di un prodotto incrociando il suo campo
- * `discountedPrice` con le offerte attive che lo includono.
- *
- * REGOLE:
- * 1. Seleziona tutte le offerte `active === true` la cui finestra temporale
- *    (startDate ≤ oggi ≤ endDate) include il prodotto (productIds.includes(id)).
- * 2. Per ognuna calcola quale prezzo risulterebbe:
- *      - discountType === 'percent'  → basePrice * (1 - discountValue/100)
- *      - discountType === 'fixed'    → basePrice - discountValue
- * 3. Confronta con `discountedPrice` eventualmente scritto nel prodotto.
- * 4. Restituisce il prezzo MINIMO tra tutti (miglior sconto per l'utente).
- *
- * ⚠️ Questa logica è scritta nel frontend per comodità, ma in produzione
- *    DOVREBBE essere calcolata server-side durante il rendering (o dentro
- *    una funzione dedicata esposta dal backend) per evitare tampering.
- */
-export interface EffectivePriceResult {
+// ==== Effective price: sconto migliore prodotto vs offerte attive ====
+export interface EffectivePrice {
   finalPrice: number
-  appliedSource:
-    | "base"
-    | "product_discount"
-    | { offerId: string; badge: string }
   savings: number
-  badgeText?: string
+  badge?: string
+  offerId?: string
 }
-
 export function computeEffectivePrice(
-  product: Product,
+  p: Product,
   offers: Offer[],
-  atDate: Date = new Date(),
-): EffectivePriceResult {
-  const today = new Date(
-    atDate.getFullYear(),
-    atDate.getMonth(),
-    atDate.getDate(),
-  ).getTime()
-  const startOfDay = (s: string) => new Date(s).getTime()
-  const endOfDay = (s: string) => new Date(s).getTime() + DAY - 1
-
-  const candidates: Array<{
-    price: number
-    source: EffectivePriceResult["appliedSource"]
-    badge?: string
-  }> = [{ price: product.basePrice, source: "base" }]
-
-  if (product.discountedPrice && product.discountedPrice < product.basePrice) {
-    candidates.push({
-      price: product.discountedPrice,
-      source: "product_discount",
-      badge: `-${Math.round(
-        ((product.basePrice - product.discountedPrice) / product.basePrice) *
-          100,
-      )}%`,
-    })
+  at = new Date(),
+): EffectivePrice {
+  const t = new Date(at.getFullYear(), at.getMonth(), at.getDate()).getTime()
+  const base = p.basePrice
+  let best: EffectivePrice = { finalPrice: base, savings: 0 }
+  if (p.discountPct && p.discountPct > 0) {
+    const pd = discountedPrice(p)
+    if (pd < best.finalPrice)
+      best = { finalPrice: pd, savings: base - pd, badge: `-${p.discountPct}%` }
   }
-
-  for (const offer of offers) {
-    if (!offer.active) continue
-    if (!offer.productIds.includes(product.id)) continue
-    const s = startOfDay(offer.startDate)
-    const e = endOfDay(offer.endDate)
-    if (today < s || today > e) continue
-
-    const offerPrice =
-      offer.discountType === "percent"
-        ? product.basePrice * (1 - Math.max(0, Math.min(100, offer.discountValue)) / 100)
-        : product.basePrice - offer.discountValue
-
-    const clamped = Math.max(0, Math.round(offerPrice * 100) / 100)
-    candidates.push({
-      price: clamped,
-      source: { offerId: offer.id, badge: offer.badgeText || "Offerta" },
-      badge: offer.badgeText,
-    })
+  for (const o of offers) {
+    if (!o.active) continue
+    if (!o.productIds.includes(p.id)) continue
+    const s = new Date(o.startDate).getTime()
+    const e = new Date(o.endDate + "T23:59:59").getTime()
+    if (t < s || t > e) continue
+    const op =
+      o.discountType === "percent"
+        ? base * (1 - Math.min(100, Math.max(0, o.discountValue)) / 100)
+        : base - o.discountValue
+    const rounded = Math.max(0, Math.round(op * 100) / 100)
+    if (rounded < best.finalPrice) {
+      best = {
+        finalPrice: rounded,
+        savings: base - rounded,
+        badge: offerBadge(o),
+        offerId: o.id,
+      }
+    }
   }
-
-  candidates.sort((a, b) => a.price - b.price)
-  const best = candidates[0]
-  return {
-    finalPrice: Math.round(best.price * 100) / 100,
-    appliedSource: best.source,
-    savings: Math.round((product.basePrice - best.price) * 100) / 100,
-    badgeText: best.badge,
-  }
+  return best
 }
 
-// ============================================================
-// HOOK UTILE: sottoscrizione dati in tempo reale
-// ============================================================
-
-export function useShowroomProducts(): Product[] {
-  const [products, setProducts] = useState<Product[]>(() =>
-    readLS<Product[]>(PRODUCTS_KEY, seedProducts),
+// ==== Live hook ====
+export function useProducts(): Product[] {
+  const [val, setVal] = useState<Product[]>(() =>
+    typeof window !== "undefined" ? read<Product[]>(P_KEY, seedProducts) : seedProducts,
   )
   useEffect(() => {
-    const sync = () => setProducts(readLS<Product[]>(PRODUCTS_KEY, seedProducts))
-    window.addEventListener?.("farcom-showroom-updated", sync)
-    window.addEventListener?.("storage", sync)
+    const cb = () => setVal(read<Product[]>(P_KEY, seedProducts))
+    window.addEventListener?.("farcom-showroom2-updated", cb)
+    window.addEventListener?.("storage", cb)
     return () => {
-      window.removeEventListener?.("farcom-showroom-updated", sync)
-      window.removeEventListener?.("storage", sync)
+      window.removeEventListener?.("farcom-showroom2-updated", cb)
+      window.removeEventListener?.("storage", cb)
     }
   }, [])
-  return products
+  return val
 }
-
-export function useShowroomOffers(): Offer[] {
-  const [offers, setOffers] = useState<Offer[]>(() =>
-    readLS<Offer[]>(OFFERS_KEY, seedOffers),
+export function useOffers(): Offer[] {
+  const [val, setVal] = useState<Offer[]>(() =>
+    typeof window !== "undefined" ? read<Offer[]>(O_KEY, seedOffers) : seedOffers,
   )
   useEffect(() => {
-    const sync = () => setOffers(readLS<Offer[]>(OFFERS_KEY, seedOffers))
-    window.addEventListener?.("farcom-showroom-updated", sync)
-    window.addEventListener?.("storage", sync)
+    const cb = () => setVal(read<Offer[]>(O_KEY, seedOffers))
+    window.addEventListener?.("farcom-showroom2-updated", cb)
+    window.addEventListener?.("storage", cb)
     return () => {
-      window.removeEventListener?.("farcom-showroom-updated", sync)
-      window.removeEventListener?.("storage", sync)
+      window.removeEventListener?.("farcom-showroom2-updated", cb)
+      window.removeEventListener?.("storage", cb)
     }
   }, [])
-  return offers
+  return val
 }
 
-export const SHOWROOM_CATEGORIES = CATEGORIES
+export { ACTIVITY_CATEGORIES, FURNITURE_TYPES }
