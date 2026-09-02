@@ -1,4 +1,4 @@
-// Tipologie arredo showroom
+// Tipologie arredo showroom (coerenti con barberie, parrucchieri, uffici, scuole)
 export const FURNITURE_TYPES = [
   "Banconi reception",
   "Postazioni taglio",
@@ -8,11 +8,14 @@ export const FURNITURE_TYPES = [
   "Lavandini integrati",
   "Vetrine espositive",
   "Sedute operative",
-  "Scrivanie",
-  "Scaffalature",
-  "Illuminazione tecnica",
-  "Elementi modulari",
+  "Scrivanie / Banchi lavoro",
+  "Scaffalature espositive / Librerie",
+  "Cassettiere / Armadietti",
+  "Banchi scuola / Banchi operativi",
+  "Postazioni trucco / styling",
+  "Illuminazione tecnica per arredo",
+  "Elementi modulari per arredo",
   "Altro",
 ] as const
 
-export type FurnitureType = (typeof FURNITURE_TYPES)[number] | string
+export type FurnitureTypeOption = (typeof FURNITURE_TYPES)[number]

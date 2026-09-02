@@ -24,6 +24,10 @@ import {
   ProductsList as ShowroomProducts,
   OffersList as ShowroomOffers,
 } from "./routes/adminShowroomRoutes";
+import {
+  PublicShowroomList,
+  PublicShowroomDetail,
+} from "./routes/publicShowroomRoutes";
 import { AdminAuthProvider } from "./hooks/useAdminAuth";
 
 export default function App() {
@@ -38,6 +42,8 @@ export default function App() {
           <Route path="/settori/:id" element={<SectorPage />} />
           <Route path="/progetti" element={<Projects />} />
           <Route path="/progetti/:id" element={<ProjectDetail />} />
+          <Route path="/showroom" element={<PublicShowroomList />} />
+          <Route path="/showroom/:slug" element={<PublicShowroomDetail />} />
           <Route path="/preventivo" element={<Quote />} />
           <Route path="/chi-siamo" element={<About />} />
           <Route path="/contatti" element={<Contacts />} />

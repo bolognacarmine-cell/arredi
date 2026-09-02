@@ -1,41 +1,48 @@
-// Select: categoria attività (+ campo "Altro" libero)
-import { ACTIVITY_CATEGORIES } from "../../constants/showroomCategories"
+// Select: settore attività + campo "Altro" separato e obbligatorio se Altro
+import { SECTORS, type ActivitySector } from "../../../constants/showroomSectors"
 
 interface Props {
-  value: string
-  onChange: (v: string) => void
+  value: ActivitySector
+  otherValue: string
+  onChange: (v: ActivitySector) => void
+  onOtherChange: (v: string) => void
   error?: string
   id?: string
 }
 
-export default function CategorySelect({ value, onChange, error, id }: Props) {
-  const list = [...ACTIVITY_CATEGORIES]
-  const isAltro = list.every((c) => c !== value)
+export default function CategorySelect({
+  value,
+  otherValue,
+  onChange,
+  onOtherChange,
+  error,
+  id,
+}: Props) {
+  const inCls = `w-full border ${
+    error ? "border-red-400" : "border-[#DDD9D0] focus:border-[#1B4332]"
+  } bg-[#F7F5F0] px-3 py-2.5 text-sm text-[#1A1A18] focus:outline-none`
+
   return (
     <div className="space-y-1.5">
       <select
         id={id}
-        value={isAltro ? "Altro" : value}
-        onChange={(e) => onChange(e.target.value === "Altro" ? (value === "Altro" ? "" : "Altro") : e.target.value)}
-        className={`w-full border ${
-          error ? "border-red-400" : "border-[#DDD9D0] focus:border-[#1B4332]"
-        } bg-[#F7F5F0] px-3 py-2.5 text-sm text-[#1A1A18] focus:outline-none`}
+        value={value}
+        onChange={(e) => onChange(e.target.value as ActivitySector)}
+        className={inCls}
       >
-        {list.map((c) => (
-          <option key={c} value={c}>
-            {c}
+        {SECTORS.map((s) => (
+          <option key={s.value} value={s.value}>
+            {s.label}
           </option>
         ))}
       </select>
-      {(value === "Altro" || isAltro) && (
+      {value === "other" && (
         <input
           type="text"
-          value={isAltro ? value : ""}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder="Specifica la categoria…"
-          className={`w-full border ${
-            error ? "border-red-400" : "border-[#DDD9D0] focus:border-[#1B4332]"
-          } bg-[#F7F5F0] px-3 py-2.5 text-sm text-[#1A1A18] focus:outline-none`}
+          value={otherValue}
+          onChange={(e) => onOtherChange(e.target.value)}
+          placeholder="Specifica il settore…"
+          className={inCls}
         />
       )}
       {error && <p className="text-xs text-red-600">{error}</p>}

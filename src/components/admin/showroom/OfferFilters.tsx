@@ -1,4 +1,4 @@
-// Filtri admin offerte showroom
+// Filtri admin offerte showroom (categorie target)
 import { ACTIVITY_CATEGORIES } from "../../../constants/showroomCategories"
 import { FURNITURE_TYPES } from "../../../constants/furnitureTypes"
 
@@ -82,7 +82,7 @@ export default function OfferFilters({
       <select
         value={filters.furniture}
         onChange={(e) => set("furniture", e.target.value)}
-        className="w-full md:w-80 px-3 py-2.5 border border-[#DDD9D0] bg-[#F7F5F0] text-sm focus:border-[#1B4332] focus:outline-none"
+        className="w-full md:w-96 px-3 py-2.5 border border-[#DDD9D0] bg-[#F7F5F0] text-sm focus:border-[#1B4332] focus:outline-none"
       >
         <option value="all">Tutte tipologie</option>
         {FURNITURE_TYPES.map((t) => (

@@ -1,13 +1,10 @@
-// Categorie attività / settori (select per showroom
+// Categorie attività / settori showroom (solo settori target)
 export const ACTIVITY_CATEGORIES = [
   "Barberie",
-  "Parrucchieri",
+  "Parrucchieri / Hair salon",
   "Uffici",
-  "Scuole",
-  "Studi medici",
-  "Negozi",
-  "Hotel",
+  "Scuole / Istituti",
   "Altro",
 ] as const
 
-export type ActivityCategory = (typeof ACTIVITY_CATEGORIES)[number] | string
+export type ActivityCategoryOption = (typeof ACTIVITY_CATEGORIES)[number]

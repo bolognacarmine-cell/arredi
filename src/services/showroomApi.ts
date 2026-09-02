@@ -1,4 +1,4 @@
-// Mock API prodotti + offerte showroom (persistenza localStorage)
+// Mock API prodotti + offerte showroom (persistenza localStorage, categorie/tipologie aggiornate)
 import { useEffect, useState } from "react"
 import type { Product, Offer } from "../types/showroom"
 import { ACTIVITY_CATEGORIES } from "../constants/showroomCategories"
@@ -10,7 +10,6 @@ const O_KEY = "farcom-showroom-offers-v2"
 const DAY = 86_400_000
 const now = Date.now()
 
-// Utility
 export const slugify = (s: string) =>
   s
     .toLowerCase()
@@ -30,7 +29,6 @@ export const offerBadge = (o: {
 }) =>
   o.discountType === "percent" ? `-${Math.round(o.discountValue)}%` : `${Math.round(o.discountValue)}€ OFF`
 
-// ==== Seed ====
 const img = (seed: string, bg = "EAE7E0", fg = "1A1A18") =>
   `https://placehold.co/1200x800/${bg}/${fg}?text=${encodeURIComponent(seed)}`
 
@@ -38,7 +36,7 @@ const seedProducts: Product[] = [
   mkP(
     "p01",
     "Bancone reception premium rovere",
-    "Bancone reception realizzato in rovere canaletto, finitura opaca, struttura in metallo verniciato bronzo, top in quarzo. Adatto a studi medici, uffici e hotel.",
+    "Bancone reception in rovere canaletto, finitura opaca, struttura metallo verniciato bronzo, top in quarzo. Adatto a uffici e studi professionali.",
     "Uffici",
     "Banconi reception",
     4890,
@@ -49,8 +47,8 @@ const seedProducts: Product[] = [
   mkP(
     "p02",
     "Postazione taglio Duo luce LED",
-    "Postazione taglio 2 posti con specchiera retroilluminata LED integrata, mensole in vetro temperato e presa aria/energia per ogni stazione.",
-    "Parrucchieri",
+    "Postazione taglio 2 posti con specchiera retroilluminata LED integrata, mensole in vetro temperato e presa aria/energia per stazione.",
+    "Parrucchieri / Hair salon",
     "Postazioni taglio",
     3200,
     null,
@@ -71,13 +69,15 @@ const seedProducts: Product[] = [
   mkP(
     "p04",
     "Divano attesa modular 3 posti",
-    "Sistema modulare per zone attesa con sedute removibili, rivestimento in antimacchia, piedini in metallo.",
-    "Studi medici",
+    "Sistema modulare per zone attesa con sedute removibili, rivestimento antimacchia, piedini in metallo bronzo.",
+    "Altro",
     "Zone attesa",
     1950,
     null,
     [img("Zona+Attesa", "F7F5F0", "1A1A18"), img("Dettaglio+Tessuto", "DDD9D0", "1B4332")],
-    "FAR-MED-A04",
+    "FAR-OTH-A04",
+    undefined,
+    "Poliambulatorio privato",
   ),
   mkP(
     "p05",
@@ -94,7 +94,7 @@ const seedProducts: Product[] = [
     "p06",
     "Lavandino ceramica white + mobile",
     "Lavandino integrato in ceramica con miscelatore alto, mobile base in laminato anticalcare, ruote per spostamento.",
-    "Parrucchieri",
+    "Parrucchieri / Hair salon",
     "Lavandini integrati",
     1450,
     null,
@@ -104,18 +104,20 @@ const seedProducts: Product[] = [
   mkP(
     "p07",
     "Vetrina espositiva L200 LED",
-    "Vetrina a tutta altezza con ante in vetro, LED interni 4000K e ripiani regolabili. Perfetta per negozi.",
-    "Negozi",
+    "Vetrina a tutta altezza con ante in vetro, LED interni 4000K e ripiani regolabili in vetro temperato.",
+    "Altro",
     "Vetrine espositive",
     2190,
     8,
-    [img("Vetrina+Negozio", "EAE7E0", "1A1A18"), img("Vetrina+Interno", "B5965A", "1A1A18")],
-    "FAR-NEG-V07",
+    [img("Vetrina+Espositiva", "EAE7E0", "1A1A18"), img("Vetrina+Interno", "B5965A", "1A1A18")],
+    "FAR-OTH-V07",
+    undefined,
+    "Showroom forniture speciali",
   ),
   mkP(
     "p08",
     "Poltrona operativa ergonomica",
-    "Seduta ergonomica con supporto lombare, rotelle parquet, braccioli regolabili e reclinazione.",
+    "Seduta ergonomica con supporto lombare, rotelle parquet, braccioli regolabili e reclinazione schienale.",
     "Uffici",
     "Sedute operative",
     720,
@@ -126,9 +128,9 @@ const seedProducts: Product[] = [
   mkP(
     "p09",
     "Scrivania direzionale Top in legno",
-    "Top 180x90 in legno rovere, struttura in metallo, cassettiera mobile inclusa.",
+    "Top 180x90 in rovere, struttura in metallo verniciato, cassettiera mobile con 3 cassetti inclusa.",
     "Uffici",
-    "Scrivanie",
+    "Scrivanie / Banchi lavoro",
     1690,
     null,
     [img("Scrivania+Direz", "DDD9D0", "1A1A18"), img("Scrivania+Lato", "888580", "F7F5F0")],
@@ -136,21 +138,21 @@ const seedProducts: Product[] = [
   ),
   mkP(
     "p10",
-    "Scaffale mensole libreria",
-    "Sistema a scaffalature in metallo e legno, 3 ripiani, carico 80kg per ripiano.",
-    "Scuole",
-    "Scaffalature",
+    "Libreria scaffale scuola 3 ripiani",
+    "Sistema a scaffalature in metallo e legno, 3 ripiani regolabili, carico 80kg per ripiano.",
+    "Scuole / Istituti",
+    "Scaffalature espositive / Librerie",
     590,
     null,
-    [img("Scaffalature", "F7F5F0", "4A4A46")],
+    [img("Scaffalatura+Scuola", "F7F5F0", "4A4A46")],
     "FAR-SCU-F10",
   ),
   mkP(
     "p11",
     "Faretto LED tecnico per postazioni",
-    "Illuminazione tecnica orientabile 36W con binario, CRI 90, temperatura colore 4000K.",
-    "Parrucchieri",
-    "Illuminazione tecnica",
+    "Illuminazione tecnica orientabile 36W su binario, CRI 90, temperatura colore 4000K, ideale per postazioni taglio.",
+    "Parrucchieri / Hair salon",
+    "Illuminazione tecnica per arredo",
     280,
     null,
     [img("Faretto+LED", "1A1A18", "B5965A")],
@@ -158,14 +160,63 @@ const seedProducts: Product[] = [
   ),
   mkP(
     "p12",
-    "Sistema modulare accoglienza hotel",
-    "Composizione custom banconi + colonne + vetrine per hall hotel. Configurabile su misura.",
-    "Hotel",
-    "Elementi modulari",
+    "Sistema reception modulare custom",
+    "Composizione custom banconi + colonne + vetrine per hall. Configurabile su misura con finiture premium.",
+    "Altro",
+    "Elementi modulari per arredo",
     8900,
     null,
-    [img("Sistema+Hotel", "EAE7E0", "1A1A18"), img("Hall+Render", "B5965A", "1A1A18")],
-    "FAR-HOT-M12",
+    [img("Sistema+Modulare", "EAE7E0", "1A1A18"), img("Hall+Render", "B5965A", "1A1A18")],
+    "FAR-OTH-M12",
+    undefined,
+    "Residenza universitaria",
+  ),
+  mkP(
+    "p13",
+    "Banco scuola singolo con contenitore",
+    "Banco operativo per scuola con piano in laminato antigraffio, contenitore sotto-piano e gancio zaino.",
+    "Scuole / Istituti",
+    "Banchi scuola / Banchi operativi",
+    340,
+    5,
+    [img("Banco+Scuola", "F7F5F0", "1B4332")],
+    "FAR-SCU-B13",
+  ),
+  mkP(
+    "p14",
+    "Postazione trucco professionale",
+    "Postazione styling con specchiera ring-light integrata, piano ampio, vani porta trucchi e presa multipla.",
+    "Altro",
+    "Postazioni trucco / styling",
+    1850,
+    null,
+    [img("Postazione+Trucco", "DDD9D0", "1A1A18")],
+    "FAR-OTH-T14",
+    "Centro estetico",
+  ),
+  mkP(
+    "p15",
+    "Cassettiera sicurezza 4 cassetti",
+    "Armadietto a 4 cassetti con serratura centralizzata, struttura in metallo, finitura antimpronta.",
+    "Uffici",
+    "Cassettiere / Armadietti",
+    480,
+    null,
+    [img("Cassettiera+Ufficio", "888580", "F7F5F0")],
+    "FAR-UFF-C15",
+  ),
+  mkP(
+    "p16",
+    "Sedia attesa impilabile premium",
+    "Sedia per zona attesa con struttura in metallo, seduta in tessuto tecnico, impilabile fino a 8 pezzi.",
+    "Altro",
+    "Altro",
+    210,
+    null,
+    [img("Sedia+Attesa", "EAE7E0", "1B4332")],
+    "FAR-OTH-O16",
+    "Tribunale e uffici pubblici",
+    "Sedute impilabili per sale attesa pubbliche",
   ),
 ]
 
@@ -173,9 +224,10 @@ const seedOffers: Offer[] = [
   {
     id: "o01",
     title: "Opening Parrucchieri -15%",
-    description: "Sconto dedicato a nuove aperture di saloni parrucchieri. Postazioni taglio, specchiere e lavandini in promozione.",
-    activityCategory: "Parrucchieri",
+    description: "Sconto dedicato a nuove aperture di saloni. Postazioni taglio, specchiere e lavandini in promozione.",
+    activityCategory: "Parrucchieri / Hair salon",
     furnitureType: "Altro",
+    furnitureTypeOther: "Kit apertura salone",
     discountType: "percent",
     discountValue: 15,
     productIds: ["p02", "p06", "p11"],
@@ -191,6 +243,7 @@ const seedOffers: Offer[] = [
     description: "Kit completo per aprire una barberia: specchiera + armadio + 300€ di sconto fisso.",
     activityCategory: "Barberie",
     furnitureType: "Altro",
+    furnitureTypeOther: "Pacchetto arredamento barberia",
     discountType: "fixed",
     discountValue: 300,
     productIds: ["p03", "p05"],
@@ -202,13 +255,14 @@ const seedOffers: Offer[] = [
   },
   {
     id: "o03",
-    title: "Back to School",
-    description: "Promozione inizio anno scolastico: -10% su scaffalature, arredi scolastici e scrivanie.",
-    activityCategory: "Scuole",
+    title: "Back to School -10%",
+    description: "Promozione inizio anno scolastico: -10% su scaffalature, banchi scuola e scrivanie.",
+    activityCategory: "Scuole / Istituti",
     furnitureType: "Altro",
+    furnitureTypeOther: "Kit arredamento aule",
     discountType: "percent",
     discountValue: 10,
-    productIds: ["p10", "p09"],
+    productIds: ["p10", "p09", "p13"],
     startDate: ISO(10),
     endDate: ISO(60),
     active: false,
@@ -217,10 +271,11 @@ const seedOffers: Offer[] = [
   },
   {
     id: "o04",
-    title: "Rinnova il tuo Studio Medico",
-    description: "Zone attesa e reception per studi medici: -8% + consegna inclusa.",
-    activityCategory: "Studi medici",
-    furnitureType: "Altro",
+    title: "Arreda il tuo Studio",
+    description: "Zone attesa e reception per studi professionali: -8% + consegna inclusa.",
+    activityCategory: "Altro",
+    activityCategoryOther: "Studi professionali / Poliambulatori",
+    furnitureType: "Banconi reception",
     discountType: "percent",
     discountValue: 8,
     productIds: ["p04", "p01"],
@@ -230,18 +285,35 @@ const seedOffers: Offer[] = [
     createdAt: now - 20 * DAY,
     updatedAt: now - 10 * DAY,
   },
+  {
+    id: "o05",
+    title: "Showroom Ufficio -12%",
+    description: "Rinnova il tuo ufficio: -12% su scrivanie, sedute e armadietti. Spedizione gratuita oltre i 2000€.",
+    activityCategory: "Uffici",
+    furnitureType: "Scrivanie / Banchi lavoro",
+    discountType: "percent",
+    discountValue: 12,
+    productIds: ["p09", "p08", "p15"],
+    startDate: ISO(-3),
+    endDate: ISO(25),
+    active: true,
+    createdAt: now - 3 * DAY,
+    updatedAt: now - 2 * DAY,
+  },
 ]
 
 function mkP(
   id: string,
   name: string,
   description: string,
-  activityCategory: string,
-  furnitureType: string,
+  activityCategory: Product["activityCategory"],
+  furnitureType: Product["furnitureType"],
   basePrice: number,
   discountPct: number | null,
   images: string[],
   sku: string,
+  furnitureTypeOther?: string,
+  activityCategoryOther?: string,
 ): Product {
   return {
     id,
@@ -249,7 +321,9 @@ function mkP(
     name,
     description,
     activityCategory,
+    activityCategoryOther,
     furnitureType,
+    furnitureTypeOther,
     basePrice,
     discountPct,
     images,
@@ -265,7 +339,6 @@ function ISO(offsetDays: number) {
   return d.toISOString().slice(0, 10)
 }
 
-// ==== Storage layer ====
 function read<T>(k: string, fb: T): T {
   try {
     const r = window.localStorage.getItem(k)
@@ -287,7 +360,6 @@ const delay = <T>(v: T, min = 120, max = 500) =>
     setTimeout(() => r(v), Math.floor(Math.random() * (max - min + 1)) + min),
   )
 
-// ==== API ====
 export async function getProducts(): Promise<Product[]> {
   return delay(read<Product[]>(P_KEY, seedProducts))
 }
@@ -341,7 +413,6 @@ export async function deleteProduct(id: string): Promise<boolean> {
   return delay(next.length < before)
 }
 
-// Offers
 export async function getOffers(): Promise<Offer[]> {
   return delay(read<Offer[]>(O_KEY, seedOffers))
 }
@@ -381,7 +452,6 @@ export async function deleteOffer(id: string): Promise<boolean> {
   return delay(next.length < before)
 }
 
-// ==== Effective price: sconto migliore prodotto vs offerte attive ====
 export interface EffectivePrice {
   finalPrice: number
   savings: number
@@ -424,7 +494,6 @@ export function computeEffectivePrice(
   return best
 }
 
-// ==== Live hook ====
 export function useProducts(): Product[] {
   const [val, setVal] = useState<Product[]>(() =>
     typeof window !== "undefined" ? read<Product[]>(P_KEY, seedProducts) : seedProducts,

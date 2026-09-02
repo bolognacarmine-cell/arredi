@@ -1,8 +1,10 @@
-// Form modale crea/modifica prodotto showroom
+// Form modale crea/modifica prodotto showroom (settore + tipologia dipendente)
 import { useEffect, useMemo, useState, type ChangeEvent, type DragEvent } from "react"
 import CategorySelect from "../../../components/admin/showroom/CategorySelect"
 import FurnitureTypeSelect from "../../../components/admin/showroom/FurnitureTypeSelect"
 import type { Product } from "../../../types/showroom"
+import type { ActivitySector } from "../../../constants/showroomSectors"
+import { FURNITURE_BY_SECTOR } from "../../../constants/showroomSectors"
 import { useProducts } from "../../../services/showroomApi"
 
 interface Props {
@@ -18,8 +20,10 @@ interface Props {
 type FS = {
   name: string
   description: string
-  activityCategory: string
+  activitySector: ActivitySector
+  activitySectorOther: string
   furnitureType: string
+  furnitureTypeOther: string
   basePrice: string
   discountPct: string
   images: string[]
@@ -29,13 +33,20 @@ type FS = {
 const empty: FS = {
   name: "",
   description: "",
-  activityCategory: "Barberie",
+  activitySector: "barber",
+  activitySectorOther: "",
   furnitureType: "Banconi reception",
+  furnitureTypeOther: "",
   basePrice: "",
   discountPct: "",
   images: [],
   sku: "",
   active: true,
+}
+
+const fallbackFurniture = (sector: ActivitySector): string => {
+  const list = FURNITURE_BY_SECTOR[sector] || ["Altro"]
+  return list[0] || "Altro"
 }
 
 export default function ProductForm({ initial, onCancel, onSave, busy }: Props) {
@@ -49,8 +60,10 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
       setForm({
         name: initial.name,
         description: initial.description,
-        activityCategory: initial.activityCategory,
+        activitySector: initial.activitySector,
+        activitySectorOther: initial.activitySectorOther ?? "",
         furnitureType: initial.furnitureType,
+        furnitureTypeOther: initial.furnitureTypeOther ?? "",
         basePrice: String(initial.basePrice),
         discountPct: initial.discountPct ? String(initial.discountPct) : "",
         images: [...initial.images],
@@ -64,6 +77,16 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
   const set = <K extends keyof FS>(k: K, v: FS[K]) =>
     setForm((f) => ({ ...f, [k]: v }))
 
+  const changeSector = (next: ActivitySector) => {
+    const currentList = FURNITURE_BY_SECTOR[next] || ["Altro"]
+    const stillValid = currentList.includes(form.furnitureType)
+    setForm((f) => ({
+      ...f,
+      activitySector: next,
+      furnitureType: stillValid ? f.furnitureType : fallbackFurniture(next),
+    }))
+  }
+
   const discountedPreview = useMemo(() => {
     const b = Number(form.basePrice)
     const d = Number(form.discountPct)
@@ -75,8 +98,12 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
     const e: Record<string, string> = {}
     if (!form.name.trim()) e.name = "Nome obbligatorio"
     if (!form.description.trim()) e.description = "Descrizione breve obbligatoria"
-    if (!form.activityCategory.trim()) e.activityCategory = "Categoria obbligatoria"
-    if (!form.furnitureType.trim()) e.furnitureType = "Tipologia obbligatoria"
+    if (!form.activitySector) e.activitySector = "Settore obbligatorio"
+    if (form.activitySector === "other" && !form.activitySectorOther.trim())
+      e.activitySector = 'Specifica il settore "Altro"'
+    if (!form.furnitureType) e.furnitureType = "Tipologia obbligatoria"
+    if (form.furnitureType === "Altro" && !form.furnitureTypeOther.trim())
+      e.furnitureType = 'Specifica la tipologia "Altro"'
     const b = Number(form.basePrice)
     if (!form.basePrice || isNaN(b) || b <= 0) e.basePrice = "Prezzo base > 0"
     if (form.discountPct) {
@@ -90,16 +117,20 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
     return e
   }
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const submit = async (ev: React.FormEvent) => {
+    ev.preventDefault()
     const errs = validate()
     setErrors(errs)
     if (Object.keys(errs).length > 0) return
     const data: Omit<Product, "id" | "createdAt" | "updatedAt" | "slug"> & { slug?: string } = {
       name: form.name.trim(),
       description: form.description.trim(),
-      activityCategory: form.activityCategory,
+      activitySector: form.activitySector,
+      activitySectorOther:
+        form.activitySector === "other" ? form.activitySectorOther.trim() : undefined,
       furnitureType: form.furnitureType,
+      furnitureTypeOther:
+        form.furnitureType === "Altro" ? form.furnitureTypeOther.trim() : undefined,
       basePrice: Number(form.basePrice),
       discountPct: form.discountPct ? Number(form.discountPct) : null,
       images: form.images,
@@ -203,18 +234,23 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">Categoria attività *</label>
+              <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">Settore *</label>
               <CategorySelect
-                value={form.activityCategory}
-                onChange={(v) => set("activityCategory", v)}
-                error={errors.activityCategory}
+                value={form.activitySector}
+                otherValue={form.activitySectorOther}
+                onChange={changeSector}
+                onOtherChange={(v) => set("activitySectorOther", v)}
+                error={errors.activitySector}
               />
             </div>
             <div>
               <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">Tipologia arredo *</label>
               <FurnitureTypeSelect
+                sector={form.activitySector}
                 value={form.furnitureType}
+                otherValue={form.furnitureTypeOther}
                 onChange={(v) => set("furnitureType", v)}
+                onOtherChange={(v) => set("furnitureTypeOther", v)}
                 error={errors.furnitureType}
               />
             </div>
@@ -286,9 +322,7 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
               </div>
             </div>
             <div
-              onDragOver={(e) => {
-                e.preventDefault()
-              }}
+              onDragOver={(e) => e.preventDefault()}
               onDrop={onDrop}
               className={`border-2 border-dashed p-3 ${
                 errors.images ? "border-red-400" : "border-[#DDD9D0]"

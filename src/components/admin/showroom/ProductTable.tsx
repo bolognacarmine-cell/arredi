@@ -1,11 +1,15 @@
-// Tabella admin prodotti con sorting e paginazione
+// Tabella admin prodotti con sorting e paginazione (mostra anche campi Other)
 import { useMemo, useState } from "react"
 import {
   computeEffectivePrice,
   type Offer,
   type Product,
 } from "../../../services/showroomApi"
-import type { SortDirection } from "../../../types/showroom"
+import {
+  displayActivityCategory,
+  displayFurnitureType,
+  type SortDirection,
+} from "../../../types/showroom"
 
 interface Props {
   products: Product[]
@@ -41,6 +45,8 @@ export default function ProductTable({
       products.map((p) => ({
         p,
         eff: computeEffectivePrice(p, offers),
+        activityLabel: displayActivityCategory(p.activityCategory, p.activityCategoryOther),
+        furnitureLabel: displayFurnitureType(p.furnitureType, p.furnitureTypeOther),
       })),
     [products, offers],
   )
@@ -55,9 +61,9 @@ export default function ProductTable({
         case "basePrice":
           return (a.p.basePrice - b.p.basePrice) * d
         case "activityCategory":
-          return a.p.activityCategory.localeCompare(b.p.activityCategory) * d
+          return a.activityLabel.localeCompare(b.activityLabel) * d
         case "furnitureType":
-          return a.p.furnitureType.localeCompare(b.p.furnitureType) * d
+          return a.furnitureLabel.localeCompare(b.furnitureLabel) * d
         default:
           return (a.p.createdAt - b.p.createdAt) * d
       }
@@ -120,7 +126,7 @@ export default function ProductTable({
                 </td>
               </tr>
             ) : (
-              paged.map(({ p, eff }) => (
+              paged.map(({ p, eff, activityLabel, furnitureLabel }) => (
                 <tr
                   key={p.id}
                   className="border-t border-[#EAE7E0] hover:bg-[#F7F5F0]"
@@ -142,10 +148,10 @@ export default function ProductTable({
                   </td>
                   <td className="px-4 py-3">
                     <span className="inline-block text-xs px-2 py-1 bg-[#EAE7E0] text-[#4A4A46]">
-                      {p.activityCategory}
+                      {activityLabel}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-xs text-[#4A4A46]">{p.furnitureType}</td>
+                  <td className="px-4 py-3 text-xs text-[#4A4A46]">{furnitureLabel}</td>
                   <td className="px-4 py-3 text-right tabular-nums">
                     {eff.savings > 0 ? (
                       <div>
@@ -214,7 +220,7 @@ export default function ProductTable({
               Nessun prodotto
             </div>
           ) : (
-            paged.map(({ p, eff }) => (
+            paged.map(({ p, eff, activityLabel, furnitureLabel }) => (
               <div key={p.id} className="p-4 space-y-2">
                 <div className="flex gap-3">
                   <div className="h-14 w-14 overflow-hidden border bg-[#F7F5F0]">
@@ -225,7 +231,7 @@ export default function ProductTable({
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-sm truncate">{p.name}</div>
                     <div className="text-xs text-[#888580]">
-                      {p.activityCategory} · {p.furnitureType}
+                      {activityLabel} · {furnitureLabel}
                     </div>
                     <div className="mt-1 text-sm">
                       {eff.savings > 0 ? (
