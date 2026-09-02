@@ -1,46 +1,42 @@
-import express from "express"
-import SiteConfig from "../models/SiteConfig.js"
+import { Router, Request, Response } from 'express';
+import { SiteConfig } from '../models/SiteConfig';
 
-const router = express.Router()
+const router = Router();
 
-// GET /api/site-config - Get site config (always returns the single config)
-router.get("/", async (req, res) => {
+// GET all site config
+router.get('/', async (req: Request, res: Response) => {
   try {
-    let config = await SiteConfig.findOne({ id: "default" })
+    const configs = await SiteConfig.find().sort({ createdAt: -1 });
+    res.json(configs);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch site config' });
+  }
+});
+
+// POST create site config
+router.post('/', async (req: Request, res: Response) => {
+  try {
+    const config = new SiteConfig(req.body);
+    await config.save();
+    res.status(201).json(config);
+  } catch (error) {
+    res.status(400).json({ error: 'Failed to create site config' });
+  }
+});
+
+// PUT update site config
+router.put('/:id', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const config = await SiteConfig.findByIdAndUpdate(id, req.body, { new: true });
     if (!config) {
-      // Create default config if it doesn't exist
-      config = await SiteConfig.create({
-        id: "default",
-        companyName: "Arredi Farcom",
-        contactEmail: "info@farcom.it",
-        contactPhone: "+39 012 345 6789"
-      })
+      res.status(404).json({ error: 'Site config not found' });
+    } else {
+      res.json(config);
     }
-    res.json({ success: true, data: config })
-  } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      error: { message: error.message || "Failed to fetch site config" }
-    })
+  } catch (error) {
+    res.status(400).json({ error: 'Failed to update site config' });
   }
-})
+});
 
-// PUT /api/site-config - Update site config
-router.put("/", async (req, res) => {
-  try {
-    const config = await SiteConfig.findOneAndUpdate(
-      { id: "default" },
-      { $set: req.body },
-      { new: true, runValidators: true, upsert: true }
-    )
-
-    res.json({ success: true, data: config })
-  } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      error: { message: error.message || "Failed to update site config" }
-    })
-  }
-})
-
-export default router
+export default router;
