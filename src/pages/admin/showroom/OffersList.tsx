@@ -30,7 +30,7 @@ export default function OffersList() {
     const t = today.getTime()
     return offers.filter((o) => {
       if (q && !o.title.toLowerCase().includes(q)) return false
-      if (filters.activity !== "all" && o.activityCategory !== filters.activity) return false
+      if (filters.sector !== "all" && o.activitySector !== filters.sector) return false
       if (filters.furniture !== "all" && o.furnitureType !== filters.furniture) return false
       if (filters.status !== "all") {
         const s = new Date(o.startDate).getTime()

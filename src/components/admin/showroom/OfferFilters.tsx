@@ -1,16 +1,15 @@
-// Filtri admin offerte showroom (categorie target)
-import { ACTIVITY_CATEGORIES } from "../../../constants/showroomCategories"
-import { FURNITURE_TYPES } from "../../../constants/furnitureTypes"
+// Filtri admin offerte showroom (settori + tipologie dipendenti)
+import { SECTORS, furnitureTypesFor, type ActivitySector } from "../../../constants/showroomSectors"
 
 export type OfferFilterState = {
   q: string
-  activity: string
+  sector: ActivitySector | "all"
   furniture: string
   status: "all" | "active" | "inactive" | "upcoming" | "expired"
 }
 export const defaultOF: OfferFilterState = {
   q: "",
-  activity: "all",
+  sector: "all",
   furniture: "all",
   status: "all",
 }
@@ -32,6 +31,7 @@ export default function OfferFilters({
 }: Props) {
   const set = (k: keyof OfferFilterState, v: string) =>
     onChange({ ...filters, [k]: v })
+  const availableTypes = furnitureTypesFor(filters.sector)
   return (
     <div className="bg-white border border-[#DDD9D0] p-4 mb-5 space-y-3">
       <div className="flex items-center justify-between flex-wrap gap-2">
@@ -39,7 +39,7 @@ export default function OfferFilters({
           <span className="font-medium text-[#1A1A18]">Filtri</span>{" "}
           <span className="text-xs text-[#888580]">{matching}/{total}</span>
         </div>
-        {(filters.q || filters.activity !== "all" || filters.furniture !== "all" || filters.status !== "all") && (
+        {(filters.q || filters.sector !== "all" || filters.furniture !== "all" || filters.status !== "all") && (
           <button onClick={onReset} className="text-xs text-[#888580] hover:text-[#1B4332]">
             ✕ Reset
           </button>
@@ -56,14 +56,14 @@ export default function OfferFilters({
           />
         </div>
         <select
-          value={filters.activity}
-          onChange={(e) => set("activity", e.target.value)}
+          value={filters.sector}
+          onChange={(e) => set("sector", e.target.value)}
           className="px-3 py-2.5 border border-[#DDD9D0] bg-[#F7F5F0] text-sm focus:border-[#1B4332] focus:outline-none"
         >
-          <option value="all">Tutte categorie</option>
-          {ACTIVITY_CATEGORIES.map((c) => (
-            <option key={c} value={c}>
-              {c}
+          <option value="all">Tutti i settori</option>
+          {SECTORS.map((s) => (
+            <option key={s.value} value={s.value}>
+              {s.label}
             </option>
           ))}
         </select>
@@ -84,8 +84,8 @@ export default function OfferFilters({
         onChange={(e) => set("furniture", e.target.value)}
         className="w-full md:w-96 px-3 py-2.5 border border-[#DDD9D0] bg-[#F7F5F0] text-sm focus:border-[#1B4332] focus:outline-none"
       >
-        <option value="all">Tutte tipologie</option>
-        {FURNITURE_TYPES.map((t) => (
+        <option value="all">Tutte le tipologie</option>
+        {availableTypes.map((t) => (
           <option key={t} value={t}>
             {t}
           </option>
