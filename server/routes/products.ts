@@ -58,22 +58,6 @@ router.get("/:id", async (req, res) => {
     })
   }
 })
-  try {
-    const product = await Product.findOne({ slug: req.params.slug })
-    if (!product) {
-      return res.status(404).json({
-        success: false,
-        error: { message: "Product not found" }
-      })
-    }
-    res.json({ success: true, data: product })
-  } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      error: { message: error.message || "Failed to fetch product" }
-    })
-  }
-})
 
 // POST /api/products - Create product
 router.post("/", async (req, res) => {
