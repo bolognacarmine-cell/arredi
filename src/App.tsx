@@ -41,6 +41,8 @@ export default function App() {
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="progetti" element={<AdminProjects />} />
+          <Route path="progetti/nuovo" element={<AdminProjects />} />
+          <Route path="progetti/:id" element={<AdminProjects />} />
           <Route path="preventivi" element={<AdminQuotes />} />
           <Route path="media" element={<AdminMedia />} />
           <Route path="impostazioni" element={<AdminSettings />} />

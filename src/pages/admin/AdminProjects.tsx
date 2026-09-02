@@ -1,5 +1,5 @@
-import { useState } from "react"
-import { Link } from "react-router-dom"
+import { useEffect, useState } from "react"
+import { Link, useNavigate, useParams } from "react-router-dom"
 import { SECTORS } from "../../data"
 import {
   defaultProjects,
@@ -27,9 +27,11 @@ type FormState = {
   descrizione: string
   evidenza: boolean
   immagine: string
+  imageCloudinaryPublicId: string
   materiali: string
   tagText: string
   galleryText: string
+  galleryCloudinaryPublicIdsText: string
   seoMetaTitle: string
   seoMetaDescription: string
   seoSlug: string
@@ -45,9 +47,11 @@ const emptyForm: FormState = {
   descrizione: "",
   evidenza: false,
   immagine: "",
+  imageCloudinaryPublicId: "",
   materiali: "",
   tagText: "",
   galleryText: "",
+  galleryCloudinaryPublicIdsText: "",
   seoMetaTitle: "",
   seoMetaDescription: "",
   seoSlug: "",
@@ -73,9 +77,11 @@ function projectToForm(project: ProjectRecord): FormState {
     descrizione: project.description,
     evidenza: project.featured,
     immagine: project.image,
+    imageCloudinaryPublicId: project.imageCloudinaryPublicId ?? "",
     materiali: project.materials,
     tagText: project.tags.join(", "),
     galleryText: project.gallery.join("\n"),
+    galleryCloudinaryPublicIdsText: (project.galleryCloudinaryPublicIds ?? []).join("\n"),
     seoMetaTitle: project.seo?.metaTitle ?? "",
     seoMetaDescription: project.seo?.metaDescription ?? "",
     seoSlug: project.seo?.slug ?? "",
@@ -106,7 +112,17 @@ function toProjectRecord(
         ? [form.immagine.trim()]
         : ["https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=800&fit=crop"]
 
-  // SEO fields - auto-generate slug from title if empty
+  const galleryPublicIdsRaw = form.galleryCloudinaryPublicIdsText
+    .split("\n")
+    .map((s) => s.trim())
+    .filter(Boolean)
+  const galleryCloudinaryPublicIds: string[] | undefined =
+    galleryPublicIdsRaw.length > 0
+      ? normalizedGallery.map((_, i) => galleryPublicIdsRaw[i] ?? "")
+      : undefined
+
+  const imageCloudinaryPublicId = form.imageCloudinaryPublicId.trim() || undefined
+
   const seoSlug = form.seoSlug.trim() || slugify(form.titolo || "")
   const seoMetaTitle = form.seoMetaTitle.trim() || form.titolo.trim()
   const seoMetaDescription = form.seoMetaDescription.trim() || form.descrizione.trim().substring(0, 160)
@@ -121,7 +137,9 @@ function toProjectRecord(
     client: form.cliente.trim() || undefined,
     description: form.descrizione.trim(),
     image: form.immagine.trim() || normalizedGallery[0],
+    imageCloudinaryPublicId,
     gallery: normalizedGallery,
+    galleryCloudinaryPublicIds,
     tags: form.tagText
       .split(",")
       .map((item) => item.trim())
@@ -138,6 +156,8 @@ function toProjectRecord(
 }
 
 export default function AdminProjects() {
+  const { id: routeId } = useParams<{ id: string }>()
+  const navigate = useNavigate()
   const projects = useProjects()
   const [filter, setFilter] = useState("all")
   const [stateFilter, setStateFilter] = useState("all")
@@ -150,6 +170,21 @@ export default function AdminProjects() {
   const [form, setForm] = useState<FormState>(emptyForm)
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+
+  useEffect(() => {
+    if (routeId === "nuovo") {
+      setEditingId(null)
+      setForm(emptyForm)
+      setShowForm(true)
+    } else if (routeId) {
+      const existing = projects.find((project) => project.id === routeId)
+      if (existing) {
+        setEditingId(existing.id)
+        setForm(projectToForm(existing))
+        setShowForm(true)
+      }
+    }
+  }, [routeId, projects])
 
   const set = (key: keyof FormState, value: string | boolean) =>
     setForm((current) => ({ ...current, [key]: value }))
@@ -209,6 +244,9 @@ export default function AdminProjects() {
     setEditingId(null)
     setForm(emptyForm)
     setShowForm(false)
+    if (routeId) {
+      navigate("/admin/progetti", { replace: true })
+    }
   }
 
   const persistProjects = async (
@@ -439,6 +477,32 @@ export default function AdminProjects() {
                 value={form.galleryText}
                 onChange={(e) => set("galleryText", e.target.value)}
                 className="w-full resize-none border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">
+                Cloudinary Public ID · Copertina
+              </label>
+              <input
+                type="text"
+                value={form.imageCloudinaryPublicId}
+                onChange={(e) => set("imageCloudinaryPublicId", e.target.value)}
+                placeholder="es. farcom/progetti/barber-cover"
+                className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none font-mono"
+              />
+            </div>
+
+            <div className="sm:col-span-2">
+              <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">
+                Cloudinary Public ID · Gallery (uno per riga, stesso ordine delle URL sopra)
+              </label>
+              <textarea
+                rows={4}
+                value={form.galleryCloudinaryPublicIdsText}
+                onChange={(e) => set("galleryCloudinaryPublicIdsText", e.target.value)}
+                placeholder="es. farcom/progetti/gallery-1&#10;farcom/progetti/gallery-2"
+                className="w-full resize-none border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none font-mono"
               />
             </div>
 

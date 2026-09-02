@@ -11,7 +11,7 @@ import { resolveImageUrl } from "../lib/cloudinary"
 // Custom Cursor Component
 const CustomCursor = () => {
   const [position, setPosition] = useState({ x: 0, y: 0 })
-  const [trail, setTrail] = useState<Array<{ x: number y: number }>>([])
+  const [trail, setTrail] = useState<Array<{ x: number; y: number }>>([])
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
