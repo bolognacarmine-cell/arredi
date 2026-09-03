@@ -1,103 +1,57 @@
-import express from "express"
-import Project from "../models/Project.js"
+import { Router, Request, Response } from 'express';
+import { Project } from '../models/Project.js';
 
-const router = express.Router()
+const router = Router();
 
-// GET /api/projects - Get all projects
-router.get("/", async (req, res) => {
+// GET all projects
+router.get('/', async (req: Request, res: Response) => {
   try {
-    const projects = await Project.find().sort({ year: -1, createdAt: -1 })
-    res.json({ success: true, data: projects })
-  } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      error: { message: error.message || "Failed to fetch projects" }
-    })
+    const projects = await Project.find().sort({ createdAt: -1 });
+    res.json(projects);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch projects' });
   }
-})
+});
 
-// GET /api/projects/:id - Get single project
-router.get("/:id", async (req, res) => {
+// POST create project
+router.post('/', async (req: Request, res: Response) => {
   try {
-    const project = await Project.findOne({ id: req.params.id })
+    const project = new Project(req.body);
+    await project.save();
+    res.status(201).json(project);
+  } catch (error) {
+    res.status(400).json({ error: 'Failed to create project' });
+  }
+});
+
+// PUT update project
+router.put('/:id', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const project = await Project.findByIdAndUpdate(id, req.body, { new: true });
     if (!project) {
-      return res.status(404).json({
-        success: false,
-        error: { message: "Project not found" }
-      })
+      res.status(404).json({ error: 'Project not found' });
+    } else {
+      res.json(project);
     }
-    res.json({ success: true, data: project })
-  } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      error: { message: error.message || "Failed to fetch project" }
-    })
+  } catch (error) {
+    res.status(400).json({ error: 'Failed to update project' });
   }
-})
+});
 
-// POST /api/projects - Create project
-router.post("/", async (req, res) => {
+// DELETE project
+router.delete('/:id', async (req: Request, res: Response) => {
   try {
-    const project = await Project.create(req.body)
-    res.status(201).json({ success: true, data: project })
-  } catch (error: any) {
-    if (error.code === 11000) {
-      return res.status(400).json({
-        success: false,
-        error: { message: "Project with this ID already exists" }
-      })
-    }
-    res.status(500).json({
-      success: false,
-      error: { message: error.message || "Failed to create project" }
-    })
-  }
-})
-
-// PUT /api/projects/:id - Update project
-router.put("/:id", async (req, res) => {
-  try {
-    const project = await Project.findOneAndUpdate(
-      { id: req.params.id },
-      { $set: req.body },
-      { new: true, runValidators: true }
-    )
-
+    const { id } = req.params;
+    const project = await Project.findByIdAndDelete(id);
     if (!project) {
-      return res.status(404).json({
-        success: false,
-        error: { message: "Project not found" }
-      })
+      res.status(404).json({ error: 'Project not found' });
+    } else {
+      res.json({ message: 'Project deleted' });
     }
-
-    res.json({ success: true, data: project })
-  } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      error: { message: error.message || "Failed to update project" }
-    })
+  } catch (error) {
+    res.status(400).json({ error: 'Failed to delete project' });
   }
-})
+});
 
-// DELETE /api/projects/:id - Delete project
-router.delete("/:id", async (req, res) => {
-  try {
-    const project = await Project.findOneAndDelete({ id: req.params.id })
-
-    if (!project) {
-      return res.status(404).json({
-        success: false,
-        error: { message: "Project not found" }
-      })
-    }
-
-    res.json({ success: true, data: { message: "Project deleted successfully" } })
-  } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      error: { message: error.message || "Failed to delete project" }
-    })
-  }
-})
-
-export default router
+export default router;

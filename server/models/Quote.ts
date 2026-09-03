@@ -1,66 +1,15 @@
-import mongoose, { Schema, models } from "mongoose"
+import mongoose from 'mongoose';
 
-const QuoteItemSchema = new Schema({
-  productId: {
-    type: String,
-    required: true
-  },
-  productName: {
-    type: String,
-    required: true
-  },
-  quantity: {
-    type: Number,
-    required: true,
-    min: 1
-  },
-  price: {
-    type: Number,
-    required: true,
-    min: 0
-  }
-})
+const { Schema } = mongoose;
 
 const QuoteSchema = new Schema({
-  id: {
-    type: String,
-    required: true,
-    unique: true
-  },
-  customerName: {
-    type: String,
-    required: true
-  },
-  customerEmail: {
-    type: String,
-    required: true
-  },
-  customerPhone: {
-    type: String,
-    default: ""
-  },
-  items: {
-    type: [QuoteItemSchema],
-    default: []
-  },
-  totalAmount: {
-    type: Number,
-    required: true,
-    min: 0
-  },
-  status: {
-    type: String,
-    enum: ["pending", "confirmed", "cancelled"],
-    default: "pending"
-  },
-  notes: {
-    type: String,
-    default: ""
-  }
-}, {
-  timestamps: true
-})
+  name: { type: String, required: true },
+  email: { type: String, required: true },
+  phone: { type: String, default: '' },
+  message: { type: String, required: true },
+  status: { type: String, default: 'pending' },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+});
 
-const Quote = models.Quote || mongoose.model("Quote", QuoteSchema)
-
-export default Quote
+export const Quote = mongoose.models.Quote || mongoose.model('Quote', QuoteSchema);

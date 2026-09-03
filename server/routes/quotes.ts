@@ -1,107 +1,57 @@
-import express from "express"
-import Quote from "../models/Quote.js"
+import { Router, Request, Response } from 'express';
+import { Quote } from '../models/Quote.js';
 
-const router = express.Router()
+const router = Router();
 
-// GET /api/quotes - Get all quotes
-router.get("/", async (req, res) => {
+// GET all quotes
+router.get('/', async (req: Request, res: Response) => {
   try {
-    const { status } = req.query
-    const filter: any = {}
-    if (status) filter.status = status
-
-    const quotes = await Quote.find(filter).sort({ createdAt: -1 })
-    res.json({ success: true, data: quotes })
-  } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      error: { message: error.message || "Failed to fetch quotes" }
-    })
+    const quotes = await Quote.find().sort({ createdAt: -1 });
+    res.json(quotes);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch quotes' });
   }
-})
+});
 
-// GET /api/quotes/:id - Get single quote
-router.get("/:id", async (req, res) => {
+// POST create quote
+router.post('/', async (req: Request, res: Response) => {
   try {
-    const quote = await Quote.findOne({ id: req.params.id })
+    const quote = new Quote(req.body);
+    await quote.save();
+    res.status(201).json(quote);
+  } catch (error) {
+    res.status(400).json({ error: 'Failed to create quote' });
+  }
+});
+
+// PUT update quote
+router.put('/:id', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const quote = await Quote.findByIdAndUpdate(id, req.body, { new: true });
     if (!quote) {
-      return res.status(404).json({
-        success: false,
-        error: { message: "Quote not found" }
-      })
+      res.status(404).json({ error: 'Quote not found' });
+    } else {
+      res.json(quote);
     }
-    res.json({ success: true, data: quote })
-  } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      error: { message: error.message || "Failed to fetch quote" }
-    })
+  } catch (error) {
+    res.status(400).json({ error: 'Failed to update quote' });
   }
-})
+});
 
-// POST /api/quotes - Create quote
-router.post("/", async (req, res) => {
+// DELETE quote
+router.delete('/:id', async (req: Request, res: Response) => {
   try {
-    const quote = await Quote.create(req.body)
-    res.status(201).json({ success: true, data: quote })
-  } catch (error: any) {
-    if (error.code === 11000) {
-      return res.status(400).json({
-        success: false,
-        error: { message: "Quote with this ID already exists" }
-      })
-    }
-    res.status(500).json({
-      success: false,
-      error: { message: error.message || "Failed to create quote" }
-    })
-  }
-})
-
-// PUT /api/quotes/:id - Update quote
-router.put("/:id", async (req, res) => {
-  try {
-    const quote = await Quote.findOneAndUpdate(
-      { id: req.params.id },
-      { $set: req.body },
-      { new: true, runValidators: true }
-    )
-
+    const { id } = req.params;
+    const quote = await Quote.findByIdAndDelete(id);
     if (!quote) {
-      return res.status(404).json({
-        success: false,
-        error: { message: "Quote not found" }
-      })
+      res.status(404).json({ error: 'Quote not found' });
+    } else {
+      res.json({ message: 'Quote deleted' });
     }
-
-    res.json({ success: true, data: quote })
-  } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      error: { message: error.message || "Failed to update quote" }
-    })
+  } catch (error) {
+    res.status(400).json({ error: 'Failed to delete quote' });
   }
-})
+});
 
-// DELETE /api/quotes/:id - Delete quote
-router.delete("/:id", async (req, res) => {
-  try {
-    const quote = await Quote.findOneAndDelete({ id: req.params.id })
-
-    if (!quote) {
-      return res.status(404).json({
-        success: false,
-        error: { message: "Quote not found" }
-      })
-    }
-
-    res.json({ success: true, data: { message: "Quote deleted successfully" } })
-  } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      error: { message: error.message || "Failed to delete quote" }
-    })
-  }
-})
-
-export default router
+export default router;

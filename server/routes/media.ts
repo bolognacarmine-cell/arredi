@@ -1,133 +1,59 @@
-import express from "express"
-import Media from "../models/Media.js"
+import { Router, Request, Response } from 'express';
+import { Media } from '../models/Media.js';
 
-const router = express.Router()
+const router = Router();
 
-// GET /api/media - Get all media
-router.get("/", async (req, res) => {
+// GET all media
+router.get('/', async (req: Request, res: Response) => {
   try {
-    const { category } = req.query
-    const filter = category ? { category } : {}
-    const media = await Media.find(filter).sort({ createdAt: -1 })
-    res.json({ success: true, data: media })
-  } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      error: { message: error.message || "Failed to fetch media" }
-    })
+    const media = await Media.find().sort({ createdAt: -1 });
+    res.json(media);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch media' });
   }
-})
+});
 
-// GET /api/media/:id - Get single media
-router.get("/:id", async (req, res) => {
+// POST create media
+router.post('/', async (req: Request, res: Response) => {
   try {
-    const media = await Media.findById(req.params.id)
+    const { cloudinaryUrl, cloudinaryPublicId, title, category } = req.body;
+    const media = new Media({ cloudinaryUrl, cloudinaryPublicId, title, category });
+    await media.save();
+    res.status(201).json(media);
+  } catch (error) {
+    res.status(400).json({ error: 'Failed to create media' });
+  }
+});
+
+// PUT update media
+router.put('/:id', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+    const media = await Media.findByIdAndUpdate(id, updates, { new: true });
     if (!media) {
-      return res.status(404).json({
-        success: false,
-        error: { message: "Media not found" }
-      })
+      res.status(404).json({ error: 'Media not found' });
+    } else {
+      res.json(media);
     }
-    res.json({ success: true, data: media })
-  } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      error: { message: error.message || "Failed to fetch media" }
-    })
+  } catch (error) {
+    res.status(400).json({ error: 'Failed to update media' });
   }
-})
+});
 
-// POST /api/media - Create media
-router.post("/", async (req, res) => {
+// DELETE media
+router.delete('/:id', async (req: Request, res: Response) => {
   try {
-    const {
-      cloudinaryUrl,
-      cloudinaryPublicId,
-      title,
-      category,
-      width,
-      height,
-      format,
-      bytes
-    } = req.body
-
-    if (!cloudinaryUrl || !cloudinaryPublicId || !category) {
-      return res.status(400).json({
-        success: false,
-        error: { message: "Missing required fields: cloudinaryUrl, cloudinaryPublicId, category" }
-      })
-    }
-
-    const media = await Media.create({
-      cloudinaryUrl,
-      cloudinaryPublicId,
-      title: title || "",
-      category,
-      width: width || 0,
-      height: height || 0,
-      format: format || "",
-      bytes: bytes || 0
-    })
-
-    res.status(201).json({ success: true, data: media })
-  } catch (error: any) {
-    if (error.code === 11000) {
-      return res.status(400).json({
-        success: false,
-        error: { message: "Media with this cloudinaryPublicId already exists" }
-      })
-    }
-    res.status(500).json({
-      success: false,
-      error: { message: error.message || "Failed to create media" }
-    })
-  }
-})
-
-// PUT /api/media/:id - Update media
-router.put("/:id", async (req, res) => {
-  try {
-    const media = await Media.findByIdAndUpdate(
-      req.params.id,
-      { $set: req.body },
-      { new: true, runValidators: true }
-    )
-
+    const { id } = req.params;
+    const media = await Media.findByIdAndDelete(id);
     if (!media) {
-      return res.status(404).json({
-        success: false,
-        error: { message: "Media not found" }
-      })
+      res.status(404).json({ error: 'Media not found' });
+    } else {
+      res.json({ message: 'Media deleted' });
     }
-
-    res.json({ success: true, data: media })
-  } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      error: { message: error.message || "Failed to update media" }
-    })
+  } catch (error) {
+    res.status(400).json({ error: 'Failed to delete media' });
   }
-})
+});
 
-// DELETE /api/media/:id - Delete media
-router.delete("/:id", async (req, res) => {
-  try {
-    const media = await Media.findByIdAndDelete(req.params.id)
-
-    if (!media) {
-      return res.status(404).json({
-        success: false,
-        error: { message: "Media not found" }
-      })
-    }
-
-    res.json({ success: true, data: { message: "Media deleted successfully" } })
-  } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      error: { message: error.message || "Failed to delete media" }
-    })
-  }
-})
-
-export default router
+export default router;

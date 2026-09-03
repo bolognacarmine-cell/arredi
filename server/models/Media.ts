@@ -1,44 +1,14 @@
-import mongoose, { Schema, models } from "mongoose"
+import mongoose from 'mongoose';
+
+const { Schema } = mongoose;
 
 const MediaSchema = new Schema({
-  cloudinaryUrl: {
-    type: String,
-    required: true
-  },
-  cloudinaryPublicId: {
-    type: String,
-    required: true,
-    unique: true
-  },
-  title: {
-    type: String,
-    default: ""
-  },
-  category: {
-    type: String,
-    enum: ["hero", "sector", "project", "gallery"],
-    required: true
-  },
-  width: {
-    type: Number,
-    default: 0
-  },
-  height: {
-    type: Number,
-    default: 0
-  },
-  format: {
-    type: String,
-    default: ""
-  },
-  bytes: {
-    type: Number,
-    default: 0
-  }
-}, {
-  timestamps: true
-})
+  cloudinaryUrl: { type: String, required: true },
+  cloudinaryPublicId: { type: String, required: true },
+  title: { type: String, default: '' },
+  category: { type: String, default: '' },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+});
 
-const Media = models.Media || mongoose.model("Media", MediaSchema)
-
-export default Media
+export const Media = mongoose.models.Media || mongoose.model('Media', MediaSchema);
