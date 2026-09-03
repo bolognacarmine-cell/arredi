@@ -46,7 +46,7 @@ export default function Navbar() {
       <nav className="max-w-7xl mx-auto px-6 md:px-8 lg:px-16 flex items-center justify-between h-16 lg:h-20">
         <Link to="/" className="flex items-center">
           <img
-            src="/logo-farcom.jpg"
+            src="/logo-farcom.png"
             alt="Farcom Società Cooperativa"
             className="h-10 w-auto object-contain lg:h-12"
           />

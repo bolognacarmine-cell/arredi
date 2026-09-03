@@ -62,7 +62,7 @@ export default function Footer() {
           <div className="lg:col-span-4">
             <Link to="/" className="inline-flex items-center">
               <img
-                src="/logo-farcom.jpg"
+                src="/logo-farcom.png"
                 alt={siteConfig.logoAlt}
                 className="h-12 w-auto object-contain"
               />

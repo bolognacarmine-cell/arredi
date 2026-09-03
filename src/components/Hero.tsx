@@ -208,7 +208,7 @@ export default function Hero() {
               <div className="relative bg-white/6 backdrop-blur-md border border-white/12 rounded-2xl p-7 md:p-8">
                 <div className="flex items-center gap-3">
                   <img
-                    src="/logo-farcom.jpg"
+                    src="/logo-farcom.png"
                     alt=""
                     aria-hidden="true"
                     className="h-8 w-auto opacity-90"
