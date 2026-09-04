@@ -6,6 +6,7 @@ import { SECTORS } from "../data"
 import { useProjects } from "../projectStore"
 
 import Hero from "../components/Hero"
+import ReviewsSection from "../components/ReviewsSection"
 import { resolveImageUrl } from "../lib/cloudinary"
 
 // Custom Cursor Component
@@ -284,21 +285,24 @@ export default function Home() {
         </div>
       </section>
 
+      {/* RECENSIONI */}
+      <ReviewsSection />
+
       {/* SERVICES */}
-      <section className="py-12 sm:py-16 md:py-24 lg:py-32 max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-16 relative bg-white">
+      <section className="py-10 sm:py-12 md:py-16 lg:py-20 max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-16 relative bg-white">
         {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 
-        <div className="text-center mb-10 sm:mb-12 md:mb-16">
+        <div className="text-center mb-6 sm:mb-8 md:mb-10">
           <span className="text-[#6B7280] text-[11px] sm:text-xs tracking-[0.18em] sm:tracking-[0.2em] uppercase font-semibold">
             Come lavoriamo
           </span>
-          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[#1A1A2E] mt-2 leading-[1.15] sm:leading-tight">
+          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[#1A1A2E] mt-2 leading-[1.15] sm:leading-tight text-balance">
             Il nostro processo
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-7 md:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
           {services.map((svc, i) => (
             <div
               key={svc.title}
@@ -327,20 +331,20 @@ export default function Home() {
       </section>
 
       {/* WHY US */}
-      <section className="py-12 sm:py-16 md:py-24 lg:py-32 bg-[#1A1A2E] relative">
+      <section className="py-10 sm:py-12 md:py-16 lg:py-20 bg-[#1A1A2E] relative">
         {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-16">
-          <div className="text-center mb-10 sm:mb-12 md:mb-16">
+          <div className="text-center mb-6 sm:mb-8 md:mb-10">
             <span className="text-[#E69138] text-[11px] sm:text-xs tracking-[0.18em] sm:tracking-[0.2em] uppercase font-semibold">
               Perché sceglierci
             </span>
-            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mt-2 leading-[1.15] sm:leading-tight">
+            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mt-2 leading-[1.15] sm:leading-tight text-balance">
               La differenza artigianale
             </h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-7 md:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
             {whys.map((w, index) => (
               <div
                 key={w.label}
@@ -363,11 +367,11 @@ export default function Home() {
       </section>
 
       {/* STATS BAND */}
-      <section className="py-12 sm:py-16 md:py-24 lg:py-32 bg-white relative">
+      <section className="py-10 sm:py-12 md:py-16 lg:py-20 bg-white relative">
         {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-16 grid grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6 lg:gap-8 text-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-16 grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 lg:gap-6 text-center">
           {[
             ["500+", "Progetti realizzati"],
 
@@ -395,7 +399,7 @@ export default function Home() {
       </section>
 
       {/* CTA BAND */}
-      <section className="py-12 sm:py-16 md:py-24 lg:py-32 max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-16 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 sm:gap-8 relative bg-white">
+      <section className="py-10 sm:py-12 md:py-16 lg:py-20 max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-16 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5 sm:gap-6 md:gap-8 relative bg-white">
         {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 
