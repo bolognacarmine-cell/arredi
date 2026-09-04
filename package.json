@@ -5,7 +5,7 @@
   "main": "server/index.js",
   "scripts": {
     "dev": "concurrently \"vite\" \"nodemon --exec tsx server/index.ts\"",
-    "build": "vite build --silent && tsc -p server",
+    "build": "vite build && tsc -p server",
     "start": "node server/dist/index.js"
   },
   "keywords": [],
