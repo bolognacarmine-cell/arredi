@@ -109,19 +109,19 @@ export default function Home() {
       <Hero />
 
       {/* SECTORS */}
-      <section className="py-20 md:py-24 lg:py-32 max-w-7xl mx-auto px-6 md:px-8 lg:px-16 relative bg-white">
+      <section className="py-12 sm:py-16 md:py-24 lg:py-32 max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-16 relative bg-white">
         {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 sm:gap-6 mb-10 sm:mb-12 md:mb-16">
           <div className="relative">
             {/* Elemento decorativo */}
-            <div className="absolute -left-4 top-0 w-1 h-full bg-gradient-to-b from-[#E69138] to-transparent" />
-            <span className="text-[#6B7280] text-xs tracking-[0.2em] uppercase font-semibold pl-4">
+            <div className="absolute -left-2 sm:-left-4 top-0 w-1 h-full bg-gradient-to-b from-[#E69138] to-transparent" />
+            <span className="text-[#6B7280] text-[11px] sm:text-xs tracking-[0.18em] sm:tracking-[0.2em] uppercase font-semibold pl-3 sm:pl-4">
               Settori di attività
             </span>
             <h2
-              className="font-display text-5xl lg:text-6xl font-bold text-[#1A1A2E] mt-2 pl-4"
+              className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[#1A1A2E] mt-2 pl-3 sm:pl-4 leading-[1.15] sm:leading-tight"
               style={{
                 opacity: 0,
                 animation:
@@ -135,7 +135,7 @@ export default function Home() {
             </h2>
           </div>
           <p
-            className="text-[#6B7280] max-w-xs text-sm leading-relaxed"
+            className="text-[#6B7280] max-w-xs text-sm leading-[1.65] sm:leading-relaxed"
             style={{
               opacity: 0,
               animation: "fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards",
@@ -147,12 +147,12 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
           {SECTORS.map((s, index) => (
             <Link
               key={s.id}
               to={`/settori/${s.id}`}
-              className="group relative overflow-hidden bg-white aspect-[3/4] flex flex-col justify-end p-6 hover:shadow-2xl hover:shadow-[#E69138]/20 hover:-translate-y-2 transition-all duration-500 ease-out fade-in-up glow-pulse magnetic-hover"
+              className="group relative overflow-hidden bg-white aspect-[3/4] flex flex-col justify-end p-5 sm:p-6 hover:shadow-2xl hover:shadow-[#E69138]/20 hover:-translate-y-1 sm:hover:-translate-y-2 transition-all duration-500 ease-out fade-in-up glow-pulse magnetic-hover min-h-[44px]"
               style={{
                 animationDelay: `${(index + 1) * 150}ms`,
                 animationFillMode: "forwards",
@@ -175,16 +175,16 @@ export default function Home() {
                   alt={s.label}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent sm:from-black/70 sm:via-black/20" />
               </div>
               <div className="relative z-10">
-                <h3 className="font-display text-xl font-bold text-white mb-2">
+                <h3 className="font-display text-lg sm:text-xl font-bold text-white mb-1.5 sm:mb-2 leading-snug">
                   {s.label}
                 </h3>
-                <p className="text-white/70 text-xs leading-relaxed line-clamp-2 mb-4">
+                <p className="text-white/70 text-xs leading-[1.6] sm:leading-relaxed line-clamp-2 mb-3 sm:mb-4">
                   {s.description}
                 </p>
-                <span className="text-[#E69138] text-xs font-medium tracking-wide group-hover:tracking-widest transition-all">
+                <span className="inline-flex items-center min-h-[36px] text-[#E69138] text-xs font-medium tracking-wide group-hover:tracking-widest transition-all">
                   Scopri di più →
                 </span>
               </div>
@@ -194,20 +194,20 @@ export default function Home() {
       </section>
 
       {/* FEATURED PROJECTS */}
-      <section className="py-20 md:py-24 lg:py-32 bg-[#1A1A2E] relative">
+      <section className="py-12 sm:py-16 md:py-24 lg:py-32 bg-[#1A1A2E] relative">
         {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 
-        <div className="max-w-7xl mx-auto px-6 md:px-8 lg:px-16">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-16">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 sm:gap-6 mb-10 sm:mb-12 md:mb-16">
             <div className="relative">
               {/* Elemento decorativo */}
-              <div className="absolute -left-4 top-0 w-1 h-full bg-gradient-to-b from-[#E69138] to-transparent" />
-              <span className="text-[#6B7280] text-xs tracking-[0.2em] uppercase font-semibold pl-4">
+              <div className="absolute -left-2 sm:-left-4 top-0 w-1 h-full bg-gradient-to-b from-[#E69138] to-transparent" />
+              <span className="text-[#6B7280] text-[11px] sm:text-xs tracking-[0.18em] sm:tracking-[0.2em] uppercase font-semibold pl-3 sm:pl-4">
                 Portfolio
               </span>
               <h2
-                className="font-display text-5xl lg:text-6xl font-bold text-white mt-2 pl-4"
+                className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mt-2 pl-3 sm:pl-4 leading-[1.15] sm:leading-tight"
                 style={{
                   opacity: 0,
                   animation:
@@ -220,7 +220,7 @@ export default function Home() {
             </div>
             <Link
               to="/progetti"
-              className="text-[#E69138] text-sm font-medium hover:underline"
+              className="inline-flex items-center self-start min-h-[40px] -ml-2 px-2 text-[#E69138] text-sm font-medium hover:underline rounded-md"
               style={{
                 opacity: 0,
                 animation:
@@ -232,7 +232,7 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
             {displayedProjects.map((p, index) => (
               <Link
                 key={p.id}
@@ -264,17 +264,17 @@ export default function Home() {
                     {p.sectorId.charAt(0).toUpperCase() + p.sectorId.slice(1)}
                   </span>
                 </div>
-                <div className="p-6">
-                  <h3 className="font-display text-xl font-bold text-white mb-1">
+                <div className="p-5 sm:p-6">
+                  <h3 className="font-display text-lg sm:text-xl font-bold text-white mb-1 leading-snug">
                     {p.title}
                   </h3>
-                  <p className="text-[#6B7280] text-xs mb-3">
+                  <p className="text-[#6B7280] text-xs mb-2.5 sm:mb-3">
                     {p.location} · {p.year}
                   </p>
-                  <p className="text-[#6B7280] text-sm leading-relaxed line-clamp-2">
+                  <p className="text-[#6B7280] text-sm leading-[1.6] sm:leading-relaxed line-clamp-2">
                     {p.description}
                   </p>
-                  <span className="mt-4 inline-block text-[#E69138] text-xs font-medium tracking-wide group-hover:tracking-widest transition-all">
+                  <span className="mt-3 sm:mt-4 inline-flex items-center min-h-[36px] text-[#E69138] text-xs font-medium tracking-wide group-hover:tracking-widest transition-all">
                     Vedi progetto →
                   </span>
                 </div>
@@ -285,20 +285,20 @@ export default function Home() {
       </section>
 
       {/* SERVICES */}
-      <section className="py-20 md:py-24 lg:py-32 max-w-7xl mx-auto px-6 md:px-8 lg:px-16 relative bg-white">
+      <section className="py-12 sm:py-16 md:py-24 lg:py-32 max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-16 relative bg-white">
         {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 
-        <div className="text-center mb-16">
-          <span className="text-[#6B7280] text-xs tracking-[0.2em] uppercase font-semibold">
+        <div className="text-center mb-10 sm:mb-12 md:mb-16">
+          <span className="text-[#6B7280] text-[11px] sm:text-xs tracking-[0.18em] sm:tracking-[0.2em] uppercase font-semibold">
             Come lavoriamo
           </span>
-          <h2 className="font-display text-5xl lg:text-6xl font-bold text-[#1A1A2E] mt-2">
+          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[#1A1A2E] mt-2 leading-[1.15] sm:leading-tight">
             Il nostro processo
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-7 md:gap-8">
           {services.map((svc, i) => (
             <div
               key={svc.title}
@@ -308,17 +308,17 @@ export default function Home() {
                 animationFillMode: "forwards",
               }}
             >
-              <div className="flex items-center gap-4 mb-5">
-                <span className="text-[#E69138] text-2xl">{svc.icon}</span>
-                <span className="w-8 h-px bg-[#E5E5E7]" />
+              <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-5">
+                <span className="text-[#E69138] text-xl sm:text-2xl">{svc.icon}</span>
+                <span className="w-6 sm:w-8 h-px bg-[#E5E5E7]" />
                 <span className="text-[#6B7280] text-xs font-mono">
                   {String(i + 1).padStart(2, "0")}
                 </span>
               </div>
-              <h3 className="font-display text-xl font-bold text-[#1A1A2E] mb-3">
+              <h3 className="font-display text-lg sm:text-xl font-bold text-[#1A1A2E] mb-2.5 sm:mb-3 leading-snug">
                 {svc.title}
               </h3>
-              <p className="text-[#6B7280] text-sm leading-relaxed">
+              <p className="text-[#6B7280] text-sm leading-[1.65] sm:leading-relaxed">
                 {svc.desc}
               </p>
             </div>
@@ -327,20 +327,20 @@ export default function Home() {
       </section>
 
       {/* WHY US */}
-      <section className="py-20 md:py-24 lg:py-32 bg-[#1A1A2E] relative">
+      <section className="py-12 sm:py-16 md:py-24 lg:py-32 bg-[#1A1A2E] relative">
         {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 
-        <div className="max-w-7xl mx-auto px-6 md:px-8 lg:px-16">
-          <div className="text-center mb-16">
-            <span className="text-[#E69138] text-xs tracking-[0.2em] uppercase font-semibold">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-16">
+          <div className="text-center mb-10 sm:mb-12 md:mb-16">
+            <span className="text-[#E69138] text-[11px] sm:text-xs tracking-[0.18em] sm:tracking-[0.2em] uppercase font-semibold">
               Perché sceglierci
             </span>
-            <h2 className="font-display text-5xl lg:text-6xl font-bold text-white mt-2">
+            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mt-2 leading-[1.15] sm:leading-tight">
               La differenza artigianale
             </h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-7 md:gap-8">
             {whys.map((w, index) => (
               <div
                 key={w.label}
@@ -350,10 +350,10 @@ export default function Home() {
                   animationFillMode: "forwards",
                 }}
               >
-                <h3 className="font-display text-xl font-bold text-white mb-3">
+                <h3 className="font-display text-lg sm:text-xl font-bold text-white mb-2.5 sm:mb-3 leading-snug">
                   {w.label}
                 </h3>
-                <p className="text-white/60 text-sm leading-relaxed">
+                <p className="text-white/60 text-sm leading-[1.65] sm:leading-relaxed">
                   {w.value}
                 </p>
               </div>
@@ -363,11 +363,11 @@ export default function Home() {
       </section>
 
       {/* STATS BAND */}
-      <section className="py-20 md:py-24 lg:py-32 bg-white relative">
+      <section className="py-12 sm:py-16 md:py-24 lg:py-32 bg-white relative">
         {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 
-        <div className="max-w-7xl mx-auto px-6 md:px-8 lg:px-16 grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-16 grid grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6 lg:gap-8 text-center">
           {[
             ["500+", "Progetti realizzati"],
 
@@ -385,37 +385,37 @@ export default function Home() {
                 animationFillMode: "forwards",
               }}
             >
-              <div className="font-display text-5xl lg:text-6xl font-bold text-[#1A1A2E] mb-2">
+              <div className="font-display text-3xl sm:text-4xl lg:text-6xl font-bold text-[#1A1A2E] mb-1.5 sm:mb-2 leading-none">
                 {n}
               </div>
-              <div className="text-[#6B7280] text-sm">{l}</div>
+              <div className="text-[#6B7280] text-xs sm:text-sm leading-snug">{l}</div>
             </div>
           ))}
         </div>
       </section>
 
       {/* CTA BAND */}
-      <section className="py-20 md:py-24 lg:py-32 max-w-7xl mx-auto px-6 md:px-8 lg:px-16 flex flex-col lg:flex-row items-center justify-between gap-8 relative bg-white">
+      <section className="py-12 sm:py-16 md:py-24 lg:py-32 max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-16 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 sm:gap-8 relative bg-white">
         {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 
-        <div>
-          <h2 className="font-display text-5xl lg:text-6xl font-bold text-[#1A1A2E] max-w-xl">
+        <div className="w-full lg:w-auto">
+          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[#1A1A2E] max-w-xl leading-[1.15] sm:leading-tight">
             Hai un'idea per il tuo spazio?
             <br />
             <span className="text-[#E69138]">Parliamone.</span>
           </h2>
         </div>
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
           <Link
             to="/preventivo"
-            className="inline-flex items-center bg-[#E69138] text-[#1A1A2E] text-sm font-semibold px-7 py-4 hover:bg-[#D67F28] hover:scale-105 hover:shadow-xl hover:shadow-[#E69138]/40 transition-all duration-300 ease-out glow-pulse magnetic-hover"
+            className="inline-flex items-center justify-center min-h-[48px] bg-[#E69138] text-[#1A1A2E] text-sm font-semibold px-6 sm:px-7 py-3 sm:py-4 hover:bg-[#D67F28] hover:shadow-xl hover:shadow-[#E69138]/40 transition-all duration-300 ease-out glow-pulse magnetic-hover w-full sm:w-auto"
           >
             Richiedi un preventivo gratuito
           </Link>
           <Link
             to="/contatti"
-            className="inline-flex items-center border border-[#1A1A2E] text-[#1A1A2E] text-sm font-medium px-7 py-4 hover:bg-[#1A1A2E]/5 transition-colors"
+            className="inline-flex items-center justify-center min-h-[48px] border border-[#1A1A2E] text-[#1A1A2E] text-sm font-medium px-6 sm:px-7 py-3 sm:py-4 hover:bg-[#1A1A2E]/5 transition-colors w-full sm:w-auto"
           >
             Contattaci
           </Link>

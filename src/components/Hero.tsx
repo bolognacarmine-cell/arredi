@@ -11,8 +11,9 @@ export default function Hero() {
 
   return (
     <section
-      className="relative min-h-screen overflow-hidden bg-[#1A1A2E] flex items-center"
+      className="relative min-h-[100svh] overflow-hidden bg-[#1A1A2E] flex items-center"
       aria-label="Sezione introduttiva"
+      style={{ paddingTop: "env(safe-area-inset-top)" }}
     >
       {/* Grid di progettazione (molto sottile) */}
       <div className="absolute inset-0 opacity-[0.06] pointer-events-none">
@@ -59,32 +60,32 @@ export default function Hero() {
 
       <div
         ref={ref}
-        className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-8 lg:px-16 pt-24 lg:pt-28"
+        className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-16 pt-20 sm:pt-24 lg:pt-28 pb-12 sm:pb-16"
       >
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-10 lg:gap-16 items-center">
           {/* Copy */}
           <div className="lg:col-span-7">
             {/* Trust badge */}
             <div
-              className={`flex items-center gap-4 mb-7 ${
+              className={`flex items-center gap-3 sm:gap-4 mb-5 sm:mb-7 ${
                 inView ? "opacity-0 fade-in-up" : "opacity-0"
               }`}
               style={{ animationDelay: "120ms", animationFillMode: "forwards" }}
             >
               <div className="flex items-center gap-2">
-                <span className="relative flex h-2 w-2">
+                <span className="relative flex h-2.5 w-2.5">
                   <span className="absolute inline-flex h-full w-full rounded-full bg-[#E69138] opacity-60 animate-ping" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-[#E69138]" />
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#E69138]" />
                 </span>
-                <span className="text-[#E69138] text-xs font-semibold tracking-[0.24em] uppercase">
+                <span className="text-[#E69138] text-[11px] sm:text-xs font-semibold tracking-[0.2em] sm:tracking-[0.24em] uppercase">
                   Arredi su misura
                 </span>
               </div>
-              <div className="h-px w-16 bg-gradient-to-r from-[#E69138]/60 to-transparent" />
+              <div className="h-px w-12 sm:w-16 bg-gradient-to-r from-[#E69138]/60 to-transparent" />
             </div>
 
             <h1
-              className={`font-display text-4xl md:text-5xl lg:text-7xl font-bold text-white leading-[1.05] tracking-tight ${
+              className={`font-display text-[2rem] sm:text-4xl md:text-5xl lg:text-7xl font-bold text-white leading-[1.2] sm:leading-[1.1] lg:leading-[1.05] tracking-tight ${
                 inView ? "opacity-0 title-reveal" : "opacity-0"
               }`}
               style={{ animationDelay: "260ms", animationFillMode: "forwards" }}
@@ -94,14 +95,14 @@ export default function Hero() {
             </h1>
 
             <div
-              className={`w-24 h-1 bg-[#E69138] mt-5 mb-6 ${
+              className={`w-20 sm:w-24 h-1 bg-[#E69138] mt-4 sm:mt-5 mb-5 sm:mb-6 ${
                 inView ? "opacity-0 line-expand" : "opacity-0"
               }`}
               style={{ animationDelay: "520ms", animationFillMode: "forwards" }}
             />
 
             <p
-              className={`text-white/75 text-base md:text-lg leading-relaxed max-w-xl ${
+              className={`text-white/75 text-[15px] sm:text-base md:text-lg leading-[1.6] sm:leading-relaxed max-w-xl ${
                 inView ? "opacity-0 slide-up" : "opacity-0"
               }`}
               style={{ animationDelay: "420ms", animationFillMode: "forwards" }}
@@ -113,14 +114,14 @@ export default function Hero() {
 
             {/* CTA */}
             <div
-              className={`flex flex-col sm:flex-row gap-4 mt-8 ${
+              className={`flex flex-col sm:flex-row gap-3 sm:gap-4 mt-7 sm:mt-8 ${
                 inView ? "opacity-0 fade-in-up" : "opacity-0"
               }`}
               style={{ animationDelay: "720ms", animationFillMode: "forwards" }}
             >
               <Link
                 to="/preventivo"
-                className="group relative inline-flex items-center justify-center bg-[#E69138] text-[#1A1A2E] text-sm font-semibold px-8 py-4 overflow-hidden shadow-lg shadow-[#E69138]/20 hover:scale-[1.03] hover:shadow-xl hover:shadow-[#E69138]/40 transition-all duration-300 ease-out glow-pulse magnetic-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E69138]"
+                className="group relative inline-flex items-center justify-center min-h-[48px] bg-[#E69138] text-[#1A1A2E] text-sm font-semibold px-6 sm:px-8 py-3 sm:py-4 overflow-hidden shadow-lg shadow-[#E69138]/20 hover:scale-[1.03] hover:shadow-xl hover:shadow-[#E69138]/40 transition-all duration-300 ease-out glow-pulse magnetic-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E69138]"
                 aria-label="Richiedi un preventivo gratuito"
               >
                 <span className="absolute inset-0 bg-[#D67F28] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -144,7 +145,7 @@ export default function Hero() {
 
               <Link
                 to="/progetti"
-                className="group relative inline-flex items-center justify-center border border-white/40 text-white text-sm font-semibold px-8 py-4 overflow-hidden hover:border-white/70 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                className="group relative inline-flex items-center justify-center min-h-[48px] border border-white/40 text-white text-sm font-semibold px-6 sm:px-8 py-3 sm:py-4 overflow-hidden hover:border-white/70 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                 aria-label="Vedi i progetti"
               >
                 <span className="absolute inset-0 bg-white/10 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out origin-left" />
@@ -164,7 +165,7 @@ export default function Hero() {
 
             {/* Trust row */}
             <div
-              className={`flex flex-wrap items-center gap-x-7 gap-y-3 mt-8 ${
+              className={`flex flex-wrap items-center gap-x-5 sm:gap-x-7 gap-y-2.5 sm:gap-y-3 mt-6 sm:mt-8 ${
                 inView ? "opacity-0 fade-in-up" : "opacity-0"
               }`}
               style={{ animationDelay: "980ms", animationFillMode: "forwards" }}
@@ -205,44 +206,44 @@ export default function Hero() {
 
               <div className="absolute -inset-6 bg-gradient-to-r from-[#E69138]/18 to-transparent blur-3xl" aria-hidden="true" />
 
-              <div className="relative bg-white/6 backdrop-blur-md border border-white/12 rounded-2xl p-7 md:p-8">
+              <div className="relative bg-white/6 backdrop-blur-md border border-white/12 rounded-2xl p-5 sm:p-6 md:p-8">
                 <div className="flex items-center gap-3">
                   <img
                     src="/logo-farcom.png"
                     alt=""
                     aria-hidden="true"
-                    className="h-8 w-auto opacity-90"
+                    className="h-7 sm:h-8 w-auto opacity-90"
                     loading="lazy"
                     decoding="async"
                   />
                   <div className="h-px flex-1 bg-gradient-to-r from-white/15 to-transparent" />
                 </div>
 
-                <h2 className="mt-6 text-white font-semibold text-base">
+                <h2 className="mt-5 sm:mt-6 text-white font-semibold text-[15px] sm:text-base">
                   Un processo chiaro, zero sorprese
                 </h2>
 
-                <ul className="mt-4 space-y-3 text-sm text-white/70">
+                <ul className="mt-3 sm:mt-4 space-y-2.5 sm:space-y-3 text-sm text-white/70 leading-[1.6]">
                   {[
                     "Sopralluogo e briefing (obiettivi, flussi, budget)",
                     "Render 3D + disegni esecutivi",
                     "Produzione, installazione e post-vendita",
                   ].map((t) => (
                     <li key={t} className="flex gap-3">
-                      <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#E69138]" aria-hidden="true" />
+                      <span className="mt-[10px] sm:mt-1.5 w-1.5 h-1.5 rounded-full bg-[#E69138] flex-shrink-0" aria-hidden="true" />
                       <span>{t}</span>
                     </li>
                   ))}
                 </ul>
 
-                <div className="mt-6 flex items-center justify-between gap-4">
+                <div className="mt-5 sm:mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div className="text-xs text-white/55">
                     <span className="text-white/80 font-semibold">Obiettivo:</span>{" "}
                     impatto visivo + conversione
                   </div>
                   <Link
                     to="/contatti"
-                    className="text-xs font-semibold text-[#E69138] hover:text-[#F0B46C] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E69138]"
+                    className="inline-flex items-center self-start sm:self-auto min-h-[40px] px-2 -ml-2 font-semibold text-[#E69138] hover:text-[#F0B46C] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E69138] rounded-md"
                   >
                     Parla con noi →
                   </Link>
