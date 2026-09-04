@@ -109,11 +109,11 @@ export default function Home() {
       <Hero />
 
       {/* SECTORS */}
-      <section className="py-12 sm:py-16 md:py-24 lg:py-32 max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-16 relative bg-white">
+      <section className="py-10 sm:py-12 md:py-16 lg:py-20 max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-16 relative bg-white">
         {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 sm:gap-6 mb-10 sm:mb-12 md:mb-16">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 sm:gap-6 mb-6 sm:mb-8 md:mb-10">
           <div className="relative">
             {/* Elemento decorativo */}
             <div className="absolute -left-2 sm:-left-4 top-0 w-1 h-full bg-gradient-to-b from-[#E69138] to-transparent" />
@@ -121,7 +121,7 @@ export default function Home() {
               Settori di attività
             </span>
             <h2
-              className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[#1A1A2E] mt-2 pl-3 sm:pl-4 leading-[1.15] sm:leading-tight"
+              className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[#1A1A2E] mt-2 pl-3 sm:pl-4 leading-[1.15] sm:leading-tight text-balance"
               style={{
                 opacity: 0,
                 animation:
@@ -194,12 +194,12 @@ export default function Home() {
       </section>
 
       {/* FEATURED PROJECTS */}
-      <section className="py-12 sm:py-16 md:py-24 lg:py-32 bg-[#1A1A2E] relative">
+      <section className="py-10 sm:py-12 md:py-16 lg:py-20 bg-[#1A1A2E] relative">
         {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-16">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 sm:gap-6 mb-10 sm:mb-12 md:mb-16">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 sm:gap-6 mb-6 sm:mb-8 md:mb-10">
             <div className="relative">
               {/* Elemento decorativo */}
               <div className="absolute -left-2 sm:-left-4 top-0 w-1 h-full bg-gradient-to-b from-[#E69138] to-transparent" />
@@ -207,7 +207,7 @@ export default function Home() {
                 Portfolio
               </span>
               <h2
-                className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mt-2 pl-3 sm:pl-4 leading-[1.15] sm:leading-tight"
+                className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mt-2 pl-3 sm:pl-4 leading-[1.15] sm:leading-tight text-balance"
                 style={{
                   opacity: 0,
                   animation:
