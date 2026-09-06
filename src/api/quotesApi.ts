@@ -1,4 +1,6 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001"
+// Su Render il backend non è disponibile, disabilitiamo le chiamate API
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ""
+const isApiAvailable = !!API_BASE_URL
 
 export interface QuoteItem {
   productId: string
@@ -22,6 +24,10 @@ export interface Quote {
 }
 
 export async function getQuotes(filters?: { status?: string }): Promise<Quote[]> {
+  if (!isApiAvailable) {
+    return []
+  }
+
   try {
     const url = new URL(`${API_BASE_URL}/api/quotes`)
     if (filters?.status) url.searchParams.append("status", filters.status)
@@ -29,27 +35,39 @@ export async function getQuotes(filters?: { status?: string }): Promise<Quote[]>
     const response = await fetch(url.toString())
     const result = await response.json()
 
-    if (!result.success) {
-      throw new Error(result.error?.message || "Failed to fetch quotes")
+    if (Array.isArray(result)) {
+      return result
     }
 
-    return result.data
+    if (result.success) {
+      return result.data
+    }
+
+    throw new Error(result.error?.message || "Failed to fetch quotes")
   } catch (error) {
     console.error("Error fetching quotes:", error)
-    throw error
+    return []
   }
 }
 
 export async function getQuoteById(id: string): Promise<Quote> {
+  if (!isApiAvailable) {
+    throw new Error("API not available")
+  }
+
   try {
     const response = await fetch(`${API_BASE_URL}/api/quotes/${id}`)
     const result = await response.json()
 
-    if (!result.success) {
-      throw new Error(result.error?.message || "Failed to fetch quote")
+    if (result._id) {
+      return result
     }
 
-    return result.data
+    if (result.success) {
+      return result.data
+    }
+
+    throw new Error(result.error?.message || "Failed to fetch quote")
   } catch (error) {
     console.error("Error fetching quote:", error)
     throw error
@@ -57,6 +75,10 @@ export async function getQuoteById(id: string): Promise<Quote> {
 }
 
 export async function createQuote(data: Omit<Quote, "_id" | "createdAt" | "updatedAt">): Promise<Quote> {
+  if (!isApiAvailable) {
+    throw new Error("API not available")
+  }
+
   try {
     const response = await fetch(`${API_BASE_URL}/api/quotes`, {
       method: "POST",
@@ -68,11 +90,15 @@ export async function createQuote(data: Omit<Quote, "_id" | "createdAt" | "updat
 
     const result = await response.json()
 
-    if (!result.success) {
-      throw new Error(result.error?.message || "Failed to create quote")
+    if (result._id) {
+      return result
     }
 
-    return result.data
+    if (result.success) {
+      return result.data
+    }
+
+    throw new Error(result.error?.message || "Failed to create quote")
   } catch (error) {
     console.error("Error creating quote:", error)
     throw error
@@ -80,6 +106,10 @@ export async function createQuote(data: Omit<Quote, "_id" | "createdAt" | "updat
 }
 
 export async function updateQuote(id: string, data: Partial<Quote>): Promise<Quote> {
+  if (!isApiAvailable) {
+    throw new Error("API not available")
+  }
+
   try {
     const response = await fetch(`${API_BASE_URL}/api/quotes/${id}`, {
       method: "PUT",
@@ -91,11 +121,15 @@ export async function updateQuote(id: string, data: Partial<Quote>): Promise<Quo
 
     const result = await response.json()
 
-    if (!result.success) {
-      throw new Error(result.error?.message || "Failed to update quote")
+    if (result._id) {
+      return result
     }
 
-    return result.data
+    if (result.success) {
+      return result.data
+    }
+
+    throw new Error(result.error?.message || "Failed to update quote")
   } catch (error) {
     console.error("Error updating quote:", error)
     throw error
@@ -103,6 +137,10 @@ export async function updateQuote(id: string, data: Partial<Quote>): Promise<Quo
 }
 
 export async function deleteQuote(id: string): Promise<void> {
+  if (!isApiAvailable) {
+    return
+  }
+
   try {
     const response = await fetch(`${API_BASE_URL}/api/quotes/${id}`, {
       method: "DELETE",
@@ -110,11 +148,17 @@ export async function deleteQuote(id: string): Promise<void> {
 
     const result = await response.json()
 
-    if (!result.success) {
-      throw new Error(result.error?.message || "Failed to delete quote")
+    if (result.message || response.ok) {
+      return
     }
+
+    if (result.success) {
+      return
+    }
+
+    throw new Error(result.error?.message || "Failed to delete quote")
   } catch (error) {
     console.error("Error deleting quote:", error)
-    throw error
+    return
   }
 }

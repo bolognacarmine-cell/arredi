@@ -1,4 +1,6 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001"
+// Su Render il backend non è disponibile, disabilitiamo le chiamate API
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ""
+const isApiAvailable = !!API_BASE_URL
 
 export interface Project {
   _id: string
@@ -28,31 +30,47 @@ export interface Project {
 }
 
 export async function getProjects(): Promise<Project[]> {
+  if (!isApiAvailable) {
+    return []
+  }
+
   try {
     const response = await fetch(`${API_BASE_URL}/api/projects`)
     const result = await response.json()
 
-    if (!result.success) {
-      throw new Error(result.error?.message || "Failed to fetch projects")
+    if (Array.isArray(result)) {
+      return result
     }
 
-    return result.data
+    if (result.success) {
+      return result.data
+    }
+
+    throw new Error(result.error?.message || "Failed to fetch projects")
   } catch (error) {
     console.error("Error fetching projects:", error)
-    throw error
+    return []
   }
 }
 
 export async function getProjectById(id: string): Promise<Project> {
+  if (!isApiAvailable) {
+    throw new Error("API not available")
+  }
+
   try {
     const response = await fetch(`${API_BASE_URL}/api/projects/${id}`)
     const result = await response.json()
 
-    if (!result.success) {
-      throw new Error(result.error?.message || "Failed to fetch project")
+    if (result._id) {
+      return result
     }
 
-    return result.data
+    if (result.success) {
+      return result.data
+    }
+
+    throw new Error(result.error?.message || "Failed to fetch project")
   } catch (error) {
     console.error("Error fetching project:", error)
     throw error
@@ -60,6 +78,10 @@ export async function getProjectById(id: string): Promise<Project> {
 }
 
 export async function createProject(data: Omit<Project, "_id" | "createdAt" | "updatedAt">): Promise<Project> {
+  if (!isApiAvailable) {
+    throw new Error("API not available")
+  }
+
   try {
     const response = await fetch(`${API_BASE_URL}/api/projects`, {
       method: "POST",
@@ -71,11 +93,15 @@ export async function createProject(data: Omit<Project, "_id" | "createdAt" | "u
 
     const result = await response.json()
 
-    if (!result.success) {
-      throw new Error(result.error?.message || "Failed to create project")
+    if (result._id) {
+      return result
     }
 
-    return result.data
+    if (result.success) {
+      return result.data
+    }
+
+    throw new Error(result.error?.message || "Failed to create project")
   } catch (error) {
     console.error("Error creating project:", error)
     throw error
@@ -83,6 +109,10 @@ export async function createProject(data: Omit<Project, "_id" | "createdAt" | "u
 }
 
 export async function updateProject(id: string, data: Partial<Project>): Promise<Project> {
+  if (!isApiAvailable) {
+    throw new Error("API not available")
+  }
+
   try {
     const response = await fetch(`${API_BASE_URL}/api/projects/${id}`, {
       method: "PUT",
@@ -94,11 +124,15 @@ export async function updateProject(id: string, data: Partial<Project>): Promise
 
     const result = await response.json()
 
-    if (!result.success) {
-      throw new Error(result.error?.message || "Failed to update project")
+    if (result._id) {
+      return result
     }
 
-    return result.data
+    if (result.success) {
+      return result.data
+    }
+
+    throw new Error(result.error?.message || "Failed to update project")
   } catch (error) {
     console.error("Error updating project:", error)
     throw error
@@ -106,6 +140,10 @@ export async function updateProject(id: string, data: Partial<Project>): Promise
 }
 
 export async function deleteProject(id: string): Promise<void> {
+  if (!isApiAvailable) {
+    return
+  }
+
   try {
     const response = await fetch(`${API_BASE_URL}/api/projects/${id}`, {
       method: "DELETE",
@@ -113,11 +151,17 @@ export async function deleteProject(id: string): Promise<void> {
 
     const result = await response.json()
 
-    if (!result.success) {
-      throw new Error(result.error?.message || "Failed to delete project")
+    if (result.message || response.ok) {
+      return
     }
+
+    if (result.success) {
+      return
+    }
+
+    throw new Error(result.error?.message || "Failed to delete project")
   } catch (error) {
     console.error("Error deleting project:", error)
-    throw error
+    return
   }
 }

@@ -168,8 +168,8 @@ async function uploadToCloudinary(
 
 export default function AdminMedia() {
   const { projects } = useProjects() as { projects: any[] }
-  const allImages = projects.flatMap((p) =>
-    p.gallery.map((url: string, i: number) => ({ url, project: p.title, id: `${p.id}-${i}` })),
+  const allImages = (projects || []).flatMap((p) =>
+    (p.gallery || []).map((url: string, i: number) => ({ url, project: p.title, id: `${p.id}-${i}` })),
   )
   const runningOnLocalhostDev =
     typeof window !== "undefined" &&
@@ -191,7 +191,7 @@ export default function AdminMedia() {
   const [autoAssign, setAutoAssign] = useState<AutoAssign>({
     enabled: canWriteDataTsLocally, // on Render / Prod, disattivato di default
     collection: "project",
-    id: projects[0]?.id ?? "",
+    id: (projects && projects.length > 0) ? projects[0].id : "",
     field: "cover",
     index: 0,
   })

@@ -1,4 +1,6 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001"
+// Su Render il backend non è disponibile, disabilitiamo le chiamate API
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ""
+const isApiAvailable = !!API_BASE_URL
 
 export interface SocialLinks {
   facebook?: string
@@ -25,15 +27,23 @@ export interface SiteConfig {
 }
 
 export async function getSiteConfig(): Promise<SiteConfig> {
+  if (!isApiAvailable) {
+    throw new Error("API not available")
+  }
+
   try {
     const response = await fetch(`${API_BASE_URL}/api/site-config`)
     const result = await response.json()
 
-    if (!result.success) {
-      throw new Error(result.error?.message || "Failed to fetch site config")
+    if (result._id) {
+      return result
     }
 
-    return result.data
+    if (result.success) {
+      return result.data
+    }
+
+    throw new Error(result.error?.message || "Failed to fetch site config")
   } catch (error) {
     console.error("Error fetching site config:", error)
     throw error
@@ -41,6 +51,10 @@ export async function getSiteConfig(): Promise<SiteConfig> {
 }
 
 export async function updateSiteConfig(data: Partial<SiteConfig>): Promise<SiteConfig> {
+  if (!isApiAvailable) {
+    throw new Error("API not available")
+  }
+
   try {
     const response = await fetch(`${API_BASE_URL}/api/site-config`, {
       method: "PUT",
@@ -52,11 +66,15 @@ export async function updateSiteConfig(data: Partial<SiteConfig>): Promise<SiteC
 
     const result = await response.json()
 
-    if (!result.success) {
-      throw new Error(result.error?.message || "Failed to update site config")
+    if (result._id) {
+      return result
     }
 
-    return result.data
+    if (result.success) {
+      return result.data
+    }
+
+    throw new Error(result.error?.message || "Failed to update site config")
   } catch (error) {
     console.error("Error updating site config:", error)
     throw error
