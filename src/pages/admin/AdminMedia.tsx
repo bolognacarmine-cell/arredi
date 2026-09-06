@@ -223,6 +223,8 @@ export default function AdminMedia() {
         setRecentUploads(media)
       } catch (error) {
         console.error("Error loading recent uploads:", error)
+        // Non bloccare il caricamento se l'API non è disponibile (es. su Render)
+        setRecentUploads([])
       }
     }
     loadRecentUploads()
@@ -244,11 +246,17 @@ export default function AdminMedia() {
             bytes: lastResult.bytes,
           })
           // Refresh recent uploads
-          const media = await getMedia()
-          setRecentUploads(media)
+          try {
+            const media = await getMedia()
+            setRecentUploads(media)
+          } catch (refreshError) {
+            console.error("Error refreshing media list:", refreshError)
+            // Non bloccare se il refresh fallisce
+          }
           setLastUploadIdRef(newMedia._id)
         } catch (error) {
           console.error("Error saving media to database:", error)
+          // Non bloccare se il salvataggio nel DB fallisce (es. su Render)
         }
       }
     }

@@ -33,11 +33,17 @@ export async function getMedia(category?: string): Promise<Media[]> {
     const response = await fetch(url.toString())
     const result = await response.json()
 
-    if (!result.success) {
-      throw new Error(result.error?.message || "Failed to fetch media")
+    // Il backend ritorna direttamente l'array, non { success, data }
+    if (Array.isArray(result)) {
+      return result
     }
 
-    return result.data
+    // Fallback per formato con { success, data }
+    if (result.success) {
+      return result.data
+    }
+
+    throw new Error(result.error?.message || "Failed to fetch media")
   } catch (error) {
     console.error("Error fetching media:", error)
     throw error
@@ -49,11 +55,17 @@ export async function getMediaById(id: string): Promise<Media> {
     const response = await fetch(`${API_BASE_URL}/api/media/${id}`)
     const result = await response.json()
 
-    if (!result.success) {
-      throw new Error(result.error?.message || "Failed to fetch media")
+    // Il backend ritorna direttamente l'oggetto media, non { success, data }
+    if (result._id) {
+      return result
     }
 
-    return result.data
+    // Fallback per formato con { success, data }
+    if (result.success) {
+      return result.data
+    }
+
+    throw new Error(result.error?.message || "Failed to fetch media")
   } catch (error) {
     console.error("Error fetching media:", error)
     throw error
@@ -72,11 +84,17 @@ export async function createMedia(data: CreateMediaData): Promise<Media> {
 
     const result = await response.json()
 
-    if (!result.success) {
-      throw new Error(result.error?.message || "Failed to create media")
+    // Il backend ritorna direttamente l'oggetto media, non { success, data }
+    if (result._id) {
+      return result
     }
 
-    return result.data
+    // Fallback per formato con { success, data }
+    if (result.success) {
+      return result.data
+    }
+
+    throw new Error(result.error?.message || "Failed to create media")
   } catch (error) {
     console.error("Error creating media:", error)
     throw error
@@ -95,11 +113,17 @@ export async function updateMedia(id: string, data: Partial<CreateMediaData>): P
 
     const result = await response.json()
 
-    if (!result.success) {
-      throw new Error(result.error?.message || "Failed to update media")
+    // Il backend ritorna direttamente l'oggetto media, non { success, data }
+    if (result._id) {
+      return result
     }
 
-    return result.data
+    // Fallback per formato con { success, data }
+    if (result.success) {
+      return result.data
+    }
+
+    throw new Error(result.error?.message || "Failed to update media")
   } catch (error) {
     console.error("Error updating media:", error)
     throw error
@@ -114,9 +138,17 @@ export async function deleteMedia(id: string): Promise<void> {
 
     const result = await response.json()
 
-    if (!result.success) {
-      throw new Error(result.error?.message || "Failed to delete media")
+    // Il backend ritorna { message: "Media deleted" }, non { success, data }
+    if (result.message || response.ok) {
+      return
     }
+
+    // Fallback per formato con { success, data }
+    if (result.success) {
+      return
+    }
+
+    throw new Error(result.error?.message || "Failed to delete media")
   } catch (error) {
     console.error("Error deleting media:", error)
     throw error
