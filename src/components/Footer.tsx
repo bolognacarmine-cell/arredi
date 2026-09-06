@@ -101,7 +101,7 @@ export default function Footer() {
 
   // Header sezione desktop (sempre visibile md+)
   const SectionTitle = ({ children }: { children: React.ReactNode }) => (
-    <h3 className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.22em] text-white/42">
+    <h3 className="text-[10px] sm:text-[11px] md:text-xs font-semibold uppercase tracking-[0.18em] sm:tracking-[0.2em] md:tracking-[0.22em] text-white/42">
       {children}
     </h3>
   )
@@ -127,9 +127,9 @@ export default function Footer() {
           onClick={() => toggle(col, keyId)}
           aria-expanded={isOpen}
           aria-controls={id}
-          className="w-full inline-flex items-center justify-between min-h-[44px] -mx-2 px-2 text-left text-sm font-semibold uppercase tracking-[0.16em] text-white/85 hover:text-[#E69138] transition-colors rounded-sm"
+          className="w-full inline-flex items-center justify-between min-h-[40px] sm:min-h-[44px] -mx-2 px-2 text-left text-xs sm:text-sm font-semibold uppercase tracking-[0.14em] sm:tracking-[0.16em] text-white/85 hover:text-[#E69138] transition-colors rounded-sm"
         >
-          <span>{title}</span>
+          <span className="text-[11px] sm:text-sm">{title}</span>
           <ChevronDown open={isOpen} />
         </button>
         <div
@@ -137,7 +137,7 @@ export default function Footer() {
           role="region"
           aria-labelledby={`${id}-header`}
           className={`grid transition-all duration-200 ease-out ${
-            isOpen ? "grid-rows-[1fr] opacity-100 pb-3" : "grid-rows-[0fr] opacity-0"
+            isOpen ? "grid-rows-[1fr] opacity-100 pb-2 sm:pb-3" : "grid-rows-[0fr] opacity-0"
           }`}
         >
           <div className="overflow-hidden">{children}</div>
@@ -156,22 +156,22 @@ export default function Footer() {
 
       {/* Banda CTA superiore */}
       <div className="relative border-b border-white/10">
-        <div className="mx-auto flex max-w-7xl flex-col gap-5 sm:gap-6 px-4 sm:px-6 py-5 sm:py-6 md:px-8 lg:flex-row lg:items-center lg:justify-between lg:px-16">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 sm:gap-5 md:gap-6 px-4 sm:px-6 py-4 sm:py-5 md:py-6 md:px-8 lg:flex-row lg:items-center lg:justify-between lg:px-16">
           <div className="max-w-2xl">
-            <p className="mb-2 text-[11px] sm:text-xs font-semibold uppercase tracking-[0.24em] sm:tracking-[0.28em] text-[#E69138]">
+            <p className="mb-1.5 sm:mb-2 text-[10px] sm:text-[11px] md:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.24em] md:tracking-[0.28em] text-[#E69138]">
               {siteConfig.brandName}
             </p>
-            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-light text-white leading-[1.2] sm:leading-tight">
+            <h2 className="font-display text-xl sm:text-2xl md:text-3xl lg:text-4xl font-light text-white leading-[1.2] sm:leading-tight">
               Hai un progetto da arredare?
             </h2>
-            <p className="mt-2.5 sm:mt-3 text-sm leading-[1.65] sm:leading-relaxed text-white/68 md:text-base">
+            <p className="mt-2 sm:mt-2.5 md:mt-3 text-xs sm:text-sm md:text-base leading-[1.65] sm:leading-relaxed text-white/68">
               {siteConfig.footerIntro}
             </p>
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row w-full sm:w-auto">
+          <div className="flex flex-col gap-2 sm:gap-3 md:flex-row w-full md:w-auto">
             <Link
               to="/preventivo"
-              className="inline-flex items-center justify-center min-h-[48px] bg-[#E69138] px-6 py-3 text-sm font-semibold text-[#1A1A2E] transition-all duration-300 hover:bg-[#f0a14b] hover:shadow-lg hover:shadow-[#E69138]/20 w-full sm:w-auto"
+              className="inline-flex items-center justify-center min-h-[44px] sm:min-h-[48px] bg-[#E69138] px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold text-[#1A1A2E] transition-all duration-300 hover:bg-[#f0a14b] hover:shadow-lg hover:shadow-[#E69138]/20 w-full sm:w-auto"
             >
               Richiedi preventivo
             </Link>
@@ -179,7 +179,7 @@ export default function Footer() {
               href={siteConfig.whatsappHref}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center min-h-[48px] border border-white/15 bg-white/5 px-6 py-3 text-sm font-semibold text-white transition-colors hover:border-[#25D366] hover:text-[#25D366] w-full sm:w-auto"
+              className="inline-flex items-center justify-center min-h-[44px] sm:min-h-[48px] border border-white/15 bg-white/5 px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold text-white transition-colors hover:border-[#25D366] hover:text-[#25D366] w-full sm:w-auto"
             >
               {siteConfig.whatsappLabel}
             </a>
@@ -232,7 +232,7 @@ export default function Footer() {
           </div>
 
           {/* ===== MOBILE: accordion 2 colonne ===== */}
-          <div className="md:hidden grid grid-cols-2 gap-4 sm:gap-6">
+          <div className="md:hidden grid grid-cols-2 gap-3 sm:gap-4 md:gap-6">
             {/* Colonna 1 — Settori + Azienda */}
             <div className="flex flex-col">
               <Accordion col="col1" keyId="settori" title="Settori">
@@ -241,7 +241,7 @@ export default function Footer() {
                     <li key={to}>
                       <Link
                         to={to}
-                        className="flex items-center min-h-[40px] -mx-2 px-2 text-sm text-white/72 hover:text-[#E69138] hover:bg-white/[0.04] rounded-sm transition-colors"
+                        className="flex items-center min-h-[36px] sm:min-h-[40px] -mx-2 px-2 text-xs sm:text-sm text-white/72 hover:text-[#E69138] hover:bg-white/[0.04] rounded-sm transition-colors"
                       >
                         {label}
                       </Link>
@@ -255,7 +255,7 @@ export default function Footer() {
                     <li key={to}>
                       <Link
                         to={to}
-                        className="flex items-center min-h-[40px] -mx-2 px-2 text-sm text-white/72 hover:text-[#E69138] hover:bg-white/[0.04] rounded-sm transition-colors"
+                        className="flex items-center min-h-[36px] sm:min-h-[40px] -mx-2 px-2 text-xs sm:text-sm text-white/72 hover:text-[#E69138] hover:bg-white/[0.04] rounded-sm transition-colors"
                       >
                         {label}
                       </Link>
@@ -268,7 +268,7 @@ export default function Footer() {
             {/* Colonna 2 — Contatti + Social & Legal */}
             <div className="flex flex-col">
               <Accordion col="col2" keyId="contatti" title="Contatti">
-                <ul className="space-y-2">
+                <ul className="space-y-1.5 sm:space-y-2">
                   {footerContactLinks.map(({ label, value, href, external }) => {
                     const Icon =
                       label.toLowerCase() === "tel" ? PhoneIcon : label.toLowerCase() === "email" ? MailIcon : MapPinIcon
@@ -278,13 +278,13 @@ export default function Footer() {
                           href={href}
                           target={external ? "_blank" : undefined}
                           rel={external ? "noopener noreferrer" : undefined}
-                          className="flex items-start gap-2.5 min-h-[40px] -mx-2 px-2 py-1 text-sm text-white/72 hover:text-white hover:bg-white/[0.04] rounded-sm transition-colors leading-snug"
+                          className="flex items-start gap-2 sm:gap-2.5 min-h-[36px] sm:min-h-[40px] -mx-2 px-2 py-1 text-xs sm:text-sm text-white/72 hover:text-white hover:bg-white/[0.04] rounded-sm transition-colors leading-snug"
                         >
                           <span className="mt-0.5 text-[#E69138] shrink-0">
                             <Icon />
                           </span>
                           <span className="min-w-0 break-words">
-                            <span className="block text-[10px] uppercase tracking-[0.16em] text-white/40 mb-0.5">
+                            <span className="block text-[9px] sm:text-[10px] uppercase tracking-[0.14em] sm:tracking-[0.16em] text-white/40 mb-0.5">
                               {label}
                             </span>
                             {value}
@@ -294,10 +294,10 @@ export default function Footer() {
                     )
                   })}
                 </ul>
-                <div className="mt-4 grid grid-cols-2 gap-2.5">
+                <div className="mt-3 sm:mt-4 grid grid-cols-2 gap-2 sm:gap-2.5">
                   <a
                     href={telHref}
-                    className="inline-flex items-center justify-center gap-2 min-h-[44px] bg-[#E69138] px-3 py-2 text-[13px] font-semibold text-[#1A1A2E] hover:bg-[#f0a14b] transition-colors rounded-md"
+                    className="inline-flex items-center justify-center gap-1.5 sm:gap-2 min-h-[40px] sm:min-h-[44px] bg-[#E69138] px-2.5 sm:px-3 py-2 text-[11px] sm:text-[13px] font-semibold text-[#1A1A2E] hover:bg-[#f0a14b] transition-colors rounded-md"
                   >
                     <PhoneIcon />
                     Chiama ora
@@ -306,7 +306,7 @@ export default function Footer() {
                     href={waHref}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 min-h-[44px] border border-[#25D366]/50 bg-[#25D366]/10 text-[#25D366] px-3 py-2 text-[13px] font-semibold hover:bg-[#25D366]/15 transition-colors rounded-md"
+                    className="inline-flex items-center justify-center gap-1.5 sm:gap-2 min-h-[40px] sm:min-h-[44px] border border-[#25D366]/50 bg-[#25D366]/10 text-[#25D366] px-2.5 sm:px-3 py-2 text-[11px] sm:text-[13px] font-semibold hover:bg-[#25D366]/15 transition-colors rounded-md"
                   >
                     <WhatsAppIcon />
                     WhatsApp
@@ -315,7 +315,7 @@ export default function Footer() {
               </Accordion>
 
               <Accordion col="col2" keyId="sociallegal" title="Social & Legal">
-                <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
                   {socialLinks.map(({ label, href, icon }) => (
                     <a
                       key={label}
@@ -324,26 +324,26 @@ export default function Footer() {
                       rel="noopener noreferrer"
                       aria-label={label}
                       title={label}
-                      className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] border border-white/12 bg-white/5 rounded-md text-white/76 transition-colors hover:border-[#E69138] hover:text-[#E69138] hover:bg-[#E69138]/10"
+                      className="inline-flex items-center justify-center min-h-[40px] sm:min-h-[44px] min-w-[40px] sm:min-w-[44px] border border-white/12 bg-white/5 rounded-md text-white/76 transition-colors hover:border-[#E69138] hover:text-[#E69138] hover:bg-[#E69138]/10"
                     >
                       {icon}
                     </a>
                   ))}
                 </div>
-                <div className="flex flex-wrap items-center gap-x-1 gap-y-1 text-sm text-white/60 mb-3">
-                  <Link to="/privacy" className="inline-flex items-center min-h-[40px] -mx-2 px-2 hover:text-[#E69138] transition-colors rounded-sm">
+                <div className="flex flex-wrap items-center gap-x-1 gap-y-1 text-xs sm:text-sm text-white/60 mb-2 sm:mb-3">
+                  <Link to="/privacy" className="inline-flex items-center min-h-[36px] sm:min-h-[40px] -mx-2 px-2 hover:text-[#E69138] transition-colors rounded-sm">
                     Privacy
                   </Link>
                   <span className="text-white/30" aria-hidden="true">•</span>
-                  <Link to="/cookie" className="inline-flex items-center min-h-[40px] -mx-2 px-2 hover:text-[#E69138] transition-colors rounded-sm">
+                  <Link to="/cookie" className="inline-flex items-center min-h-[36px] sm:min-h-[40px] -mx-2 px-2 hover:text-[#E69138] transition-colors rounded-sm">
                     Cookie
                   </Link>
                   <span className="text-white/30" aria-hidden="true">•</span>
-                  <Link to="/note-legali" className="inline-flex items-center min-h-[40px] -mx-2 px-2 hover:text-[#E69138] transition-colors rounded-sm">
+                  <Link to="/note-legali" className="inline-flex items-center min-h-[36px] sm:min-h-[40px] -mx-2 px-2 hover:text-[#E69138] transition-colors rounded-sm">
                     Note legali
                   </Link>
                 </div>
-                <div className="text-xs text-white/45">
+                <div className="text-[10px] sm:text-xs text-white/45">
                   © {currentYear} {siteConfig.legalName}.
                 </div>
               </Accordion>
@@ -355,12 +355,12 @@ export default function Footer() {
             {/* Col 1 — Azienda */}
             <div>
               <SectionTitle>Azienda</SectionTitle>
-              <ul className="mt-4 sm:mt-5 space-y-2">
+              <ul className="mt-3 sm:mt-4 md:mt-5 space-y-1.5 sm:space-y-2">
                 {companyLinks.map(({ label, to }) => (
                   <li key={to}>
                     <Link
                       to={to}
-                      className="flex items-center min-h-[40px] -mx-2 px-2 text-sm text-white/72 hover:text-[#E69138] hover:bg-white/[0.04] rounded-sm transition-colors"
+                      className="flex items-center min-h-[36px] sm:min-h-[40px] -mx-2 px-2 text-xs sm:text-sm text-white/72 hover:text-[#E69138] hover:bg-white/[0.04] rounded-sm transition-colors"
                     >
                       {label}
                     </Link>
@@ -372,12 +372,12 @@ export default function Footer() {
             {/* Col 2 — Settori */}
             <div>
               <SectionTitle>Settori</SectionTitle>
-              <ul className="mt-4 sm:mt-5 space-y-2">
+              <ul className="mt-3 sm:mt-4 md:mt-5 space-y-1.5 sm:space-y-2">
                 {sectorLinks.map(({ label, to }) => (
                   <li key={to}>
                     <Link
                       to={to}
-                      className="flex items-center min-h-[40px] -mx-2 px-2 text-sm text-white/72 hover:text-[#E69138] hover:bg-white/[0.04] rounded-sm transition-colors"
+                      className="flex items-center min-h-[36px] sm:min-h-[40px] -mx-2 px-2 text-xs sm:text-sm text-white/72 hover:text-[#E69138] hover:bg-white/[0.04] rounded-sm transition-colors"
                     >
                       {label}
                     </Link>
@@ -389,7 +389,7 @@ export default function Footer() {
             {/* Col 3 — Contatti */}
             <div className="lg:col-span-2">
               <SectionTitle>Contatti</SectionTitle>
-              <ul className="mt-4 sm:mt-5 space-y-2.5">
+              <ul className="mt-3 sm:mt-4 md:mt-5 space-y-2 sm:space-y-2.5">
                 {footerContactLinks.map(({ label, value, href, external }) => {
                   const Icon =
                     label.toLowerCase() === "tel" ? PhoneIcon : label.toLowerCase() === "email" ? MailIcon : MapPinIcon
@@ -399,13 +399,13 @@ export default function Footer() {
                         href={href}
                         target={external ? "_blank" : undefined}
                         rel={external ? "noopener noreferrer" : undefined}
-                        className="flex items-start gap-3 min-h-[40px] -mx-2 px-2 py-1 text-sm text-white/72 hover:text-white hover:bg-white/[0.04] rounded-sm transition-colors leading-snug"
+                        className="flex items-start gap-2 sm:gap-3 min-h-[36px] sm:min-h-[40px] -mx-2 px-2 py-1 text-xs sm:text-sm text-white/72 hover:text-white hover:bg-white/[0.04] rounded-sm transition-colors leading-snug"
                       >
-                        <span className="mt-1 text-[#E69138] shrink-0">
+                        <span className="mt-0.5 sm:mt-1 text-[#E69138] shrink-0">
                           <Icon />
                         </span>
                         <span className="min-w-0 break-words">
-                          <span className="block text-[10px] uppercase tracking-[0.16em] text-white/40 mb-0.5">
+                          <span className="block text-[9px] sm:text-[10px] uppercase tracking-[0.14em] sm:tracking-[0.16em] text-white/40 mb-0.5">
                             {label}
                           </span>
                           {value}
@@ -415,15 +415,15 @@ export default function Footer() {
                   )
                 })}
               </ul>
-              <p className="mt-4 text-xs text-white/55 leading-relaxed">
+              <p className="mt-3 sm:mt-4 text-[10px] sm:text-xs text-white/55 leading-relaxed">
                 {siteConfig.hoursWeek}
                 <br />
                 {siteConfig.hoursExtra}
               </p>
-              <div className="mt-5 grid grid-cols-2 gap-3 max-w-sm">
+              <div className="mt-4 sm:mt-5 grid grid-cols-2 gap-2 sm:gap-3 max-w-sm">
                 <a
                   href={telHref}
-                  className="inline-flex items-center justify-center gap-2 min-h-[44px] bg-[#E69138] px-4 py-2.5 text-sm font-semibold text-[#1A1A2E] hover:bg-[#f0a14b] hover:shadow-md hover:shadow-[#E69138]/25 transition-all rounded-md"
+                  className="inline-flex items-center justify-center gap-1.5 sm:gap-2 min-h-[40px] sm:min-h-[44px] bg-[#E69138] px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-[#1A1A2E] hover:bg-[#f0a14b] hover:shadow-md hover:shadow-[#E69138]/25 transition-all rounded-md"
                 >
                   <PhoneIcon />
                   Chiama ora
@@ -432,7 +432,7 @@ export default function Footer() {
                   href={waHref}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 min-h-[44px] border border-[#25D366]/50 bg-[#25D366]/10 text-[#25D366] px-4 py-2.5 text-sm font-semibold hover:bg-[#25D366]/15 hover:shadow-md hover:shadow-[#25D366]/15 transition-all rounded-md"
+                  className="inline-flex items-center justify-center gap-1.5 sm:gap-2 min-h-[40px] sm:min-h-[44px] border border-[#25D366]/50 bg-[#25D366]/10 text-[#25D366] px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold hover:bg-[#25D366]/15 hover:shadow-md hover:shadow-[#25D366]/15 transition-all rounded-md"
                 >
                   <WhatsAppIcon />
                   Scrivici
@@ -443,7 +443,7 @@ export default function Footer() {
             {/* Col 4 — Social + Legal + © */}
             <div>
               <SectionTitle>Seguici</SectionTitle>
-              <div className="mt-4 sm:mt-5 flex items-center gap-3 mb-5">
+              <div className="mt-3 sm:mt-4 md:mt-5 flex items-center gap-2 sm:gap-3 mb-4 sm:mb-5">
                 {socialLinks.map(({ label, href, icon }) => (
                   <a
                     key={label}
@@ -452,7 +452,7 @@ export default function Footer() {
                     rel="noopener noreferrer"
                     aria-label={label}
                     title={label}
-                    className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] border border-white/12 bg-white/5 rounded-md text-white/76 transition-colors hover:border-[#E69138] hover:text-[#E69138] hover:bg-[#E69138]/10 hover:-translate-y-0.5"
+                    className="inline-flex items-center justify-center min-h-[40px] sm:min-h-[44px] min-w-[40px] sm:min-w-[44px] border border-white/12 bg-white/5 rounded-md text-white/76 transition-colors hover:border-[#E69138] hover:text-[#E69138] hover:bg-[#E69138]/10 hover:-translate-y-0.5"
                   >
                     {icon}
                   </a>
@@ -460,30 +460,30 @@ export default function Footer() {
               </div>
 
               <SectionTitle>Note legali</SectionTitle>
-              <div className="mt-4 sm:mt-5 flex flex-wrap items-center gap-x-1 gap-y-1 text-sm text-white/60">
-                <Link to="/privacy" className="inline-flex items-center min-h-[40px] -mx-2 px-2 hover:text-[#E69138] transition-colors rounded-sm">
+              <div className="mt-3 sm:mt-4 md:mt-5 flex flex-wrap items-center gap-x-1 gap-y-1 text-xs sm:text-sm text-white/60">
+                <Link to="/privacy" className="inline-flex items-center min-h-[36px] sm:min-h-[40px] -mx-2 px-2 hover:text-[#E69138] transition-colors rounded-sm">
                   Privacy
                 </Link>
                 <span className="text-white/30" aria-hidden="true">•</span>
-                <Link to="/cookie" className="inline-flex items-center min-h-[40px] -mx-2 px-2 hover:text-[#E69138] transition-colors rounded-sm">
+                <Link to="/cookie" className="inline-flex items-center min-h-[36px] sm:min-h-[40px] -mx-2 px-2 hover:text-[#E69138] transition-colors rounded-sm">
                   Cookie
                 </Link>
               </div>
               <Link
                 to="/note-legali"
-                className="mt-1 inline-flex items-center min-h-[40px] -mx-2 px-2 text-sm text-white/60 hover:text-[#E69138] transition-colors rounded-sm"
+                className="mt-1 inline-flex items-center min-h-[36px] sm:min-h-[40px] -mx-2 px-2 text-xs sm:text-sm text-white/60 hover:text-[#E69138] transition-colors rounded-sm"
               >
                 Note legali
               </Link>
 
-              <div className="mt-6 pt-5 border-t border-white/10">
+              <div className="mt-4 sm:mt-5 md:mt-6 pt-4 sm:pt-5 border-t border-white/10">
                 <a
                   href={siteConfig.emailHref}
-                  className="inline-flex items-center min-h-[40px] -mx-2 px-2 text-sm text-white/60 hover:text-white transition-colors rounded-sm break-all"
+                  className="inline-flex items-center min-h-[36px] sm:min-h-[40px] -mx-2 px-2 text-xs sm:text-sm text-white/60 hover:text-white transition-colors rounded-sm break-all"
                 >
                   {siteConfig.email}
                 </a>
-                <div className="mt-1.5 text-xs text-white/45 leading-relaxed" style={{ paddingBottom: "env(safe-area-inset-bottom, 0)" }}>
+                <div className="mt-1 sm:mt-1.5 text-[10px] sm:text-xs text-white/45 leading-relaxed" style={{ paddingBottom: "env(safe-area-inset-bottom, 0)" }}>
                   © {currentYear} {siteConfig.legalName}.
                   <br />
                   {siteConfig.claim}

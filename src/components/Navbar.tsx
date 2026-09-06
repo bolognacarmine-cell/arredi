@@ -44,12 +44,12 @@ export default function Navbar() {
       }`}
       style={{ paddingTop: "env(safe-area-inset-top)" }}
     >
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-16 flex items-center justify-between h-14 sm:h-16 lg:h-20">
+      <nav className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 flex items-center justify-between h-12 sm:h-14 md:h-16 lg:h-20">
         <Link to="/" className="flex items-center">
           <img
             src="/logo-farcom.png"
             alt="Farcom Società Cooperativa"
-            className="h-10 w-auto object-contain lg:h-12"
+            className="h-8 sm:h-10 md:h-10 lg:h-12 w-auto object-contain"
           />
         </Link>
 
@@ -84,32 +84,32 @@ export default function Navbar() {
         </Link>
 
         <button
-          className="lg:hidden w-12 h-12 -mr-2 flex items-center justify-center"
+          className="lg:hidden w-10 sm:w-12 h-10 sm:h-12 -mr-1 sm:-mr-2 flex items-center justify-center touch-manipulation"
           onClick={() => setOpen(!open)}
           aria-label="Menu"
         >
-          <span className="block w-6 h-[2px] bg-[#1A1A2E] transition-all duration-200 mb-1.5" style={{ transform: open ? "rotate(45deg) translateY(10px)" : "" }} />
+          <span className="block w-5 sm:w-6 h-[2px] bg-[#1A1A2E] transition-all duration-200 mb-1.5" style={{ transform: open ? "rotate(45deg) translateY(6px)" : "" }} />
           <span
-            className={`block w-6 h-[2px] bg-[#1A1A2E] transition-all duration-200 mb-1.5 ${
+            className={`block w-5 sm:w-6 h-[2px] bg-[#1A1A2E] transition-all duration-200 mb-1.5 ${
               open ? "opacity-0" : ""
             }`}
           />
           <span
-            className={`block w-6 h-[2px] bg-[#1A1A2E] transition-all duration-200 ${
-              open ? "-rotate-45 -translate-y-6" : ""
+            className={`block w-5 sm:w-6 h-[2px] bg-[#1A1A2E] transition-all duration-200 ${
+              open ? "-rotate-45 -translate-y-4" : ""
             }`}
           />
         </button>
       </nav>
 
       {open && (
-        <div className="lg:hidden bg-[#FAFAFA]/95 backdrop-blur-md border-t border-[#E5E5E7] px-4 sm:px-6 py-4 flex flex-col gap-1" style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom))" }}>
+        <div className="lg:hidden bg-[#FAFAFA]/95 backdrop-blur-md border-t border-[#E5E5E7] px-3 sm:px-4 md:px-6 py-3 sm:py-4 flex flex-col gap-1" style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom))" }}>
           {links.map((l) => (
             <Link
               key={l.to}
               to={l.to}
               onClick={() => setOpen(false)}
-              className="flex items-center h-12 px-2 text-base font-semibold text-[#1A1A2E] hover:text-[#E69138] hover:bg-[#1A1A2E]/4 rounded-md transition-colors"
+              className="flex items-center h-10 sm:h-12 px-2 text-sm sm:text-base font-semibold text-[#1A1A2E] hover:text-[#E69138] hover:bg-[#1A1A2E]/4 rounded-md transition-colors"
             >
               {l.label}
             </Link>
@@ -118,7 +118,7 @@ export default function Navbar() {
             to="/preventivo"
             translate="no"
             onClick={() => setOpen(false)}
-            className="inline-flex items-center justify-center bg-[#E69138] text-[#1A1A2E] text-sm font-semibold px-5 h-12 mt-3 hover:bg-[#D67F28] hover:shadow-lg hover:shadow-[#E69138]/30 transition-all duration-300 ease-out"
+            className="inline-flex items-center justify-center bg-[#E69138] text-[#1A1A2E] text-xs sm:text-sm font-semibold px-4 sm:px-5 h-10 sm:h-12 mt-2 sm:mt-3 hover:bg-[#D67F28] hover:shadow-lg hover:shadow-[#E69138]/30 transition-all duration-300 ease-out"
           >
             Richiedi preventivo
           </Link>

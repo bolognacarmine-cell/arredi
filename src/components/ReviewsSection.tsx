@@ -6,7 +6,7 @@ const GoogleStar = () => (
     viewBox="0 0 24 24"
     fill="#E69138"
     aria-hidden="true"
-    className="w-[16px] h-[16px] sm:w-[18px] sm:h-[18px] shrink-0"
+    className="w-[14px] h-[14px] sm:w-[16px] sm:h-[16px] md:w-[18px] md:h-[18px] shrink-0"
   >
     <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
   </svg>
@@ -18,7 +18,7 @@ const GoogleG = () => (
     height="14"
     viewBox="0 0 48 48"
     aria-hidden="true"
-    className="w-3.5 h-3.5 shrink-0"
+    className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0"
   >
     <path
       fill="#EA4335"
@@ -90,60 +90,60 @@ function StarRow() {
 
 export default function ReviewsSection() {
   return (
-    <section className="py-10 sm:py-12 md:py-16 lg:py-20 bg-gray-50 relative">
+    <section className="py-8 sm:py-10 md:py-12 lg:py-16 xl:py-20 bg-gray-50 relative">
       {/* Separatore visivo */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-16">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16">
         {/* Header sezione */}
-        <div className="text-center mb-6 sm:mb-8 md:mb-10">
-          <span className="text-[#6B7280] text-[11px] sm:text-xs tracking-[0.18em] sm:tracking-[0.2em] uppercase font-semibold">
+        <div className="text-center mb-5 sm:mb-6 md:mb-8 lg:mb-10">
+          <span className="text-[#6B7280] text-[10px] sm:text-[11px] md:text-xs tracking-[0.16em] sm:tracking-[0.18em] md:tracking-[0.2em] uppercase font-semibold">
             Dicono di noi
           </span>
-          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[#1A1A2E] mt-2 leading-[1.15] sm:leading-tight text-balance">
+          <h2 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-[#1A1A2E] mt-1.5 sm:mt-2 leading-[1.15] sm:leading-tight text-balance">
             Recensioni <span className="text-[#E69138]">Google</span>
           </h2>
-          <p className="mt-3 sm:mt-4 max-w-xl mx-auto text-sm sm:text-base text-[#6B7280] leading-relaxed">
+          <p className="mt-2.5 sm:mt-3 md:mt-4 max-w-xl mx-auto text-xs sm:text-sm md:text-base text-[#6B7280] leading-relaxed">
             Alcune opinioni di chi ha lavorato con noi.
           </p>
         </div>
 
         {/* Griglia recensioni — mobile 1 col, sm 2 col, lg 3 col */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
           {reviews.map((r, i) => (
             <article
               key={r.name + i}
-              className="group bg-white border border-gray-100 rounded-xl p-4 sm:p-5 md:p-6 shadow-sm hover:shadow-md hover:shadow-[#E69138]/10 hover:-translate-y-0.5 transition-all duration-300 flex flex-col gap-3 sm:gap-4"
+              className="group bg-white border border-gray-100 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 lg:p-6 shadow-sm hover:shadow-md hover:shadow-[#E69138]/10 hover:-translate-y-0.5 transition-all duration-300 flex flex-col gap-2 sm:gap-3 md:gap-4"
             >
               {/* Stelle + data */}
-              <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start justify-between gap-2 sm:gap-3">
                 <StarRow />
-                <span className="text-[11px] sm:text-xs text-[#6B7280] shrink-0 pt-0.5">
+                <span className="text-[10px] sm:text-[11px] md:text-xs text-[#6B7280] shrink-0 pt-0.5">
                   {r.date}
                 </span>
               </div>
 
               {/* Testo recensione */}
-              <p className="text-[15px] sm:text-base leading-[1.65] sm:leading-relaxed text-[#1A1A2E]/90 text-pretty">
+              <p className="text-[13px] sm:text-[15px] md:text-base leading-[1.65] sm:leading-relaxed text-[#1A1A2E]/90 text-pretty">
                 &ldquo;{r.text}&rdquo;
               </p>
 
               {/* Autore + fonte Google */}
-              <div className="mt-auto pt-2 flex items-center gap-2.5 sm:gap-3 border-t border-gray-50">
+              <div className="mt-auto pt-1.5 sm:pt-2 flex items-center gap-2 sm:gap-2.5 md:gap-3 border-t border-gray-50">
                 <div
                   aria-hidden="true"
-                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-[#E69138] to-[#F0B46C] text-[#1A1A2E] font-bold text-sm flex items-center justify-center shrink-0"
+                  className="w-8 h-8 sm:w-9 md:w-10 sm:h-9 md:h-10 rounded-full bg-gradient-to-br from-[#E69138] to-[#F0B46C] text-[#1A1A2E] font-bold text-xs sm:text-sm flex items-center justify-center shrink-0"
                 >
                   {r.name.charAt(0)}
                 </div>
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="font-semibold text-sm text-[#1A1A2E] truncate">
+                <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                  <span className="font-semibold text-xs sm:text-sm text-[#1A1A2E] truncate">
                     {r.name}
                   </span>
-                  <span className="text-[#6B7280]/60 text-sm" aria-hidden="true">
+                  <span className="text-[#6B7280]/60 text-xs sm:text-sm" aria-hidden="true">
                     ·
                   </span>
-                  <span className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-[#6B7280] shrink-0">
+                  <span className="inline-flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs md:text-sm text-[#6B7280] shrink-0">
                     <GoogleG />
                     Google
                   </span>
