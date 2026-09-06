@@ -48,6 +48,14 @@ export default function Hero() {
             "linear-gradient(135deg, rgba(26,26,46,0.55) 0%, rgba(26,26,46,0.25) 45%, rgba(26,26,46,0.60) 100%)",
         }}
       />
+      {/* Overlay selettivo su mobile solo dietro il testo */}
+      <div
+        className="pointer-events-none absolute inset-0 z-[1] lg:hidden"
+        style={{
+          background:
+            "linear-gradient(to bottom, rgba(26,26,46,0.75) 0%, rgba(26,26,46,0.50) 50%, rgba(26,26,46,0.30) 100%)",
+        }}
+      />
       <div
         aria-hidden="true"
         className="pointer-events-none absolute -inset-24 z-[2] blur-3xl"
@@ -60,32 +68,32 @@ export default function Hero() {
 
       <div
         ref={ref}
-        className="relative z-10 w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 pt-16 sm:pt-20 md:pt-24 lg:pt-28 pb-8 sm:pb-12 md:pb-16"
+        className="relative z-10 w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 pt-12 sm:pt-16 md:pt-20 lg:pt-28 pb-6 sm:pb-10 md:pb-14 lg:pb-16"
       >
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 md:gap-10 lg:gap-16 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 md:gap-8 lg:gap-16 items-center">
           {/* Copy */}
-          <div className="lg:col-span-7">
+          <div className="lg:col-span-7 max-w-full lg:max-w-none">
             {/* Trust badge */}
             <div
-              className={`flex items-center gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-5 md:mb-7 ${
+              className={`flex items-center gap-1.5 sm:gap-2 md:gap-3 lg:gap-4 mb-3 sm:mb-4 md:mb-5 lg:mb-7 ${
                 inView ? "opacity-0 fade-in-up" : "opacity-0"
               }`}
               style={{ animationDelay: "120ms", animationFillMode: "forwards" }}
             >
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <span className="relative flex h-2 sm:h-2.5 w-2 sm:w-2.5">
+              <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2">
+                <span className="relative flex h-1.5 sm:h-2 md:h-2.5 w-1.5 sm:w-2 md:w-2.5">
                   <span className="absolute inline-flex h-full w-full rounded-full bg-[#E69138] opacity-60 animate-ping" />
-                  <span className="relative inline-flex h-2 sm:h-2.5 w-2 sm:w-2.5 rounded-full bg-[#E69138]" />
+                  <span className="relative inline-flex h-1.5 sm:h-2 md:h-2.5 w-1.5 sm:w-2 md:w-2.5 rounded-full bg-[#E69138]" />
                 </span>
-                <span className="text-[#E69138] text-[10px] sm:text-[11px] md:text-xs font-semibold tracking-[0.16em] sm:tracking-[0.2em] md:tracking-[0.24em] uppercase">
+                <span className="text-[#E69138] text-[9px] sm:text-[10px] md:text-xs font-semibold tracking-[0.14em] sm:tracking-[0.16em] md:tracking-[0.2em] lg:tracking-[0.24em] uppercase">
                   Arredi su misura
                 </span>
               </div>
-              <div className="h-px w-8 sm:w-12 md:w-16 bg-gradient-to-r from-[#E69138]/60 to-transparent" />
+              <div className="h-px w-6 sm:w-8 md:w-12 lg:w-16 bg-gradient-to-r from-[#E69138]/60 to-transparent" />
             </div>
 
             <h1
-              className={`font-display text-[1.5rem] sm:text-2rem md:text-4xl lg:text-5xl xl:text-7xl font-bold text-white leading-[1.2] sm:leading-[1.15] md:leading-[1.1] lg:leading-[1.05] tracking-tight ${
+              className={`font-display text-[1.25rem] sm:text-[1.5rem] md:text-4xl lg:text-5xl xl:text-7xl font-bold text-white leading-[1.2] sm:leading-[1.2] md:leading-[1.1] lg:leading-[1.05] tracking-tight ${
                 inView ? "opacity-0 title-reveal" : "opacity-0"
               }`}
               style={{ animationDelay: "260ms", animationFillMode: "forwards" }}
@@ -102,7 +110,7 @@ export default function Hero() {
             />
 
             <p
-              className={`text-white/75 text-[13px] sm:text-[15px] md:text-base lg:text-lg leading-[1.65] sm:leading-[1.6] md:leading-relaxed max-w-xl ${
+              className={`text-white/75 text-[11px] sm:text-[13px] md:text-base lg:text-lg leading-[1.6] sm:leading-[1.65] md:leading-relaxed max-w-xl ${
                 inView ? "opacity-0 slide-up" : "opacity-0"
               }`}
               style={{ animationDelay: "420ms", animationFillMode: "forwards" }}
@@ -114,21 +122,21 @@ export default function Hero() {
 
             {/* CTA */}
             <div
-              className={`flex flex-col sm:flex-row gap-2 sm:gap-3 md:gap-4 mt-5 sm:mt-6 md:mt-7 lg:mt-8 ${
+              className={`flex flex-col sm:flex-row gap-2 sm:gap-3 md:gap-4 mt-4 sm:mt-5 md:mt-6 lg:mt-8 ${
                 inView ? "opacity-0 fade-in-up" : "opacity-0"
               }`}
               style={{ animationDelay: "720ms", animationFillMode: "forwards" }}
             >
               <Link
                 to="/preventivo"
-                className="group relative inline-flex items-center justify-center min-h-[44px] sm:min-h-[48px] bg-[#E69138] text-[#1A1A2E] text-xs sm:text-sm font-semibold px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 md:py-4 overflow-hidden shadow-lg shadow-[#E69138]/20 hover:scale-[1.03] hover:shadow-xl hover:shadow-[#E69138]/40 transition-all duration-300 ease-out glow-pulse magnetic-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E69138]"
+                className="group relative inline-flex items-center justify-center min-h-[40px] sm:min-h-[44px] md:min-h-[48px] bg-[#E69138] text-[#1A1A2E] text-[11px] sm:text-xs md:text-sm font-semibold px-3 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-2.5 md:py-3 lg:py-4 overflow-hidden shadow-lg shadow-[#E69138]/20 hover:scale-[1.03] hover:shadow-xl hover:shadow-[#E69138]/40 transition-all duration-300 ease-out glow-pulse magnetic-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E69138]"
                 aria-label="Richiedi un preventivo gratuito"
               >
                 <span className="absolute inset-0 bg-[#D67F28] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <span className="relative z-10 flex items-center gap-1.5 sm:gap-2">
+                <span className="relative z-10 flex items-center gap-1 sm:gap-1.5 md:gap-2">
                   Richiedi un preventivo
                   <svg
-                    className="w-3.5 h-3.5 sm:w-4 sm:h-4 transform group-hover:translate-x-1 transition-transform duration-300"
+                    className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 transform group-hover:translate-x-1 transition-transform duration-300"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -145,7 +153,7 @@ export default function Hero() {
 
               <Link
                 to="/progetti"
-                className="group relative inline-flex items-center justify-center min-h-[44px] sm:min-h-[48px] border border-white/40 text-white text-xs sm:text-sm font-semibold px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 md:py-4 overflow-hidden hover:border-white/70 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                className="group relative inline-flex items-center justify-center min-h-[40px] sm:min-h-[44px] md:min-h-[48px] border border-white/40 text-white text-[11px] sm:text-xs md:text-sm font-semibold px-3 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-2.5 md:py-3 lg:py-4 overflow-hidden hover:border-white/70 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                 aria-label="Vedi i progetti"
               >
                 <span className="absolute inset-0 bg-white/10 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out origin-left" />
@@ -155,7 +163,7 @@ export default function Hero() {
 
             {/* Micro-copy di conversione */}
             <p
-              className={`text-white/60 text-[10px] sm:text-xs mt-3 sm:mt-4 ${
+              className={`text-white/60 text-[9px] sm:text-[10px] md:text-xs mt-2 sm:mt-3 md:mt-4 ${
                 inView ? "opacity-0 fade-in-up" : "opacity-0"
               }`}
               style={{ animationDelay: "860ms", animationFillMode: "forwards" }}
@@ -165,7 +173,7 @@ export default function Hero() {
 
             {/* Trust row */}
             <div
-              className={`flex flex-wrap items-center gap-x-3 sm:gap-x-5 md:gap-x-7 gap-y-2 sm:gap-y-2.5 md:gap-y-3 mt-4 sm:mt-6 md:mt-8 ${
+              className={`flex flex-wrap items-center gap-x-2 sm:gap-x-3 md:gap-x-5 lg:gap-x-7 gap-y-1.5 sm:gap-y-2 md:gap-y-2.5 lg:gap-y-3 mt-3 sm:mt-4 md:mt-6 lg:mt-8 ${
                 inView ? "opacity-0 fade-in-up" : "opacity-0"
               }`}
               style={{ animationDelay: "980ms", animationFillMode: "forwards" }}
@@ -175,9 +183,9 @@ export default function Hero() {
                 ["FSC/CE", "materiali certificati"],
                 ["Tempi certi", "consegna puntuale"],
               ].map(([a, b]) => (
-                <div key={a} className="flex items-center gap-2 sm:gap-3">
-                  <span className="w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-full bg-[#E69138]" aria-hidden="true" />
-                  <span className="text-white/85 text-[10px] sm:text-xs font-semibold tracking-wide">
+                <div key={a} className="flex items-center gap-1.5 sm:gap-2 md:gap-3">
+                  <span className="w-1 sm:w-1.5 md:w-1.5 h-1 sm:h-1.5 md:h-1.5 rounded-full bg-[#E69138]" aria-hidden="true" />
+                  <span className="text-white/85 text-[9px] sm:text-[10px] md:text-xs font-semibold tracking-wide">
                     {a}
                     <span className="text-white/55 font-medium"> · {b}</span>
                   </span>
@@ -187,7 +195,7 @@ export default function Hero() {
           </div>
 
           {/* Visual / proof */}
-          <div className="lg:col-span-5">
+          <div className="lg:col-span-5 hidden lg:block">
             <div
               className={`relative ${inView ? "opacity-0 float-up" : "opacity-0"}`}
               style={{ animationDelay: "820ms", animationFillMode: "forwards" }}
