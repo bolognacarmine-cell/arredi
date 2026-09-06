@@ -3,6 +3,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
 import Home from "./pages/Home";
+import SettoriList from "./pages/SettoriList";
 import SectorPage from "./pages/SectorPage";
 import Projects from "./pages/Projects";
 import ProjectDetail from "./pages/ProjectDetail";
@@ -39,6 +40,7 @@ export default function App() {
         <Routes>
           {/* PUBLIC */}
           <Route path="/" element={<Home />} />
+          <Route path="/settori" element={<SettoriList />} />
           <Route path="/settori/:id" element={<SectorPage />} />
           <Route path="/progetti" element={<Projects />} />
           <Route path="/progetti/:id" element={<ProjectDetail />} />
