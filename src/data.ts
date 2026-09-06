@@ -105,6 +105,42 @@ export const SECTORS: Sector[] = [
     ],
     color: "#1A3A4A",
   },
+  {
+    id: "bar",
+    label: "Bar",
+    description:
+      "Spazi conviviali progettati per l'esperienza: banconi su misura, illuminazione d'atmosfera, zone accoglienza e aree servizio funzionali.",
+    heroImage:
+      "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800&h=600&fit=crop",
+    items: [
+      "Banconi bar",
+      "Illuminazione design",
+      "Zone clienti",
+      "Sedute e tavoli",
+      "Magazzino e cantina",
+      "Banco esposizione",
+      "Arredi esterni",
+    ],
+    color: "#8B4513",
+  },
+  {
+    id: "centri-estetici",
+    label: "Centri Estetici",
+    description:
+      "Ambienti di benessere pensati per il relax: accoglienza raffinata, cabine trattamento, area relax e esposizione prodotti curata.",
+    heroImage:
+      "https://images.unsplash.com/photo-1560750588-73207b1ef5b8?w=800&h=600&fit=crop",
+    items: [
+      "Reception e accoglienza",
+      "Cabine trattamento",
+      "Area relax",
+      "Esposizione prodotti",
+      "Lavandini e postazioni",
+      "Armadiature",
+      "Illuminazione soft",
+    ],
+    color: "#D4A574",
+  },
 ]
 
 export const PROJECTS: Project[] = [
@@ -216,5 +252,75 @@ tags: ["Bancone", "Specchiere", "Zona attesa"],
     ],
     tags: ["Coworking", "Conferenze", "Phone booth"],
     materials: "Multistrato marino, feltro acustico, laminato HPL",
+  },
+  {
+    id: "cocktail-bar-napoli",
+    title: "Cocktail Bar Vesuvio",
+    sector: "Bar",
+    sectorId: "bar",
+    location: "Napoli",
+    year: 2024,
+    description:
+      "Cocktail bar nel centro storico con bancone in marmo Carrara, illuminazione design, zona clienti elegante e magazzino ottimizzato.",
+    image:
+      "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800&h=600&fit=crop",
+    gallery: [
+      "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=1200&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1572116469696-31de0f17cc34?w=1200&h=800&fit=crop",
+    ],
+    tags: ["Bancone", "Illuminazione", "Zona clienti"],
+    materials: "Marmo Carrara, ottone, legno di noce, vetro",
+  },
+  {
+    id: "wine-bar-firenze",
+    title: "Enoteca Il Gusto",
+    sector: "Bar",
+    sectorId: "bar",
+    location: "Firenze",
+    year: 2023,
+    description:
+      "Wine bar con scaffali bottiglie a vista, banco degustazione in rovere, zona relax e vetrina espositiva.",
+    image:
+      "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&h=600&fit=crop",
+    gallery: [
+      "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=1200&h=800&fit=crop",
+    ],
+    tags: ["Scaffali", "Banco degustazione", "Vetrina"],
+    materials: "Rovere massello, ferro verniciato, vetro",
+  },
+  {
+    id: "spa-roma",
+    title: "Spa Relax Roma",
+    sector: "Centri Estetici",
+    sectorId: "centri-estetici",
+    location: "Roma",
+    year: 2024,
+    description:
+      "Centro estetico di lusso con reception raffinata, 4 cabine trattamento, area relax con illuminazione soft e esposizione prodotti curata.",
+    image:
+      "https://images.unsplash.com/photo-1560750588-73207b1ef5b8?w=800&h=600&fit=crop",
+    gallery: [
+      "https://images.unsplash.com/photo-1560750588-73207b1ef5b8?w=1200&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=1200&h=800&fit=crop",
+    ],
+    tags: ["Reception", "Cabine", "Area relax"],
+    materials: "Marmo beige, legno chiaro, tessuti premium",
+  },
+  {
+    id: "beauty-center-milano",
+    title: "Beauty Center Milano",
+    sector: "Centri Estetici",
+    sectorId: "centri-estetici",
+    location: "Milano",
+    year: 2023,
+    description:
+      "Centro estetico moderno con reception minimalista, cabine trattamento attrezzate, area relax e banco esposizione prodotti.",
+    image:
+      "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=800&h=600&fit=crop",
+    gallery: [
+      "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=1200&h=800&fit=crop",
+    ],
+    tags: ["Reception", "Cabine", "Esposizione"],
+    materials: "Laminato bianco, acciaio inox, led integrati",
   },
 ]

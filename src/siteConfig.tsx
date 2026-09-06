@@ -39,7 +39,7 @@ export const fallbackSiteSettings: SiteSettings = {
   footerIntro:
     "Ti aiutiamo a trasformare l'idea in uno spazio su misura, funzionale e riconoscibile per il tuo business.",
   footerDescription:
-    "Progettiamo e realizziamo arredi su misura per barbieri, uffici, negozi e scuole. Seguiamo ogni fase, dal concept iniziale alla consegna finale, con attenzione ai dettagli e alla funzionalità.",
+    "Progettiamo e realizziamo arredi su misura per barbieri, uffici, negozi, scuole, bar e centri estetici. Seguiamo ogni fase, dal concept iniziale alla consegna finale, con attenzione ai dettagli e alla funzionalità.",
   footerBadges: ["Su misura", "Produzione dedicata", "Supporto diretto"],
   addressLine1: "Via P. Vertaldi, 27",
   addressLine2: "81050 Macerata Campania (CE)",
@@ -80,6 +80,8 @@ export const sectorLinks = [
   { label: "Uffici", to: "/settori/uffici" },
   { label: "Negozi", to: "/settori/negozi" },
   { label: "Scuole", to: "/settori/scuole" },
+  { label: "Bar", to: "/settori/bar" },
+  { label: "Centri Estetici", to: "/settori/centri-estetici" },
 ] as const
 
 export const companyLinks = [
