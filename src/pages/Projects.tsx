@@ -50,8 +50,19 @@ export default function Projects() {
         </div>
 
         {/* Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 pb-24">
-          {visible.map((p) => (
+        {visible.length === 0 ? (
+          <div className="text-center py-24">
+            <p className="text-[#888580] text-lg mb-4">Nessun progetto disponibile al momento</p>
+            <Link
+              to="/preventivo"
+              className="inline-block px-6 py-3 bg-[#1B4332] text-white rounded-lg hover:bg-[#1A3A4A] transition-colors"
+            >
+              Richiedi un preventivo →
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 pb-24">
+            {visible.map((p) => (
             <Link
               key={p.id}
               to={`/progetti/${p.id}`}
@@ -95,6 +106,7 @@ export default function Projects() {
             </Link>
           ))}
         </div>
+        )}
       </div>
     </div>
   )

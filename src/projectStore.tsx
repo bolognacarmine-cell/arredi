@@ -96,7 +96,12 @@ export function useProjects() {
     async function loadProjectsFromApi() {
       try {
         const apiProjects = await getProjectsApi()
-        setProjects(normalizeProjects(apiProjects))
+        // If API returns empty array, fallback to default projects
+        if (apiProjects.length === 0) {
+          setProjects(readProjects())
+        } else {
+          setProjects(normalizeProjects(apiProjects))
+        }
       } catch (err) {
         console.error("Error loading projects from API:", err)
         // Fallback to localStorage if API fails
