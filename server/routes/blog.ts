@@ -1,6 +1,8 @@
 import { Router, Request, Response } from 'express';
 import Post from '../models/Post.js';
 
+// @ts-ignore - MongoDB aggregation types are complex
+
 const router = Router();
 
 // GET all published posts with optional filters
@@ -84,7 +86,10 @@ router.get('/sectors', async (req: Request, res: Response) => {
                 { case: { $eq: ['$_id', 'ufficio'] }, then: 'Ufficio' },
                 { case: { $eq: ['$_id', 'esterno'] }, then: 'Esterno' },
               ],
-              default: { $toUpper: { $substr: ['$_id', 0, 1] } } + { $substr: ['$_id', 1, 100] },
+              default: { $concat: [
+                { $toUpper: { $substr: ['$_id', 0, 1] } },
+                { $substr: ['$_id', 1, 100] }
+              ] },
             },
           },
           coverImage: '$latestPost.coverImage',
