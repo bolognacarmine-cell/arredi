@@ -10,6 +10,7 @@ import productRoutes from './routes/products.js';
 import projectRoutes from './routes/projects.js';
 import quoteRoutes from './routes/quotes.js';
 import siteConfigRoutes from './routes/siteConfig.js';
+import blogRoutes from './routes/blog.js';
 
 dotenv.config();
 
@@ -35,6 +36,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/quotes', quoteRoutes);
 app.use('/api/site-config', siteConfigRoutes);
+app.use('/api/blog', blogRoutes);
 
 // Serve index.html for all other routes (SPA) - Express 5 syntax
 app.get('{/:path}', (req, res) => {

@@ -261,6 +261,14 @@ export default function Footer() {
                       </Link>
                     </li>
                   ))}
+                  <li>
+                    <Link
+                      to="/blog"
+                      className="flex items-center min-h-[36px] sm:min-h-[40px] -mx-2 px-2 text-xs sm:text-sm text-white/72 hover:text-[#E69138] hover:bg-white/[0.04] rounded-sm transition-colors"
+                    >
+                      Blog
+                    </Link>
+                  </li>
                 </ul>
               </Accordion>
             </div>
@@ -366,6 +374,14 @@ export default function Footer() {
                     </Link>
                   </li>
                 ))}
+                <li>
+                  <Link
+                    to="/blog"
+                    className="flex items-center min-h-[36px] sm:min-h-[40px] -mx-2 px-2 text-xs sm:text-sm text-white/72 hover:text-[#E69138] hover:bg-white/[0.04] rounded-sm transition-colors"
+                  >
+                    Blog
+                  </Link>
+                </li>
               </ul>
             </div>
 

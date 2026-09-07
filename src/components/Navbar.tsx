@@ -11,6 +11,8 @@ const links = [
 
   { label: "Showroom", to: "/showroom" },
 
+  { label: "Blog", to: "/blog" },
+
   { label: "Chi siamo", to: "/chi-siamo" },
 
   { label: "Contatti", to: "/contatti" },
