@@ -1,5 +1,6 @@
 // Su Render il backend non è disponibile, disabilitiamo le chiamate API
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ""
+// In development, fallback to localhost:3002 if not configured
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3002"
 const isApiAvailable = !!API_BASE_URL
 
 export interface Author {
