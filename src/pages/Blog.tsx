@@ -45,7 +45,7 @@ export default function Blog() {
         <div className="max-w-7xl mx-auto px-6">
           <h1 className="text-4xl md:text-5xl font-display font-medium mb-4">Blog</h1>
           <p className="text-lg text-white/70 max-w-2xl">
-            Idee, guide e consigli per arredare la tua casa con stile e funzionalità
+            Idee, guide e consigli per arredare spazi professionali con stile e funzionalità
           </p>
         </div>
       </div>

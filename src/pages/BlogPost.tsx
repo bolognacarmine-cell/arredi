@@ -179,12 +179,12 @@ export default function BlogPost() {
 
           {/* Related Products CTA */}
           {post.relatedProductSlugs && post.relatedProductSlugs.length > 0 && (
-            <div className="mt-12 p-8 bg-[#1B4332] rounded-lg">
+            <div className="mt-12 p-8 bg-[#1A1A18] rounded-lg">
               <h3 className="text-2xl font-display font-medium text-white mb-4">
-                Scopri la nostra collezione
+                Scopri le soluzioni per {post.sectorSlug.charAt(0).toUpperCase() + post.sectorSlug.slice(1)}
               </h3>
               <p className="text-white/80 mb-6">
-                Trova l'ispirazione per arredare la tua casa con i nostri prodotti
+                Trova l'arredamento ideale per il tuo spazio professionale
               </p>
               <Link
                 to="/settori"

@@ -1,254 +1,304 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import Post from './models/Post.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-dotenv.config();
+// Load .env from parent directory
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
 const blogPosts = [
   {
-    title: "Come arredare un salotto piccolo senza rinunciare al comfort",
-    slug: "arredare-salotto-piccolo-comfort",
-    sectorSlug: "salotto",
-    excerpt: "Scopri 7 idee pratiche per arredare un salotto piccolo e renderlo luminoso, accogliente e funzionale senza sacrificare lo stile.",
-    content: `<p>Arredare un salotto piccolo può sembrare una sfida, ma con le giuste strategie puoi trasformare uno spazio ridotto in un ambiente accogliente e di stile. Ecco come ottimizzare ogni centimetro senza rinunciare al comfort.</p>
-    
-    <h2>1. Scegli mobili su misura</h2>
-    <p>I mobili su misura sono la soluzione ideale per sfruttare al meglio gli angoli e le pareti del salotto. Un divano ad angolo personalizzato, librerie a parete e tavoli richiudibili ti permettono di massimizzare lo spazio disponibile senza sacrificare la funzionalità.</p>
-    
-    <h2>2. Opta per colori chiari</h2>
-    <p>I colori chiari come il bianco, il beige e il grigio chiaro riflettono la luce naturale e rendono l'ambiente più ampio e luminoso. Puoi aggiungere tocchi di colore con cuscini, tappeti e accessori per dare personalità alla stanza.</p>
-    
-    <h2>3. Sfrutta la verticale</h2>
-    <p>Quando lo spazio a terra è limitato, guarda in alto! Librerie a parete, mensole sospese e armadi verticali ti permettono di sfruttare la verticale per riporre oggetti e decorazioni senza occupare preziosi metri quadri.</p>
-    
-    <h2>4. Usa specchi strategici</h2>
-    <p>Gli specchi posizionati strategicamente possono raddoppiare visivamente lo spazio e riflettere la luce naturale. Posiziona un grande specchio di fronte a una finestra o dietro il divano per creare un effetto di profondità.</p>
-    
-    <h2>5. Scegli mobili multifunzionali</h2>
-    <p>Un tavolo che si trasforma in scrivania, un divano con contenitore integrato, un pouf che funge anche da seduta extra: i mobili multifunzionali sono perfetti per i salotti piccoli perché offrono più soluzioni in un solo elemento.</p>
-    
-    <h2>6. Mantieni l'ordine</h2>
-    <p>Un ambiente organizzato appare automaticamente più spazioso. Usa contenitori eleganti, cestini e scatole per nascondere oggetti e mantenere il salotto sempre in ordine.</p>
-    
-    <h2>7. Illumina con intelligenza</h2>
-    <p>L'illuminazione gioca un ruolo fondamentale nella percezione dello spazio. Usa più punti luce: lampade da terra, lampade da tavolo e strisce LED per creare un'atmosfera accogliente e far sembrare la stanza più grande.</p>
-    
-    <p>Con questi semplici consigli, puoi trasformare il tuo salotto piccolo in uno spazio confortevole e di stile. La chiave è pianificare con attenzione e scegliere ogni elemento con cura.</p>`,
-    coverImage: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1200&h=800&fit=crop",
+    title: "Arredamento Barbieri Moderno: Guida Completa per un Salone di Successo",
+    slug: "arredamento-barbieri-moderno-salone-successo",
+    sectorSlug: "barbieri",
+    excerpt: "Scopri come arredare un barbiere moderno con poltrone ergonomiche, illuminazione perfetta e layout funzionale per attirare clienti e fidelizzare.",
+    content: `<p>Aprire o rinnovare un salone di barbiere richiede un'attenta pianificazione dell'arredo. Un ambiente ben progettato non solo attira nuovi clienti, ma crea un'esperienza memorabile che li spinge a tornare. Ecco una guida completa per arredare il tuo barbiere moderno.</p>
+
+    <h2>1. Le poltrone da barbiere: comfort e stile</h2>
+    <p>Le poltrone sono il cuore del tuo salone. Investi in poltrone ergonomiche con schienale regolabile, poggiapiedi e rivestimenti in pelle o similpelle di alta qualità. Il comfort del cliente durante il taglio o la rasatura è fondamentale per la sua soddisfazione. Scegli colori che si integrano con l'identità del tuo brand: nero elegante, grigio moderno o colori vivaci per un look più giovane.</p>
+
+    <h2>2. Layout e flusso di lavoro</h2>
+    <p>Un buon layout ottimizza i movimenti sia del barbiere che del cliente. Prevedi almeno 80-100 cm di spazio tra le postazioni di lavoro per garantire comfort e privacy. Organizza le zone in modo logico: area reception, postazioni di taglio, zona lavaggio e area caffè/attesa. Un flusso ben studiato riduce i tempi di attesa e migliora l'efficienza operativa.</p>
+
+    <h2>3. Illuminazione professionale</h2>
+    <p>L'illuminazione è cruciale in un salone di barbiere. Combina luce naturale (se possibile) con illuminazione artificiale di alta qualità. Installa luci LED sopra ogni postazione di lavoro con temperatura colore neutra (4000-4500K) per garantire una visione precisa dei capelli. Aggiungi luci d'atmosfera nella zona attesa per creare un ambiente accogliente.</p>
+
+    <h2>4. Lavandini e specchi</h2>
+    <p>I lavandini devono essere funzionali e facili da pulire. Opta per modelli con rubinetteria a pedale o sensore per un'esperienza più igienica. Gli specchi grandi e ben illuminati sono essenziali: permettono al cliente di vedere il risultato finale e contribuiscono a far sembrare lo spazio più ampio. Considera specchi con illuminazione integrata per un tocco moderno.</p>
+
+    <h2>5. Area reception e attesa</h2>
+    <p>L'area reception crea la prima impressione. Scegli una reception accogliente e ben organizzata per gestire appuntamenti e pagamenti. La zona attesa dovrebbe essere confortevole con sedute di qualità, tavolini e riviste. Aggiungi elementi come un distributore di caffè o una TV per rendere l'attesa più piacevole.</p>
+
+    <h2>6. Storage e organizzazione</h2>
+    <p>Un barbiere efficiente ha tutto a portata di mano. Usa carrelli mobili, mensole e cassetti organizzati per strumenti, prodotti e asciugamani. L'organizzazione visiva dei prodotti sullo scaffale può anche fungere da display per vendite aggiuntive. Mantieni l'area pulita e ordinata per trasmettere professionalità.</p>
+
+    <h2>7. Decorazione e identità del brand</h2>
+    <p>L'arredo dovrebbe riflettere la personalità del tuo salone. Scegli uno stile coerente: industrial con metallo e legno scuro, moderno con linee pulite e colori neutri, o vintage con elementi retrò. Aggiungi decorazioni come poster vintage, piante verdi o opere d'arte per creare un'atmosfera unica. La coerenza visiva rafforza il riconoscimento del brand.</p>
+
+    <h2>8. Tecnologia e innovazione</h2>
+    <p>Un barbiere moderno integra tecnologia per migliorare l'esperienza. Considera un sistema di prenotation online, schermi per mostrare il menu dei servizi, o sistemi di musica ambientale controllati via app. La tecnologia non deve sostituire il tocco umano, ma potenziarlo.</p>
+
+    <p>Investire nell'arredo del tuo barbiere è un investimento nel successo del tuo business. Un ambiente ben progettato attira clienti, migliora l'efficienza del lavoro e crea un'esperienza indimenticabile. Con le giuste soluzioni di arredo, il tuo salone diventerà il punto di riferimento per la cura maschile nella tua zona.</p>`,
+    coverImage: "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=1200&h=800&fit=crop",
     images: [],
     author: {
-      name: "Marco Rossi",
-      role: "Interior Designer"
+      name: "Team Arredi",
+      role: "Staff"
     },
-    tags: ["salotto", "arredamento", "spazi piccoli", "design"],
-    relatedProductSlugs: ["divani", "tavoli", "librerie"],
-    seoTitle: "Arredare Salotto Piccolo: 7 Idee Pratiche per Spazi Confortevoli",
-    seoDescription: "Scopri come arredare un salotto piccolo con 7 idee pratiche per renderlo luminoso, accogliente e funzionale senza sacrificare lo stile.",
+    tags: ["barbieri", "arredamento", "salone", "parrucchieri", "design"],
+    relatedProductSlugs: ["barbieri"],
+    seoTitle: "Arredamento Barbieri Moderno: Guida per Salone di Successo",
+    seoDescription: "Scopri come arredare un barbiere moderno con poltrone ergonomiche, illuminazione perfetta e layout funzionale per attirare clienti.",
     isPublished: true
   },
   {
-    title: "Cucina moderna: idee per un design funzionale ed elegante",
-    slug: "cucina-moderna-design-funzionale-elegante",
-    sectorSlug: "cucina",
-    excerpt: "Guida completa per progettare una cucina moderna che unisce funzionalità, estetica e tecnologia per rendere la cucina il cuore della casa.",
-    content: `<p>La cucina moderna non è solo un luogo dove cucinare, ma il cuore della casa dove si condividono momenti preziosi. Ecco come progettare una cucina che unisce funzionalità, estetica e tecnologia.</p>
-    
-    <h2>1. Pianifica l'isola centrale</h2>
-    <p>L'isola centrale è l'elemento chiave di una cucina moderna. Oltre a offrire spazio extra per la preparazione dei cibi, può fungere da zona pranzo informale e punto di incontro. Assicurati di lasciare almeno 90 cm di spazio intorno per una circolazione comoda.</p>
-    
-    <h2>2. Scegli elettrodomestici integrati</h2>
-    <p>Gli elettrodomestici integrati creano un aspetto uniforme e pulito. Frigorifero, lavastoviglie e forno a incasso si fondono con le ante, creando una linea continua che rende la cucina più elegante e spaziosa.</p>
-    
-    <h2>3. Opta per materiali di qualità</h2>
-    <p>I materiali giusti fanno la differenza. Il quarzo per i piani di lavoro è resistente e facile da pulire, mentre l'acciaio inox aggiunge un tocco moderno. Per le ante, il laminato di alta qualità offre durabilità e stile.</p>
-    
-    <h2>2. Illuminazione a più livelli</h2>
-    <p>Una buona illuminazione è essenziale. Combina luce generale (plafoniere o faretti), luce di lavoro (sotto i pensili) e luce d'atmosfera (strisce LED o lampade decorative) per creare un ambiente versatile e accogliente.</p>
-    
-    <h2>5. Organizzazione intelligente</h2>
-    <p>Le soluzioni di organizzazione moderne includono cestelli estraibili, divisori per cassetti e sistemi a colonna per sfruttare l'altezza. Ogni utensile ha il suo posto, rendendo la cucina efficiente e ordinata.</p>
-    
-    <h2>6. Colori neutri con accenti</h2>
-    <p>Una base di colori neutri come bianco, grigio o beige crea un aspetto timeless. Aggiungi accenti di colore con le maniglie, il backsplash o gli accessori per personalizzare lo spazio senza compromettere l'eleganza.</p>
-    
-    <h2>7. Tecnologia smart</h2>
-    <p>La cucina moderna si evolve con la tecnologia. Elettrodomestici smart, sistemi di illuminazione automatizzati e assistenti vocali rendono la cucina più efficiente e piacevole da usare.</p>
-    
-    <p>Con questi elementi, la tua cucina diventerà uno spazio funzionale, elegante e perfetto per la vita moderna.</p>`,
-    coverImage: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1200&h=800&fit=crop",
+    title: "Arredamento Uffici: Creare uno Spazio di Lavoro Produttivo e Confortevole",
+    slug: "arredamento-uffici-scrivanie-sedie-produttivita",
+    sectorSlug: "uffici",
+    excerpt: "Guida completa per arredare uffici moderni con scrivanie ergonomiche, sedie confortevoli e layout ottimizzati per la produttività.",
+    content: `<p>L'arredamento degli uffici ha un impatto diretto sulla produttività, sul benessere dei dipendenti e sull'immagine aziendale. Un ufficio ben progettato non è solo bello da vedere, ma funzionale e motivante. Ecco come creare uno spazio di lavoro che ispira successo.</p>
+
+    <h2>1. Scrivanie ergonomiche e funzionali</h2>
+    <p>La scrivania è il centro dell'attività lavorativa. Scegli scrivanie con superficie ampia per computer, documenti e accessori. Le scrivanie regolabili in altezza sono un investimento eccellente: permettono di alternare posizione seduta e in piedi, migliorando la salute e l'energia. Considera modelli con cestelli integrati o sistemi di gestione dei cavi per mantenere l'area ordinata.</p>
+
+    <h2>2. Sedie da ufficio di qualità</h2>
+    <p>Una buona sedia da ufficio è essenziale per la salute a lungo termine. Cerca sedie con supporto lombare regolabile, braccioli adattabili, seduta imbottita e schienale traspirante. Le sedie ergonomiche riducono il mal di schiena e migliorano la concentrazione. Ricorda: i dipendenti trascorrono 8 ore al giorno seduti, la qualità della sedia non è un optional.</p>
+
+    <h2>3. Layout open space vs uffici privati</h2>
+    <p>La scelta tra open space e uffici privati dipende dalla cultura aziendale. Gli open space favoriscono la collaborazione e la comunicazione, ma possono essere rumorosi. Gli uffici privati offrono privacy e concentrazione, ma riducono l'interazione. Una soluzione ibrida con zone diverse per lavoro concentrato, collaborativo e informale spesso è la migliore.</p>
+
+    <h2>4. Illuminazione naturale e artificiale</h2>
+    <p>L'illuminazione influenza l'umore e la produttività. Sfrutta al massimo la luce naturale posizionando le scrivanie vicino alle finestre. Integra con illuminazione artificiale di qualità: luce generale diffusa, luce di lavoro sulle scrivanie e luce d'atmosfera nelle aree relax. Usa lampade con temperatura colore neutra (4000K) per mantenere l'attenzione.</p>
+
+    <h2>5. Sale riunioni e aree collaborative</h2>
+    <p>Le sale riunioni devono essere confortevoli e ben attrezzate. Scegli tavoli di dimensioni adeguate al numero di partecipanti, sedute ergonomiche per riunioni lunghe e tecnologia integrata (schermi, videoproiettori, sistemi di videoconferenza). Crea anche aree informali con divani e tavolini per brainstorming e discussioni casuali.</p>
+
+    <h2>6. Zone relax e benessere</h2>
+    <p>Un ufficio moderno include spazi per il relax e il recupero. Una cucina ben attrezzata, una zona pause con divani confortevoli o addirittura una sala fitness contribuiscono al benessere dei dipendenti. Questi spazi riducono lo stress, migliorano il morale e aumentano la produttività a lungo termine.</p>
+
+    <h2>7. Storage e organizzazione</h2>
+    <p>L'ordine è fondamentale per l'efficienza. Usa armadi, librerie e sistemi di archiviazione per mantenere documenti e materiali organizzati. Le soluzioni verticali sfruttano lo spazio in altezza. Considera cassettiere sotto le scrivanie e carrelli mobili per una flessibilità maggiore.</p>
+
+    <h2>8. Acustica e privacy</h2>
+    <p>Il controllo acustico è spesso sottovalutato ma cruciale. Usa tappeti, tende, pannelli fonoassorbenti e piante per ridurre il rumore. In open space, crea zone di privacy con pareti divisorie alte o schermi. Un ambiente acusticamente confortevole migliora la concentrazione e riduce lo stress.</p>
+
+    <h2>9. Decorazione e identità aziendale</h2>
+    <p>L'arredo dovrebbe riflettere i valori e l'identità del brand. Usa colori aziendali in modo coerente, esponi la mission statement, crea spazi che raccontano la storia dell'azienda. L'arte, le piante e gli elementi decorativi rendono l'ufficio più accogliente e ispiratore.</p>
+
+    <p>Investire nell'arredamento degli uffici è un investimento nel successo aziendale. Un ambiente ben progettato migliora la produttività, riduce l'assenteismo, attira talenti e rafforza l'immagine del brand. Con le giuste soluzioni di arredo, il tuo ufficio diventerà uno spazio dove i dipendenti amano lavorare e i clienti amano visitare.</p>`,
+    coverImage: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=800&fit=crop",
     images: [],
     author: {
-      name: "Laura Bianchi",
-      role: "Architetto d'Interni"
+      name: "Team Arredi",
+      role: "Staff"
     },
-    tags: ["cucina", "design moderno", "elettrodomestici", "organizzazione"],
-    relatedProductSlugs: ["cucine", "elettrodomestici", "pensili"],
-    seoTitle: "Cucina Moderna: Guida al Design Funzionale ed Elegante",
-    seoDescription: "Scopri come progettare una cucina moderna che unisce funzionalità, estetica e tecnologia per rendere la cucina il cuore della casa.",
+    tags: ["uffici", "arredamento", "scrivanie", "sedie", "produttività"],
+    relatedProductSlugs: ["uffici"],
+    seoTitle: "Arredamento Uffici: Guida per Spazi di Lavoro Produttivi",
+    seoDescription: "Guida completa per arredare uffici moderni con scrivanie ergonomiche, sedie confortevoli e layout ottimizzati per la produttività.",
     isPublished: true
   },
   {
-    title: "Camera da letto: creare un'oasi di relax e benessere",
-    slug: "camera-da-letto-oasi-relax-benessere",
-    sectorSlug: "camera-da-letto",
-    excerpt: "Trasforma la tua camera da letto in un rifugio di pace e relax con questi consigli su colori, illuminazione, tessuti e organizzazione.",
-    content: `<p>La camera da letto dovrebbe essere un'oasi di pace dove ricaricare le energie. Ecco come creare un ambiente che favorisce il relax e il benessere.</p>
-    
-    <h2>1. Scegli colori rilassanti</h2>
-    <p>I colori influenzano il nostro umore e il sonno. Opta per tonalità rilassanti come il blu, il verde, il lavanda o il beige caldo. Questi colori favoriscono il relax e aiutano a conciliare il sonno.</p>
-    
-    <h2>2. Investi in un buon materasso</h2>
-    <p>Il materasso è l'elemento più importante della camera da letto. Scegline uno che supporti la tua colonna vertebrale e si adatti alle tue esigenze. Un buon sonno inizia con il giusto supporto.</p>
-    
-    <h2>3. Illuminazione dimmerabile</h2>
-    <p>L'illuminazione gioca un ruolo fondamentale. Usa luci calde e dimmerabili per creare un'atmosfera rilassante. Evita luci fredde o troppo intense prima di andare a dormire.</p>
-    
-    <h2>4. Tessuti di qualità</h2>
-    <p>Le lenzuola, le coperte e i cuscini dovrebbero essere morbidi e confortevoli. Scegli tessuti naturali come il cotone, il lino o la seta per una sensazione di lusso e comfort.</p>
-    
-    <h2>5. Minimizza il disordine</h2>
-    <p>Una camera da letto ordinata favorisce il relax. Usa contenitori sotto il letto, armadi con ante scorrevoli e cestini per mantenere tutto in ordine. Meno disordine significa meno stress.</p>
-    
-    <h2>6. Aggiungi piante verdi</h2>
-    <p>Le piante non solo decorano, ma migliorano la qualità dell'aria e aggiungono un tocco di natura. Scegli varietà che purificano l'aria come la sansevieria o l'aloe vera.</p>
-    
-    <h2>7. Crea una zona lettura</h2>
-    <p>Se lo spazio lo permette, crea un piccolo angolo lettura con una poltrona comoda e una lampada da terra. È perfetto per rilassarsi prima di dormire.</p>
-    
-    <p>Con questi accorgimenti, la tua camera da letto diventerà un rifugio di pace dove ritrovare energia ogni giorno.</p>`,
-    coverImage: "https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=1200&h=800&fit=crop",
+    title: "Arredamento Negozi: Strategie per Aumentare le Vendite con il Visual Merchandising",
+    slug: "arredamento-negozi-visual-merchandising-vendite",
+    sectorSlug: "negozi",
+    excerpt: "Scopri come arredare un negozio per massimizzare le vendite con layout strategico, illuminazione efficace e visual merchandising professionale.",
+    content: `<p>L'arredamento di un negozio non è solo estetica: è una potente leva di marketing. Un negozio ben progettato guida il cliente attraverso un'esperienza di acquisto memorabile e aumenta le vendite. Ecco come trasformare il tuo spazio commerciale in una macchina venditrice.</p>
+
+    <h2>1. Layout e flusso dei clienti</h2>
+    <p>Il layout del negozio dovrebbe guidare naturalmente i clienti attraverso l'intero assortimento. Il layout a griglia è ideale per supermercati e negozi di generi alimentari, mentre il layout a percorso libero (free flow) funziona meglio per boutique e negozi di moda. Crea un percorso circolare che porta i clienti dall'ingresso alla cassa, esponendo i prodotti in modo strategico lungo il percorso.</p>
+
+    <h2>2. Zona ingresso e vetrine</h2>
+    <p>L'ingresso è il primo punto di contatto con il cliente. Mantieni questa zona libera da ostacoli per facilitare l'accesso. Le vetrine sono il tuo biglietto da visita: usa illuminazione drammatica, scaffalature eleganti e cambi stagionali per attirare l'attenzione. Una vetrina ben curata può aumentare il traffico in negozio fino al 30%.</p>
+
+    <h2>3. Illuminazione strategica</h2>
+    <p>L'illuminazione è uno degli strumenti più potenti del visual merchandising. Usa luce più intensa sulle aree promozionali e sui prodotti di punta. L'illuminazione calda (3000K) crea un'atmosfera accogliente, mentre quella neutra (4000K) è ideale per mostrare i colori reali dei prodotti. Considera faretti direzionali per creare punti focali e guidare lo sguardo del cliente.</p>
+
+    <h2>4. Scaffalature e display</h2>
+    <p>Le scaffalature dovrebbero essere funzionali e esteticamente piacevoli. Scegli un'altezza che permetta ai clienti di raggiungere facilmente i prodotti (massimo 180 cm per gli scaffali alti). Usa scaffali a diverse altezze per creare interesse visivo. I display a isola sono perfetti per promozioni stagionali e prodotti in evidenza.</p>
+
+    <h2>5. Prove e camerini</h2>
+    <p>Per negozi di abbigliamento, i camerini sono cruciali. Rendili spaziosi, ben illuminati con specchi full-length. Aggiungi sgabelli, ganci extra e un sistema di chiamata assistente. Un camerino confortevole aumenta significativamente il tasso di conversione: se il cliente si sente a proprio agio, è più propenso all'acquisto.</p>
+
+    <h2>6. Area cassa e upselling</h2>
+    <p>L'area cassa non è solo per i pagamenti: è l'ultima opportunità di vendita. Posiziona prodotti piccoli, accessori e articoli promozionali vicino alla cassa per l'impulse buying. La cassa dovrebbe essere ben illuminata e organizzata per transazioni rapide. Un'area cassa efficiente riduce le code e migliora l'esperienza complessiva.</p>
+
+    <h2>7. Colori e psicologia</h2>
+    <p>I colori influenzano il comportamento d'acquisto. Il rosso crea urgenza ed eccitazione, ideale per promozioni. Il blu trasmette fiducia e calma, perfetto per negozi di tecnologia o servizi. Il verde evoca natura e salute, ottimo per prodotti biologici. Scegli una palette coerente con il tuo brand e il tipo di prodotti venduti.</p>
+
+    <h2>8. Segnaletica e wayfinding</h2>
+    <p>Una segnaletica chiara aiuta i clienti a orientarsi e trovare ciò che cercano. Usa cartelli ben visibili per indicare le categorie di prodotti, le promozioni e i servizi. La segnaletica dovrebbe essere coerente con l'identità visiva del brand. Un cliente che si orienta facilmente è più propenso a esplorare e acquistare.</p>
+
+    <h2>9. Tecnologia e innovazione</h2>
+    <p>Integra tecnologia per migliorare l'esperienza. Schermi digitali per promozioni dinamiche, sistemi di pagamento contactless, QR code per informazioni prodotto, o realtà aumentata per visualizzare prodotti. La tecnologia moderna rende lo shopping più interattivo e memorabile.</p>
+
+    <p>L'arredamento di un negozio è un investimento che si ripaga con vendite aumentate e clienti fidelizzati. Ogni elemento, dal layout all'illuminazione, contribuisce a creare un'esperienza di acquisto irresistibile. Con le giuste strategie di visual merchandising, il tuo negozio diventerà una destinazione dove i clienti amano tornare.</p>`,
+    coverImage: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200&h=800&fit=crop",
     images: [],
     author: {
-      name: "Marco Rossi",
-      role: "Interior Designer"
+      name: "Team Arredi",
+      role: "Staff"
     },
-    tags: ["camera da letto", "relax", "benessere", "sonno"],
-    relatedProductSlugs: ["letti", "armadi", "comò"],
-    seoTitle: "Camera da Letto: Creare un'Oasi di Relax e Benessere",
-    seoDescription: "Trasforma la tua camera da letto in un rifugio di pace e relax con consigli su colori, illuminazione, tessuti e organizzazione.",
+    tags: ["negozi", "arredamento", "visual merchandising", "vendite", "retail"],
+    relatedProductSlugs: ["negozi"],
+    seoTitle: "Arredamento Negozi: Visual Merchandising per Aumentare Vendite",
+    seoDescription: "Scopri come arredare un negozio per massimizzare le vendite con layout strategico, illuminazione efficace e visual merchandising.",
     isPublished: true
   },
   {
-    title: "Bagno di design: idee per uno spazio lussuoso e funzionale",
-    slug: "bagno-design-spazio-lussuoso-funzionale",
-    sectorSlug: "bagno",
-    excerpt: "Scopri come trasformare il bagno in uno spazio di design lussuoso e funzionale con materiali di pregio, illuminazione e soluzioni intelligenti.",
-    content: `<p>Il bagno non è più solo una stanza funzionale, ma uno spazio di benessere e design. Ecco come creare un bagno lussuoso e funzionale.</p>
-    
-    <h2>1. Materiali di pregio</h2>
-    <p>Il marmo, il quarzo e la ceramica di alta qualità trasformano il bagno in uno spazio lussuoso. Questi materiali sono non solo belli, ma anche resistenti e facili da mantenere.</p>
-    
-    <h2>2. Doccia walk-in</h2>
-    <p>La doccia walk-in è la tendenza del momento. Senza piatto doccia o cabina, crea un aspetto moderno e spazioso. Usa lastre di vetro trasparente per mantenere la continuità visiva.</p>
-    
-    <h2>3. Illuminazione scenografica</h2>
-    <p>L'illuminazione può trasformare completamente il bagno. Usa faretti incassati, strisce LED e lampade da parete per creare un'atmosfera rilassante e scenografica.</p>
-    
-    <h2>4. Vasca freestanding</h2>
-    <p>Una vasca freestanding è il pezzo forte di un bagno di design. Posizionala al centro della stanza o sotto una finestra per creare un punto focale elegante.</p>
-    
-    <h2>5. Rubinetteria design</h2>
-    <p>La rubinetteria non deve essere solo funzionale, ma anche un elemento di design. Scegli miscelatori con linee moderne e finiture eleganti come l'ottone o il nero opaco.</p>
-    
-    <h2>6. Specchi grandi</h2>
-    <p>Gli specchi grandi non solo sono pratici, ma ampliano visivamente lo spazio. Un grande specchio sopra il lavabo o una parete intera di specchi crea un effetto wow.</p>
-    
-    <h2>7. Organizzazione intelligente</h2>
-    <p>Usa mensole, cestini e vani nascosti per mantenere il bagno ordinato. Una stanza organizzata appare automaticamente più lussuosa.</p>
-    
-    <p>Con questi elementi, il tuo bagno diventerà uno spazio di design dove goderti momenti di puro relax.</p>`,
-    coverImage: "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=1200&h=800&fit=crop",
+    title: "Arredamento Scuole: Creare Ambienti di Apprendimento Moderni e Inclusivi",
+    slug: "arredamento-scuole-aule-banche-apprendimento",
+    sectorSlug: "scuole",
+    excerpt: "Guida per arredare scuole moderne con banchi ergonomici, aule flessibili e spazi che favoriscono l'apprendimento collaborativo.",
+    content: `<p>L'arredamento scolastico ha un impatto profondo sull'apprendimento, sul benessere degli studenti e sull'efficacia dell'insegnamento. Una scuola ben progettata non è solo un contenitore di classi, ma un ambiente che ispira, motiva e facilita l'apprendimento. Ecco come creare spazi educativi per il futuro.</p>
+
+    <h2>1. Banchi e sedute ergonomiche</h2>
+    <p>Gli studenti trascorrono gran parte della giornata seduti. Banchi e sedute ergonomiche sono essenziali per la salute e la concentrazione. Scegli sedute con supporto lombare, superfici regolabili in altezza e materiali traspiranti. I banchi dovrebbero avere spazio sufficiente per libri, tablet e quaderni. L'ergonomia riduce il disagio fisico e migliora l'attenzione in classe.</p>
+
+    <h2>2. Aule flessibili e modulari</h2>
+    <p>L'apprendimento moderno richiede flessibilità. Usa banchi mobili e leggeri che possono essere facilmente riorganizzati per diverse attività: lezioni frontali, lavoro di gruppo, discussioni o presentazioni. Le aule flessibili permettono agli insegnanti di adattare lo spazio alla metodologia didattica, rendendo le lezioni più dinamiche e coinvolgenti.</p>
+
+    <h2>3. Illuminazione naturale e artificiale</h2>
+    <p>La luce naturale è un potente stimolo per l'apprendimento. Massimizza l'ingresso di luce naturale con finestre ampie e lucernari. Integra con illuminazione artificiale di qualità: luce generale diffusa, luce focalizzata sulle lavagne e luce d'atmosfera nelle zone relax. Usa luci con temperatura colore neutra (4000K) per mantenere l'attenzione senza affaticare la vista.</p>
+
+    <h2>4. Lavagne interattive e tecnologia</h2>
+    <p>Le lavagne interattive e la tecnologia sono ormai parte integrante dell'aula moderna. Scegli lavagne LIM ben illuminate e facilmente visibili da ogni punto della classe. Prevedi prese elettriche e connessioni internet in ogni banco. La tecnologia, quando usata correttamente, arricchisce l'esperienza di apprendimento e prepara gli studenti al mondo digitale.</p>
+
+    <h2>5. Zone per il lavoro collaborativo</h2>
+    <p>L'apprendimento collaborativo è fondamentale per lo sviluppo delle competenze sociali. Crea angoli con tavoli rotondi o poltrone per discussioni di gruppo. Usa pareti scrivibili, schermi divisori mobili e spazi aperti dove gli studenti possono lavorare insieme. Queste zone favoriscono la comunicazione, la creatività e la risoluzione collaborativa dei problemi.</p>
+
+    <h2>6. Biblioteca e spazi di lettura</h2>
+    <p>La biblioteca non è solo un deposito di libri, ma un hub di apprendimento. Crea zone di lettura confortevoli con poltrone, tappeti e illuminazione calda. Prevedi tavoli per lo studio individuale e di gruppo, postazioni computer e aree per la ricerca. Una biblioteca accogliente incoraggia la lettura e la curiosità intellettuale.</p>
+
+    <h2>7. Laboratori e spazi specializzati</h2>
+    <p>I laboratori di scienza, arte, musica e tecnologia richiedono arredi specifici. Scegli tavoli resistenti e facili da pulire, scaffalature per materiali e attrezzature, e sistemi di stoccaggio sicuri. Gli spazi specializzati dovrebbero essere flessibili per adattarsi a diverse attività e livelli scolastici.</p>
+
+    <h2>8. Aree comuni e sociali</h2>
+    <p>Le aree comuni come mensa, atrio e corridoi sono spazi di socializzazione importanti. Arredali con sedute confortevoli, tavoli per mangiare o studiare, e elementi decorativi che creano un senso di appartenenza. Questi spazi contribuiscono al clima scolastico e al benessere emotivo degli studenti.</p>
+
+    <h2>9. Accessibilità e inclusione</h2>
+    <p>Una scuola moderna deve essere accessibile a tutti. Prevedi percorsi privi di barriere architettoniche, banchi ad altezza regolabile per studenti in carrozzina, e spazi per l'apprendimento sensoriale. L'inclusione non è solo un requisito legale, ma un valore che arricchisce tutta la comunità scolastica.</p>
+
+    <h2>10. Colori e psicologia dell'apprendimento</h2>
+    <p>I colori influenzano l'umore e l'apprendimento. Il blu favorisce la calma e la concentrazione, ideale per aule e biblioteche. Il giallo stimola la creatività e l'energia, perfetto per laboratori e spazi artistici. Il verde evoca equilibrio e natura, ottimo per aree relax. Usa una palette coerente che supporti le diverse attività educative.</p>
+
+    <p>Investire nell'arredamento scolastico è un investimento nel futuro degli studenti. Ambienti ben progettati migliorano l'apprendimento, aumentano la motivazione e creano una scuola dove studenti e insegnanti amano stare. Con le giuste soluzioni di arredo, la tua scuola diventerà un luogo dove l'apprendimento diventa un'esperienza entusiasmante.</p>`,
+    coverImage: "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=1200&h=800&fit=crop",
     images: [],
     author: {
-      name: "Laura Bianchi",
-      role: "Architetto d'Interni"
+      name: "Team Arredi",
+      role: "Staff"
     },
-    tags: ["bagno", "design", "lusso", "wellness"],
-    relatedProductSlugs: ["bagni", "rubinetteria", "sanitari"],
-    seoTitle: "Bagno di Design: Idee per uno Spazio Lussuoso e Funzionale",
-    seoDescription: "Scopri come trasformare il bagno in uno spazio di design lussuoso e funzionale con materiali di pregio, illuminazione e soluzioni intelligenti.",
+    tags: ["scuole", "arredamento", "aule", "banchi", "apprendimento"],
+    relatedProductSlugs: ["scuole"],
+    seoTitle: "Arredamento Scuole: Ambienti di Apprendimento Moderni e Inclusivi",
+    seoDescription: "Guida per arredare scuole moderne con banchi ergonomici, aule flessibili e spazi che favoriscono l'apprendimento collaborativo.",
     isPublished: true
   },
   {
-    title: "Ufficio casa: creare un workspace produttivo e confortevole",
-    slug: "ufficio-casa-workspace-produttivo-confortevole",
-    sectorSlug: "ufficio",
-    excerpt: "Guida per progettare un ufficio in casa che favorisce la produttività, il comfort e il benessere lavorando da casa in modo efficiente.",
-    content: `<p>Lavorare da casa richiede uno spazio dedicato che favorisca la produttività e il comfort. Ecco come creare il perfetto ufficio in casa.</p>
-    
-    <h2>1. Scegli la giusta scrivania</h2>
-    <p>La scrivania è il cuore del tuo ufficio. Scegline una abbastanza grande per ospitare computer, documenti e accessori, ma proporzionata allo spazio disponibile. Una scrivania regolabile in altezza è ideale per alternare posizione seduta e in piedi.</p>
-    
-    <h2>2. Investi in una sedia ergonomica</h2>
-    <p>La sedia è l'elemento più importante per la tua salute. Scegli una sedia ergonomica con supporto lombare, braccioli regolabili e seduta confortevole. La tua schiena ti ringrazierà.</p>
-    
-    <h2>3. Illuminazione naturale</h2>
-    <p>Posiziona la scrivania vicino a una finestra per sfruttare la luce naturale. La luce del giorno migliora l'umore, aumenta la produttività e riduce l'affaticamento visivo.</p>
-    
-    <h2>4. Organizzazione verticale</h2>
-    <p>Sfrutta le pareti con librerie, mensole e pannelli organizzatori. Libera spazio sulla scrivania e mantieni tutto a portata di mano.</p>
-    
-    <h2>5. Isolamento acustico</h2>
-    <p>Il rumore può distrarre e ridurre la produttività. Usa tappeti, tende e pannelli fonoassorbenti per creare un ambiente tranquillo e concentrato.</p>
-    
-    <h2>6. Tecnologia adeguata</h2>
-    <p>Assicurati di avere tutte le prese elettriche necessarie, una connessione internet stabile e i dispositivi giusti per il tuo lavoro. Un monitor aggiuntivo può migliorare notevolmente la produttività.</p>
-    
-    <h2>7. Personalizza lo spazio</h2>
-    <p>Aggiungi piante, quadri e oggetti che ti ispirano. Uno spazio personalizzato ti motiva e rende il lavoro più piacevole.</p>
-    
-    <p>Con questi accorgimenti, il tuo ufficio in casa diventerà un spazio produttivo dove lavorare al meglio.</p>`,
-    coverImage: "https://images.unsplash.com/photo-1593062096033-9a26b09da705?w=1200&h=800&fit=crop",
+    title: "Arredamento Bar: Progettare un Locale di Successo con Atmosfera e Funzionalità",
+    slug: "arredamento-bar-bancone-atmosfera-clienti",
+    sectorSlug: "bar",
+    excerpt: "Scopri come arredare un bar moderno con bancone funzionale, illuminazione suggestiva e layout ottimizzato per massimizzare l'esperienza dei clienti.",
+    content: `<p>L'arredamento di un bar è determinante per il suo successo. Un locale ben progettato non solo attira clienti, ma li invita a restare più a lungo, a consumare di più e a tornare. L'atmosfera, la funzionalità e l'estetica devono lavorare insieme per creare un'esperienza memorabile.</p>
+
+    <h2>1. Il bancone: cuore del bar</h2>
+    <p>Il bancone è il punto focale del bar e deve essere progettato con cura. Deve essere abbastanza alto per la comodità dei clienti (105-110 cm) e abbastanza basso per i baristi (85-90 cm). Prevedi spazi per macchine espresso, frigoriferi, lavandini e attrezzature. Il materiale del piano di lavoro deve essere resistente, facile da pulire e esteticamente piacevole: acciaio inox, legno trattato o quarzo.</p>
+
+    <h2>2. Layout e flusso operativo</h2>
+    <p>Un buon layout ottimizza i movimenti del personale e dei clienti. Separa chiaramente le zone: area lavoro del barista, zona servizio ai clienti, area seduta e zona transito. Il triangolo di lavoro (macchina del caffè, lavandino, frigorifero) dovrebbe essere compatto per ridurre i movimenti. Prevedi percorsi chiari per il personale che non interferiscono con quelli dei clienti.</p>
+
+    <h2>3. Sedute e tavoli</h2>
+    <p>Le sedute dovrebbero essere confortevoli ma non troppo rilassanti (vuoi che i clienti consumino, non dormano!). Sgabelli alti per il bancone (65-75 cm di altezza della seduta), sedie per tavoli alti e poltrone per la zona relax. I tavoli dovrebbero essere della giusta altezza per ogni tipo di seduta e abbastanza spaziosi per drink e stuzzichini.</p>
+
+    <h2>4. Illuminazione atmosferica</h2>
+    <p>L'illuminazione crea l'atmosfera del bar. Usa una combinazione di luce generale diffusa, luce focalizzata sul bancone e luce d'atmosfera sulle sedute. Le luci calde (2700-3000K) creano un ambiente accogliente e intimo, ideale per la sera. Considera lampade a sospensione sopra il bancone per un effetto scenografico e faretti direzionali per evidenziare aree specifiche.</p>
+
+    <h2>5. Acustica e gestione del rumore</h2>
+    <p>Un bar può diventare rapidamente rumoroso. Usa tappeti, tende, pannelli fonoassorbenti e piante per assorbire il suono. L'acustica è particolarmente importante se prevedi musica dal vivo o eventi. Un ambiente acusticamente confortevole permette conversazioni piacevoli e invita i clienti a restare più a lungo.</p>
+
+    <h2>6. Area attesa e ingresso</h2>
+    <p>L'ingresso deve essere accogliente e funzionale. Prevedi un'area di attesa con sedute per i clienti in coda. Un ingresso ben progettato gestisce i flussi di traffico, specialmente nelle ore di punta. Considera un display digitale per il menu o una vetrina per prodotti da asporto.</p>
+
+    <h2>7. Storage e organizzazione</h2>
+    <p>L'efficienza operativa dipende da una buona organizzazione. Usa scaffalature, cassetti e sistemi di stoccaggio per bicchieri, bottiglie, ingredienti e attrezzature. Tutto dovrebbe essere facilmente accessibile per il barista. L'organizzazione visiva degli ingredienti dietro il bancone può anche fungere da decorazione.</p>
+
+    <h2>8. Decorazione e identità del brand</h2>
+    <p>L'arredo dovrebbe riflettere l'identità del tuo bar. Scegli uno stile coerente: industrial con metallo e mattoni a vista, vintage con elementi retrò, moderno con linee pulite e colori neutri, o rustico con legno e pietra. La decorazione include murales, poster, piante e oggetti che raccontano la storia del locale.</p>
+
+    <h2>9. Esterni e dehor</h2>
+    <p>Se hai spazio esterno, un dehor ben arredato può aumentare significativamente la capacità del locale. Scegli mobili resistenti alle intemperie, ombrelloni o pergolati per l'ombra, e illuminazione per la sera. Un dehor accogliente attira clienti e crea un'esperienza di esterno molto apprezzata.</p>
+
+    <h2>10. Tecnologia e innovazione</h2>
+    <p>Integra tecnologia per migliorare l'esperienza: sistemi di ordinazione digitale, schermi per il menu, POS moderni, o sistemi di musica controllati via app. La tecnologia può velocizzare il servizio, ridurre gli errori e creare un'esperienza più moderna e interattiva.</p>
+
+    <p>Investire nell'arredamento del bar è un investimento nel successo del business. Un locale ben progettato attira clienti, aumenta il consumo medio, migliora l'efficienza operativa e crea un'esperienza che i clienti vogliono ripetere. Con le giuste attenzione a dettaglio, il tuo bar diventerà il punto di riferimento della zona.</p>`,
+    coverImage: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=1200&h=800&fit=crop",
     images: [],
     author: {
-      name: "Marco Rossi",
-      role: "Interior Designer"
+      name: "Team Arredi",
+      role: "Staff"
     },
-    tags: ["ufficio", "home office", "produttività", "design"],
-    relatedProductSlugs: ["scrivanie", "sedie", "armadi"],
-    seoTitle: "Ufficio Casa: Creare un Workspace Produttivo e Confortevole",
-    seoDescription: "Guida per progettare un ufficio in casa che favorisce la produttività, il comfort e il benessere lavorando da casa in modo efficiente.",
+    tags: ["bar", "arredamento", "bancone", "hospitality", "locale"],
+    relatedProductSlugs: ["bar"],
+    seoTitle: "Arredamento Bar: Progettare Locale di Successo",
+    seoDescription: "Scopri come arredare un bar moderno con bancone funzionale, illuminazione suggestiva e layout ottimizzato per l'esperienza dei clienti.",
     isPublished: true
   },
   {
-    title: "Arredamento esterno: creare un outdoor di stile e comfort",
-    slug: "arredamento-esterno-outdoor-stile-comfort",
-    sectorSlug: "esterno",
-    excerpt: "Trasforma il tuo giardino o terrazzo in uno spazio outdoor di stile con mobili resistenti, illuminazione e decorazioni per goderti l'aria aperta.",
-    content: `<p>Lo spazio esterno è un'estensione della casa dove godersi momenti di relax all'aria aperta. Ecco come creare un outdoor di stile e comfort.</p>
-    
-    <h2>1. Scegli mobili resistenti</h2>
-    <p>Gli arredi da esterno devono resistere alle intemperie. Opta per materiali come il teak, l'alluminio, il rattan sintetico e i tessuti impermeabili che combinano resistenza e stile.</p>
-    
-    <h2>2. Crea zone definite</h2>
-    <p>Dividi lo spazio in aree funzionali: zona pranzo con tavolo e sedie, zona relax con divani e poltrone, e forse un angolo lettura. Questo rende l'outdoor più vivibile e organizzato.</p>
-    
-    <h2>3. Illuminazione atmosferica</h2>
-    <p>L'illuminazione trasforma l'outsero la sera. Usa luci calde, lanterne, stringhe di luci e faretti per creare un'atmosfera magica e accogliente.</p>
-    
-    <h2>4. Ombreggiatura intelligente</h2>
-    <p>Un pergolato, una tenda da sole o un ombrellone ti permette di godere dello spazio anche nelle giornate più soleggiate. Scegli soluzioni che si integrano con il design complessivo.</p>
-    
-    <h2>5. Verde e fiori</h2>
-    <p>Le piante sono essenziali per un outdoor accogliente. Scegli piante in vaso, fioriere e siepi per creare un'atmosfera naturale e rilassante.</p>
-    
-    <h2>6. Tessuti e cuscini</h2>
-    <p>Cuscini, tappeti e plaid aggiungono comfort e colore. Scegli tessuti resistenti ai raggi UV e all'acqua per mantenere la bellezza nel tempo.</p>
-    
-    <h2>7. Elementi decorativi</h2>
-    <p>Sculture, fontane, vasi e oggetti decorativi personalizzano lo spazio e lo rendono unico. Scegli elementi che riflettano il tuo stile.</p>
-    
-    <p>Con questi elementi, il tuo spazio esterno diventerà un luogo perfetto per goderti l'aria aperta con stile e comfort.</p>`,
-    coverImage: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=1200&h=800&fit=crop",
+    title: "Arredamento Centri Estetici: Creare un Oasi di Benessere e Relax per i Clienti",
+    slug: "arredamento-centri-estetici-benessere-relax-clienti",
+    sectorSlug: "centri-estetici",
+    excerpt: "Guida completa per arredare centri estetici con cabine confortevoli, illuminazione rilassante e design che trasmette professionalità e benessere.",
+    content: `<p>Un centro estetico di successo non si basa solo sulla qualità dei trattamenti, ma sull'esperienza complessiva che il cliente vive. L'arredamento gioca un ruolo fondamentale nel creare un'atmosfera di relax, professionalità e benessere che invita i clienti a tornare. Ecco come progettare uno spazio che coccola e ispira fiducia.</p>
+
+    <h2>1. Cabine trattamento: comfort e privacy</h2>
+    <p>Le cabine sono il cuore del centro estetico. Ogni cabina dovrebbe essere spaziosa (almeno 8-10 mq), ben insonorizzata e climatizzata. Il lettino da trattamento deve essere ergonomico, con materasso confortevole e regolabile in altezza. Prevedi spazio per il terapista di muoversi comodamente e scaffali per prodotti e attrezzature. L'illuminazione dovrebbe essere dimmerabile per creare atmosfere diverse.</p>
+
+    <h2>2. Area reception e accoglienza</h2>
+    <p>L'area reception crea la prima impressione. Deve essere accogliente, professionale e ben organizzata. Scegli una reception elegante con spazio per computer e sistemi di prenotazione. L'area attesa dovrebbe avere sedute confortevoli, tavolini con riviste e acqua. Aggiungi elementi come piante, diffusori di aromi e musica soft per creare immediatamente un'atmosfera di benessere.</p>
+
+    <h2>3. Illuminazione calda e rilassante</h2>
+    <p>L'illuminazione è cruciale per creare l'atmosfera giusta. Usa luci calde (2700-3000K) in tutto il centro per favorire il relax. Nelle cabine, prevedi illuminazione dimmerabile che può essere intensa durante i trattamenti e soffusa durante il relax. Evita luci fredde o troppo intense che possono creare un ambiente clinico poco accogliente.</p>
+
+    <h2>4. Colori e materiali naturali</h2>
+    <p>La palette colori dovrebbe evocare natura e serenità. Tonalità di verde, blu, beige e bianco create un'atmosfera calmante. Usa materiali naturali come legno, pietra, rattan e tessuti organici. Questi materiali non solo sono belli, ma trasmettono una sensazione di autenticità e connessione con la natura.</p>
+
+    <h2>5. Zona relax e post-trattamento</h2>
+    <p>Dopo un trattamento, i clienti apprezzano un momento di relax. Crea una zona dedicata con poltrone confortevoli, chaise longue o divani. Aggiungi tappeti morbidi, plaid e cuscini. Offri acqua, tisane e snack leggeri. Questa zona prolunga l'esperienza di benessere e aumenta la percezione del valore del servizio.</p>
+
+    <h2>6. Spogliatoi e servizi igienici</h2>
+    <p>Gli spogliatoi dovrebbero essere puliti, ben illuminati e organizzati. Prevedi armadietti sicuri, sedute e specchi. I servizi igienici devono essere impeccabili, con prodotti di qualità e asciugamani morbidi. Questi dettagli trasmettono cura e professionalità.</p>
+
+    <h2>7. Area vendita prodotti</h2>
+    <p>L'area vendita è un'importante fonte di revenue. Esponi i prodotti in modo elegante su scaffalature illuminate. Usa tester e campioni per permettere ai clienti di provare i prodotti. L'area vendita dovrebbe essere integrata armoniosamente nel design complessivo, non sembrare un add-on commerciale.</p>
+
+    <h2>8. Acustica e privacy</h2>
+    <p>La privacy e il silenzio sono essenziali in un centro estetico. Usa materiali fonoassorbenti, tappeti e tende per ridurre il rumore. Assicurati che le cabine siano ben insonorizzate. Un ambiente tranquillo permette ai clienti di scollegarsi dallo stress quotidiano e immergersi completamente nell'esperienza.</p>
+
+    <h2>9. Aromaterapia e sensorialità</h2>
+    <p>Engaggi tutti i sensi per un'esperienza completa. Usa diffusori di oli essenziali con fragranze rilassanti come lavanda, camomilla o ylang-ylang. La musica di sottofondo dovrebbe essere soft e rilassante. Considera elementi tattili come tessuti morbidi e superfici naturali.</p>
+
+    <h2>10. Tecnologia e innovazione</h2>
+    <p>Integra tecnologia per migliorare l'esperienza: sistemi di prenotazione online, schermi per mostrare i trattamenti, o sistemi di illuminazione automatizzati. La tecnologia può semplificare la gestione e creare un'esperienza più moderna, ma non deve mai compromettere l'atmosfera di benessere.</p>
+
+    <h2>11. Decorazione e identità del brand</h2>
+    <p>L'arredo dovrebbe riflettere l'identità del tuo centro estetico. Scegli uno stile coerente: minimalista e zen, lussuoso e elegante, o naturale e organico. La decorazione include arte, piante, oggetti d'arte e elementi che raccontano la filosofia del centro. La coerenza visiva rafforza il riconoscimento del brand.</p>
+
+    <p>Investire nell'arredamento di un centro estetico è un investimento nel successo del business. Un ambiente ben progettato aumenta la soddisfazione dei clienti, favorisce il passaparola positivo e giustifica prezzi premium. Con le giuste soluzioni di arredo, il tuo centro diventerà un rifugio di benessere dove i clienti amano tornare.</p>`,
+    coverImage: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=1200&h=800&fit=crop",
     images: [],
     author: {
-      name: "Laura Bianchi",
-      role: "Architetto d'Interni"
+      name: "Team Arredi",
+      role: "Staff"
     },
-    tags: ["esterno", "giardino", "terrazzo", "outdoor"],
-    relatedProductSlugs: ["arredo esterno", "tavoli da esterno", "sedie da esterno"],
-    seoTitle: "Arredamento Esterno: Creare un Outdoor di Stile e Comfort",
-    seoDescription: "Trasforma il tuo giardino o terrazzo in uno spazio outdoor di stile con mobili resistenti, illuminazione e decorazioni per goderti l'aria aperta.",
+    tags: ["centri estetici", "arredamento", "benessere", "spa", "relax"],
+    relatedProductSlugs: ["centri-estetici"],
+    seoTitle: "Arredamento Centri Estetici: Oasi di Benessere e Relax",
+    seoDescription: "Guida completa per arredare centri estetici con cabine confortevoli, illuminazione rilassante e design che trasmette professionalità.",
     isPublished: true
   }
 ];

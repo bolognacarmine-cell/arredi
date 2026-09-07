@@ -55,8 +55,7 @@ const PostSchema = new Schema<Post>(
       type: String,
       required: true,
       trim: true,
-      minlength: 140,
-      maxlength: 160,
+      maxlength: 300,
     },
     content: {
       type: String,
@@ -108,7 +107,7 @@ const PostSchema = new Schema<Post>(
 );
 
 // Indexes for performance and SEO
-PostSchema.index({ slug: 1 });
+// Note: slug already has unique: true which creates an index automatically
 PostSchema.index({ sectorSlug: 1 });
 PostSchema.index({ publishedAt: -1 });
 PostSchema.index({ isPublished: 1 });

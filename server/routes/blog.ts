@@ -85,6 +85,11 @@ router.get('/sectors', async (req: Request, res: Response) => {
                 { case: { $eq: ['$_id', 'bagno'] }, then: 'Bagno' },
                 { case: { $eq: ['$_id', 'ufficio'] }, then: 'Ufficio' },
                 { case: { $eq: ['$_id', 'esterno'] }, then: 'Esterno' },
+                { case: { $eq: ['$_id', 'barbieri'] }, then: 'Barbieri' },
+                { case: { $eq: ['$_id', 'negozi'] }, then: 'Negozi' },
+                { case: { $eq: ['$_id', 'scuole'] }, then: 'Scuole' },
+                { case: { $eq: ['$_id', 'bar'] }, then: 'Bar' },
+                { case: { $eq: ['$_id', 'centri-estetici'] }, then: 'Centri Estetici' },
               ],
               default: { $concat: [
                 { $toUpper: { $substr: ['$_id', 0, 1] } },
