@@ -11,8 +11,18 @@ const filters = [
 
 export default function Projects() {
   useEffect(() => {
+    window.scrollTo(0, 0)
+    document.documentElement.scrollTop = 0
+    document.body.scrollTop = 0
     setTimeout(() => {
       window.scrollTo(0, 0)
+      document.documentElement.scrollTop = 0
+      document.body.scrollTop = 0
+    }, 100)
+    setTimeout(() => {
+      window.scrollTo(0, 0)
+      document.documentElement.scrollTop = 0
+      document.body.scrollTop = 0
     }, 300)
   }, [])
 
