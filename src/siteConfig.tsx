@@ -156,7 +156,7 @@ export function useSiteSettings() {
     }
   }, [])
 
-  // Load site settings from API on mount
+  // Load site settings from API on mount (only if API is available)
   useEffect(() => {
     async function loadSiteSettingsFromApi() {
       try {
@@ -188,8 +188,7 @@ export function useSiteSettings() {
         }
         setSettings(normalizeSiteSettings(convertedSettings))
       } catch (err) {
-        console.error("Error loading site settings from API:", err)
-        // Fallback to localStorage if API fails
+        // Silently fallback to localStorage if API fails or is not available
         setSettings(readSiteSettings())
       }
     }
