@@ -35,7 +35,9 @@ const sections = [
 
 export default function CookiePage() {
   useEffect(() => {
-    window.scrollTo(0, 0)
+    setTimeout(() => {
+      window.scrollTo(0, 0)
+    }, 100)
   }, [])
 
   return (
