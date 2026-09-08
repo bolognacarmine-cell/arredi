@@ -24,8 +24,8 @@ export default function LegalPageLayout({
   const siteSettings = useSiteSettings()
 
   return (
-    <div className="min-h-screen bg-[#F7F5F0] pt-24">
-      <div className="mx-auto max-w-5xl px-6 pb-24 pt-12 lg:px-10">
+    <div className="min-h-screen bg-[#F7F5F0]">
+      <div className="mx-auto max-w-5xl px-6 pb-24 pt-24 lg:px-10">
         <Link
           to="/"
           className="inline-flex items-center text-xs text-[#888580] transition-colors hover:text-[#1B4332]"
