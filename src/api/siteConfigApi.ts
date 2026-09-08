@@ -45,7 +45,6 @@ export async function getSiteConfig(): Promise<SiteConfig> {
 
     throw new Error(result.error?.message || "Failed to fetch site config")
   } catch (error) {
-    console.error("Error fetching site config:", error)
     throw error
   }
 }
@@ -76,7 +75,6 @@ export async function updateSiteConfig(data: Partial<SiteConfig>): Promise<SiteC
 
     throw new Error(result.error?.message || "Failed to update site config")
   } catch (error) {
-    console.error("Error updating site config:", error)
     throw error
   }
 }
