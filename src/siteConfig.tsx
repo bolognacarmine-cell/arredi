@@ -274,3 +274,27 @@ export function getSocialLinks(settings: SiteSettings) {
     },
   ] as const
 }
+
+export const legalConfig = {
+  company: {
+    name: "Farcom Design s.r.l.",
+    address: "Via P. Vertaldi, 27, 81050 Macerata Campania (CE)",
+    vat: "", // TODO: inserire P.IVA quando disponibile
+    email: "farcomsrl@hotmail.com",
+    phone: "+39 0823 694427",
+    whatsapp: "+39 329 4576079",
+    whatsappUrl: "https://wa.me/393294576079",
+    pec: "", // TODO: inserire PEC se attivata in futuro
+  },
+  privacy: {
+    email: "farcomsrl@hotmail.com",
+    dpo: "",
+    dpoEmail: "",
+    lastUpdated: "2026-09-08",
+  },
+  links: {
+    privacyPolicy: "/privacy",
+    cookiePolicy: "/cookie",
+    legalNotes: "/note-legali",
+  },
+} as const

@@ -1,6 +1,11 @@
 import LegalPageLayout from "../components/LegalPageLayout"
+import LegalInfoCard from "../components/legal/LegalInfoCard"
 
 const sections = [
+  {
+    title: "Titolare del sito",
+    customContent: <LegalInfoCard />,
+  },
   {
     title: "Proprieta dei contenuti",
     paragraphs: [

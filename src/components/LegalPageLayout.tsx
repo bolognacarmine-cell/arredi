@@ -1,9 +1,11 @@
 import { Link } from "react-router-dom"
-import { useSiteSettings } from "../siteConfig"
+import { useSiteSettings, legalConfig } from "../siteConfig"
+import LegalNav from "./legal/LegalNav"
 
 type LegalSection = {
   title: string
-  paragraphs: string[]
+  paragraphs?: string[]
+  customContent?: React.ReactNode
 }
 
 type LegalPageLayoutProps = {
@@ -53,6 +55,8 @@ export default function LegalPageLayout({
           </div>
         </div>
 
+        <LegalNav />
+
         <div className="mt-10 space-y-8">
           {sections.map((section) => (
             <section
@@ -62,13 +66,21 @@ export default function LegalPageLayout({
               <h2 className="font-display text-2xl font-light text-[#1A1A18]">
                 {section.title}
               </h2>
-              <div className="mt-4 space-y-4 text-sm leading-relaxed text-[#4A4A46] md:text-base">
-                {section.paragraphs.map((paragraph) => (
-                  <p key={paragraph}>{paragraph}</p>
-                ))}
-              </div>
+              {section.customContent ? (
+                <div className="mt-4">{section.customContent}</div>
+              ) : (
+                <div className="mt-4 space-y-4 text-sm leading-relaxed text-[#4A4A46] md:text-base">
+                  {section.paragraphs?.map((paragraph) => (
+                    <p key={paragraph}>{paragraph}</p>
+                  ))}
+                </div>
+              )}
             </section>
           ))}
+        </div>
+
+        <div className="mt-12 text-xs text-[#888580]">
+          Ultimo aggiornamento: {legalConfig.privacy.lastUpdated}
         </div>
       </div>
     </div>

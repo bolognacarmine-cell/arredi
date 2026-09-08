@@ -11,7 +11,8 @@ const sections = [
   {
     title: "Tipologie utilizzate",
     paragraphs: [
-      "Il sito puo utilizzare cookie tecnici di sessione, preferenze locali del browser e strumenti di memorizzazione necessari a mantenere alcune impostazioni utente durante la navigazione.",
+      "Il sito utilizza cookie tecnici necessari per il corretto funzionamento del sito (sessione, preferenze, autenticazione).",
+      "Non vengono utilizzati cookie di profilazione o marketing senza il consenso esplicito dell'utente.",
       "Eventuali strumenti terzi integrati nel sito possono installare propri cookie secondo le rispettive policy, consultabili tramite i servizi esterni utilizzati.",
     ],
   },
@@ -20,6 +21,13 @@ const sections = [
     paragraphs: [
       "L'utente puo gestire o disattivare i cookie direttamente dalle impostazioni del proprio browser, con la consapevolezza che alcune funzioni del sito potrebbero non essere piu disponibili.",
       "La rimozione dei cookie gia installati e possibile in qualsiasi momento dalle preferenze del browser o del dispositivo in uso.",
+    ],
+  },
+  {
+    title: "Gestisci preferenze cookie",
+    paragraphs: [
+      "Per gestire le preferenze sui cookie, utilizza il banner di consenso presente sul sito o le impostazioni del tuo browser.",
+      "TODO: integrare con CMP reale per la gestione granulare delle preferenze cookie.",
     ],
   },
 ] as const
