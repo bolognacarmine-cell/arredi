@@ -5,10 +5,11 @@ export default function ScrollToTop() {
   const { pathname } = useLocation()
 
   useEffect(() => {
-    // Use requestAnimationFrame to ensure scroll happens after DOM update
-    // Use instant behavior for immediate scroll to top on route change
+    // Double requestAnimationFrame to ensure scroll happens after complete DOM update
     requestAnimationFrame(() => {
-      window.scrollTo({ top: 0, left: 0, behavior: "instant" })
+      requestAnimationFrame(() => {
+        window.scrollTo(0, 0)
+      })
     })
   }, [pathname])
 
