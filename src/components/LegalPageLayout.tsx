@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom"
-import { useSiteSettings, legalConfig } from "../siteConfig"
+import { legalConfig } from "../siteConfig"
 import LegalNav from "./legal/LegalNav"
 
 type LegalSection = {
@@ -21,8 +21,6 @@ export default function LegalPageLayout({
   intro,
   sections,
 }: LegalPageLayoutProps) {
-  const siteSettings = useSiteSettings()
-
   return (
     <div className="min-h-screen bg-[#F7F5F0]">
       <div className="mx-auto max-w-5xl px-6 pb-24 pt-24 lg:px-10">
@@ -44,13 +42,13 @@ export default function LegalPageLayout({
             {intro}
           </p>
           <div className="mt-5 text-xs text-[#888580]">
-            Titolare del sito: {siteSettings.legalName} · Contatto:
+            Titolare del sito: {legalConfig.company.name} · Contatto:
             {" "}
             <a
-              href={siteSettings.emailHref}
+              href={`mailto:${legalConfig.company.email}`}
               className="transition-colors hover:text-[#1B4332]"
             >
-              {siteSettings.email}
+              {legalConfig.company.email}
             </a>
           </div>
         </div>
