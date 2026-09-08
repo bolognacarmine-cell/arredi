@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { resolveImageUrl } from "../lib/cloudinary";
 import { SECTORS } from "../data";
@@ -10,6 +10,12 @@ const filters = [
 ]
 
 export default function Projects() {
+  useEffect(() => {
+    setTimeout(() => {
+      window.scrollTo(0, 0)
+    }, 100)
+  }, [])
+
   const [active, setActive] = useState("all");
   const projects = useProjects()
 

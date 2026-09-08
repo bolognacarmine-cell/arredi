@@ -1,6 +1,13 @@
+import { useEffect } from "react"
 import { Link } from "react-router-dom"
 
 export default function About() {
+  useEffect(() => {
+    setTimeout(() => {
+      window.scrollTo(0, 0)
+    }, 100)
+  }, [])
+
   return (
     <div className="bg-[#F7F5F0] min-h-screen pt-24">
       {/* Header */}

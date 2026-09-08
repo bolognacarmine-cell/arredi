@@ -1,8 +1,14 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useSearchParams, Link } from "react-router-dom"
 import { SECTORS } from "../data"
 
 export default function Quote() {
+  useEffect(() => {
+    setTimeout(() => {
+      window.scrollTo(0, 0)
+    }, 100)
+  }, [])
+
   const [params] = useSearchParams()
   const preselect = params.get("settore") || ""
   const [submitted, setSubmitted] = useState(false)

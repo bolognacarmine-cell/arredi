@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   getContactInfoCards,
   getSocialLinks,
@@ -6,6 +6,12 @@ import {
 } from "../siteConfig"
 
 export default function Contacts() {
+  useEffect(() => {
+    setTimeout(() => {
+      window.scrollTo(0, 0)
+    }, 100)
+  }, [])
+
   const [sent, setSent] = useState(false)
   const [form, setForm] = useState({ nome: "", email: "", messaggio: "" })
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }))

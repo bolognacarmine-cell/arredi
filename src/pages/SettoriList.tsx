@@ -1,9 +1,16 @@
+import { useEffect } from "react"
 import { Link } from "react-router-dom"
 
 import { SECTORS } from "../data"
 import { resolveImageUrl } from "../lib/cloudinary"
 
 export default function SettoriList() {
+  useEffect(() => {
+    setTimeout(() => {
+      window.scrollTo(0, 0)
+    }, 100)
+  }, [])
+
   return (
     <div className="bg-[#FAFAFA] min-h-screen">
       {/* HERO */}
