@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import LegalPageLayout from "../components/LegalPageLayout"
 
 const sections = [
@@ -33,6 +34,10 @@ const sections = [
 ] as const
 
 export default function CookiePage() {
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
   return (
     <LegalPageLayout
       eyebrow="Cookie"

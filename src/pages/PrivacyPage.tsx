@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import LegalPageLayout from "../components/LegalPageLayout"
 import LegalInfoCard from "../components/legal/LegalInfoCard"
 
@@ -61,6 +62,10 @@ const sections = [
 ] as const
 
 export default function PrivacyPage() {
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
   return (
     <LegalPageLayout
       eyebrow="Privacy"
