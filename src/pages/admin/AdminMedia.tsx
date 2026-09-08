@@ -177,6 +177,10 @@ export default function AdminMedia() {
       window.location.hostname === "127.0.0.1" ||
       window.location.hostname.endsWith(".local"))
   const canWriteDataTsLocally = !!import.meta.env.DEV && runningOnLocalhostDev
+  const isProduction =
+    typeof window !== "undefined" &&
+    window.location.hostname !== "localhost" &&
+    window.location.hostname !== "127.0.0.1"
 
   const [file, setFile] = useState<File | null>(null)
   const [category, setCategory] = useState<UploadCategory>("project")
@@ -534,13 +538,21 @@ export default function AdminMedia() {
             )
           }
         } else if (assign.ok && assign.skipped) {
-          showToast("✅ Upload completato! (Auto-assegna disattivato)", "ok", 4500)
+          if (isProduction) {
+            showToast("✅ Upload completato! Copia il Public ID dal riquadro qui sotto e incollalo manualmente in src/data.ts nel progetto locale, poi rifai il deploy su Render.", "ok", 6000)
+          } else {
+            showToast("✅ Upload completato! (Auto-assegna disattivato)", "ok", 4500)
+          }
         } else {
-          showToast(
-            "⚠ Upload OK ma data.ts NON aggiornato — vedi messaggio rosso qui sotto. Puoi comunque copiare il Public ID a mano.",
-            "warn",
-            5500,
-          )
+          if (isProduction) {
+            showToast("✅ Upload completato! Copia il Public ID dal riquadro qui sotto e incollalo manualmente in src/data.ts nel progetto locale, poi rifai il deploy su Render.", "ok", 6000)
+          } else {
+            showToast(
+              "⚠ Upload OK ma data.ts NON aggiornato — vedi messaggio rosso qui sotto. Puoi comunque copiare il Public ID a mano.",
+              "warn",
+              5500,
+            )
+          }
         }
       } else {
         showToast("✅ Upload completato! Copia il Public ID qui sotto", "ok", 4000)
@@ -1139,6 +1151,16 @@ export default function AdminMedia() {
                 <p className="text-sm font-bold text-green-900 flex items-center gap-2">
                   <span className="text-xl">✅</span> Upload completato!
                 </p>
+                {isProduction && (
+                  <div className="rounded-lg border-2 border-[#1B4332]/30 bg-white p-4 space-y-2">
+                    <p className="font-bold text-[#1B4332] text-base flex items-center gap-2">
+                      <span className="text-xl">📋</span> Copia il Public ID dal riquadro qui sotto
+                    </p>
+                    <p className="text-[13px] text-[#333]">
+                      Copia il Public ID e incollalo manualmente in src/data.ts nel progetto locale, poi rifai il deploy su Render.
+                    </p>
+                  </div>
+                )}
                 {/* API response: successo auto-assegna */}
                 {apiResponse?.ok && (
                   <div className="rounded-lg border-2 border-[#1B4332]/30 bg-white p-4 space-y-2">
@@ -1161,7 +1183,7 @@ export default function AdminMedia() {
                     </div>
                   </div>
                 )}
-                {apiResponse && !apiResponse.ok && (
+                {apiResponse && !apiResponse.ok && !isProduction && (
                   <div className="rounded-lg border-2 border-amber-400 bg-amber-50 p-4 space-y-2">
                     <p className="font-bold text-amber-900 text-base flex items-center gap-2">
                       <span className="text-xl">⚠️</span> Upload OK ma scrittura su data.ts fallita
