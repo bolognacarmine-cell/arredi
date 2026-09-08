@@ -5,7 +5,10 @@ export default function ScrollToTop() {
   const { pathname } = useLocation()
 
   useEffect(() => {
-    window.scrollTo(0, 0)
+    // Use requestAnimationFrame to ensure scroll happens after DOM update
+    requestAnimationFrame(() => {
+      window.scrollTo(0, 0)
+    })
   }, [pathname])
 
   return null
