@@ -13,7 +13,7 @@ export default function Projects() {
   useEffect(() => {
     setTimeout(() => {
       window.scrollTo(0, 0)
-    }, 100)
+    }, 300)
   }, [])
 
   const [active, setActive] = useState("all");

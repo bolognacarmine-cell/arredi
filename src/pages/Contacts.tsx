@@ -9,7 +9,7 @@ export default function Contacts() {
   useEffect(() => {
     setTimeout(() => {
       window.scrollTo(0, 0)
-    }, 100)
+    }, 300)
   }, [])
 
   const [sent, setSent] = useState(false)

@@ -6,7 +6,7 @@ export default function Quote() {
   useEffect(() => {
     setTimeout(() => {
       window.scrollTo(0, 0)
-    }, 100)
+    }, 300)
   }, [])
 
   const [params] = useSearchParams()

@@ -37,7 +37,7 @@ export default function CookiePage() {
   useEffect(() => {
     setTimeout(() => {
       window.scrollTo(0, 0)
-    }, 100)
+    }, 300)
   }, [])
 
   return (
