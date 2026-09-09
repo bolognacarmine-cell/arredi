@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { Link, useLocation, Outlet } from "react-router-dom"
 
 const nav = [
@@ -10,6 +10,16 @@ const nav = [
   { to: "/admin/media", label: "Media", icon: "◧" },
   { to: "/admin/impostazioni", label: "Impostazioni", icon: "⚙" },
 ]
+
+const SIDEBAR_WIDTH_PX = 224
+const SIDEBAR_ID = "admin-sidebar"
+
+function isSidebarClosedByDefault(pathname: string) {
+  return (
+    pathname.startsWith("/admin/media") ||
+    pathname.startsWith("/admin/progetti")
+  )
+}
 
 export default function AdminLayout() {
   useEffect(() => {
@@ -29,8 +39,11 @@ export default function AdminLayout() {
   }, [])
 
   const location = useLocation()
-  const [sideOpen, setSideOpen] = useState(true)
+  const [sideOpen, setSideOpen] = useState<boolean>(() =>
+    !isSidebarClosedByDefault(location.pathname),
+  )
   const [isMobile, setIsMobile] = useState(false)
+  const sidebarRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768)
@@ -40,90 +53,138 @@ export default function AdminLayout() {
   }, [])
 
   useEffect(() => {
-    if (isMobile) setSideOpen(false)
-  }, [isMobile])
+    setSideOpen(!isSidebarClosedByDefault(location.pathname))
+  }, [location.pathname])
+
+  const closeSidebar = () => setSideOpen(false)
+  const toggleSidebar = () => setSideOpen((prev) => !prev)
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape" && sideOpen) closeSidebar()
+    }
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [sideOpen])
+
+  const sidebarW = useMemo(
+    () => (isMobile ? 256 : SIDEBAR_WIDTH_PX),
+    [isMobile],
+  )
 
   return (
-    <div className="min-h-screen flex bg-[#F0EDE6]">
-      {/* Mobile overlay */}
-      {isMobile && sideOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 transition-opacity animate-fade-in"
-          onClick={() => setSideOpen(false)}
-          aria-hidden="true"
-        />
-      )}
-
-      {/* SIDEBAR */}
-      <aside
-        className={`bg-[#1A1A18] flex flex-col transition-all duration-200 z-50 ${
-          isMobile
-            ? sideOpen
-              ? "fixed top-0 left-0 w-64 h-screen overflow-y-auto shadow-2xl"
-              : "fixed top-0 left-0 w-0 h-0 overflow-hidden opacity-0 pointer-events-none"
-            : `${
-                sideOpen ? "w-56" : "w-14"
-              } flex-shrink-0 sticky top-0 h-screen overflow-y-auto z-40`
+    <div className="min-h-screen bg-[#F0EDE6] w-full relative">
+      {/* BACKDROP (click outside to close) */}
+      <div
+        aria-hidden="true"
+        onClick={closeSidebar}
+        className={`fixed inset-0 z-40 bg-black/40 transition-opacity duration-200 pointer-events-none ${
+          sideOpen
+            ? "opacity-100 pointer-events-auto animate-fade-in"
+            : "opacity-0"
         }`}
+      />
+
+      {/* FLOATING TOGGLE — visibile SOLO quando sidebar è CHIUSA */}
+      <button
+        type="button"
+        onClick={toggleSidebar}
+        aria-label="Apri menu di navigazione"
+        aria-expanded="false"
+        aria-controls={SIDEBAR_ID}
+        className={`fixed left-0 top-1/2 -translate-y-1/2 z-30 ${
+          sideOpen ? "opacity-0 pointer-events-none" : "opacity-100"
+        } transition-opacity duration-200`}
       >
-        <div className={`h-14 flex items-center gap-3 px-4 border-b border-white/10 ${!isMobile ? "flex-shrink-0" : ""}`}>
-          <span className="w-5 h-5 bg-[#B5965A] rounded-sm flex-shrink-0" />
-          {(sideOpen || isMobile) && (
+        <span
+          className="bg-[#1A1A18] text-white w-10 h-12 rounded-r-xl shadow-xl border border-white/10 flex items-center justify-center text-lg hover:bg-[#2c2c28] active:bg-[#3a3a35] transition-colors touch-min-48"
+          aria-hidden="true"
+        >
+          ☰
+        </span>
+      </button>
+
+      {/* SIDEBAR DRAWER — overlay fixed puro in ogni viewport */}
+      <aside
+        id={SIDEBAR_ID}
+        ref={sidebarRef}
+        role="navigation"
+        aria-label="Menu amministrazione"
+        aria-hidden={!sideOpen}
+        className={`fixed top-0 left-0 h-screen z-50 bg-[#1A1A18] flex flex-col shadow-2xl transition-transform duration-200 ease-out ${
+          isMobile ? "w-64" : "w-56"
+        }`}
+        style={{
+          transform: sideOpen ? "translateX(0)" : `translateX(-${sidebarW}px)`,
+        }}
+      >
+        <div className="h-14 flex items-center justify-between px-4 border-b border-white/10 flex-shrink-0">
+          <div className="flex items-center gap-3 min-w-0">
+            <span className="w-5 h-5 bg-[#B5965A] rounded-sm flex-shrink-0" />
             <span className="font-display text-sm font-medium text-white truncate">
               Farcom
             </span>
-          )}
+          </div>
+          <button
+            type="button"
+            onClick={closeSidebar}
+            aria-label="Chiudi menu di navigazione"
+            className="text-white/50 hover:text-white transition-colors w-7 h-7 flex items-center justify-center rounded hover:bg-white/5 touch-min-44"
+          >
+            ✕
+          </button>
         </div>
 
-        <nav className={`flex-1 py-6 space-y-1 px-2 ${!isMobile ? "min-h-0" : ""}`}>
+        <nav className="flex-1 py-6 space-y-1 px-2 overflow-y-auto min-h-0">
           {nav.map((item) => {
             const active =
               location.pathname === item.to ||
-              (item.to !== "/admin" && location.pathname.startsWith(item.to))
+              (item.to !== "/admin" &&
+                location.pathname.startsWith(item.to))
             return (
               <Link
                 key={item.to}
                 to={item.to}
-                onClick={() => {
-                  if (isMobile) setSideOpen(false)
-                }}
-                className={`flex items-center gap-3 px-3 py-2.5 text-sm transition-colors ${
+                onClick={closeSidebar}
+                className={`flex items-center gap-3 px-3 py-2.5 text-sm transition-colors rounded ${
                   active
                     ? "bg-[#1B4332] text-white"
                     : "text-white/50 hover:text-white hover:bg-white/5"
                 }`}
+                aria-current={active ? "page" : undefined}
               >
                 <span className="text-base flex-shrink-0">{item.icon}</span>
-                {(sideOpen || isMobile) && <span>{item.label}</span>}
+                <span className="whitespace-nowrap">{item.label}</span>
               </Link>
             )
           })}
         </nav>
 
-        <div className={`px-2 pb-4 border-t border-white/10 pt-4 ${!isMobile ? "flex-shrink-0" : ""}`}>
+        <div className="px-2 pb-4 border-t border-white/10 pt-4 flex-shrink-0">
           <Link
             to="/"
-            onClick={() => {
-              if (isMobile) setSideOpen(false)
-            }}
-            className="flex items-center gap-3 px-3 py-2.5 text-sm text-white/40 hover:text-white/70 transition-colors"
+            onClick={closeSidebar}
+            className="flex items-center gap-3 px-3 py-2.5 text-sm text-white/40 hover:text-white/70 transition-colors rounded"
           >
             <span className="flex-shrink-0">←</span>
-            {(sideOpen || isMobile) && <span>Vai al sito</span>}
+            <span>Vai al sito</span>
           </Link>
         </div>
       </aside>
 
-      {/* MAIN */}
-      <div className="flex-1 flex flex-col min-w-0 transition-all duration-200">
+      {/* MAIN CONTENT — larghezza 100% sempre, nessun offset */}
+      <div className="w-full min-h-screen flex flex-col min-w-0">
         {/* Header */}
         <header className="h-14 bg-white border-b border-[#DDD9D0] flex items-center justify-between px-4 sm:px-6 sticky top-0 z-30 flex-shrink-0">
           <button
-            onClick={() => setSideOpen(!sideOpen)}
-            className="text-[#888580] hover:text-[#1A1A18] transition-colors touch-min-44 flex items-center justify-center"
-            aria-label={sideOpen ? "Chiudi menu" : "Apri menu"}
+            type="button"
+            onClick={toggleSidebar}
+            aria-label={sideOpen ? "Chiudi menu di navigazione" : "Apri menu di navigazione"}
+            aria-expanded={sideOpen}
+            aria-controls={SIDEBAR_ID}
+            className="text-[#888580] hover:text-[#1A1A18] transition-colors touch-min-44 flex items-center justify-center w-9 h-9 rounded hover:bg-[#F7F5F0]"
           >
-            {isMobile && sideOpen ? "✕" : "☰"}
+            <span aria-hidden="true">{sideOpen ? "✕" : "☰"}</span>
           </button>
           <div className="flex items-center gap-4">
             <span className="text-xs text-[#888580]">Ugo</span>
