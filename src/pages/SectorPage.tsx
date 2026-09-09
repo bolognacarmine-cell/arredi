@@ -1,4 +1,5 @@
 import { useParams, Link } from "react-router-dom";
+import { useEffect } from "react";
 import { resolveImageUrl } from "../lib/cloudinary";
 import { SECTORS } from "../data";
 import { useProjects } from "../projectStore";
@@ -27,6 +28,22 @@ const steps = [
 ]
 
 export default function SectorPage() {
+  useEffect(() => {
+    window.scrollTo(0, 0)
+    document.documentElement.scrollTop = 0
+    document.body.scrollTop = 0
+    setTimeout(() => {
+      window.scrollTo(0, 0)
+      document.documentElement.scrollTop = 0
+      document.body.scrollTop = 0
+    }, 100)
+    setTimeout(() => {
+      window.scrollTo(0, 0)
+      document.documentElement.scrollTop = 0
+      document.body.scrollTop = 0
+    }, 300)
+  }, [])
+
   const { id } = useParams<{ id: string }>();
   const sector = SECTORS.find((s) => s.id === id);
   const projects = useProjects()

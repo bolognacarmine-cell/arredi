@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Link, useLocation, Outlet } from "react-router-dom"
 
 const nav = [
@@ -12,6 +12,22 @@ const nav = [
 ]
 
 export default function AdminLayout() {
+  useEffect(() => {
+    window.scrollTo(0, 0)
+    document.documentElement.scrollTop = 0
+    document.body.scrollTop = 0
+    setTimeout(() => {
+      window.scrollTo(0, 0)
+      document.documentElement.scrollTop = 0
+      document.body.scrollTop = 0
+    }, 100)
+    setTimeout(() => {
+      window.scrollTo(0, 0)
+      document.documentElement.scrollTop = 0
+      document.body.scrollTop = 0
+    }, 300)
+  }, [])
+
   const location = useLocation()
   const [sideOpen, setSideOpen] = useState(true)
 

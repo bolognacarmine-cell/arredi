@@ -3,6 +3,22 @@ import { Link } from "react-router-dom"
 import { getPosts, getSectors, type Post, type BlogSector } from "../api/blogApi"
 
 export default function Blog() {
+  useEffect(() => {
+    window.scrollTo(0, 0)
+    document.documentElement.scrollTop = 0
+    document.body.scrollTop = 0
+    setTimeout(() => {
+      window.scrollTo(0, 0)
+      document.documentElement.scrollTop = 0
+      document.body.scrollTop = 0
+    }, 100)
+    setTimeout(() => {
+      window.scrollTo(0, 0)
+      document.documentElement.scrollTop = 0
+      document.body.scrollTop = 0
+    }, 300)
+  }, [])
+
   const [posts, setPosts] = useState<Post[]>([])
   const [sectors, setSectors] = useState<BlogSector[]>([])
   const [selectedSector, setSelectedSector] = useState<string | null>(null)
