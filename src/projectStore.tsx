@@ -15,8 +15,11 @@ const PROJECTS_STORAGE_KEY = "farcom-projects"
 const PROJECTS_EVENT = "farcom-projects-updated"
 
 function normalizeProject(project: Project | ApiProject, index: number): ProjectRecord {
+  // Ensure id field is set from _id if id is missing (MongoDB compatibility)
+  const id = project.id || project._id || String(index)
   return {
     ...project,
+    id,
     status: project.status ?? "completato",
     featured: project.featured ?? index < 6,
   }
@@ -38,14 +41,16 @@ export function readProjects(): ProjectRecord[] {
     const parsed = JSON.parse(storedValue) as Project[]
     if (!Array.isArray(parsed) || parsed.length === 0) return defaultProjects
 
-    // Check if any project has local image paths that don't exist
+    // Check if any project has known missing local images
+    const knownMissingImages = ['/barber-farcom1.jpg']
     const hasInvalidImages = parsed.some(p =>
-      p.image?.startsWith('/') && !p.image.startsWith('/videos/')
+      knownMissingImages.includes(p.image) ||
+      p.gallery?.some(g => knownMissingImages.includes(g))
     )
 
-    // If projects have invalid local images, clear localStorage and use defaults
+    // If projects have known missing local images, clear localStorage and use defaults
     if (hasInvalidImages) {
-      console.log('[projectStore] Clearing localStorage due to invalid image paths')
+      console.log('[projectStore] Clearing localStorage due to known missing image paths')
       window.localStorage.removeItem(PROJECTS_STORAGE_KEY)
       return defaultProjects
     }
