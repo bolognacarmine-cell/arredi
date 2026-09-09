@@ -80,7 +80,7 @@ export async function saveProjectsToProject(projects: ProjectRecord[]) {
 }
 
 export function useProjects() {
-  const [projects, setProjects] = useState<ProjectRecord[]>(() => readProjects())
+  const [projects, setProjects] = useState<ProjectRecord[]>(() => defaultProjects)
 
   useEffect(() => {
     const syncProjects = () => setProjects(readProjects())
@@ -94,8 +94,15 @@ export function useProjects() {
     }
   }, [])
 
-  // Load projects from API on mount
+  // Load projects from API on mount (only if API is configured)
   useEffect(() => {
+    // Check if API is configured (VITE_API_BASE_URL is set)
+    const isApiConfigured = !!import.meta.env.VITE_API_BASE_URL
+    if (!isApiConfigured) {
+      console.log('[projectStore] API not configured, using default projects')
+      return
+    }
+
     async function loadProjectsFromApi() {
       try {
         const apiProjects = await getProjectsApi()
