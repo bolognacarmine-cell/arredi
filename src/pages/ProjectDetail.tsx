@@ -13,7 +13,9 @@ export default function ProjectDetail() {
     setActiveImg(0)
   }, [id])
 
-  const total = project?.gallery.length ?? 0
+  // Ensure gallery exists and is an array
+  const gallery = project?.gallery || []
+  const total = gallery.length
 
   const goPrev = useCallback(() => {
     setActiveImg((i) => (i <= 0 ? total - 1 : i - 1))
@@ -73,7 +75,7 @@ export default function ProjectDetail() {
                 key={`${project.id}-${activeImg}`}
                 src={resolveImageUrl(
                   {
-                    src: project.gallery[activeImg],
+                    src: gallery[activeImg],
                     publicId:
                       project.galleryCloudinaryPublicIds?.[activeImg] ??
                       null,
@@ -135,7 +137,7 @@ export default function ProjectDetail() {
                   </div>
 
                   <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-                    {project.gallery.map((_, i) => (
+                    {gallery.map((_, i) => (
                       <button
                         key={i}
                         type="button"
@@ -155,7 +157,7 @@ export default function ProjectDetail() {
 
             {total > 1 && (
               <div className="flex lg:flex-col gap-3 max-h-[520px] overflow-y-auto lg:max-h-none pr-0 lg:pr-1 scrollbar-thin">
-                {project.gallery.map((img, i) => (
+                {gallery.map((img, i) => (
                   <button
                     key={i}
                     onClick={() => setActiveImg(i)}

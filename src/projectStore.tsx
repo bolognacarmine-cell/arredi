@@ -15,8 +15,9 @@ const PROJECTS_STORAGE_KEY = "farcom-projects"
 const PROJECTS_EVENT = "farcom-projects-updated"
 
 function normalizeProject(project: Project | ApiProject, index: number): ProjectRecord {
-  // Ensure id field is set from _id if id is missing (MongoDB compatibility)
-  const id = project.id || project._id || String(index)
+  // Preserve original id if it exists, otherwise use _id (MongoDB compatibility)
+  // Only generate a fallback if both are missing
+  const id = project.id || project._id || `project-${index}`
   return {
     ...project,
     id,
