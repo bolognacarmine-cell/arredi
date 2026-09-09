@@ -39,11 +39,18 @@ export default function AdminLayout() {
   }, [])
 
   const location = useLocation()
-  const [sideOpen, setSideOpen] = useState<boolean>(() =>
-    !isSidebarClosedByDefault(location.pathname),
-  )
+  const [sideOpen, setSideOpen] = useState<boolean>(false)
   const [isMobile, setIsMobile] = useState(false)
   const sidebarRef = useRef<HTMLElement | null>(null)
+  const sideOpenRef = useRef(sideOpen)
+  sideOpenRef.current = sideOpen
+
+  function computeDefaultFromRoute() {
+    const p =
+      (location && location.pathname) ||
+      (typeof window !== "undefined" ? window.location.pathname : "/admin")
+    return !isSidebarClosedByDefault(p)
+  }
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768)
@@ -53,8 +60,20 @@ export default function AdminLayout() {
   }, [])
 
   useEffect(() => {
-    setSideOpen(!isSidebarClosedByDefault(location.pathname))
+    const wantOpen = computeDefaultFromRoute()
+    if (sideOpenRef.current !== wantOpen) {
+      setSideOpen(wantOpen)
+    }
   }, [location.pathname])
+
+  useEffect(() => {
+    const wantOpen = computeDefaultFromRoute()
+    setSideOpen(wantOpen)
+    const t = window.setTimeout(() => {
+      if (sideOpenRef.current !== wantOpen) setSideOpen(wantOpen)
+    }, 50)
+    return () => window.clearTimeout(t)
+  }, [])
 
   const closeSidebar = () => setSideOpen(false)
   const toggleSidebar = () => setSideOpen((prev) => !prev)
@@ -73,12 +92,12 @@ export default function AdminLayout() {
   )
 
   return (
-    <div className="min-h-screen bg-[#F0EDE6] w-full relative">
+    <div className="min-h-screen bg-[#F0EDE6] w-full relative overflow-x-hidden">
       {/* BACKDROP (click outside to close) */}
       <div
         aria-hidden="true"
         onClick={closeSidebar}
-        className={`fixed inset-0 z-40 bg-black/40 transition-opacity duration-200 pointer-events-none ${
+        className={`fixed inset-0 z-48 bg-black/45 transition-opacity duration-200 pointer-events-none ${
           sideOpen
             ? "opacity-100 pointer-events-auto animate-fade-in"
             : "opacity-0"
@@ -90,11 +109,11 @@ export default function AdminLayout() {
         type="button"
         onClick={toggleSidebar}
         aria-label="Apri menu di navigazione"
-        aria-expanded="false"
+        aria-expanded={sideOpen}
         aria-controls={SIDEBAR_ID}
         className={`fixed left-0 top-1/2 -translate-y-1/2 z-30 ${
           sideOpen ? "opacity-0 pointer-events-none" : "opacity-100"
-        } transition-opacity duration-200`}
+        } transition-opacity duration-200 ease-out`}
       >
         <span
           className="bg-[#1A1A18] text-white w-10 h-12 rounded-r-xl shadow-xl border border-white/10 flex items-center justify-center text-lg hover:bg-[#2c2c28] active:bg-[#3a3a35] transition-colors touch-min-48"
@@ -104,18 +123,21 @@ export default function AdminLayout() {
         </span>
       </button>
 
-      {/* SIDEBAR DRAWER — overlay fixed puro in ogni viewport */}
+      {/* SIDEBAR DRAWER — overlay fixed puro in ogni viewport (display:hidden quando chiusa) */}
       <aside
         id={SIDEBAR_ID}
         ref={sidebarRef}
         role="navigation"
         aria-label="Menu amministrazione"
         aria-hidden={!sideOpen}
-        className={`fixed top-0 left-0 h-screen z-50 bg-[#1A1A18] flex flex-col shadow-2xl transition-transform duration-200 ease-out ${
+        className={`fixed top-0 left-0 h-screen z-49 bg-[#1A1A18] flex flex-col shadow-2xl ease-out ${
           isMobile ? "w-64" : "w-56"
-        }`}
+        } transition-[transform,opacity,visibility] duration-200`}
         style={{
           transform: sideOpen ? "translateX(0)" : `translateX(-${sidebarW}px)`,
+          opacity: sideOpen ? 1 : 0,
+          visibility: sideOpen ? "visible" : "hidden",
+          pointerEvents: sideOpen ? "auto" : "none",
         }}
       >
         <div className="h-14 flex items-center justify-between px-4 border-b border-white/10 flex-shrink-0">

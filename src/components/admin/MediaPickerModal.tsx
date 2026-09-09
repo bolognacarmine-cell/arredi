@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from "react"
 import React from "react"
+import { createPortal } from "react-dom"
 import { resolveImageUrl } from "../../lib/cloudinary"
 import { getMedia, type Media } from "../../api/mediaApi"
 import {
@@ -249,9 +250,23 @@ export default function MediaPickerModal({
   const inGallery = (url: string) => galleryUrls.includes(url)
   const isCover = (url: string) => mode === "cover" && currentCoverUrl === url
 
-  return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 animate-fade-in">
-      <div className="bg-white w-full max-w-6xl max-h-[90vh] overflow-hidden border border-[#DDD9D0] shadow-2xl flex flex-col">
+  useEffect(() => {
+    if (typeof document === "undefined") return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [])
+
+  const modal = (
+    <div
+      className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-2 sm:p-4 animate-fade-in"
+      role="dialog"
+      aria-modal="true"
+      aria-label={mode === "cover" ? "Scegli immagine di copertina" : "Aggiungi immagini alla gallery"}
+    >
+      <div className="bg-white w-full max-w-6xl max-h-[95vh] overflow-hidden border border-[#DDD9D0] shadow-2xl flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-[#EAE7E0] bg-white">
           <div>
@@ -408,4 +423,7 @@ export default function MediaPickerModal({
       </div>
     </div>
   )
+
+  if (typeof document === "undefined") return null
+  return createPortal(modal, document.body)
 }
