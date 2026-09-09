@@ -262,7 +262,7 @@ export default function Home() {
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />
                   <span className="absolute top-4 left-4 bg-[#E69138] text-[#1A1A2E] text-xs px-3 py-1 font-semibold">
-                    {p.sectorId.charAt(0).toUpperCase() + p.sectorId.slice(1)}
+                    {p.sectorId ? p.sectorId.charAt(0).toUpperCase() + p.sectorId.slice(1) : ''}
                   </span>
                 </div>
                 <div className="p-4 sm:p-5 md:p-6">

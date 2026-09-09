@@ -78,7 +78,7 @@ export default function AdminQuotes() {
       <div className="flex gap-1 mb-5">
         {([
           ["all", "Tutti"],
-          ...statuses.map((s) => [s, s.charAt(0).toUpperCase() + s.slice(1)]),
+          ...statuses.map((s) => [s, s ? s.charAt(0).toUpperCase() + s.slice(1) : s]),
         ] as const).map(([k, l]) => (
           <button
             key={k}

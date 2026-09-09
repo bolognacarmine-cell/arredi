@@ -134,7 +134,7 @@ export default function ReviewsSection() {
                   aria-hidden="true"
                   className="w-8 h-8 sm:w-9 md:w-10 sm:h-9 md:h-10 rounded-full bg-gradient-to-br from-[#E69138] to-[#F0B46C] text-[#1A1A2E] font-bold text-xs sm:text-sm flex items-center justify-center shrink-0"
                 >
-                  {r.name.charAt(0)}
+                  {r.name?.charAt(0) || '?'}
                 </div>
                 <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                   <span className="font-semibold text-xs sm:text-sm text-[#1A1A2E] truncate">

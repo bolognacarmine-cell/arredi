@@ -224,7 +224,7 @@ export default function AdminSettings() {
                 : "border-transparent text-[#888580] hover:text-[#1A1A18]"
             }`}
           >
-            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            {tab ? tab.charAt(0).toUpperCase() + tab.slice(1) : ''}
           </button>
         ))}
       </div>
