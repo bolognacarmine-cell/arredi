@@ -207,6 +207,8 @@ export default function AdminMedia() {
   } | null>(null)
   const [recentUploads, setRecentUploads] = useState<Media[]>([])
   const [recentFilter, setRecentFilter] = useState<UploadCategory | "all">("all")
+  const [libraryFilter, setLibraryFilter] = useState<"Tutte" | "Prodotti" | "BANNER" | "SFONDI">("Tutte")
+  const [searchQuery, setSearchQuery] = useState("")
 
   const mainFileInputRef = useRef<HTMLInputElement | null>(null)
   const gridFileInputRef = useRef<HTMLInputElement | null>(null)
@@ -220,11 +222,16 @@ export default function AdminMedia() {
   const everythingReady = file && configured && presetOk && !busy
   const [lastUploadIdRef, setLastUploadIdRef] = useState<string | null>(null)
 
-  // Carica upload recenti all'avvio dall'API
+  // Carica upload recenti all'avvio dall'API con filtri
   useEffect(() => {
     async function loadRecentUploads() {
       try {
-        const media = await getMedia()
+        const filters: { category?: string; library?: string; search?: string } = {}
+        if (recentFilter !== "all") filters.category = recentFilter
+        if (libraryFilter !== "Tutte") filters.library = libraryFilter
+        if (searchQuery) filters.search = searchQuery
+        
+        const media = await getMedia(filters)
         setRecentUploads(media)
       } catch (error) {
         console.error("Error loading recent uploads:", error)
@@ -233,7 +240,7 @@ export default function AdminMedia() {
       }
     }
     loadRecentUploads()
-  }, [])
+  }, [recentFilter, libraryFilter, searchQuery])
 
   // Salva upload nel database quando completato con successo
   useEffect(() => {
@@ -1279,11 +1286,28 @@ export default function AdminMedia() {
 
       {/* GALLERY ESISTENTI */}
       <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-display text-lg font-medium text-[#1A1A18]">
-            Upload recenti
-          </h2>
-          <div className="flex gap-2">
+        <div className="flex flex-col gap-4 mb-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-display text-lg font-medium text-[#1A1A18]">
+              Upload recenti
+            </h2>
+          </div>
+          
+          {/* Filtri */}
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Library Dropdown */}
+            <select
+              value={libraryFilter}
+              onChange={(e) => setLibraryFilter(e.target.value as "Tutte" | "Prodotti" | "BANNER" | "SFONDI")}
+              className="px-3 py-1.5 text-sm border border-[#DDD9D0] rounded bg-white text-[#1A1A18] focus:border-[#1B4332] focus:outline-none focus:ring-2 focus:ring-[#1B4332]/20"
+            >
+              <option value="Tutte">Libreria: Tutte</option>
+              <option value="Prodotti">Prodotti</option>
+              <option value="BANNER">BANNER</option>
+              <option value="SFONDI">SFONDI</option>
+            </select>
+
+            {/* Category Filters */}
             {(["all", "hero", "sector", "project", "gallery"] as const).map((cat) => (
               <button
                 key={cat}
@@ -1294,9 +1318,19 @@ export default function AdminMedia() {
                     : "bg-white border border-[#DDD9D0] text-[#4A4A46] hover:border-[#1B4332]"
                 }`}
               >
-                {cat === "all" ? "Tutti" : categoryConfig[cat as UploadCategory].label}
+                {cat === "all" ? "Tutte" : categoryConfig[cat as UploadCategory].label}
               </button>
             ))}
+
+            {/* Search Input */}
+            <input
+              type="text"
+              placeholder="Cerca per nome..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="px-3 py-1.5 text-sm border border-[#DDD9D0] rounded bg-white text-[#1A1A18] focus:border-[#1B4332] focus:outline-none focus:ring-2 focus:ring-[#1B4332]/20"
+            />
+
             {recentUploads.length > 0 && (
               <button
                 onClick={() => {
@@ -1316,9 +1350,7 @@ export default function AdminMedia() {
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-            {recentUploads
-              .filter((u) => recentFilter === "all" || u.category === recentFilter)
-              .map((upload) => (
+            {recentUploads.map((upload) => (
                 <div
                   key={upload._id}
                   className="group relative bg-[#EAE7E0] aspect-square overflow-hidden border border-[#DDD9D0] hover:border-[#1B4332] transition-colors"
@@ -1336,6 +1368,11 @@ export default function AdminMedia() {
                       <p className="text-white/80 text-[10px] truncate">
                         {upload.width}×{upload.height}
                       </p>
+                      {upload.usedInProjects && upload.usedInProjects.length > 0 && (
+                        <p className="text-white/90 text-[10px] truncate">
+                          Usata in {upload.usedInProjects.length} progetti
+                        </p>
+                      )}
                       <button
                         onClick={() => {
                           const ok = copyToClipboard(upload.cloudinaryUrl)

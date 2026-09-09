@@ -8,6 +8,9 @@ export interface Media {
   cloudinaryPublicId: string
   title?: string
   category: "hero" | "sector" | "project" | "gallery"
+  library?: "Tutte" | "Prodotti" | "BANNER" | "SFONDI"
+  tags?: string[]
+  usedInProjects?: string[]
   width?: number
   height?: number
   format?: string
@@ -27,7 +30,11 @@ export interface CreateMediaData {
   bytes?: number
 }
 
-export async function getMedia(category?: string): Promise<Media[]> {
+export async function getMedia(filters?: {
+  category?: string
+  library?: string
+  search?: string
+}): Promise<Media[]> {
   // Se l'API non è disponibile (es. su Render), ritorna array vuoto
   if (!isApiAvailable) {
     return []
@@ -35,7 +42,9 @@ export async function getMedia(category?: string): Promise<Media[]> {
 
   try {
     const url = new URL(`${API_BASE_URL}/api/media`)
-    if (category) url.searchParams.append("category", category)
+    if (filters?.category) url.searchParams.append("category", filters.category)
+    if (filters?.library && filters.library !== "Tutte") url.searchParams.append("library", filters.library)
+    if (filters?.search) url.searchParams.append("search", filters.search)
 
     const response = await fetch(url.toString())
     const result = await response.json()

@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from "react"
 import React from "react"
 import { resolveImageUrl } from "../../lib/cloudinary"
+import { getMedia, type Media } from "../../api/mediaApi"
 import {
   type RecentUpload,
   type UploadCategory,
@@ -10,7 +11,6 @@ type PickerMode = "cover" | "gallery"
 
 interface MediaPickerModalProps {
   mode: PickerMode
-  recentUploads: RecentUpload[]
   currentCoverUrl: string
   galleryUrls: string[]
   onClose: () => void
@@ -183,15 +183,48 @@ const ImageThumbnail = React.memo(function ImageThumbnail({
 
 export default function MediaPickerModal({
   mode,
-  recentUploads,
   currentCoverUrl,
   galleryUrls,
   onClose,
   onPickAsCover,
   onAddToGallery,
 }: MediaPickerModalProps) {
+  const [mediaItems, setMediaItems] = useState<Media[]>([])
+  const [loading, setLoading] = useState(true)
   const [categoryFilter, setCategoryFilter] = useState<UploadCategory | "all">("all")
+  const [libraryFilter, setLibraryFilter] = useState<"Tutte" | "Prodotti" | "BANNER" | "SFONDI">("Tutte")
   const [searchQuery, setSearchQuery] = useState("")
+
+  // Carica media dall'API all'apertura della modale
+  useEffect(() => {
+    async function loadMedia() {
+      setLoading(true)
+      try {
+        const media = await getMedia()
+        setMediaItems(media)
+      } catch (error) {
+        console.error("Error loading media:", error)
+        setMediaItems([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadMedia()
+  }, [])
+
+  // Converti Media in RecentUpload per compatibilità con callback esistenti
+  const recentUploads: RecentUpload[] = useMemo(() => {
+    return mediaItems.map((media: Media) => ({
+      id: media._id,
+      publicId: media.cloudinaryPublicId,
+      secureUrl: media.cloudinaryUrl,
+      category: media.category,
+      timestamp: new Date(media.createdAt).getTime(),
+      width: media.width || 0,
+      height: media.height || 0,
+      titleHint: media.title,
+    }))
+  }, [mediaItems])
 
   const filteredUploads = useMemo(() => {
     return recentUploads.filter((upload) => {
@@ -244,6 +277,21 @@ export default function MediaPickerModal({
 
         {/* Filters */}
         <div className="flex items-center gap-3 px-5 py-3 border-b border-[#EAE7E0] bg-[#FAFAF7] flex-wrap">
+          {/* Library Dropdown */}
+          <div className="flex items-center gap-2">
+            <label className="text-xs font-medium text-[#888580]">Libreria:</label>
+            <select
+              value={libraryFilter}
+              onChange={(e) => setLibraryFilter(e.target.value as "Tutte" | "Prodotti" | "BANNER" | "SFONDI")}
+              className="px-3 py-1.5 text-sm border border-[#DDD9D0] rounded bg-white text-[#1A1A18] focus:border-[#1B4332] focus:outline-none focus:ring-2 focus:ring-[#1B4332]/20"
+            >
+              <option value="Tutte">Tutte</option>
+              <option value="Prodotti">Prodotti</option>
+              <option value="BANNER">BANNER</option>
+              <option value="SFONDI">SFONDI</option>
+            </select>
+          </div>
+
           {/* Category Dropdown */}
           <div className="flex items-center gap-2">
             <label className="text-xs font-medium text-[#888580]">Categoria:</label>
@@ -281,7 +329,13 @@ export default function MediaPickerModal({
 
         {/* Image Grid */}
         <div className="flex-1 overflow-y-auto p-5 bg-[#F7F5F0]">
-          {filteredUploads.length === 0 ? (
+          {loading ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+              {Array.from({ length: 12 }).map((_, i) => (
+                <ImageSkeleton key={i} />
+              ))}
+            </div>
+          ) : filteredUploads.length === 0 ? (
             <div className="text-center py-16">
               <div className="text-5xl text-[#DDD9D0] mb-4">🔍</div>
               <p className="text-[#4A4A46] mb-2">
@@ -299,6 +353,7 @@ export default function MediaPickerModal({
                 <button
                   onClick={() => {
                     setCategoryFilter("all")
+                    setLibraryFilter("Tutte")
                     setSearchQuery("")
                   }}
                   className="text-xs text-[#1B4332] font-medium hover:underline"

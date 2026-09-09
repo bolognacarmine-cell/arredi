@@ -226,9 +226,8 @@ export default function AdminProjects() {
   }, [location.pathname, routeId, projects])
 
   useEffect(() => {
-    if (showForm || showMediaPicker) {
-      setRecentUploads(getRecentUploads())
-    }
+    // MediaPickerModal ora carica i dati internamente dall'API
+    // Non serve più caricare recentUploads qui
   }, [showForm, showMediaPicker])
 
   const set = (key: keyof FormState, value: string | boolean) =>
@@ -844,7 +843,6 @@ export default function AdminProjects() {
           {showMediaPicker && (
             <MediaPickerModal
               mode={showMediaPicker}
-              recentUploads={recentUploads}
               currentCoverUrl={form.immagine}
               galleryUrls={galleryItems.map((item) => item.url)}
               onClose={() => setShowMediaPicker(null)}

@@ -3,10 +3,28 @@ import { Media } from '../models/Media.js';
 
 const router = Router();
 
-// GET all media
+// GET all media with optional filtering
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const media = await Media.find().sort({ createdAt: -1 });
+    const { library, search, category } = req.query;
+    const filter: any = {};
+    
+    if (library && library !== 'Tutte') {
+      filter.library = library;
+    }
+    
+    if (category) {
+      filter.category = category;
+    }
+    
+    if (search) {
+      filter.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { cloudinaryPublicId: { $regex: search, $options: 'i' } },
+      ];
+    }
+    
+    const media = await Media.find(filter).sort({ createdAt: -1 });
     res.json(media);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch media' });
