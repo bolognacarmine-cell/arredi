@@ -52,11 +52,10 @@ app.use('/api/blog', blogRoutes);
   }
 })();
 
-// Serve index.html for all other non-API routes (SPA fallback wildcard)
+// Serve index.html for all other non-API routes (SPA fallback)
 // - DEVE essere dopo /api/* e gli static assets, altrimenti intercetta le chiamate API
-// - Matcha QUALSIASI percorso (0, 1, 2, 3+ segmenti) ma /api/* /assets/* non arrivano mai qui
-//   perché le route /api/* sono registrate PRIMA in middleware stack
-app.get('/*', (req, res, next) => {
+// - Usa middleware invece di wildcard route per compatibilità con path-to-regexp
+app.use((req, res, next) => {
   const accept = req.headers.accept || ''
   const url = req.originalUrl || req.url || '/'
   const hasExt = /\.[a-zA-Z0-9]{1,10}(?:\?|#|$)/.test(url)
