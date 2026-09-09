@@ -89,7 +89,6 @@ export const companyLinks = [
   { label: "Progetti", to: "/progetti" },
   { label: "Preventivo", to: "/preventivo" },
   { label: "Contatti", to: "/contatti" },
-  { label: "Area Admin", to: "/admin" },
 ] as const
 
 export function readSiteSettings(): SiteSettings {
