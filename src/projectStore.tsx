@@ -38,6 +38,18 @@ export function readProjects(): ProjectRecord[] {
     const parsed = JSON.parse(storedValue) as Project[]
     if (!Array.isArray(parsed) || parsed.length === 0) return defaultProjects
 
+    // Check if any project has local image paths that don't exist
+    const hasInvalidImages = parsed.some(p =>
+      p.image?.startsWith('/') && !p.image.startsWith('/videos/')
+    )
+
+    // If projects have invalid local images, clear localStorage and use defaults
+    if (hasInvalidImages) {
+      console.log('[projectStore] Clearing localStorage due to invalid image paths')
+      window.localStorage.removeItem(PROJECTS_STORAGE_KEY)
+      return defaultProjects
+    }
+
     return normalizeProjects(parsed)
   } catch {
     return defaultProjects
