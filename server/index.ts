@@ -12,10 +12,10 @@ import quoteRoutes from './routes/quotes.js';
 import siteConfigRoutes from './routes/siteConfig.js';
 import blogRoutes from './routes/blog.js';
 
-dotenv.config();
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+dotenv.config({ path: path.resolve(__dirname, 'server.env') });
 
 const app = express();
 const PORT = process.env.PORT || 3002;

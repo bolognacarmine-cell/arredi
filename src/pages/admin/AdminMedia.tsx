@@ -167,8 +167,9 @@ async function uploadToCloudinary(
 }
 
 export default function AdminMedia() {
-  const { projects } = useProjects() as { projects: any[] }
-  const allImages = (projects || []).flatMap((p) =>
+  const projectsData = useProjects()
+  const projects = Array.isArray(projectsData?.projects) ? projectsData.projects : []
+  const allImages = projects.flatMap((p) =>
     (p.gallery || []).map((url: string, i: number) => ({ url, project: p.title, id: `${p.id}-${i}` })),
   )
   const runningOnLocalhostDev =

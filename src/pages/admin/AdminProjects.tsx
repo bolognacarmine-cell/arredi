@@ -16,6 +16,7 @@ import {
   type RecentUpload,
 } from "../../lib/mediaRecent"
 import { resolveImageUrl } from "../../lib/cloudinary"
+import MediaPickerModal from "../../components/admin/MediaPickerModal"
 
 const statusColor: Record<ProjectRecord["status"], string> = {
   "in lavorazione": "bg-amber-100 text-amber-700",
@@ -841,169 +842,15 @@ export default function AdminProjects() {
           </div>
 
           {showMediaPicker && (
-            <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 animate-fade-in">
-              <div className="bg-white w-full max-w-5xl max-h-[85vh] overflow-hidden border border-[#DDD9D0] shadow-2xl flex flex-col">
-                <div className="flex items-center justify-between px-5 py-4 border-b border-[#EAE7E0]">
-                  <div>
-                    <h3 className="font-display text-lg font-medium text-[#1A1A18]">
-                      {showMediaPicker === "cover"
-                        ? "Scegli immagine di copertina"
-                        : "Aggiungi immagini alla Gallery"}
-                    </h3>
-                    <p className="text-xs text-[#888580] mt-0.5">
-                      {showMediaPicker === "cover"
-                        ? "Clicca su una foto per usarla come copertina del progetto"
-                        : "Clicca su una o più foto per aggiungerle alla gallery (il carosello del progetto)"}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs text-[#888580]">
-                      {recentUploads.length}{" "}
-                      {recentUploads.length === 1
-                        ? "elemento"
-                        : "elementi"}
-                      {" "}nella libreria
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setShowMediaPicker(null)}
-                      className="text-sm text-[#888580] hover:text-[#1A1A18] transition-colors"
-                    >
-                      ✕ Chiudi
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex-1 overflow-y-auto p-5 bg-[#F7F5F0]">
-                  {recentUploads.length === 0 ? (
-                    <div className="text-center py-16">
-                      <div className="text-5xl text-[#DDD9D0] mb-4">🗂️</div>
-                      <p className="text-[#4A4A46] mb-2">
-                        Libreria Media ancora vuota
-                      </p>
-                      <p className="text-xs text-[#888580] mb-4">
-                        Vai in{" "}
-                        <span className="font-medium">
-                          Admin → Libreria Media
-                        </span>{" "}
-                        per caricare le prime immagini su Cloudinary.
-                      </p>
-                      <Link
-                        to="/admin/media"
-                        className="inline-block bg-[#1B4332] text-white text-sm px-4 py-2 hover:bg-[#143326] transition-colors"
-                      >
-                        → Vai a Libreria Media
-                      </Link>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                      {recentUploads.map((upload) => {
-                        const inGallery = galleryItems.some(
-                          (it) => it.url === upload.secureUrl,
-                        )
-                        const isCover =
-                          showMediaPicker === "cover" &&
-                          form.immagine === upload.secureUrl
-                        return (
-                          <button
-                            key={upload.id}
-                            type="button"
-                            onClick={() =>
-                              showMediaPicker === "cover"
-                                ? pickAsCover(upload)
-                                : addToGallery(upload)
-                            }
-                            className={`relative aspect-square overflow-hidden border-2 transition-all group ${
-                              isCover
-                                ? "border-[#1B4332] ring-2 ring-[#1B4332]/40"
-                                : inGallery
-                                  ? "border-[#1B4332]/60 opacity-70"
-                                  : "border-transparent hover:border-[#1B4332]"
-                            }`}
-                          >
-                            <img
-                              src={resolveImageUrl(
-                                {
-                                  src: upload.secureUrl,
-                                  publicId: upload.publicId,
-                                },
-                                {
-                                  width: 480,
-                                  height: 480,
-                                  objectFit: "cover",
-                                },
-                              )}
-                              alt=""
-                              className="w-full h-full object-cover"
-                            />
-                            {isCover && (
-                              <div className="absolute inset-0 bg-[#1B4332]/70 flex items-center justify-center">
-                                <span className="text-white text-xs font-bold">
-                                  ✓ Copertina attuale
-                                </span>
-                              </div>
-                            )}
-                            {!isCover && (
-                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                                <span className="bg-white text-[#1B4332] text-xs font-bold px-3 py-1.5 rounded shadow">
-                                  {showMediaPicker === "cover"
-                                    ? "Usa come copertina"
-                                    : inGallery
-                                      ? "Aggiungi ancora"
-                                      : "＋ Aggiungi"}
-                                </span>
-                              </div>
-                            )}
-                            <div className="absolute bottom-1 left-1 right-1 flex justify-between items-end">
-                              <span
-                                className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${
-                                  upload.category === "project"
-                                    ? "bg-[#1B4332]/80 text-white"
-                                    : upload.category === "gallery"
-                                      ? "bg-[#B5965A]/80 text-white"
-                                      : upload.category === "sector"
-                                        ? "bg-[#4A4A46]/80 text-white"
-                                        : "bg-[#888580]/80 text-white"
-                                }`}
-                              >
-                                {upload.category}
-                              </span>
-                              <span className="text-[10px] bg-white/90 px-1.5 py-0.5 rounded text-[#4A4A46]">
-                                {upload.width}×{upload.height}
-                              </span>
-                            </div>
-                          </button>
-                        )
-                      })}
-                    </div>
-                  )}
-                </div>
-
-                {showMediaPicker === "gallery" && galleryItems.length > 0 && (
-                  <div className="border-t border-[#EAE7E0] px-5 py-3 bg-white flex items-center justify-between">
-                    <span className="text-sm text-[#4A4A46]">
-                      {galleryItems.length}{" "}
-                      {galleryItems.length === 1
-                        ? "immagine"
-                        : "immagini"}{" "}
-                      nella gallery ·{" "}
-                      <span className="text-[#1B4332] font-medium">
-                        {galleryItems.length > 1
-                          ? "saranno mostrate come carosello ✓"
-                          : "aggiungine almeno un'altra per il carosello"}
-                      </span>
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setShowMediaPicker(null)}
-                      className="bg-[#1B4332] text-white text-sm px-4 py-2 hover:bg-[#143326] transition-colors"
-                    >
-                      Fatto ✓
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
+            <MediaPickerModal
+              mode={showMediaPicker}
+              recentUploads={recentUploads}
+              currentCoverUrl={form.immagine}
+              galleryUrls={galleryItems.map((item) => item.url)}
+              onClose={() => setShowMediaPicker(null)}
+              onPickAsCover={pickAsCover}
+              onAddToGallery={addToGallery}
+            />
           )}
         </div>
       )}
