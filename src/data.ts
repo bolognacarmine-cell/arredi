@@ -229,9 +229,9 @@ tags: ["Bancone", "Specchiere", "Zona attesa"],
     year: 2023,
     description:
       "Salone di parrucchieri con 8 postazioni lavoro, zona shampoo con 4 lavandini integrati e reception panoramica.",
-    image: "/barber-farcom1.jpg",
+    image: "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?w=800&h=600&fit=crop",
     gallery: [
-      "/barber-farcom1.jpg",
+      "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?w=1200&h=800&fit=crop",
     ],
     tags: ["Postazioni", "Lavandini", "Reception"],
     materials: "Laccato opaco bianco, acciaio inox, vetro fumé",

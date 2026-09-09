@@ -33,7 +33,7 @@ export default function Hero() {
       <HeroBackgroundVideo
         className="z-0"
         basePath="/videos/farcom-hero"
-        poster="/barber-farcom1.jpg"
+        poster="/barber-farcom.jpg"
         fallbackImg="/barber-farcom.jpg"
         // Video HERO — sempre sopra la piega → priority=true per caricare SUBITO
         // (non vogliamo lazy: l'utente vede subito il poster se usa preload=none, non il video)
