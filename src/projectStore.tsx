@@ -80,7 +80,7 @@ export async function saveProjectsToProject(projects: ProjectRecord[]) {
 }
 
 export function useProjects() {
-  const [projects, setProjects] = useState<ProjectRecord[]>(() => defaultProjects)
+  const [projects, setProjects] = useState<ProjectRecord[]>(() => readProjects())
 
   useEffect(() => {
     const syncProjects = () => setProjects(readProjects())
@@ -99,23 +99,23 @@ export function useProjects() {
     // Check if API is configured (VITE_API_BASE_URL is set)
     const isApiConfigured = !!import.meta.env.VITE_API_BASE_URL
     if (!isApiConfigured) {
-      console.log('[projectStore] API not configured, using default projects')
+      console.log('[projectStore] API not configured, using localStorage/default projects')
       return
     }
 
     async function loadProjectsFromApi() {
       try {
         const apiProjects = await getProjectsApi()
-        // If API returns empty array, fallback to default projects directly
+        // If API returns empty array, fallback to localStorage/default projects
         if (apiProjects.length === 0) {
-          setProjects(defaultProjects)
+          setProjects(readProjects())
         } else {
           setProjects(normalizeProjects(apiProjects))
         }
       } catch (err) {
         console.error("Error loading projects from API:", err)
-        // Fallback to default projects if API fails
-        setProjects(defaultProjects)
+        // Fallback to localStorage/default projects if API fails
+        setProjects(readProjects())
       }
     }
 
