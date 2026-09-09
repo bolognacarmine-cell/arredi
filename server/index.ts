@@ -38,10 +38,54 @@ app.use('/api/quotes', quoteRoutes);
 app.use('/api/site-config', siteConfigRoutes);
 app.use('/api/blog', blogRoutes);
 
-// Serve index.html for all other routes (SPA) - Express 5 syntax
-app.get('{/:path}', (req, res) => {
-  res.sendFile(path.resolve(__dirname, '../../dist/index.html'));
-});
+// Retrocompatibilità: endpoint Vite dev /__admin/projects in produzione
+// Esegue lo stesso salvataggio batch ma su MongoDB invece di src/data.ts
+(async () => {
+  try {
+    const mod = await import('./routes/projects.js') as any;
+    const handler: any = mod?.handleBatchReplace;
+    if (typeof handler === 'function') {
+      app.post('/__admin/projects', handler);
+    }
+  } catch (e) {
+    console.warn('Impossibile montare /__admin/projects alias:', e);
+  }
+})();
+
+// Serve index.html for all other non-API routes (SPA fallback wildcard)
+// - DEVE essere dopo /api/* e gli static assets, altrimenti intercetta le chiamate API
+// - Matcha QUALSIASI percorso (0, 1, 2, 3+ segmenti) ma /api/* /assets/* non arrivano mai qui
+//   perché le route /api/* sono registrate PRIMA in middleware stack
+app.get('*', (req, res, next) => {
+  const accept = req.headers.accept || ''
+  const url = req.originalUrl || req.url || '/'
+  const hasExt = /\.[a-zA-Z0-9]{1,10}(?:\?|#|$)/.test(url)
+
+  if (
+    req.method !== 'GET' ||
+    url.startsWith('/api/') ||
+    url.startsWith('/__admin') ||
+    url.startsWith('/.well-known') ||
+    url.startsWith('/assets/') ||
+    url.startsWith('/videos/') ||
+    url.startsWith('/images/') ||
+    (hasExt && !url.endsWith('.html'))
+  ) {
+    return next()
+  }
+
+  if (!accept.includes('text/html') && !accept.includes('*/*') && accept.length > 0) {
+    return next()
+  }
+
+  const indexPath = path.resolve(__dirname, '../../dist/index.html')
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      console.error('[SPA fallback] sendFile failed:', err.message)
+      res.status(500).json({ error: 'SPA index.html missing. Run npm run build first.' })
+    }
+  })
+})
 
 // Start server after DB connection
 connectDB().then(() => {

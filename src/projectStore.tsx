@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react"
 import { PROJECTS, type Project } from "./data"
-import { getProjects as getProjectsApi, type Project as ApiProject } from "./api/projectsApi"
+import {
+  getProjects as getProjectsApi,
+  replaceAllProjects,
+  type Project as ApiProject,
+} from "./api/projectsApi"
 
 export type ProjectRecord = Project & {
   status: "bozza" | "in lavorazione" | "completato"
@@ -9,7 +13,6 @@ export type ProjectRecord = Project & {
 
 const PROJECTS_STORAGE_KEY = "farcom-projects"
 const PROJECTS_EVENT = "farcom-projects-updated"
-const PROJECTS_API_PATH = "/__admin/projects"
 
 function normalizeProject(project: Project | ApiProject, index: number): ProjectRecord {
   return {
@@ -56,24 +59,7 @@ export function resetProjects() {
 }
 
 export async function saveProjectsToProject(projects: ProjectRecord[]) {
-  const response = await fetch(PROJECTS_API_PATH, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(projects),
-  })
-
-  if (!response.ok) {
-    const errorText = await response.text()
-    throw new Error(errorText || "Salvataggio progetti non riuscito.")
-  }
-
-  return (await response.json()) as {
-    ok: true
-    filePath: string
-    backupPath: string | null
-  }
+  return await replaceAllProjects(projects as unknown as ApiProject[])
 }
 
 export function useProjects() {
