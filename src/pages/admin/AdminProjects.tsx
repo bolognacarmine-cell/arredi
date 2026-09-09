@@ -399,6 +399,10 @@ export default function AdminProjects() {
   }
 
   const handleEdit = (project: ProjectRecord) => {
+    if (!project.id) {
+      console.error('Cannot edit project: missing id', project)
+      return
+    }
     setEditingId(project.id)
     setForm(projectToForm(project))
     setShowForm(true)
