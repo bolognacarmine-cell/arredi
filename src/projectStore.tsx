@@ -95,27 +95,39 @@ export function useProjects() {
     }
   }, [])
 
-  // Load projects from API on mount (only if API is configured)
+  // Load projects from API on mount (only if API is configured and explicitly enabled)
   useEffect(() => {
     // Check if API is configured (VITE_API_BASE_URL is set)
     const isApiConfigured = !!import.meta.env.VITE_API_BASE_URL
-    if (!isApiConfigured) {
-      console.log('[projectStore] API not configured, using localStorage/default projects')
+    // Also check if API usage is explicitly enabled via env var
+    const useApi = import.meta.env.VITE_USE_API === 'true'
+    
+    // Temporarily disable API to use default projects with valid Unsplash images
+    // TODO: Re-enable after syncing API projects with valid images
+    if (!isApiConfigured || !useApi) {
+      console.log('[projectStore] API not configured or not enabled, using localStorage/default projects')
       return
     }
+
+    console.log('[projectStore] API temporarily disabled to use default projects with valid images')
+    return
 
     async function loadProjectsFromApi() {
       try {
         const apiProjects = await getProjectsApi()
+        console.log('[projectStore] API returned projects:', apiProjects.length, apiProjects)
         // If API returns empty array, fallback to localStorage/default projects
         if (apiProjects.length === 0) {
+          console.log('[projectStore] API returned empty, using localStorage/default projects')
           setProjects(readProjects())
         } else {
+          console.log('[projectStore] Using API projects')
           setProjects(normalizeProjects(apiProjects))
         }
       } catch (err) {
         console.error("Error loading projects from API:", err)
         // Fallback to localStorage/default projects if API fails
+        console.log('[projectStore] API failed, using localStorage/default projects')
         setProjects(readProjects())
       }
     }
