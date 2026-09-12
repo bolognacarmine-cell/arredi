@@ -22,179 +22,48 @@ export function CookieBanner() {
     <div
       style={{
         position: 'fixed',
-        bottom: '24px',
-        right: '24px',
+        bottom: 24,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        backgroundColor: '#0f172a',
+        color: '#e2e8f0',
+        padding: '18px 28px',
+        borderRadius: 12,
         zIndex: 9999,
-        animation: 'slideUp 0.5s ease-out',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 14,
+        alignItems: 'center',
+        maxWidth: 520,
+        width: 'calc(100% - 48px)',
+        boxShadow: '0 10px 40px rgba(0, 0, 0, 0.4)',
+        border: '1px solid rgba(255, 255, 255, 0.08)',
       }}
     >
-      <div
+      <p style={{ margin: 0, fontSize: 14, lineHeight: 1.6, textAlign: 'center', color: '#cbd5e1' }}>
+        Questo sito utilizza i cookie per migliorare la tua esperienza.
+        Continuando a navigare o cliccando su "Accetta", acconsenti all'uso dei cookie.
+        {' '}
+        <a href="/cookie" style={{ color: '#4fc3f7', textDecoration: 'none', borderBottom: '1px solid transparent' }}>
+          Cookie Policy
+        </a>
+      </p>
+      <button
+        onClick={handleAccept}
         style={{
-          background:
-            'linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.98) 100%)',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
-          borderRadius: '16px',
-          padding: '20px 24px',
-          width: '420px',
-          maxWidth: 'calc(100vw - 48px)',
-          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
-          color: '#e2e8f0',
+          backgroundColor: '#4fc3f7',
+          color: '#0f172a',
+          border: 'none',
+          padding: '11px 32px',
+          borderRadius: 10,
+          fontSize: 14,
+          fontWeight: 600,
+          cursor: 'pointer',
+          boxShadow: '0 4px 14px rgba(79, 195, 247, 0.35)',
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            marginBottom: '12px',
-          }}
-        >
-          <div
-            style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '8px',
-              background:
-                'linear-gradient(135deg, #4fc3f7 0%, #29b6f6 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '18px',
-            }}
-          >
-            🍪
-          </div>
-          <span
-            style={{
-              fontWeight: 600,
-              fontSize: '15px',
-              color: '#e2e8f0',
-            }}
-          >
-            Privacy
-          </span>
-        </div>
-
-        <h3
-          style={{
-            margin: '0 0 10px 0',
-            fontSize: '16px',
-            fontWeight: 600,
-            color: '#e2e8f0',
-          }}
-        >
-          La tua privacy è importante
-        </h3>
-
-        <p
-          style={{
-            margin: '0 0 16px 0',
-            fontSize: '14px',
-            lineHeight: 1.6,
-            color: '#cbd5e1',
-          }}
-        >
-          Questo sito utilizza i cookie per migliorare la tua esperienza.
-          Continuando a navigare o cliccando su "Accetta", acconsenti all'uso
-          dei cookie.
-        </p>
-
-        <a
-          href="/cookie"
-          style={{
-            display: 'inline-block',
-            marginBottom: '16px',
-            fontSize: '13px',
-            color: '#4fc3f7',
-            textDecoration: 'none',
-            borderBottom: '1px solid transparent',
-            transition: 'border-color 200ms',
-          }}
-          onMouseOver={(e) =>
-            (e.currentTarget.style.borderColor = '#4fc3f7')
-          }
-          onMouseOut={(e) =>
-            (e.currentTarget.style.borderColor = 'transparent')
-          }
-          onClick={(e) => {
-            e.preventDefault();
-            window.location.href = '/cookie';
-          }}
-        >
-          Leggi la Cookie Policy →
-        </a>
-
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <button
-            onClick={handleAccept}
-            style={{
-              flex: 1,
-              background: 'linear-gradient(135deg, #4fc3f7 0%, #29b6f6 100%)',
-              color: '#0f172a',
-              border: 'none',
-              padding: '12px 20px',
-              borderRadius: '10px',
-              fontSize: '14px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              transition: 'transform 200ms, box-shadow 200ms',
-              boxShadow: '0 4px 14px rgba(79, 195, 247, 0.35)',
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow =
-                '0 6px 20px rgba(79, 195, 247, 0.45)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow =
-                '0 4px 14px rgba(79, 195, 247, 0.35)';
-            }}
-          >
-            Accetta tutti
-          </button>
-          <button
-            style={{
-              flex: 1,
-              background: 'transparent',
-              color: '#94a3b8',
-              border: '1px solid rgba(148, 163, 184, 0.3)',
-              padding: '12px 20px',
-              borderRadius: '10px',
-              fontSize: '14px',
-              fontWeight: 500,
-              cursor: 'pointer',
-              transition: 'border-color 200ms, color 200ms',
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.borderColor = '#4fc3f7';
-              e.currentTarget.style.color = '#e2e8f0';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.borderColor =
-                'rgba(148, 163, 184, 0.3)';
-              e.currentTarget.style.color = '#94a3b8';
-            }}
-          >
-            Rifiuta
-          </button>
-        </div>
-      </div>
-
-      <style>{`
-        @keyframes slideUp {
-          from {
-            opacity: 0;
-            transform: translateY(40px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
+        Accetta
+      </button>
     </div>
   );
 }
