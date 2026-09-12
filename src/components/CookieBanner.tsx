@@ -1,6 +1,28 @@
 import { useEffect, useState } from 'react';
 
-export function CookieBanner() {
+const COOKIE_CONSENT_KEY = 'cookie_consent_accepted';
+
+export function resetCookieConsent(): void {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(COOKIE_CONSENT_KEY);
+}
+
+export function acceptCookies(): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(COOKIE_CONSENT_KEY, 'true');
+}
+
+export function rejectCookies(): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(COOKIE_CONSENT_KEY, 'false');
+}
+
+export function hasCookieConsent(): boolean {
+  if (typeof window === 'undefined') return true;
+  return localStorage.getItem(COOKIE_CONSENT_KEY) === 'true';
+}
+
+export default function CookieBanner() {
   const [showBanner, setShowBanner] = useState(false);
 
   useEffect(() => {
@@ -12,7 +34,7 @@ export function CookieBanner() {
   }, []);
 
   const handleAccept = () => {
-    localStorage.setItem('cookie_consent_accepted', 'true');
+    acceptCookies();
     setShowBanner(false);
   };
 
