@@ -101,16 +101,11 @@ export function useProjects() {
     const isApiConfigured = !!import.meta.env.VITE_API_BASE_URL
     // Also check if API usage is explicitly enabled via env var
     const useApi = import.meta.env.VITE_USE_API === 'true'
-    
-    // Temporarily disable API to use default projects with valid Unsplash images
-    // TODO: Re-enable after syncing API projects with valid images
+
     if (!isApiConfigured || !useApi) {
       console.log('[projectStore] API not configured or not enabled, using localStorage/default projects')
       return
     }
-
-    console.log('[projectStore] API temporarily disabled to use default projects with valid images')
-    return
 
     async function loadProjectsFromApi() {
       try {
