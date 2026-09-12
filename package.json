@@ -5,7 +5,7 @@
   "main": "server/index.js",
   "scripts": {
     "dev": "concurrently \"vite\" \"nodemon --exec tsx server/index.ts\"",
-    "build": "vite build && cd server && npm install && tsc",
+    "build": "vite build && tsc -p server",
     "start": "node server/dist/index.js",
     "postinstall": "cd server && npm install"
   },
@@ -35,5 +35,8 @@
     "tsx": "^4.20.3",
     "typescript": "^5.8.3",
     "vite": "^7.0.6"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
