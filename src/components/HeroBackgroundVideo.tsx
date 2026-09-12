@@ -10,6 +10,8 @@ type Props = {
   className?: string
 
   priority?: boolean // true = carica SUBITO (per hero above the fold), false = lazy con IO
+
+  onVideoReady?: () => void // Callback when video is ready and playing
 }
 
 /**
@@ -31,6 +33,8 @@ export default function HeroBackgroundVideo({
   className = "",
 
   priority = true,
+
+  onVideoReady,
 }: Props) {
   const videoRef = useRef<HTMLVideoElement | null>(null)
 
@@ -94,6 +98,29 @@ export default function HeroBackgroundVideo({
       // non fatal
     }
   }, [priority])
+
+  // Callback when video is ready and playing
+  useEffect(() => {
+    if (!onVideoReady) return
+    const v = videoRef.current
+    if (!v) return
+
+    const handleCanPlay = () => {
+      onVideoReady()
+    }
+
+    const handlePlaying = () => {
+      onVideoReady()
+    }
+
+    v.addEventListener('canplay', handleCanPlay)
+    v.addEventListener('playing', handlePlaying)
+
+    return () => {
+      v.removeEventListener('canplay', handleCanPlay)
+      v.removeEventListener('playing', handlePlaying)
+    }
+  }, [onVideoReady])
 
   const onVideoError = () => {
     setShowFallback(true)

@@ -1,13 +1,37 @@
 import { Link } from "react-router-dom"
 
+import { useEffect, useState } from "react"
+
 import HeroBackgroundVideo from "./HeroBackgroundVideo"
 import { useInViewOnce } from "../hooks/useInViewOnce"
 import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion"
+
+// Configurable delay constants (in milliseconds)
+const HERO_TEXT_INITIAL_DELAY = 3000 // 3 seconds after video is ready
+const HERO_RIGHT_TEXT_DELAY = 200 // 200ms after left text starts
 
 export default function Hero() {
   // Above-the-fold: consideriamo l’hero “in view” subito per non dipendere da IO.
   const { ref, inView } = useInViewOnce<HTMLDivElement>({ initialInView: true })
   const reducedMotion = usePrefersReducedMotion()
+
+  // State for video ready and text visibility
+  const [videoReady, setVideoReady] = useState(false)
+  const [showText, setShowText] = useState(false)
+
+  // Handle video ready callback
+  const handleVideoReady = () => {
+    setVideoReady(true)
+  }
+
+  // Delay text appearance after video is ready
+  useEffect(() => {
+    if (!videoReady) return
+    const timer = setTimeout(() => {
+      setShowText(true)
+    }, HERO_TEXT_INITIAL_DELAY)
+    return () => clearTimeout(timer)
+  }, [videoReady])
 
   return (
     <section
@@ -38,6 +62,7 @@ export default function Hero() {
         // Video HERO — sempre sopra la piega → priority=true per caricare SUBITO
         // (non vogliamo lazy: l'utente vede subito il poster se usa preload=none, non il video)
         priority={true}
+        onVideoReady={handleVideoReady}
       />
 
       {/* Overlay + glow animato (no-layout, solo transform/opacity) */}
@@ -71,144 +96,121 @@ export default function Hero() {
         className="relative z-10 w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 pt-12 sm:pt-16 md:pt-20 lg:pt-28 pb-6 sm:pb-10 md:pb-14 lg:pb-16"
       >
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 md:gap-8 lg:gap-16 items-center">
-          {/* Copy */}
+          {/* Copy - Split into left and right reveal sections */}
           <div className="lg:col-span-7 max-w-full lg:max-w-none">
-            {/* Trust badge */}
+            {/* Left text section - reveals from left to right */}
             <div
-              className={`flex items-center gap-1.5 sm:gap-2 md:gap-3 lg:gap-4 mb-3 sm:mb-4 md:mb-5 lg:mb-7 ${
-                inView ? "opacity-0 fade-in-up" : "opacity-0"
-              }`}
-              style={{ animationDelay: "120ms", animationFillMode: "forwards" }}
+              className={`overflow-hidden ${showText ? 'reveal-left' : 'opacity-0'}`}
+              style={{ animationDelay: '0ms', animationFillMode: 'forwards' }}
             >
-              <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2">
-                <span className="relative flex h-1.5 sm:h-2 md:h-2.5 w-1.5 sm:w-2 md:w-2.5">
-                  <span className="absolute inline-flex h-full w-full rounded-full bg-[#E69138] opacity-60 animate-ping" />
-                  <span className="relative inline-flex h-1.5 sm:h-2 md:h-2.5 w-1.5 sm:w-2 md:w-2.5 rounded-full bg-[#E69138]" />
-                </span>
-                <span className="text-[#E69138] text-[9px] sm:text-[10px] md:text-xs font-semibold tracking-[0.14em] sm:tracking-[0.16em] md:tracking-[0.2em] lg:tracking-[0.24em] uppercase">
-                  Arredi su misura
-                </span>
-              </div>
-              <div className="h-px w-6 sm:w-8 md:w-12 lg:w-16 bg-gradient-to-r from-[#E69138]/60 to-transparent" />
-            </div>
-
-            <h1
-              className={`font-display text-[1.25rem] sm:text-[1.5rem] md:text-4xl lg:text-5xl xl:text-7xl font-bold text-white leading-[1.2] sm:leading-[1.2] md:leading-[1.1] lg:leading-[1.05] tracking-tight ${
-                inView ? "opacity-0 title-reveal" : "opacity-0"
-              }`}
-              style={{ animationDelay: "260ms", animationFillMode: "forwards" }}
-            >
-              Progettazione tecnica e{" "}
-              <span className="text-[#E69138]">artigianalità premium</span>.
-            </h1>
-
-            <div
-              className={`w-16 sm:w-20 md:w-24 h-1 bg-[#E69138] mt-3 sm:mt-4 md:mt-5 mb-4 sm:mb-5 md:mb-6 ${
-                inView ? "opacity-0 line-expand" : "opacity-0"
-              }`}
-              style={{ animationDelay: "520ms", animationFillMode: "forwards" }}
-            />
-
-            <p
-              className={`text-white/75 text-[11px] sm:text-[13px] md:text-base lg:text-lg leading-[1.6] sm:leading-[1.65] md:leading-relaxed max-w-xl ${
-                inView ? "opacity-0 slide-up" : "opacity-0"
-              }`}
-              style={{ animationDelay: "420ms", animationFillMode: "forwards" }}
-            >
-              Trasformiamo spazi commerciali in ambienti che comunicano fiducia:
-              dal concept 3D ai disegni esecutivi, fino alla posa in opera.
-              Tempi certi, materiali certificati, finiture impeccabili.
-            </p>
-
-            {/* CTA */}
-            <div
-              className={`flex flex-col sm:flex-row gap-2 sm:gap-3 md:gap-4 mt-4 sm:mt-5 md:mt-6 lg:mt-8 ${
-                inView ? "opacity-0 fade-in-up" : "opacity-0"
-              }`}
-              style={{ animationDelay: "720ms", animationFillMode: "forwards" }}
-            >
-              <Link
-                to="/preventivo"
-                className="group relative inline-flex items-center justify-center min-h-[40px] sm:min-h-[44px] md:min-h-[48px] bg-[#E69138] text-[#1A1A2E] text-[11px] sm:text-xs md:text-sm font-semibold px-3 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-2.5 md:py-3 lg:py-4 overflow-hidden shadow-lg shadow-[#E69138]/20 hover:scale-[1.03] hover:shadow-xl hover:shadow-[#E69138]/40 transition-all duration-300 ease-out glow-pulse magnetic-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E69138]"
-                aria-label="Richiedi un preventivo gratuito"
-              >
-                <span className="absolute inset-0 bg-[#D67F28] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <span className="relative z-10 flex items-center gap-1 sm:gap-1.5 md:gap-2">
-                  Richiedi un preventivo
-                  <svg
-                    className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 transform group-hover:translate-x-1 transition-transform duration-300"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17 8l4 4m0 0l-4 4m4-4H3"
-                    />
-                  </svg>
-                </span>
-              </Link>
-
-              <Link
-                to="/progetti"
-                className="group relative inline-flex items-center justify-center min-h-[40px] sm:min-h-[44px] md:min-h-[48px] border border-white/40 text-white text-[11px] sm:text-xs md:text-sm font-semibold px-3 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-2.5 md:py-3 lg:py-4 overflow-hidden hover:border-white/70 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-                aria-label="Vedi i progetti"
-              >
-                <span className="absolute inset-0 bg-white/10 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out origin-left" />
-                <span className="relative z-10">Guarda i progetti</span>
-              </Link>
-            </div>
-
-            {/* Micro-copy di conversione */}
-            <p
-              className={`text-white/60 text-[9px] sm:text-[10px] md:text-xs mt-2 sm:mt-3 md:mt-4 ${
-                inView ? "opacity-0 fade-in-up" : "opacity-0"
-              }`}
-              style={{ animationDelay: "860ms", animationFillMode: "forwards" }}
-            >
-              Risposta entro 24h lavorative. Nessun impegno.
-            </p>
-
-            {/* Trust row */}
-            <div
-              className={`flex flex-wrap items-center gap-x-2 sm:gap-x-3 md:gap-x-5 lg:gap-x-7 gap-y-1.5 sm:gap-y-2 md:gap-y-2.5 lg:gap-y-3 mt-3 sm:mt-4 md:mt-6 lg:mt-8 ${
-                inView ? "opacity-0 fade-in-up" : "opacity-0"
-              }`}
-              style={{ animationDelay: "980ms", animationFillMode: "forwards" }}
-            >
-              {[
-                ["25+ anni", "esperienza reale"],
-                ["FSC/CE", "materiali certificati"],
-                ["Tempi certi", "consegna puntuale"],
-              ].map(([a, b]) => (
-                <div key={a} className="flex items-center gap-1.5 sm:gap-2 md:gap-3">
-                  <span className="w-1 sm:w-1.5 md:w-1.5 h-1 sm:h-1.5 md:h-1.5 rounded-full bg-[#E69138]" aria-hidden="true" />
-                  <span className="text-white/85 text-[9px] sm:text-[10px] md:text-xs font-semibold tracking-wide">
-                    {a}
-                    <span className="text-white/55 font-medium"> · {b}</span>
+              {/* Trust badge */}
+              <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 lg:gap-4 mb-3 sm:mb-4 md:mb-5 lg:mb-7">
+                <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2">
+                  <span className="relative flex h-1.5 sm:h-2 md:h-2.5 w-1.5 sm:w-2 md:w-2.5">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-[#E69138] opacity-60 animate-ping" />
+                    <span className="relative inline-flex h-1.5 sm:h-2 md:h-2.5 w-1.5 sm:w-2 md:w-2.5 rounded-full bg-[#E69138]" />
+                  </span>
+                  <span className="text-[#E69138] text-[9px] sm:text-[10px] md:text-xs font-semibold tracking-[0.14em] sm:tracking-[0.16em] md:tracking-[0.2em] lg:tracking-[0.24em] uppercase">
+                    Arredi su misura
                   </span>
                 </div>
-              ))}
+                <div className="h-px w-6 sm:w-8 md:w-12 lg:w-16 bg-gradient-to-r from-[#E69138]/60 to-transparent" />
+              </div>
+
+              <h1 className="font-display text-[1.25rem] sm:text-[1.5rem] md:text-4xl lg:text-5xl xl:text-7xl font-bold text-white leading-[1.2] sm:leading-[1.2] md:leading-[1.1] lg:leading-[1.05] tracking-tight">
+                Progettazione tecnica e{" "}
+                <span className="text-[#E69138]">artigianalità premium</span>.
+              </h1>
+
+              <div className="w-16 sm:w-20 md:w-24 h-1 bg-[#E69138] mt-3 sm:mt-4 md:mt-5 mb-4 sm:mb-5 md:mb-6" />
+            </div>
+
+            {/* Right text section - reveals from right to left */}
+            <div
+              className={`overflow-hidden ${showText ? 'reveal-right' : 'opacity-0'}`}
+              style={{ animationDelay: `${HERO_RIGHT_TEXT_DELAY}ms`, animationFillMode: 'forwards' }}
+            >
+              <p className="text-white/75 text-[11px] sm:text-[13px] md:text-base lg:text-lg leading-[1.6] sm:leading-[1.65] md:leading-relaxed max-w-xl">
+                Trasformiamo spazi commerciali in ambienti che comunicano fiducia:
+                dal concept 3D ai disegni esecutivi, fino alla posa in opera.
+                Tempi certi, materiali certificati, finiture impeccabili.
+              </p>
+
+              {/* CTA */}
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 md:gap-4 mt-4 sm:mt-5 md:mt-6 lg:mt-8">
+                <Link
+                  to="/preventivo"
+                  className="group relative inline-flex items-center justify-center min-h-[40px] sm:min-h-[44px] md:min-h-[48px] bg-[#E69138] text-[#1A1A2E] text-[11px] sm:text-xs md:text-sm font-semibold px-3 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-2.5 md:py-3 lg:py-4 overflow-hidden shadow-lg shadow-[#E69138]/20 hover:scale-[1.03] hover:shadow-xl hover:shadow-[#E69138]/40 transition-all duration-300 ease-out glow-pulse magnetic-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E69138]"
+                  aria-label="Richiedi un preventivo gratuito"
+                >
+                  <span className="absolute inset-0 bg-[#D67F28] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <span className="relative z-10 flex items-center gap-1 sm:gap-1.5 md:gap-2">
+                    Richiedi un preventivo
+                    <svg
+                      className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 transform group-hover:translate-x-1 transition-transform duration-300"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17 8l4 4m0 0l-4 4m4-4H3"
+                      />
+                    </svg>
+                  </span>
+                </Link>
+
+                <Link
+                  to="/progetti"
+                  className="group relative inline-flex items-center justify-center min-h-[40px] sm:min-h-[44px] md:min-h-[48px] border border-white/40 text-white text-[11px] sm:text-xs md:text-sm font-semibold px-3 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-2.5 md:py-3 lg:py-4 overflow-hidden hover:border-white/70 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                  aria-label="Vedi i progetti"
+                >
+                  <span className="absolute inset-0 bg-white/10 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out origin-left" />
+                  <span className="relative z-10">Guarda i progetti</span>
+                </Link>
+              </div>
+
+              {/* Micro-copy di conversione */}
+              <p className="text-white/60 text-[9px] sm:text-[10px] md:text-xs mt-2 sm:mt-3 md:mt-4">
+                Risposta entro 24h lavorative. Nessun impegno.
+              </p>
+
+              {/* Trust row */}
+              <div className="flex flex-wrap items-center gap-x-2 sm:gap-x-3 md:gap-x-5 lg:gap-x-7 gap-y-1.5 sm:gap-y-2 md:gap-y-2.5 lg:gap-y-3 mt-3 sm:mt-4 md:mt-6 lg:mt-8">
+                {[
+                  ["25+ anni", "esperienza reale"],
+                  ["FSC/CE", "materiali certificati"],
+                  ["Tempi certi", "consegna puntuale"],
+                ].map(([a, b]) => (
+                  <div key={a} className="flex items-center gap-1.5 sm:gap-2 md:gap-3">
+                    <span className="w-1 sm:w-1.5 md:w-1.5 h-1 sm:h-1.5 md:h-1.5 rounded-full bg-[#E69138]" aria-hidden="true" />
+                    <span className="text-white/85 text-[9px] sm:text-[10px] md:text-xs font-semibold tracking-wide">
+                      {a}
+                      <span className="text-white/55 font-medium"> · {b}</span>
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
           {/* Visual / proof */}
           <div className="lg:col-span-5 hidden lg:block">
             <div
-              className={`relative ${inView ? "opacity-0 float-up" : "opacity-0"}`}
-              style={{ animationDelay: "820ms", animationFillMode: "forwards" }}
+              className={`relative ${showText ? "float-up" : "opacity-0"}`}
+              style={{ animationDelay: "400ms", animationFillMode: "forwards" }}
             >
               {/* Frame geometrico */}
               <div
-                className="absolute -top-6 -right-6 w-64 h-64 border border-[#E69138]/25 geometric-appear hidden lg:block"
-                style={{ animationDelay: "760ms", animationFillMode: "forwards" }}
+                className={`absolute -top-6 -right-6 w-64 h-64 border border-[#E69138]/25 hidden lg:block ${showText ? "geometric-appear" : "opacity-0"}`}
+                style={{ animationDelay: "500ms", animationFillMode: "forwards" }}
                 aria-hidden="true"
               />
               <div
-                className="absolute top-8 right-10 w-44 h-44 border border-[#E69138]/15 geometric-appear hidden lg:block"
-                style={{ animationDelay: "900ms", animationFillMode: "forwards" }}
+                className={`absolute top-8 right-10 w-44 h-44 border border-[#E69138]/15 hidden lg:block ${showText ? "geometric-appear" : "opacity-0"}`}
+                style={{ animationDelay: "600ms", animationFillMode: "forwards" }}
                 aria-hidden="true"
               />
 

@@ -345,3 +345,33 @@ h1, h2, h3, h4 {
   }
 }
 
+@keyframes reveal-left-to-right {
+  0% {
+    clip-path: inset(0 100% 0 0);
+    opacity: 0;
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+}
+
+@keyframes reveal-right-to-left {
+  0% {
+    clip-path: inset(0 0 0 100%);
+    opacity: 0;
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+}
+
+.reveal-left {
+  animation: reveal-left-to-right 800ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.reveal-right {
+  animation: reveal-right-to-left 800ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
