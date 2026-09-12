@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
+import CookieBanner from "./components/CookieBanner";
 import Home from "./pages/Home";
 import SettoriList from "./pages/SettoriList";
 import SectorPage from "./pages/SectorPage";
@@ -74,6 +75,7 @@ export default function App() {
           </Route>
         </Routes>
         <Footer />
+        <CookieBanner />
       </AdminAuthProvider>
     </BrowserRouter>
   )

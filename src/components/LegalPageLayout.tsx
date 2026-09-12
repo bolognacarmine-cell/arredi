@@ -4,8 +4,10 @@ import LegalNav from "./legal/LegalNav"
 
 type LegalSection = {
   title: string
-  paragraphs?: string[]
+  paragraphs?: (string | React.ReactNode)[]
   customContent?: React.ReactNode
+  table?: React.ReactNode
+  action?: React.ReactNode
 }
 
 type LegalPageLayoutProps = {
@@ -67,11 +69,15 @@ export default function LegalPageLayout({
               {section.customContent ? (
                 <div className="mt-4">{section.customContent}</div>
               ) : (
-                <div className="mt-4 space-y-4 text-sm leading-relaxed text-[#4A4A46] md:text-base">
-                  {section.paragraphs?.map((paragraph) => (
-                    <p key={paragraph}>{paragraph}</p>
-                  ))}
-                </div>
+                <>
+                  <div className="mt-4 space-y-4 text-sm leading-relaxed text-[#4A4A46] md:text-base">
+                    {section.paragraphs?.map((paragraph, index) => (
+                      <p key={index}>{paragraph}</p>
+                    ))}
+                  </div>
+                  {section.table && <div className="mt-4">{section.table}</div>}
+                  {section.action && <div className="mt-4">{section.action}</div>}
+                </>
               )}
             </section>
           ))}
