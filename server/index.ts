@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -55,7 +55,7 @@ app.use('/api/blog', blogRoutes);
 // Serve index.html for all other non-API routes (SPA fallback)
 // - DEVE essere dopo /api/* e gli static assets, altrimenti intercetta le chiamate API
 // - Usa middleware invece di wildcard route per compatibilità con path-to-regexp
-app.use((req, res, next) => {
+app.use((req: Request, res: Response, next: NextFunction) => {
   const accept = req.headers.accept || ''
   const url = req.originalUrl || req.url || '/'
   const hasExt = /\.[a-zA-Z0-9]{1,10}(?:\?|#|$)/.test(url)
