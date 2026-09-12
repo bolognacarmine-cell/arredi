@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "concurrently \"vite\" \"nodemon --exec tsx server/index.ts\"",
     "build": "vite build && tsc -p server",
-    "start": "node server/dist/index.js"
+    "start": "node server/dist/index.js",
+    "postinstall": "cd server && npm install"
   },
   "keywords": [],
   "author": "",
