@@ -78,7 +78,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   }
 
   const indexPath = path.resolve(__dirname, '../../dist/index.html')
-  res.sendFile(indexPath, (err) => {
+  res.sendFile(indexPath, (err: Error | null) => {
     if (err) {
       console.error('[SPA fallback] sendFile failed:', err.message)
       res.status(500).json({ error: 'SPA index.html missing. Run npm run build first.' })
