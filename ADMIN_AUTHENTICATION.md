@@ -22,9 +22,8 @@ The following environment variables must be configured in Render:
 |----------|-------------|---------|
 | `MONGODB_URI` | MongoDB Atlas connection string | `mongodb+srv://...` |
 | `SESSION_SECRET` | Secret for session encryption | Random 32+ character string |
-| `ADMIN_RESET_SECRET` | Secret for password reset endpoint | Random 32+ character string |
-| `ADMIN_RESET_PASSWORD` | Default password for reset | `buongiorno` |
-| `ADMIN_EMAIL` | Admin user email | `admin@farcom.local` |
+| `ADMIN_RESET_PASSWORD` | Default password for reset (optional) | `Farcom2026` |
+| `ADMIN_EMAIL` | Admin user email (fixed) | `admin@farcom.local` |
 | `ADMIN_PASSWORD` | Admin user password | `Farcom2026` |
 | `ADMIN_NAME` | Admin user display name | `Admin Farcom` |
 | `NODE_ENV` | Environment mode | `production` |
@@ -33,6 +32,8 @@ The following environment variables must be configured in Render:
 ### Local Development Variables
 
 For local development, create `server/server.env` with the same variables.
+
+Note: `ADMIN_RESET_PASSWORD` is optional. If not set, the reset password defaults to "Farcom2026".
 
 ## File Structure
 
@@ -122,27 +123,33 @@ Get current authenticated admin user info.
 
 ### POST /api/admin/reset-admin-password
 
-Reset admin password (protected by secret).
-
-**Headers:**
-```
-X-Admin-Reset-Secret: <ADMIN_RESET_SECRET>
-```
+Reset admin password by providing the reset code "buongiorno".
 
 **Request:**
 ```json
 {
-  "email": "admin@farcom.local"
+  "email": "admin@farcom.local",
+  "resetCode": "buongiorno"
 }
 ```
 
-**Response:**
+**Response (Success):**
 ```json
 {
   "success": true,
-  "message": "Password admin resettata con successo"
+  "message": "Password resettata con successo"
 }
 ```
+
+**Response (Invalid Code):**
+```json
+{
+  "success": false,
+  "message": "Invalid reset code"
+}
+```
+
+**Note:** The reset code is "buongiorno" (fixed). The password will be reset to the value of `ADMIN_RESET_PASSWORD` environment variable or default to "Farcom2026".
 
 ## Frontend Integration
 
@@ -235,16 +242,17 @@ All admin API calls are protected by the `requireAdmin` middleware.
 
 ## Password Reset
 
-To reset admin password:
+To reset admin password, use the reset code "buongiorno":
 
 ```bash
 curl -X POST https://arredi.onrender.com/api/admin/reset-admin-password \
   -H "Content-Type: application/json" \
-  -H "X-Admin-Reset-Secret: <ADMIN_RESET_SECRET>" \
-  -d '{"email": "admin@farcom.local"}'
+  -d '{"email": "admin@farcom.local", "resetCode": "buongiorno"}'
 ```
 
-The password will be reset to the value of `ADMIN_RESET_PASSWORD` environment variable.
+The password will be reset to the value of `ADMIN_RESET_PASSWORD` environment variable or default to "Farcom2026".
+
+**Note:** The admin email is fixed at `admin@farcom.local` and cannot be changed.
 
 ## Maintenance
 

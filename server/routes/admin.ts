@@ -134,28 +134,25 @@ router.get('/me', (req: Request, res: Response) => {
 
 /**
  * POST /api/admin/reset-admin-password
- * Reset admin password to ADMIN_RESET_PASSWORD
- * Protected by ADMIN_RESET_SECRET header
+ * Reset admin password by providing the reset code "buongiorno"
  */
 router.post('/reset-admin-password', async (req: Request, res: Response) => {
   try {
-    const { email } = req.body;
-    const secret = req.headers['x-admin-reset-secret'] as string;
-
-    // Verify secret
-    const expectedSecret = process.env.ADMIN_RESET_SECRET;
-    if (!expectedSecret || secret !== expectedSecret) {
-      return res.status(403).json({ 
-        success: false, 
-        message: 'Unauthorized: Invalid or missing reset secret' 
-      });
-    }
+    const { email, resetCode } = req.body;
 
     // Validate email
     if (!email) {
       return res.status(400).json({ 
         success: false, 
         message: 'Email is required' 
+      });
+    }
+
+    // Validate reset code
+    if (!resetCode || resetCode !== 'buongiorno') {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Invalid reset code' 
       });
     }
 
@@ -176,15 +173,9 @@ router.post('/reset-admin-password', async (req: Request, res: Response) => {
       });
     }
 
-    // Reset password to environment variable value
-    const resetPassword = process.env.ADMIN_RESET_PASSWORD;
-    if (!resetPassword) {
-      return res.status(500).json({ 
-        success: false, 
-        message: 'Server configuration error: Reset password not configured' 
-      });
-    }
-
+    // Reset password to environment variable value or default
+    const resetPassword = process.env.ADMIN_RESET_PASSWORD || 'Farcom2026';
+    
     user.password = resetPassword;
     await user.save();
 
@@ -192,7 +183,7 @@ router.post('/reset-admin-password', async (req: Request, res: Response) => {
 
     res.json({ 
       success: true, 
-      message: 'Password admin resettata con successo'
+      message: 'Password resettata con successo'
     });
   } catch (error) {
     console.error('❌ Error resetting admin password:', error);
