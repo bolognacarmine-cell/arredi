@@ -1,7 +1,8 @@
 // Su Render il backend non è disponibile, disabilitiamo le chiamate API
 // In development, fallback to localhost:3002 if not configured
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3002"
-const isApiAvailable = !!API_BASE_URL
+// Use static data if API_BASE_URL is not explicitly set (GitHub Pages case)
+const isApiAvailable = !!import.meta.env.VITE_API_BASE_URL
 
 // Static data for GitHub Pages (no backend)
 import staticBlogPosts from '../data/blogPosts.json'
