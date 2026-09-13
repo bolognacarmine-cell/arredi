@@ -11,8 +11,11 @@ router.post('/login', async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
+    console.log(`🔐 Login attempt for email: ${email}`);
+
     // Validate input
     if (!email || !password) {
+      console.log(`❌ Login failed: Missing email or password`);
       return res.status(400).json({ 
         success: false, 
         message: 'Email and password are required' 
@@ -30,8 +33,12 @@ router.post('/login', async (req: Request, res: Response) => {
       });
     }
 
+    console.log(`✅ User found: ${user.email}, role: ${user.role}`);
+
     // Verify password with bcrypt
     const isPasswordValid = await user.comparePassword(password);
+    console.log(`🔐 Password validation result: ${isPasswordValid ? 'SUCCESS' : 'FAILED'}`);
+    
     if (!isPasswordValid) {
       console.log(`❌ Login attempt failed: Invalid password for email ${email}`);
       return res.status(401).json({ 
@@ -53,6 +60,9 @@ router.post('/login', async (req: Request, res: Response) => {
     if (req.session) {
       req.session.userId = user._id.toString();
       req.session.userRole = user.role;
+      console.log(`✅ Session set for user ${user.email}`);
+    } else {
+      console.log(`❌ Session object not available`);
     }
 
     console.log(`✅ Admin login successful: ${email}`);
