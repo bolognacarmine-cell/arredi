@@ -1,9 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 
-declare module 'express-session' {
-  interface SessionData {
-    userId?: string;
-    userRole?: 'user' | 'admin';
+export interface CustomSession {
+  userId?: string;
+  userRole?: 'user' | 'admin';
+}
+
+declare module 'express-serve-static-core' {
+  interface Request {
+    session?: CustomSession;
   }
 }
 
