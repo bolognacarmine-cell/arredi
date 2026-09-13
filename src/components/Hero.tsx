@@ -35,6 +35,7 @@ export default function Hero() {
 
   return (
     <section
+      id="hero"
       className="relative min-h-[100svh] overflow-hidden bg-[#1A1A2E] flex items-center"
       aria-label="Sezione introduttiva"
       style={{ paddingTop: "env(safe-area-inset-top)" }}

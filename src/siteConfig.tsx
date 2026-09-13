@@ -44,7 +44,7 @@ export const fallbackSiteSettings: SiteSettings = {
   addressLine1: "Via P. Vertaldi, 27",
   addressLine2: "81050 Macerata Campania (CE)",
   hoursWeek: "Lun-Ven 9:00-13:00 / 15:00-19:00",
-  hoursExtra: "Sabato su appuntamento",
+  hoursExtra: "Sabato 9-13",
   phone: "+39 0823 694427",
   phoneHref: "tel:+390823694427",
   whatsapp: "+39 329 4576079",

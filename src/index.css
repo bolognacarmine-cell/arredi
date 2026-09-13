@@ -37,6 +37,47 @@
   --border: #E5E5E7;
   --ring: #1A1A2E;
   --radius: 4px;
+  --header-height: 80px;
+}
+
+@media (min-width: 640px) {
+  :root {
+    --header-height: 88px;
+  }
+}
+
+@media (min-width: 768px) {
+  :root {
+    --header-height: 96px;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --header-height: 112px;
+  }
+}
+
+/* Add padding to main content to avoid header overlap */
+main {
+  padding-top: var(--header-height);
+}
+
+/* Fix scroll position for section anchors */
+section[id] {
+  scroll-margin-top: calc(var(--header-height) + 16px);
+}
+
+/* Ensure logo is never truncated */
+header a img,
+header nav a {
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: nowrap;
+}
+
+header nav {
+  overflow: visible;
 }
 
 html, body, #root {
@@ -71,8 +112,6 @@ body {
 * {
   box-sizing: border-box;
   max-width: 100%;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
 }
 
 h1, h2, h3, h4 {
@@ -80,8 +119,17 @@ h1, h2, h3, h4 {
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: -0.02em;
-  hyphens: auto;
-  -webkit-hyphens: auto;
+  hyphens: none;
+  -webkit-hyphens: none;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+p, span, div {
+  hyphens: none;
+  -webkit-hyphens: none;
+  overflow-wrap: normal;
+  word-break: normal;
 }
 
 /* Smartphone molto piccoli (320-375px) - iPhone SE, Pixel piccolo */
@@ -373,5 +421,84 @@ h1, h2, h3, h4 {
 
 .reveal-right {
   animation: reveal-right-to-left 800ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Experimental hero animations */
+@keyframes experimental-reveal-right-to-left {
+  0% {
+    clip-path: inset(0 100% 0 0);
+    opacity: 0;
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+}
+
+.experimental-reveal {
+  animation: experimental-reveal-right-to-left 1100ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.experimental-parallax {
+  will-change: transform;
+  transform: translate3d(0, 0, 0) scale(1.06);
+}
+
+/* Experimental Settori section animations */
+@keyframes slide-in-right {
+  0% {
+    transform: translateX(100px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.slide-in-right {
+  animation: slide-in-right 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Card hover interactions */
+.sector-card {
+  position: relative;
+  overflow: hidden;
+  will-change: transform;
+}
+
+.sector-card .sector-content {
+  transition: transform 500ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.sector-card:hover .sector-content {
+  transform: translateY(-8px);
+}
+
+.sector-card .sector-image {
+  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.sector-card:hover .sector-image {
+  transform: scale(1.05);
+}
+
+.sector-card .sector-cta {
+  position: relative;
+}
+
+.sector-card .sector-cta::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: currentColor;
+  transition: width 400ms ease-out;
+}
+
+.sector-card:hover .sector-cta::after {
+  width: 100%;
 }
 

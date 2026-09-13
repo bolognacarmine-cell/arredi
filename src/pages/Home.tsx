@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 
 import { SECTORS } from "../data"
 import { useProjects } from "../projectStore"
@@ -8,6 +8,19 @@ import { useProjects } from "../projectStore"
 import Hero from "../components/Hero"
 import ReviewsSection from "../components/ReviewsSection"
 import { resolveImageUrl } from "../lib/cloudinary"
+
+// Experimental mode: check URL parameter ?settoriTest=true or environment variable
+const ENABLE_EXPERIMENTAL_SETTORI =
+  typeof window !== 'undefined' &&
+  (new URLSearchParams(window.location.search).get('settoriTest') === 'true' ||
+   import.meta.env.VITE_ENABLE_EXPERIMENTAL_SETTORI === 'true')
+
+// Experimental configuration values
+const SETTORI_CONFIG = {
+  staggerDelay: 130, // ms between each card appearance
+  revealDuration: 700, // ms for curtain reveal animation
+  tiltMax: 8, // max tilt angle in degrees
+}
 
 // Custom Cursor Component
 const CustomCursor = () => {
@@ -43,6 +56,127 @@ const CustomCursor = () => {
         />
       ))}
     </>
+  )
+}
+
+// Sector Card Component with experimental effects
+function SectorCard({ sector, index, reversedIndex, experimental }: {
+  sector: typeof SECTORS[0]
+  index: number
+  reversedIndex: number
+  experimental: boolean
+}) {
+  const cardRef = useRef<HTMLAnchorElement>(null)
+  const [scrollX, setScrollX] = useState(0)
+
+  useEffect(() => {
+    if (!experimental) return
+
+    const handleScroll = () => {
+      if (!cardRef.current) return
+
+      const rect = cardRef.current.getBoundingClientRect()
+      const windowHeight = window.innerHeight
+
+      // Only animate when card is in view
+      if (rect.top < windowHeight && rect.bottom > 0) {
+        const scrollProgress = 1 - (rect.top / windowHeight)
+        // Move card from right to left during scroll
+        const maxMovement = -50 // pixels
+        setScrollX(scrollProgress * maxMovement)
+      }
+    }
+
+    let ticking = false
+    const throttledScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          handleScroll()
+          ticking = false
+        })
+        ticking = true
+      }
+    }
+
+    window.addEventListener('scroll', throttledScroll, { passive: true })
+    handleScroll() // Initial call
+
+    return () => {
+      window.removeEventListener('scroll', throttledScroll)
+    }
+  }, [experimental])
+
+  return (
+    <Link
+      ref={cardRef}
+      to={`/settori/${sector.id}`}
+      className={`group relative overflow-hidden bg-white aspect-[3/4] flex flex-col justify-end p-4 sm:p-5 md:p-6 ${
+        experimental ? 'sector-card' : ''
+      } ${
+        experimental
+          ? 'slide-in-right'
+          : 'fade-in-up glow-pulse magnetic-hover hover:shadow-2xl hover:shadow-[#E69138]/20 hover:-translate-y-1 sm:hover:-translate-y-2 transition-all duration-500 ease-out'
+      }`}
+      style={{
+        ...(experimental
+          ? {
+              animationDelay: `${reversedIndex * SETTORI_CONFIG.staggerDelay}ms`,
+              animationFillMode: 'forwards',
+              transform: `translateX(${scrollX}px)`,
+            }
+          : {
+              animationDelay: `${(index + 1) * 150}ms`,
+              animationFillMode: 'forwards',
+            }),
+      }}
+    >
+      <div className="absolute inset-0">
+        <img
+          src={resolveImageUrl(
+            {
+              src: sector.heroImage,
+              publicId: sector.heroImageCloudinaryPublicId ?? null,
+            },
+            {
+              width: 1200,
+              height: 1600,
+              objectFit: "cover",
+              gravity: "auto",
+            },
+          )}
+          alt={sector.label}
+          className={`w-full h-full object-cover ${
+            experimental ? 'sector-image' : 'group-hover:scale-110 transition-transform duration-700'
+          }`}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent sm:from-black/70 sm:via-black/20" />
+      </div>
+      <div
+        className={`relative z-10 ${
+          experimental ? 'sector-content' : ''
+        }`}
+      >
+        {/* Number indicator */}
+        {experimental && (
+          <span className="absolute -top-12 left-0 text-[#E69138] text-[10px] sm:text-xs font-mono font-semibold tracking-wider opacity-60">
+            {String(index + 1).padStart(2, '0')}
+          </span>
+        )}
+        <h3 className="font-display text-base sm:text-lg md:text-xl font-bold text-white mb-1 sm:mb-1.5 md:mb-2 leading-snug">
+          {sector.label}
+        </h3>
+        <p className="text-white/70 text-[11px] sm:text-xs leading-[1.65] sm:leading-[1.6] md:leading-relaxed line-clamp-2 mb-2 sm:mb-3 md:mb-4">
+          {sector.description}
+        </p>
+        <span
+          className={`inline-flex items-center min-h-[32px] sm:min-h-[36px] text-[#E69138] text-[10px] sm:text-xs font-medium tracking-wide ${
+            experimental ? 'sector-cta' : 'group-hover:tracking-widest transition-all'
+          }`}
+        >
+          Scopri di più →
+        </span>
+      </div>
+    </Link>
   )
 }
 
@@ -149,48 +283,19 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
-          {SECTORS.map((s, index) => (
-            <Link
-              key={s.id}
-              to={`/settori/${s.id}`}
-              className="group relative overflow-hidden bg-white aspect-[3/4] flex flex-col justify-end p-4 sm:p-5 md:p-6 hover:shadow-2xl hover:shadow-[#E69138]/20 hover:-translate-y-1 sm:hover:-translate-y-2 transition-all duration-500 ease-out fade-in-up glow-pulse magnetic-hover min-h-[40px] sm:min-h-[44px]"
-              style={{
-                animationDelay: `${(index + 1) * 150}ms`,
-                animationFillMode: "forwards",
-              }}
-            >
-              <div className="absolute inset-0">
-                <img
-                  src={resolveImageUrl(
-                    {
-                      src: s.heroImage,
-                      publicId: s.heroImageCloudinaryPublicId ?? null,
-                    },
-                    {
-                      width: 1200,
-                      height: 1600,
-                      objectFit: "cover",
-                      gravity: "auto",
-                    },
-                  )}
-                  alt={s.label}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent sm:from-black/70 sm:via-black/20" />
-              </div>
-              <div className="relative z-10">
-                <h3 className="font-display text-base sm:text-lg md:text-xl font-bold text-white mb-1 sm:mb-1.5 md:mb-2 leading-snug">
-                  {s.label}
-                </h3>
-                <p className="text-white/70 text-[11px] sm:text-xs leading-[1.65] sm:leading-[1.6] md:leading-relaxed line-clamp-2 mb-2 sm:mb-3 md:mb-4">
-                  {s.description}
-                </p>
-                <span className="inline-flex items-center min-h-[32px] sm:min-h-[36px] text-[#E69138] text-[10px] sm:text-xs font-medium tracking-wide group-hover:tracking-widest transition-all">
-                  Scopri di più →
-                </span>
-              </div>
-            </Link>
-          ))}
+          {SECTORS.map((s, index) => {
+            // Reverse index for right-to-left stagger (last card appears first)
+            const reversedIndex = SECTORS.length - 1 - index
+            return (
+              <SectorCard
+                key={s.id}
+                sector={s}
+                index={index}
+                reversedIndex={reversedIndex}
+                experimental={ENABLE_EXPERIMENTAL_SETTORI}
+              />
+            )
+          })}
         </div>
       </section>
 

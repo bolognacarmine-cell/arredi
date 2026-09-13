@@ -30,16 +30,34 @@ export default function Navbar() {
   if (isAdmin) return null
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40)
+    const updateHeaderBackground = () => {
+      const hero = document.getElementById('hero')
+      if (!hero) {
+        // Fallback: activate on scroll if hero not found
+        setScrolled(window.scrollY > 50)
+        return
+      }
 
-    window.addEventListener("scroll", onScroll)
+      const heroHeight = hero.offsetHeight
+      const TRIGGER_OFFSET = 150 // pixels from top to activate
+
+      // Activate background when we_scroll past the hero minus offset
+      setScrolled(window.scrollY > heroHeight - TRIGGER_OFFSET)
+    }
+
+    const onScroll = () => {
+      window.requestAnimationFrame(updateHeaderBackground)
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true })
+    updateHeaderBackground() // Initial check
 
     return () => window.removeEventListener("scroll", onScroll)
   }, [])
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
           ? "bg-[#FAFAFA]/95 backdrop-blur-md border-b border-[#E5E5E7]"
           : "bg-transparent"
@@ -47,11 +65,11 @@ export default function Navbar() {
       style={{ paddingTop: "env(safe-area-inset-top)" }}
     >
       <nav className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 flex items-center justify-between h-12 sm:h-14 md:h-16 lg:h-20">
-        <Link to="/" className="flex items-center">
+        <Link to="/" className="flex items-center overflow-visible">
           <img
             src="/logo-farcom.png"
             alt="Farcom Società Cooperativa"
-            className="h-8 sm:h-10 md:h-10 lg:h-12 w-auto object-contain"
+            className="h-8 sm:h-10 md:h-10 lg:h-12 w-auto object-contain overflow-visible"
           />
         </Link>
 

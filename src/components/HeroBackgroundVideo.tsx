@@ -1,5 +1,20 @@
 import { useEffect, useRef, useState } from "react"
 
+// Experimental mode: check URL parameter ?heroTest=true or environment variable
+const ENABLE_EXPERIMENTAL_HERO =
+  typeof window !== 'undefined' &&
+  (new URLSearchParams(window.location.search).get('heroTest') === 'true' ||
+   import.meta.env.VITE_ENABLE_EXPERIMENTAL_HERO === 'true')
+
+// Experimental configuration values
+const EXPERIMENTAL_CONFIG = {
+  revealDelay: 500, // ms before reveal starts
+  revealDuration: 1100, // ms for reveal animation
+  parallaxIntensity: 20, // max vertical movement in px
+  parallaxScale: 1.06, // scale factor for parallax
+  parallaxStartDelay: 800, // ms before parallax becomes active
+}
+
 type Props = {
   basePath?: string // default "/videos/farcom-hero"
 
@@ -37,12 +52,18 @@ export default function HeroBackgroundVideo({
   onVideoReady,
 }: Props) {
   const videoRef = useRef<HTMLVideoElement | null>(null)
+  const containerRef = useRef<HTMLDivElement | null>(null)
 
   const [showFallback, setShowFallback] = useState(false)
 
   const ioRef = useRef<IntersectionObserver | null>(null)
 
   const [loadVideo, setLoadVideo] = useState(priority)
+
+  // Experimental mode state
+  const [showReveal, setShowReveal] = useState(false)
+  const [enableParallax, setEnableParallax] = useState(false)
+  const parallaxRef = useRef<number | null>(null)
 
   // Lazy load con IntersectionObserver (solo se priority=false)
 
@@ -122,6 +143,67 @@ export default function HeroBackgroundVideo({
     }
   }, [onVideoReady])
 
+  // Experimental mode: reveal animation sequence
+  useEffect(() => {
+    if (!ENABLE_EXPERIMENTAL_HERO) return
+
+    const revealTimer = setTimeout(() => {
+      setShowReveal(true)
+    }, EXPERIMENTAL_CONFIG.revealDelay)
+
+    const parallaxTimer = setTimeout(() => {
+      setEnableParallax(true)
+    }, EXPERIMENTAL_CONFIG.parallaxStartDelay)
+
+    return () => {
+      clearTimeout(revealTimer)
+      clearTimeout(parallaxTimer)
+    }
+  }, [])
+
+  // Experimental mode: parallax effect with scroll
+  useEffect(() => {
+    if (!ENABLE_EXPERIMENTAL_HERO || !enableParallax) return
+
+    // Check for prefers-reduced-motion
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (prefersReducedMotion) return
+
+    const handleScroll = () => {
+      if (!videoRef.current) return
+
+      const scrollY = window.scrollY
+      const windowHeight = window.innerHeight
+      const heroHeight = windowHeight
+
+      // Calculate parallax offset (only when hero is in view)
+      if (scrollY <= heroHeight) {
+        const progress = scrollY / heroHeight
+        const offsetY = progress * EXPERIMENTAL_CONFIG.parallaxIntensity
+        const scale = EXPERIMENTAL_CONFIG.parallaxScale - (progress * 0.02) // Slight scale reduction on scroll
+
+        videoRef.current.style.transform = `translate3d(0, ${offsetY}px, 0) scale(${scale})`
+      }
+    }
+
+    let ticking = false
+    const throttledScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          handleScroll()
+          ticking = false
+        })
+        ticking = true
+      }
+    }
+
+    window.addEventListener('scroll', throttledScroll, { passive: true })
+
+    return () => {
+      window.removeEventListener('scroll', throttledScroll)
+    }
+  }, [enableParallax])
+
   const onVideoError = () => {
     setShowFallback(true)
 
@@ -136,6 +218,7 @@ export default function HeroBackgroundVideo({
 
   return (
     <div
+      ref={containerRef}
       className={`${className} absolute inset-0 overflow-hidden bg-black`}
       aria-hidden="true"
     >
@@ -150,29 +233,38 @@ export default function HeroBackgroundVideo({
         decoding="async"
       />
       {loadVideo ? (
-        <video
-          ref={videoRef}
-          src={`${basePath}.mp4`}
-          className={`absolute inset-0 w-full h-full object-cover ${
-            showFallback ? "hidden" : "block"
+        <div
+          className={`absolute inset-0 overflow-hidden ${showFallback ? "hidden" : "block"} ${
+            ENABLE_EXPERIMENTAL_HERO && showReveal ? "experimental-reveal" : ""
           }`}
-          autoPlay
-          loop
-          muted
-          playsInline
-          disablePictureInPicture
-          controls={false}
-          preload={priority ? "auto" : "none"}
-          poster={poster}
-          onError={onVideoError}
           style={{
-            imageRendering: "auto",
-
-            transform: "translateZ(0)",
+            animationDelay: ENABLE_EXPERIMENTAL_HERO ? "0ms" : undefined,
+            animationFillMode: ENABLE_EXPERIMENTAL_HERO ? "forwards" : undefined,
           }}
         >
-          <source src={`${basePath}.mp4`} type="video/mp4" />
-        </video>
+          <video
+            ref={videoRef}
+            src={`${basePath}.mp4`}
+            className={`absolute inset-0 w-full h-full object-cover ${
+              ENABLE_EXPERIMENTAL_HERO && enableParallax ? "experimental-parallax" : ""
+            }`}
+            autoPlay
+            loop
+            muted
+            playsInline
+            disablePictureInPicture
+            controls={false}
+            preload={priority ? "auto" : "none"}
+            poster={poster}
+            onError={onVideoError}
+            style={{
+              imageRendering: "auto",
+              transform: ENABLE_EXPERIMENTAL_HERO ? undefined : "translateZ(0)",
+            }}
+          >
+            <source src={`${basePath}.mp4`} type="video/mp4" />
+          </video>
+        </div>
       ) : (
         // Poster placeholder finché non entra in viewport (lazy)
 
