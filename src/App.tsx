@@ -17,6 +17,7 @@ import LegalNotesPage from "./pages/LegalNotesPage";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import AdminLayout from "./pages/admin/AdminLayout";
+import AdminLogin from "./pages/admin/AdminLogin";
 import Dashboard from "./pages/admin/Dashboard";
 import AdminProjects from "./pages/admin/AdminProjects";
 import AdminQuotes from "./pages/admin/AdminQuotes";
@@ -59,6 +60,7 @@ export default function App() {
           <Route path="/blog/:slug" element={<BlogPost />} />
 
           {/* ADMIN */}
+          <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="progetti" element={<AdminProjects />} />

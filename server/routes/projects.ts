@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import mongoose from 'mongoose';
 import { Project } from '../models/Project.js';
+import { requireAdmin } from '../middleware/requireAdmin.js';
 
 const router = Router();
 
@@ -88,7 +89,7 @@ router.get('/:id', async (req: Request, res: Response) => {
 });
 
 // POST create single project
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', requireAdmin, async (req: Request, res: Response) => {
   const db = dbReady();
   if (!db.ok) return dbError(res, db.reason!);
   try {
@@ -101,7 +102,7 @@ router.post('/', async (req: Request, res: Response) => {
 });
 
 // PUT update project
-router.put('/:id', async (req: Request, res: Response) => {
+router.put('/:id', requireAdmin, async (req: Request, res: Response) => {
   const db = dbReady();
   if (!db.ok) return dbError(res, db.reason!);
   try {
@@ -122,7 +123,7 @@ router.put('/:id', async (req: Request, res: Response) => {
 });
 
 // DELETE project
-router.delete('/:id', async (req: Request, res: Response) => {
+router.delete('/:id', requireAdmin, async (req: Request, res: Response) => {
   const db = dbReady();
   if (!db.ok) return dbError(res, db.reason!);
   try {
@@ -198,8 +199,8 @@ async function handleBatchReplace(req: Request, res: Response) {
   }
 }
 
-router.post('/batch', handleBatchReplace);
-router.post('/replace-all', handleBatchReplace);
+router.post('/batch', requireAdmin, handleBatchReplace);
+router.post('/replace-all', requireAdmin, handleBatchReplace);
 
 // Retrocompatibilità con plugin Vite /__admin/projects POST
 // Montiamo alias anche su /__admin/projects (route viene usata da projectStore.saveProjectsToProject)

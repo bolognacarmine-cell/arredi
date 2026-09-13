@@ -1,46 +1,112 @@
-// Hook mock: controllo ruolo admin
+// Hook reale per autenticazione admin con sessione server-side
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react"
+import { useNavigate } from "react-router-dom"
 
 type Role = "admin" | "user" | "guest"
 export interface AdminUser {
   id: string
+  email: string
   name: string
   role: Role
 }
 
 interface Ctx {
-  user: AdminUser
+  user: AdminUser | null
   isAdmin: boolean
   isLoading: boolean
-  loginAs: (r: Role) => void
+  isAuthenticated: boolean
+  login: (email: string, password: string) => Promise<{ success: boolean; message: string }>
+  logout: () => Promise<void>
+  checkAuth: () => Promise<void>
 }
 const AC = createContext<Ctx | null>(null)
 
-const LS = "farcom-admin-role-v2"
-
-function load(): AdminUser {
-  const role = (typeof window !== "undefined"
-    ? (window.localStorage.getItem(LS) as Role | null)
-    : null) ?? "admin"
-  return { id: "u1", name: "Admin", role }
-}
-
 export function AdminAuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AdminUser>(() => load())
+  const [user, setUser] = useState<AdminUser | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const navigate = useNavigate()
+
+  const checkAuth = async () => {
+    try {
+      const response = await fetch('/api/admin/me', {
+        credentials: 'include',
+      })
+      const data = await response.json()
+      
+      if (data.success && data.user) {
+        setUser({
+          id: data.user.id,
+          email: data.user.email || '',
+          name: data.user.name || 'Admin',
+          role: data.user.role || 'admin',
+        })
+      } else {
+        setUser(null)
+      }
+    } catch (error) {
+      console.error('Auth check failed:', error)
+      setUser(null)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const login = async (email: string, password: string) => {
+    try {
+      const response = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ email, password }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setUser({
+          id: data.user.id,
+          email: data.user.email,
+          name: data.user.name,
+          role: data.user.role,
+        })
+        return { success: true, message: data.message }
+      } else {
+        return { success: false, message: data.message || 'Login failed' }
+      }
+    } catch (error) {
+      return { success: false, message: 'An error occurred during login' }
+    }
+  }
+
+  const logout = async () => {
+    try {
+      await fetch('/api/admin/logout', {
+        method: 'POST',
+        credentials: 'include',
+      })
+    } catch (error) {
+      console.error('Logout failed:', error)
+    } finally {
+      setUser(null)
+      navigate('/admin/login')
+    }
+  }
+
   useEffect(() => {
-    const t = setTimeout(() => setIsLoading(false), 120)
-    return () => clearTimeout(t)
+    checkAuth()
   }, [])
+
   const value = useMemo<Ctx>(
     () => ({
       user,
-      isAdmin: user.role === "admin",
+      isAdmin: user?.role === "admin",
+      isAuthenticated: !!user,
       isLoading,
-      loginAs: (r) => {
-        window.localStorage.setItem(LS, r)
-        setUser({ ...load(), role: r })
-      },
+      login,
+      logout,
+      checkAuth,
     }),
     [user, isLoading],
   )
@@ -50,15 +116,30 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 export function useAdminAuth(): Ctx {
   const ctx = useContext(AC)
   if (!ctx) {
-    const u = load()
-    return { user: u, isAdmin: u.role === "admin", isLoading: false, loginAs: () => {} }
+    return {
+      user: null,
+      isAdmin: false,
+      isAuthenticated: false,
+      isLoading: false,
+      login: async () => ({ success: false, message: 'Context not available' }),
+      logout: async () => {},
+      checkAuth: async () => {},
+    }
   }
   return ctx
 }
 
 // Wrapper per bloccare rotte non-admin
 export function RequireAdmin({ children }: { children: ReactNode }) {
-  const { isAdmin, isLoading } = useAdminAuth()
+  const { isAuthenticated, isLoading } = useAdminAuth()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      navigate('/admin/login')
+    }
+  }, [isAuthenticated, isLoading, navigate])
+
   if (isLoading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center text-sm text-[#888580]">
@@ -67,24 +148,8 @@ export function RequireAdmin({ children }: { children: ReactNode }) {
       </div>
     )
   }
-  if (!isAdmin) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center px-4">
-        <div className="max-w-md w-full text-center bg-white border border-[#DDD9D0] p-8">
-          <div className="text-5xl mb-3">🔒</div>
-          <h2 className="font-display text-2xl font-light text-[#1A1A18] mb-2">Accesso riservato</h2>
-          <p className="text-sm text-[#4A4A46] mb-5">
-            Area dedicata agli amministratori.
-          </p>
-          <a
-            href="/"
-            className="bg-[#1B4332] text-white text-sm px-5 py-2.5 hover:bg-[#143326] transition-colors"
-          >
-            Torna alla home
-          </a>
-        </div>
-      </div>
-    )
+  if (!isAuthenticated) {
+    return null // Will redirect via useEffect
   }
   return <>{children}</>
 }

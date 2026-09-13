@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { Product } from '../models/Product.js';
+import { requireAdmin } from '../middleware/requireAdmin.js';
 
 const router = Router();
 
@@ -14,7 +15,7 @@ router.get('/', async (req: Request, res: Response) => {
 });
 
 // POST create product
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', requireAdmin, async (req: Request, res: Response) => {
   try {
     const product = new Product(req.body);
     await product.save();
@@ -25,7 +26,7 @@ router.post('/', async (req: Request, res: Response) => {
 });
 
 // PUT update product
-router.put('/:id', async (req: Request, res: Response) => {
+router.put('/:id', requireAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const product = await Product.findByIdAndUpdate(id, req.body, { new: true });
@@ -40,7 +41,7 @@ router.put('/:id', async (req: Request, res: Response) => {
 });
 
 // DELETE product
-router.delete('/:id', async (req: Request, res: Response) => {
+router.delete('/:id', requireAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const product = await Product.findByIdAndDelete(id);

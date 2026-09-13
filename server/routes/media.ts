@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { Media } from '../models/Media.js';
+import { requireAdmin } from '../middleware/requireAdmin.js';
 
 const router = Router();
 
@@ -32,7 +33,7 @@ router.get('/', async (req: Request, res: Response) => {
 });
 
 // POST create media
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', requireAdmin, async (req: Request, res: Response) => {
   try {
     const { cloudinaryUrl, cloudinaryPublicId, title, category } = req.body;
     const media = new Media({ cloudinaryUrl, cloudinaryPublicId, title, category });
@@ -44,7 +45,7 @@ router.post('/', async (req: Request, res: Response) => {
 });
 
 // PUT update media
-router.put('/:id', async (req: Request, res: Response) => {
+router.put('/:id', requireAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const updates = req.body;
@@ -60,7 +61,7 @@ router.put('/:id', async (req: Request, res: Response) => {
 });
 
 // DELETE media
-router.delete('/:id', async (req: Request, res: Response) => {
+router.delete('/:id', requireAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const media = await Media.findByIdAndDelete(id);

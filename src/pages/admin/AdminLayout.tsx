@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react"
-import { Link, useLocation, Outlet } from "react-router-dom"
+import { Link, useLocation, Outlet, useNavigate } from "react-router-dom"
+import { useAdminAuth } from "../../hooks/useAdminAuth"
 
 const nav = [
   { to: "/admin", label: "Dashboard", icon: "▦" },
@@ -22,6 +23,9 @@ function isSidebarClosedByDefault(pathname: string) {
 }
 
 export default function AdminLayout() {
+  const { logout, user } = useAdminAuth()
+  const navigate = useNavigate()
+
   useEffect(() => {
     window.scrollTo(0, 0)
     document.documentElement.scrollTop = 0
@@ -209,10 +213,18 @@ export default function AdminLayout() {
             <span aria-hidden="true">{sideOpen ? "✕" : "☰"}</span>
           </button>
           <div className="flex items-center gap-4">
-            <span className="text-xs text-[#888580]">Ugo</span>
+            <span className="text-xs text-[#888580]">{user?.name || 'Admin'}</span>
             <div className="w-8 h-8 bg-[#1B4332] rounded-full flex items-center justify-center text-white text-xs font-medium">
-              U
+              {user?.name?.charAt(0) || 'A'}
             </div>
+            <button
+              type="button"
+              onClick={logout}
+              className="text-xs text-[#888580] hover:text-[#1A1A18] transition-colors"
+              title="Logout"
+            >
+              Logout
+            </button>
           </div>
         </header>
 

@@ -3,6 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import session from 'express-session';
+import cookieParser from 'cookie-parser';
 import { connectDB } from './config/db.js';
 import mediaRoutes from './routes/media.js';
 import offerRoutes from './routes/offers.js';
@@ -23,8 +25,23 @@ const PORT = process.env.PORT || 3002;
 
 // Middleware
 app.use(cors());
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Session configuration
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'change-this-secret-in-production',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+  },
+  name: 'farcom.sid',
+}));
 
 // Serve static files from dist/ (parent directory of server/dist)
 const staticPath = path.resolve(__dirname, '../../dist');
