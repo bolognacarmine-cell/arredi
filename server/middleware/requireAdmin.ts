@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 export interface CustomSession {
   userId?: string;
   userRole?: 'user' | 'admin';
+  destroy(callback?: (err?: Error) => void): void;
 }
 
 declare module 'express-serve-static-core' {
