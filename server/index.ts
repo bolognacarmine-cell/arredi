@@ -5,7 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
-import { connectDB } from './config/db.js';
+import { connectDB } from './db.js';
 import mediaRoutes from './routes/media.js';
 import offerRoutes from './routes/offers.js';
 import productRoutes from './routes/products.js';
