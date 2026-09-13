@@ -139,7 +139,7 @@ router.get('/me', (req: Request, res: Response) => {
 
 /**
  * POST /api/admin/reset-admin-password
- * Reset admin password to "buongiorno"
+ * Reset admin password to ADMIN_RESET_PASSWORD
  * Protected by ADMIN_RESET_SECRET header
  */
 router.post('/reset-admin-password', async (req: Request, res: Response) => {
@@ -181,16 +181,23 @@ router.post('/reset-admin-password', async (req: Request, res: Response) => {
       });
     }
 
-    // Reset password to "buongiorno"
-    user.password = 'buongiorno';
+    // Reset password to environment variable value
+    const resetPassword = process.env.ADMIN_RESET_PASSWORD;
+    if (!resetPassword) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Server configuration error: Reset password not configured' 
+      });
+    }
+
+    user.password = resetPassword;
     await user.save();
 
     console.log(`🔄 Password reset for admin user: ${email}`);
 
     res.json({ 
       success: true, 
-      message: 'Password admin resettata con successo',
-      newPassword: 'buongiorno'
+      message: 'Password admin resettata con successo'
     });
   } catch (error) {
     console.error('❌ Error resetting admin password:', error);

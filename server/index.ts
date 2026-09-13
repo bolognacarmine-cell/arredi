@@ -30,8 +30,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Session configuration
+const sessionSecret = process.env.SESSION_SECRET;
+if (!sessionSecret) {
+  throw new Error('SESSION_SECRET environment variable is not defined');
+}
+
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'change-this-secret-in-production',
+  secret: sessionSecret,
   resave: false,
   saveUninitialized: false,
   cookie: {
