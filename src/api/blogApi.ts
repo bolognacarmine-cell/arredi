@@ -1,10 +1,32 @@
-// Su Render il backend non è disponibile, disabilitiamo le chiamate API
-// In development, fallback to localhost:3002 if not configured
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3002"
-// Use static data if API_BASE_URL is not explicitly set (GitHub Pages case)
-const isApiAvailable = !!import.meta.env.VITE_API_BASE_URL
+/**
+ * BLOG API LOGIC - Fallback Strategy
+ * 
+ * This file implements a robust fallback strategy for blog data:
+ * 
+ * 1. If VITE_API_BASE_URL is set:
+ *    - Try to fetch from the API first
+ *    - If API fails (network error, 5xx, timeout), fallback to static data
+ *    - This ensures the blog always works even if the API is down
+ * 
+ * 2. If VITE_API_BASE_URL is NOT set:
+ *    - Use static data directly (GitHub Pages case)
+ *    - No API calls are attempted
+ * 
+ * 3. Development environment:
+ *    - Set VITE_API_BASE_URL to use local API (e.g., http://localhost:3002)
+ *    - If not set, defaults to localhost:3002 with fallback to static data
+ * 
+ * STATIC DATA SOURCE: src/data/blogPosts.json
+ * 
+ * To configure API URL in production:
+ * - Set VITE_API_BASE_URL in GitHub Actions secrets or deployment config
+ * - Example: VITE_API_BASE_URL=https://your-api.onrender.com
+ */
 
-// Static data for GitHub Pages (no backend)
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3002"
+const hasApiConfigured = !!import.meta.env.VITE_API_BASE_URL
+
+// Static data for fallback (GitHub Pages and API failures)
 import staticBlogPosts from '../data/blogPosts.json'
 
 export interface Author {
@@ -50,141 +72,183 @@ export interface PaginatedPostsResponse {
   };
 }
 
+// Helper function to get posts from static data
+function getPostsFromStatic(params?: {
+  sectorSlug?: string;
+  page?: number;
+  limit?: number;
+}): PaginatedPostsResponse {
+  let filteredPosts = staticBlogPosts.filter((p: Post) => p.isPublished);
+
+  if (params?.sectorSlug) {
+    filteredPosts = filteredPosts.filter((p: Post) => p.sectorSlug === params.sectorSlug);
+  }
+
+  const page = params?.page || 1;
+  const limit = params?.limit || 10;
+  const skip = (page - 1) * limit;
+
+  const paginatedPosts = filteredPosts
+    .sort((a: Post, b: Post) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
+    .slice(skip, skip + limit);
+
+  return {
+    success: true,
+    data: paginatedPosts,
+    pagination: {
+      page,
+      limit,
+      total: filteredPosts.length,
+      totalPages: Math.ceil(filteredPosts.length / limit),
+    },
+  };
+}
+
 export async function getPosts(params?: {
   sectorSlug?: string;
   page?: number;
   limit?: number;
 }): Promise<PaginatedPostsResponse> {
-  if (!isApiAvailable) {
-    // Use static data for GitHub Pages
-    let filteredPosts = staticBlogPosts.filter((p: Post) => p.isPublished);
-
-    if (params?.sectorSlug) {
-      filteredPosts = filteredPosts.filter((p: Post) => p.sectorSlug === params.sectorSlug);
-    }
-
-    const page = params?.page || 1;
-    const limit = params?.limit || 10;
-    const skip = (page - 1) * limit;
-
-    const paginatedPosts = filteredPosts
-      .sort((a: Post, b: Post) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
-      .slice(skip, skip + limit);
-
-    return {
-      success: true,
-      data: paginatedPosts,
-      pagination: {
-        page,
-        limit,
-        total: filteredPosts.length,
-        totalPages: Math.ceil(filteredPosts.length / limit),
-      },
-    };
+  // If no API configured, use static data directly
+  if (!hasApiConfigured) {
+    console.log('[Blog API] No API configured, using static data');
+    return getPostsFromStatic(params);
   }
 
+  // Try API first, fallback to static on error
   try {
     const queryParams = new URLSearchParams();
     if (params?.sectorSlug) queryParams.append('sectorSlug', params.sectorSlug);
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.limit) queryParams.append('limit', params.limit.toString());
 
+    console.log(`[Blog API] Fetching from ${API_BASE_URL}/api/blog/posts`);
     const response = await fetch(`${API_BASE_URL}/api/blog/posts?${queryParams.toString()}`);
+    
+    if (!response.ok) {
+      throw new Error(`API returned ${response.status}`);
+    }
+    
     const result = await response.json();
 
     if (result.success) {
+      console.log('[Blog API] Successfully fetched from API');
       return result;
     }
 
     throw new Error(result.error || 'Failed to fetch posts');
   } catch (error) {
-    console.error('Error fetching posts:', error);
-    return {
-      success: true,
-      data: [],
-      pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
-    };
+    console.warn('[Blog API] API call failed, falling back to static data:', error);
+    return getPostsFromStatic(params);
   }
+}
+
+// Helper function to get post from static data
+function getPostFromStatic(slug: string): Post | null {
+  return staticBlogPosts.find((p: Post) => p.slug === slug && p.isPublished) || null;
 }
 
 export async function getPostBySlug(slug: string): Promise<Post | null> {
-  if (!isApiAvailable) {
-    // Use static data for GitHub Pages
-    return staticBlogPosts.find((p: Post) => p.slug === slug && p.isPublished) || null;
+  // If no API configured, use static data directly
+  if (!hasApiConfigured) {
+    console.log('[Blog API] No API configured, using static data for post');
+    return getPostFromStatic(slug);
   }
 
+  // Try API first, fallback to static on error
   try {
+    console.log(`[Blog API] Fetching post ${slug} from ${API_BASE_URL}/api/blog/posts/${slug}`);
     const response = await fetch(`${API_BASE_URL}/api/blog/posts/${slug}`);
+    
+    if (!response.ok) {
+      throw new Error(`API returned ${response.status}`);
+    }
+    
     const result = await response.json();
 
     if (result.success) {
+      console.log('[Blog API] Successfully fetched post from API');
       return result.data;
     }
 
     return null;
   } catch (error) {
-    console.error('Error fetching post:', error);
-    return null;
+    console.warn('[Blog API] API call failed for post, falling back to static data:', error);
+    return getPostFromStatic(slug);
   }
 }
 
-export async function getSectors(): Promise<BlogSector[]> {
-  if (!isApiAvailable) {
-    // Use static data for GitHub Pages
-    const sectorMap = new Map<string, { count: number; latestPost: Post }>();
+// Helper function to get sectors from static data
+function getSectorsFromStatic(): BlogSector[] {
+  const sectorMap = new Map<string, { count: number; latestPost: Post }>();
 
-    staticBlogPosts.forEach((post: Post) => {
-      if (post.isPublished) {
-        const existing = sectorMap.get(post.sectorSlug);
-        if (!existing || new Date(post.publishedAt) > new Date(existing.latestPost.publishedAt)) {
-          sectorMap.set(post.sectorSlug, {
-            count: (existing?.count || 0) + 1,
-            latestPost: post,
-          });
-        } else {
-          sectorMap.set(post.sectorSlug, {
-            count: existing.count + 1,
-            latestPost: existing.latestPost,
-          });
-        }
+  staticBlogPosts.forEach((post: Post) => {
+    if (post.isPublished) {
+      const existing = sectorMap.get(post.sectorSlug);
+      if (!existing || new Date(post.publishedAt) > new Date(existing.latestPost.publishedAt)) {
+        sectorMap.set(post.sectorSlug, {
+          count: (existing?.count || 0) + 1,
+          latestPost: post,
+        });
+      } else {
+        sectorMap.set(post.sectorSlug, {
+          count: existing.count + 1,
+          latestPost: existing.latestPost,
+        });
       }
-    });
+    }
+  });
 
-    const sectorTitles: Record<string, string> = {
-      'barbieri': 'Barbieri',
-      'negozi': 'Negozi',
-      'scuole': 'Scuole',
-      'bar': 'Bar',
-      'centri-estetici': 'Centri Estetici',
-      'uffici': 'Uffici',
-    };
+  const sectorTitles: Record<string, string> = {
+    'barbieri': 'Barbieri',
+    'negozi': 'Negozi',
+    'scuole': 'Scuole',
+    'bar': 'Bar',
+    'centri-estetici': 'Centri Estetici',
+    'uffici': 'Uffici',
+  };
 
-    return Array.from(sectorMap.entries()).map(([slug, data]) => ({
-      slug,
-      title: sectorTitles[slug] || slug.charAt(0).toUpperCase() + slug.slice(1),
-      count: data.count,
-      coverImage: data.latestPost.coverImage,
-    }));
+  return Array.from(sectorMap.entries()).map(([slug, data]) => ({
+    slug,
+    title: sectorTitles[slug] || slug.charAt(0).toUpperCase() + slug.slice(1),
+    count: data.count,
+    coverImage: data.latestPost.coverImage,
+  }));
+}
+
+export async function getSectors(): Promise<BlogSector[]> {
+  // If no API configured, use static data directly
+  if (!hasApiConfigured) {
+    console.log('[Blog API] No API configured, using static data for sectors');
+    return getSectorsFromStatic();
   }
 
+  // Try API first, fallback to static on error
   try {
+    console.log(`[Blog API] Fetching sectors from ${API_BASE_URL}/api/blog/sectors`);
     const response = await fetch(`${API_BASE_URL}/api/blog/sectors`);
+    
+    if (!response.ok) {
+      throw new Error(`API returned ${response.status}`);
+    }
+    
     const result = await response.json();
 
     if (result.success) {
+      console.log('[Blog API] Successfully fetched sectors from API');
       return result.data;
     }
 
     return [];
   } catch (error) {
-    console.error('Error fetching sectors:', error);
-    return [];
+    console.warn('[Blog API] API call failed for sectors, falling back to static data:', error);
+    return getSectorsFromStatic();
   }
 }
 
 export async function createPost(data: Omit<Post, '_id' | 'publishedAt' | 'updatedAt'>): Promise<Post> {
-  if (!isApiAvailable) {
-    throw new Error('API not available');
+  if (!hasApiConfigured) {
+    throw new Error('Cannot create post: API not configured. Set VITE_API_BASE_URL to enable post creation.');
   }
 
   try {
@@ -210,8 +274,8 @@ export async function createPost(data: Omit<Post, '_id' | 'publishedAt' | 'updat
 }
 
 export async function updatePost(id: string, data: Partial<Post>): Promise<Post> {
-  if (!isApiAvailable) {
-    throw new Error('API not available');
+  if (!hasApiConfigured) {
+    throw new Error('Cannot update post: API not configured. Set VITE_API_BASE_URL to enable post updates.');
   }
 
   try {
@@ -237,8 +301,8 @@ export async function updatePost(id: string, data: Partial<Post>): Promise<Post>
 }
 
 export async function deletePost(id: string): Promise<void> {
-  if (!isApiAvailable) {
-    return;
+  if (!hasApiConfigured) {
+    throw new Error('Cannot delete post: API not configured. Set VITE_API_BASE_URL to enable post deletion.');
   }
 
   try {
