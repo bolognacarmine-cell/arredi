@@ -11,6 +11,7 @@ import projectRoutes from './routes/projects.js';
 import quoteRoutes from './routes/quotes.js';
 import siteConfigRoutes from './routes/siteConfig.js';
 import blogRoutes from './routes/blog.js';
+import adminRoutes from './routes/admin.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -37,6 +38,7 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/quotes', quoteRoutes);
 app.use('/api/site-config', siteConfigRoutes);
 app.use('/api/blog', blogRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Retrocompatibilità: endpoint Vite dev /__admin/projects in produzione
 // Esegue lo stesso salvataggio batch ma su MongoDB invece di src/data.ts
