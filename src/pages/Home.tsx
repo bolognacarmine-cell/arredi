@@ -237,14 +237,54 @@ export default function Home() {
   const displayedProjects =
     featuredProjects.length > 0 ? featuredProjects : projects.slice(0, 6)
 
+  // IntersectionObserver for scroll-based background changes
+  useEffect(() => {
+    const sections = document.querySelectorAll('section[data-bg]')
+    if (sections.length === 0) return
+
+    const observerOptions = {
+      root: null,
+      rootMargin: '0px',
+      threshold: 0.5 // Trigger when 50% of section is visible
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const bgColor = entry.target.getAttribute('data-bg')
+          if (bgColor) {
+            document.body.style.backgroundColor = bgColor
+          }
+        }
+      })
+    }, observerOptions)
+
+    sections.forEach((section) => observer.observe(section))
+
+    // Set initial background from hero
+    const heroSection = document.getElementById('hero')
+    if (heroSection) {
+      const heroBg = heroSection.getAttribute('data-bg')
+      if (heroBg) {
+        document.body.style.backgroundColor = heroBg
+      }
+    }
+
+    return () => {
+      sections.forEach((section) => observer.unobserve(section))
+    }
+  }, [])
+
   return (
     <div className="bg-[#FAFAFA]">
       <CustomCursor />
       {/* HERO */}
-      <Hero />
+      <section id="hero" data-bg="#1A1A2E">
+        <Hero />
+      </section>
 
       {/* SECTORS */}
-      <section className="py-8 sm:py-10 md:py-12 lg:py-16 xl:py-20 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 relative bg-white">
+      <section className="py-8 sm:py-10 md:py-12 lg:py-16 xl:py-20 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 relative bg-white" data-bg="#FFFFFF">
         {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 
@@ -300,7 +340,7 @@ export default function Home() {
       </section>
 
       {/* FEATURED PROJECTS */}
-      <section className="py-8 sm:py-10 md:py-12 lg:py-16 xl:py-20 bg-[#1A1A2E] relative">
+      <section className="py-8 sm:py-10 md:py-12 lg:py-16 xl:py-20 bg-[#1A1A2E] relative" data-bg="#1A1A2E">
         {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 
@@ -394,7 +434,7 @@ export default function Home() {
       <ReviewsSection />
 
       {/* SERVICES */}
-      <section className="py-8 sm:py-10 md:py-12 lg:py-16 xl:py-20 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 relative bg-white">
+      <section className="py-8 sm:py-10 md:py-12 lg:py-16 xl:py-20 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 relative bg-white" data-bg="#FFFFFF">
         {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 
@@ -436,7 +476,7 @@ export default function Home() {
       </section>
 
       {/* WHY US */}
-      <section className="py-8 sm:py-10 md:py-12 lg:py-16 xl:py-20 bg-[#1A1A2E] relative">
+      <section className="py-8 sm:py-10 md:py-12 lg:py-16 xl:py-20 bg-[#1A1A2E] relative" data-bg="#1A1A2E">
         {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 
@@ -472,7 +512,7 @@ export default function Home() {
       </section>
 
       {/* STATS BAND */}
-      <section className="py-8 sm:py-10 md:py-12 lg:py-16 xl:py-20 bg-white relative">
+      <section className="py-8 sm:py-10 md:py-12 lg:py-16 xl:py-20 bg-white relative" data-bg="#FFFFFF">
         {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 
@@ -504,7 +544,7 @@ export default function Home() {
       </section>
 
       {/* CTA BAND */}
-      <section className="py-8 sm:py-10 md:py-12 lg:py-16 xl:py-20 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 sm:gap-5 md:gap-6 lg:gap-8 relative bg-white">
+      <section className="py-8 sm:py-10 md:py-12 lg:py-16 xl:py-20 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 sm:gap-5 md:gap-6 lg:gap-8 relative bg-white" data-bg="#FFFFFF">
         {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 

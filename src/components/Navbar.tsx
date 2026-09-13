@@ -104,21 +104,14 @@ export default function Navbar() {
         </Link>
 
         <button
-          className="lg:hidden w-10 sm:w-12 h-10 sm:h-12 -mr-1 sm:-mr-2 flex items-center justify-center touch-manipulation"
+          className={`lg:hidden w-10 sm:w-12 h-10 sm:h-12 -mr-1 sm:-mr-2 flex flex-col items-center justify-center gap-[8px] touch-manipulation ${open ? 'open' : ''}`}
           onClick={() => setOpen(!open)}
-          aria-label="Menu"
+          aria-label={open ? "Chiudi menu" : "Apri menu"}
+          aria-expanded={open}
         >
-          <span className="block w-5 sm:w-6 h-[2px] bg-[#1A1A2E] transition-all duration-200 mb-1.5" style={{ transform: open ? "rotate(45deg) translateY(6px)" : "" }} />
-          <span
-            className={`block w-5 sm:w-6 h-[2px] bg-[#1A1A2E] transition-all duration-200 mb-1.5 ${
-              open ? "opacity-0" : ""
-            }`}
-          />
-          <span
-            className={`block w-5 sm:w-6 h-[2px] bg-[#1A1A2E] transition-all duration-200 ${
-              open ? "-rotate-45 -translate-y-4" : ""
-            }`}
-          />
+          <span className="line w-[28px] h-[3px] bg-[#1A1A2E] transition-all duration-300 ease-in-out" />
+          <span className="line w-[28px] h-[3px] bg-[#1A1A2E] transition-all duration-300 ease-in-out" />
+          <span className="line w-[28px] h-[3px] bg-[#1A1A2E] transition-all duration-300 ease-in-out" />
         </button>
       </nav>
 
