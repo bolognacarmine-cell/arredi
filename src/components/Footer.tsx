@@ -302,6 +302,11 @@ export default function Footer() {
                     )
                   })}
                 </ul>
+                <p className="mt-3 sm:mt-4 text-[10px] sm:text-xs text-white/55 leading-relaxed">
+                  {siteConfig.hoursWeek}
+                  <br />
+                  {siteConfig.hoursExtra}
+                </p>
                 <div className="mt-3 sm:mt-4 grid grid-cols-2 gap-2 sm:gap-2.5">
                   <a
                     href={telHref}
