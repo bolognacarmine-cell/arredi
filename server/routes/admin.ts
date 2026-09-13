@@ -11,11 +11,8 @@ router.post('/login', async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
-    console.log(`🔐 Login attempt for email: ${email}`);
-
     // Validate input
     if (!email || !password) {
-      console.log(`❌ Login failed: Missing email or password`);
       return res.status(400).json({ 
         success: false, 
         message: 'Email and password are required' 
@@ -26,21 +23,15 @@ router.post('/login', async (req: Request, res: Response) => {
     const user = await UserModel.findOne({ email: email.toLowerCase() });
     if (!user) {
       // Generic error message - don't reveal if user exists
-      console.log(`❌ Login attempt failed: User not found for email ${email}`);
       return res.status(401).json({ 
         success: false, 
         message: 'Invalid credentials' 
       });
     }
 
-    console.log(`✅ User found: ${user.email}, role: ${user.role}`);
-
     // Verify password with bcrypt
     const isPasswordValid = await user.comparePassword(password);
-    console.log(`🔐 Password validation result: ${isPasswordValid ? 'SUCCESS' : 'FAILED'}`);
-    
     if (!isPasswordValid) {
-      console.log(`❌ Login attempt failed: Invalid password for email ${email}`);
       return res.status(401).json({ 
         success: false, 
         message: 'Invalid credentials' 
@@ -49,7 +40,6 @@ router.post('/login', async (req: Request, res: Response) => {
 
     // Check if user is admin
     if (user.role !== 'admin') {
-      console.log(`❌ Login attempt failed: User ${email} is not an admin`);
       return res.status(403).json({ 
         success: false, 
         message: 'Admin access required' 
@@ -60,12 +50,7 @@ router.post('/login', async (req: Request, res: Response) => {
     if (req.session) {
       req.session.userId = user._id.toString();
       req.session.userRole = user.role;
-      console.log(`✅ Session set for user ${user.email}`);
-    } else {
-      console.log(`❌ Session object not available`);
     }
-
-    console.log(`✅ Admin login successful: ${email}`);
 
     res.json({ 
       success: true, 
@@ -211,65 +196,6 @@ router.post('/reset-admin-password', async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('❌ Error resetting admin password:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Internal server error' 
-    });
-  }
-});
-
-/**
- * POST /api/admin/create-admin
- * Create admin user if not exists
- * Protected by ADMIN_RESET_SECRET header
- * TEMPORARY: Remove after admin is created
- */
-router.post('/create-admin', async (req: Request, res: Response) => {
-  try {
-    const secret = req.headers['x-admin-reset-secret'] as string;
-
-    // Verify secret
-    const expectedSecret = process.env.ADMIN_RESET_SECRET;
-    if (!expectedSecret || secret !== expectedSecret) {
-      return res.status(403).json({ 
-        success: false, 
-        message: 'Unauthorized: Invalid or missing reset secret' 
-      });
-    }
-
-    const adminEmail = process.env.ADMIN_EMAIL || 'admin@farcom.local';
-    const adminPassword = process.env.ADMIN_PASSWORD || 'Farcom2026';
-    const adminName = process.env.ADMIN_NAME || 'Admin Farcom';
-
-    console.log(`🔍 Creating admin user: ${adminEmail}`);
-
-    let adminUser = await UserModel.findOne({ email: adminEmail.toLowerCase() });
-
-    if (adminUser) {
-      console.log(`✅ Admin user already exists, updating password`);
-      adminUser.password = adminPassword;
-      adminUser.role = 'admin';
-      await adminUser.save();
-    } else {
-      console.log(`👤 Creating new admin user`);
-      adminUser = new UserModel({
-        email: adminEmail,
-        password: adminPassword,
-        name: adminName,
-        role: 'admin',
-      });
-      await adminUser.save();
-    }
-
-    console.log(`✅ Admin user created/updated successfully`);
-
-    res.json({ 
-      success: true, 
-      message: 'Admin user created successfully',
-      email: adminEmail
-    });
-  } catch (error) {
-    console.error('❌ Error creating admin user:', error);
     res.status(500).json({ 
       success: false, 
       message: 'Internal server error' 
