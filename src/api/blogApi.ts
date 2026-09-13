@@ -3,6 +3,9 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3002"
 const isApiAvailable = !!API_BASE_URL
 
+// Static data for GitHub Pages (no backend)
+import staticBlogPosts from '../data/blogPosts.json'
+
 export interface Author {
   name: string;
   role: string;
@@ -52,10 +55,30 @@ export async function getPosts(params?: {
   limit?: number;
 }): Promise<PaginatedPostsResponse> {
   if (!isApiAvailable) {
+    // Use static data for GitHub Pages
+    let filteredPosts = staticBlogPosts.filter((p: Post) => p.isPublished);
+
+    if (params?.sectorSlug) {
+      filteredPosts = filteredPosts.filter((p: Post) => p.sectorSlug === params.sectorSlug);
+    }
+
+    const page = params?.page || 1;
+    const limit = params?.limit || 10;
+    const skip = (page - 1) * limit;
+
+    const paginatedPosts = filteredPosts
+      .sort((a: Post, b: Post) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
+      .slice(skip, skip + limit);
+
     return {
       success: true,
-      data: [],
-      pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
+      data: paginatedPosts,
+      pagination: {
+        page,
+        limit,
+        total: filteredPosts.length,
+        totalPages: Math.ceil(filteredPosts.length / limit),
+      },
     };
   }
 
@@ -85,7 +108,8 @@ export async function getPosts(params?: {
 
 export async function getPostBySlug(slug: string): Promise<Post | null> {
   if (!isApiAvailable) {
-    return null;
+    // Use static data for GitHub Pages
+    return staticBlogPosts.find((p: Post) => p.slug === slug && p.isPublished) || null;
   }
 
   try {
@@ -105,7 +129,41 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
 
 export async function getSectors(): Promise<BlogSector[]> {
   if (!isApiAvailable) {
-    return [];
+    // Use static data for GitHub Pages
+    const sectorMap = new Map<string, { count: number; latestPost: Post }>();
+
+    staticBlogPosts.forEach((post: Post) => {
+      if (post.isPublished) {
+        const existing = sectorMap.get(post.sectorSlug);
+        if (!existing || new Date(post.publishedAt) > new Date(existing.latestPost.publishedAt)) {
+          sectorMap.set(post.sectorSlug, {
+            count: (existing?.count || 0) + 1,
+            latestPost: post,
+          });
+        } else {
+          sectorMap.set(post.sectorSlug, {
+            count: existing.count + 1,
+            latestPost: existing.latestPost,
+          });
+        }
+      }
+    });
+
+    const sectorTitles: Record<string, string> = {
+      'barbieri': 'Barbieri',
+      'negozi': 'Negozi',
+      'scuole': 'Scuole',
+      'bar': 'Bar',
+      'centri-estetici': 'Centri Estetici',
+      'uffici': 'Uffici',
+    };
+
+    return Array.from(sectorMap.entries()).map(([slug, data]) => ({
+      slug,
+      title: sectorTitles[slug] || slug.charAt(0).toUpperCase() + slug.slice(1),
+      count: data.count,
+      coverImage: data.latestPost.coverImage,
+    }));
   }
 
   try {
