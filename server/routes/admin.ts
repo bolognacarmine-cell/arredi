@@ -218,4 +218,63 @@ router.post('/reset-admin-password', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * POST /api/admin/create-admin
+ * Create admin user if not exists
+ * Protected by ADMIN_RESET_SECRET header
+ * TEMPORARY: Remove after admin is created
+ */
+router.post('/create-admin', async (req: Request, res: Response) => {
+  try {
+    const secret = req.headers['x-admin-reset-secret'] as string;
+
+    // Verify secret
+    const expectedSecret = process.env.ADMIN_RESET_SECRET;
+    if (!expectedSecret || secret !== expectedSecret) {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Unauthorized: Invalid or missing reset secret' 
+      });
+    }
+
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@farcom.local';
+    const adminPassword = process.env.ADMIN_PASSWORD || 'Farcom2026';
+    const adminName = process.env.ADMIN_NAME || 'Admin Farcom';
+
+    console.log(`🔍 Creating admin user: ${adminEmail}`);
+
+    let adminUser = await UserModel.findOne({ email: adminEmail.toLowerCase() });
+
+    if (adminUser) {
+      console.log(`✅ Admin user already exists, updating password`);
+      adminUser.password = adminPassword;
+      adminUser.role = 'admin';
+      await adminUser.save();
+    } else {
+      console.log(`👤 Creating new admin user`);
+      adminUser = new UserModel({
+        email: adminEmail,
+        password: adminPassword,
+        name: adminName,
+        role: 'admin',
+      });
+      await adminUser.save();
+    }
+
+    console.log(`✅ Admin user created/updated successfully`);
+
+    res.json({ 
+      success: true, 
+      message: 'Admin user created successfully',
+      email: adminEmail
+    });
+  } catch (error) {
+    console.error('❌ Error creating admin user:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Internal server error' 
+    });
+  }
+});
+
 export default router;
