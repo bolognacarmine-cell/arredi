@@ -207,7 +207,7 @@ export default function AdminMedia() {
   } | null>(null)
   const [recentUploads, setRecentUploads] = useState<Media[]>([])
   const [recentFilter, setRecentFilter] = useState<UploadCategory | "all">("all")
-  const [libraryFilter, setLibraryFilter] = useState<"Tutte" | "Prodotti" | "BANNER" | "SFONDI">("Tutte")
+  const [libraryFilter, setLibraryFilter] = useState<"Tutte" | "Prodotti" | "BANNER" | "SFONDI" | "trasporto">("Tutte")
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedMedia, setSelectedMedia] = useState<Set<string>>(new Set())
   const [showClearConfirm, setShowClearConfirm] = useState(false)
@@ -329,6 +329,7 @@ export default function AdminMedia() {
             cloudinaryPublicId: lastResult.public_id,
             title: title.trim() || undefined,
             category,
+            library: libraryFilter !== "Tutte" ? libraryFilter : undefined,
             width: lastResult.width,
             height: lastResult.height,
             format: lastResult.format,
@@ -872,6 +873,27 @@ export default function AdminMedia() {
               </p>
             </div>
 
+            {/* ④ Library (opzionale) */}
+            <div>
+              <label className="block text-xs font-semibold tracking-wide uppercase text-[#888580] mb-2">
+                Libreria (opzionale)
+              </label>
+              <select
+                value={libraryFilter}
+                onChange={(e) => setLibraryFilter(e.target.value as "Tutte" | "Prodotti" | "BANNER" | "SFONDI" | "trasporto")}
+                className="w-full px-4 py-2.5 rounded-lg bg-white border border-[#DDD9D0] text-sm text-[#1A1A18] focus:outline-none focus:border-[#1B4332] focus:ring-2 focus:ring-[#1B4332]/20"
+              >
+                <option value="Tutte">Nessuna libreria specifica</option>
+                <option value="Prodotti">Prodotti</option>
+                <option value="BANNER">BANNER</option>
+                <option value="SFONDI">SFONDI</option>
+                <option value="trasporto">Trasporto</option>
+              </select>
+              <p className="text-xs text-[#888580] mt-1.5">
+                Seleziona una libreria per organizzare le immagini (es. Trasporto per immagini di trasporto).
+              </p>
+            </div>
+
             {/* ④ Auto-assegna a data.ts (OPZIONE B) — SOLO IN LOCALE! */}
             <div
               className={
@@ -1375,13 +1397,14 @@ export default function AdminMedia() {
             {/* Library Dropdown */}
             <select
               value={libraryFilter}
-              onChange={(e) => setLibraryFilter(e.target.value as "Tutte" | "Prodotti" | "BANNER" | "SFONDI")}
+              onChange={(e) => setLibraryFilter(e.target.value as "Tutte" | "Prodotti" | "BANNER" | "SFONDI" | "trasporto")}
               className="px-3 py-1.5 text-sm border border-[#DDD9D0] rounded bg-white text-[#1A1A18] focus:border-[#1B4332] focus:outline-none focus:ring-2 focus:ring-[#1B4332]/20"
             >
               <option value="Tutte">Libreria: Tutte</option>
               <option value="Prodotti">Prodotti</option>
               <option value="BANNER">BANNER</option>
               <option value="SFONDI">SFONDI</option>
+              <option value="trasporto">Trasporto</option>
             </select>
 
             {/* Category Filters */}

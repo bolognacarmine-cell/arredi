@@ -8,7 +8,7 @@ export interface Media {
   cloudinaryPublicId: string
   title?: string
   category: "hero" | "sector" | "project" | "gallery"
-  library?: "Tutte" | "Prodotti" | "BANNER" | "SFONDI"
+  library?: "Tutte" | "Prodotti" | "BANNER" | "SFONDI" | "trasporto"
   tags?: string[]
   usedInProjects?: string[]
   width?: number
@@ -24,6 +24,7 @@ export interface CreateMediaData {
   cloudinaryPublicId: string
   title?: string
   category: "hero" | "sector" | "project" | "gallery"
+  library?: "Tutte" | "Prodotti" | "BANNER" | "SFONDI" | "trasporto"
   width?: number
   height?: number
   format?: string
@@ -108,6 +109,7 @@ export async function createMedia(data: CreateMediaData): Promise<Media> {
       cloudinaryPublicId: data.cloudinaryPublicId,
       title: data.title,
       category: data.category,
+      library: data.library,
       width: data.width,
       height: data.height,
       format: data.format,
@@ -148,6 +150,7 @@ export async function createMedia(data: CreateMediaData): Promise<Media> {
       cloudinaryPublicId: data.cloudinaryPublicId,
       title: data.title,
       category: data.category,
+      library: data.library,
       width: data.width,
       height: data.height,
       format: data.format,

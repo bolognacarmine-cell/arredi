@@ -193,7 +193,7 @@ export default function MediaPickerModal({
   const [mediaItems, setMediaItems] = useState<Media[]>([])
   const [loading, setLoading] = useState(true)
   const [categoryFilter, setCategoryFilter] = useState<UploadCategory | "all">("all")
-  const [libraryFilter, setLibraryFilter] = useState<"Tutte" | "Prodotti" | "BANNER" | "SFONDI">("Tutte")
+  const [libraryFilter, setLibraryFilter] = useState<"Tutte" | "Prodotti" | "BANNER" | "SFONDI" | "trasporto">("Tutte")
   const [searchQuery, setSearchQuery] = useState("")
 
   // Carica media dall'API all'apertura della modale
@@ -213,9 +213,21 @@ export default function MediaPickerModal({
     loadMedia()
   }, [])
 
+  // Applica filtri ai media caricati
+  const filteredMedia = useMemo(() => {
+    return mediaItems.filter((media) => {
+      const matchesCategory = categoryFilter === "all" || media.category === categoryFilter
+      const matchesLibrary = libraryFilter === "Tutte" || media.library === libraryFilter
+      const matchesSearch = !searchQuery ||
+        media.cloudinaryPublicId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (media.title && media.title.toLowerCase().includes(searchQuery.toLowerCase()))
+      return matchesCategory && matchesLibrary && matchesSearch
+    })
+  }, [mediaItems, categoryFilter, libraryFilter, searchQuery])
+
   // Converti Media in RecentUpload per compatibilità con callback esistenti
   const recentUploads: RecentUpload[] = useMemo(() => {
-    return mediaItems.map((media: Media) => ({
+    return filteredMedia.map((media: Media) => ({
       id: media._id,
       publicId: media.cloudinaryPublicId,
       secureUrl: media.cloudinaryUrl,
@@ -225,27 +237,17 @@ export default function MediaPickerModal({
       height: media.height || 0,
       titleHint: media.title,
     }))
-  }, [mediaItems])
+  }, [filteredMedia])
 
-  const filteredUploads = useMemo(() => {
-    return recentUploads.filter((upload) => {
-      const matchesCategory =
-        categoryFilter === "all" || upload.category === categoryFilter
-      const matchesSearch =
-        !searchQuery ||
-        upload.publicId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (upload.titleHint && upload.titleHint.toLowerCase().includes(searchQuery.toLowerCase()))
-      return matchesCategory && matchesSearch
-    })
-  }, [recentUploads, categoryFilter, searchQuery])
+  const filteredUploads = recentUploads
 
   const categoryCounts = useMemo(() => {
-    const counts: Record<string, number> = { all: recentUploads.length }
-    recentUploads.forEach((upload) => {
-      counts[upload.category] = (counts[upload.category] || 0) + 1
+    const counts: Record<string, number> = { all: mediaItems.length }
+    mediaItems.forEach((media) => {
+      counts[media.category] = (counts[media.category] || 0) + 1
     })
     return counts
-  }, [recentUploads])
+  }, [mediaItems])
 
   const inGallery = (url: string) => galleryUrls.includes(url)
   const isCover = (url: string) => mode === "cover" && currentCoverUrl === url
@@ -297,13 +299,14 @@ export default function MediaPickerModal({
             <label className="text-xs font-medium text-[#888580]">Libreria:</label>
             <select
               value={libraryFilter}
-              onChange={(e) => setLibraryFilter(e.target.value as "Tutte" | "Prodotti" | "BANNER" | "SFONDI")}
+              onChange={(e) => setLibraryFilter(e.target.value as "Tutte" | "Prodotti" | "BANNER" | "SFONDI" | "trasporto")}
               className="px-3 py-1.5 text-sm border border-[#DDD9D0] rounded bg-white text-[#1A1A18] focus:border-[#1B4332] focus:outline-none focus:ring-2 focus:ring-[#1B4332]/20"
             >
               <option value="Tutte">Tutte</option>
               <option value="Prodotti">Prodotti</option>
               <option value="BANNER">BANNER</option>
               <option value="SFONDI">SFONDI</option>
+              <option value="trasporto">Trasporto</option>
             </select>
           </div>
 
