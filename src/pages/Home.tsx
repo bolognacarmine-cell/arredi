@@ -237,6 +237,9 @@ export default function Home() {
   const displayedProjects =
     featuredProjects.length > 0 ? featuredProjects : (projects?.slice(0, 1) || [])
 
+  // Safety check to ensure displayedProjects is always an array
+  const safeDisplayedProjects = Array.isArray(displayedProjects) ? displayedProjects : []
+
   // IntersectionObserver for scroll-based background changes
   useEffect(() => {
     const sections = document.querySelectorAll('section[data-bg]')
@@ -379,7 +382,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
-            {displayedProjects.map((p, index) => (
+            {safeDisplayedProjects.map((p, index) => (
               <Link
                 key={p.id}
                 to={`/progetti/${p.id}`}
