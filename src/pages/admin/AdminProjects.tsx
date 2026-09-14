@@ -17,6 +17,7 @@ import {
 } from "../../lib/mediaRecent"
 import { resolveImageUrl } from "../../lib/cloudinary"
 import MediaPickerModal from "../../components/admin/MediaPickerModal"
+import SectionImageUploader from "../../components/admin/SectionImageUploader"
 
 const statusColor: Record<ProjectRecord["status"], string> = {
   "in lavorazione": "bg-amber-100 text-amber-700",
@@ -663,12 +664,30 @@ export default function AdminProjects() {
                   onClick={() => setShowMediaPicker("gallery")}
                   className="text-xs text-[#1B4332] font-medium hover:underline"
                 >
-                  ＋ Aggiungi da Libreria Media
+                  🖼️ Scegli dalla Libreria Media
                 </button>
               </div>
 
-              {galleryItems.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-3">
+              {/* New SectionImageUploader for direct upload */}
+              <SectionImageUploader
+                value={galleryItems.map(item => item.url)}
+                onChange={(urls) => {
+                  const next = urls.map(url => {
+                    const existing = galleryItems.find(item => item.url === url)
+                    return { url, publicId: existing?.publicId || "" }
+                  })
+                  writeGalleryItems(next)
+                }}
+                multiple={true}
+                maxFiles={12}
+                maxSizeMB={10}
+                category="gallery"
+                onError={(msg) => alert(msg)}
+              />
+
+              {/* Existing gallery items display for drag & drop reordering */}
+              {galleryItems.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 mt-3">
                   {galleryItems.map((item, i) => (
                     <div
                       key={`${item.url}-${i}`}
@@ -722,20 +741,9 @@ export default function AdminProjects() {
                     </div>
                   ))}
                 </div>
-              ) : (
-                <div className="border-2 border-dashed border-[#DDD9D0] bg-[#F7F5F0] p-6 text-center mb-3">
-                  <div className="text-4xl text-[#DDD9D0] mb-2">🎞️</div>
-                  <p className="text-sm text-[#4A4A46] mb-1">
-                    Nessuna immagine nella gallery
-                  </p>
-                  <p className="text-xs text-[#888580]">
-                    Clicca &quot;＋ Aggiungi da Libreria Media&quot; per caricare foto
-                    dal Media Manager — o incolla gli URL nel campo sotto.
-                  </p>
-                </div>
               )}
 
-              <details className="border border-[#EAE7E0] bg-[#FAFAF7] rounded">
+              <details className="border border-[#EAE7E0] bg-[#FAFAF7] rounded mt-3">
                 <summary className="px-3 py-2 text-xs cursor-pointer text-[#888580] hover:text-[#1A1A18]">
                   ⚙️ Modo manuale: URL Gallery e Public ID
                 </summary>

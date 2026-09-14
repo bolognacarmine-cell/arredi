@@ -21,7 +21,7 @@ import AdminLogin from "./pages/admin/AdminLogin";
 import Dashboard from "./pages/admin/Dashboard";
 import AdminProjects from "./pages/admin/AdminProjects";
 import AdminQuotes from "./pages/admin/AdminQuotes";
-import AdminMedia from "./pages/admin/AdminMedia";
+// import AdminMedia from "./pages/admin/AdminMedia"; // Removed: Media page no longer accessible from menu
 import AdminSettings from "./pages/admin/AdminSettings";
 import {
   ShowroomGuard,
@@ -67,7 +67,7 @@ export default function App() {
             <Route path="progetti/nuovo" element={<AdminProjects />} />
             <Route path="progetti/:id" element={<AdminProjects />} />
             <Route path="preventivi" element={<AdminQuotes />} />
-            <Route path="media" element={<AdminMedia />} />
+            {/* <Route path="media" element={<AdminMedia />} /> Removed: Media page no longer accessible from menu */}
             <Route path="impostazioni" element={<AdminSettings />} />
             <Route path="showroom" element={<ShowroomGuard />}>
               <Route index element={<ShowroomIndexRedirect />} />
