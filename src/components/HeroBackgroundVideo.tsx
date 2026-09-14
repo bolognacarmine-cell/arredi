@@ -247,7 +247,6 @@ export default function HeroBackgroundVideo({
     <div
       ref={containerRef}
       className={`${className} absolute inset-0 overflow-hidden bg-black`}
-      aria-hidden="true"
     >
       {/* Fallback IMG se nessun video è supportato o errore MP4 */}
       <img
