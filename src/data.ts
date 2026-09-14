@@ -165,6 +165,7 @@ export const PROJECTS: Project[] = [
     tags: ["Bancone", "Specchiere", "Zona attesa"],
     materials:
       "Noce canaletto, ottone satinato, pelle naturale conciata al vegetale",
+    featured: false,
   },
   {
     id: "studio-legale-torino",
@@ -184,6 +185,7 @@ export const PROJECTS: Project[] = [
     ],
     tags: ["Librerie", "Scrivania", "Sala riunioni"],
     materials: "Rovere massello, marmo Calacatta, pelle bordeaux",
+    featured: false,
   },
   {
     id: "boutique-firenze",
@@ -203,6 +205,7 @@ export const PROJECTS: Project[] = [
     ],
     tags: ["Espositori", "Banco cassa", "Camerini"],
     materials: "Ferro verniciato, frassino naturale, velluto antracite",
+    featured: false,
   },
   {
     id: "liceo-bologna",
@@ -221,6 +224,7 @@ export const PROJECTS: Project[] = [
     ],
     tags: ["Banchi", "Librerie", "Mensa"],
     materials: "Betulla certificata FSC, acciaio verniciato, faggio naturale",
+    featured: false,
   },
   {
     id: "salon-roma",
@@ -237,6 +241,7 @@ export const PROJECTS: Project[] = [
     ],
     tags: ["Postazioni", "Lavandini", "Reception"],
     materials: "Laccato opaco bianco, acciaio inox, vetro fumé",
+    featured: false,
   },
   {
     id: "startup-hub-genova",
@@ -254,6 +259,7 @@ export const PROJECTS: Project[] = [
     ],
     tags: ["Coworking", "Conferenze", "Phone booth"],
     materials: "Multistrato marino, feltro acustico, laminato HPL",
+    featured: false,
   },
   {
     id: "cocktail-bar-napoli",
@@ -272,6 +278,7 @@ export const PROJECTS: Project[] = [
     ],
     tags: ["Bancone", "Illuminazione", "Zona clienti"],
     materials: "Marmo Carrara, ottone, legno di noce, vetro",
+    featured: true,
   },
   {
     id: "wine-bar-firenze",
@@ -289,6 +296,7 @@ export const PROJECTS: Project[] = [
     ],
     tags: ["Scaffali", "Banco degustazione", "Vetrina"],
     materials: "Rovere massello, ferro verniciato, vetro",
+    featured: false,
   },
   {
     id: "spa-roma",
@@ -307,6 +315,7 @@ export const PROJECTS: Project[] = [
     ],
     tags: ["Reception", "Cabine", "Area relax"],
     materials: "Marmo beige, legno chiaro, tessuti premium",
+    featured: false,
   },
   {
     id: "beauty-center-milano",
@@ -324,5 +333,6 @@ export const PROJECTS: Project[] = [
     ],
     tags: ["Reception", "Cabine", "Esposizione"],
     materials: "Laminato bianco, acciaio inox, led integrati",
+    featured: false,
   },
 ]

@@ -233,9 +233,9 @@ const whys = [
 
 export default function Home() {
   const projects = useProjects()
-  const featuredProjects = projects?.filter((project) => project.featured).slice(0, 6) || []
+  const featuredProjects = projects?.filter((project) => project.featured).slice(0, 1) || []
   const displayedProjects =
-    featuredProjects.length > 0 ? featuredProjects : (projects?.slice(0, 6) || [])
+    featuredProjects.length > 0 ? featuredProjects : (projects?.slice(0, 1) || [])
 
   // IntersectionObserver for scroll-based background changes
   useEffect(() => {
