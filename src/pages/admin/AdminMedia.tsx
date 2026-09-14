@@ -335,9 +335,14 @@ export default function AdminMedia() {
             format: lastResult.format,
             bytes: lastResult.bytes,
           })
-          // Refresh recent uploads
+          // Refresh recent uploads with current filters
           try {
-            const media = await getMedia()
+            const filters: { category?: string; library?: string; search?: string } = {}
+            if (recentFilter !== "all") filters.category = recentFilter
+            if (libraryFilter !== "Tutte") filters.library = libraryFilter
+            if (searchQuery) filters.search = searchQuery
+
+            const media = await getMedia(filters)
             setRecentUploads(media)
           } catch (refreshError) {
             console.error("Error refreshing media list:", refreshError)

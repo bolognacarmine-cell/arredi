@@ -36,8 +36,36 @@ export async function getMedia(filters?: {
   library?: string
   search?: string
 }): Promise<Media[]> {
-  // Se l'API non è disponibile (es. su Render), ritorna array vuoto
+  // Se l'API non è disponibile (es. su Render), usa localStorage come fallback
   if (!isApiAvailable) {
+    if (typeof window !== "undefined") {
+      try {
+        const storedMedia = JSON.parse(localStorage.getItem("farcom-media-library") || "[]")
+        const deletedMediaIds = JSON.parse(localStorage.getItem("farcom-deleted-media") || "[]")
+
+        let filteredMedia = storedMedia.filter((item: Media) => !deletedMediaIds.includes(item._id))
+
+        // Apply filters
+        if (filters?.category && filters.category !== "all") {
+          filteredMedia = filteredMedia.filter((item: Media) => item.category === filters.category)
+        }
+        if (filters?.library && filters.library !== "Tutte") {
+          filteredMedia = filteredMedia.filter((item: Media) => item.library === filters.library)
+        }
+        if (filters?.search) {
+          const searchLower = filters.search.toLowerCase()
+          filteredMedia = filteredMedia.filter((item: Media) =>
+            item.cloudinaryPublicId.toLowerCase().includes(searchLower) ||
+            (item.title && item.title.toLowerCase().includes(searchLower))
+          )
+        }
+
+        return filteredMedia
+      } catch (error) {
+        console.error("Error reading from localStorage:", error)
+        return []
+      }
+    }
     return []
   }
 
@@ -101,22 +129,33 @@ export async function getMediaById(id: string): Promise<Media> {
 }
 
 export async function createMedia(data: CreateMediaData): Promise<Media> {
+  const newMedia: Media = {
+    _id: "local-" + Date.now() + "-" + Math.random().toString(36).substr(2, 9),
+    cloudinaryUrl: data.cloudinaryUrl,
+    cloudinaryPublicId: data.cloudinaryPublicId,
+    title: data.title,
+    category: data.category,
+    library: data.library,
+    width: data.width,
+    height: data.height,
+    format: data.format,
+    bytes: data.bytes,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  }
+
   if (!isApiAvailable) {
-    // Su Render, ritorna un oggetto mock per non bloccare
-    return {
-      _id: "mock-" + Date.now(),
-      cloudinaryUrl: data.cloudinaryUrl,
-      cloudinaryPublicId: data.cloudinaryPublicId,
-      title: data.title,
-      category: data.category,
-      library: data.library,
-      width: data.width,
-      height: data.height,
-      format: data.format,
-      bytes: data.bytes,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+    // Su Render, salva in localStorage
+    if (typeof window !== "undefined") {
+      try {
+        const storedMedia = JSON.parse(localStorage.getItem("farcom-media-library") || "[]")
+        storedMedia.push(newMedia)
+        localStorage.setItem("farcom-media-library", JSON.stringify(storedMedia))
+      } catch (error) {
+        console.error("Error saving to localStorage:", error)
+      }
     }
+    return newMedia
   }
 
   try {
@@ -143,21 +182,17 @@ export async function createMedia(data: CreateMediaData): Promise<Media> {
     throw new Error(result.error?.message || "Failed to create media")
   } catch (error) {
     console.error("Error creating media:", error)
-    // Su Render, ritorna un oggetto mock per non bloccare
-    return {
-      _id: "mock-" + Date.now(),
-      cloudinaryUrl: data.cloudinaryUrl,
-      cloudinaryPublicId: data.cloudinaryPublicId,
-      title: data.title,
-      category: data.category,
-      library: data.library,
-      width: data.width,
-      height: data.height,
-      format: data.format,
-      bytes: data.bytes,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+    // Su errore API, salva in localStorage come fallback
+    if (typeof window !== "undefined") {
+      try {
+        const storedMedia = JSON.parse(localStorage.getItem("farcom-media-library") || "[]")
+        storedMedia.push(newMedia)
+        localStorage.setItem("farcom-media-library", JSON.stringify(storedMedia))
+      } catch (error) {
+        console.error("Error saving to localStorage:", error)
+      }
     }
+    return newMedia
   }
 }
 
@@ -196,12 +231,14 @@ export async function updateMedia(id: string, data: Partial<CreateMediaData>): P
 
 export async function deleteMedia(id: string): Promise<void> {
   if (!isApiAvailable) {
-    // Su Render, usiamo localStorage come fallback
+    // Su Render, rimuovi da localStorage
     if (typeof window !== "undefined") {
-      const deletedMediaIds = JSON.parse(localStorage.getItem("farcom-deleted-media") || "[]")
-      if (!deletedMediaIds.includes(id)) {
-        deletedMediaIds.push(id)
-        localStorage.setItem("farcom-deleted-media", JSON.stringify(deletedMediaIds))
+      try {
+        const storedMedia = JSON.parse(localStorage.getItem("farcom-media-library") || "[]")
+        const updatedMedia = storedMedia.filter((item: Media) => item._id !== id)
+        localStorage.setItem("farcom-media-library", JSON.stringify(updatedMedia))
+      } catch (error) {
+        console.error("Error deleting from localStorage:", error)
       }
     }
     return
@@ -227,7 +264,16 @@ export async function deleteMedia(id: string): Promise<void> {
     throw new Error(result.error?.message || "Failed to delete media")
   } catch (error) {
     console.error("Error deleting media:", error)
-    // Su Render, non blocchiamo
+    // Su errore API, rimuovi da localStorage come fallback
+    if (typeof window !== "undefined") {
+      try {
+        const storedMedia = JSON.parse(localStorage.getItem("farcom-media-library") || "[]")
+        const updatedMedia = storedMedia.filter((item: Media) => item._id !== id)
+        localStorage.setItem("farcom-media-library", JSON.stringify(updatedMedia))
+      } catch (error) {
+        console.error("Error deleting from localStorage:", error)
+      }
+    }
     return
   }
 }
