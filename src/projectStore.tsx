@@ -95,15 +95,13 @@ export function useProjects() {
     }
   }, [])
 
-  // Load projects from API on mount (only if API is configured and explicitly enabled)
+  // Load projects from API on mount (if API is configured)
   useEffect(() => {
     // Check if API is configured (VITE_API_BASE_URL is set)
     const isApiConfigured = !!import.meta.env.VITE_API_BASE_URL
-    // Also check if API usage is explicitly enabled via env var
-    const useApi = import.meta.env.VITE_USE_API === 'true'
 
-    if (!isApiConfigured || !useApi) {
-      console.log('[projectStore] API not configured or not enabled, using localStorage/default projects')
+    if (!isApiConfigured) {
+      console.log('[projectStore] API not configured, using localStorage/default projects')
       return
     }
 

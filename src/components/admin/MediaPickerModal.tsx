@@ -373,14 +373,12 @@ export default function MediaPickerModal({
               <div className="text-5xl text-[#DDD9D0] mb-4">🔍</div>
               <p className="text-[#4A4A46] mb-2">
                 {recentUploads.length === 0
-                  ? "Libreria Media ancora vuota"
+                  ? "Nessuna immagine caricata"
                   : "Nessuna immagine trovata con questi filtri"}
               </p>
               {recentUploads.length === 0 ? (
                 <p className="text-xs text-[#888580]">
-                  Vai in{" "}
-                  <span className="font-medium">Admin → Libreria Media</span> per caricare le
-                  prime immagini.
+                  Usa l'uploader nella sezione corrente per caricare nuove immagini.
                 </p>
               ) : (
                 <button

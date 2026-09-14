@@ -213,11 +213,10 @@ export default function Dashboard() {
       </div>
 
       {/* Quick actions */}
-      <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-4">
         {[
           ["+ Nuovo progetto", "/admin/progetti/nuovo"],
           ["Gestisci preventivi", "/admin/preventivi"],
-          ["Libreria media", "/admin/media"],
           ["Impostazioni", "/admin/impostazioni"],
         ].map(([label, to]) => (
           <Link

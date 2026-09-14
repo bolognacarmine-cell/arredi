@@ -11,12 +11,9 @@ import {
 } from "../../projectStore"
 import Loading from "../../components/Loading"
 import {
-  getRecentUploads,
   takePendingProjectImages,
-  type RecentUpload,
 } from "../../lib/mediaRecent"
 import { resolveImageUrl } from "../../lib/cloudinary"
-import MediaPickerModal from "../../components/admin/MediaPickerModal"
 import SectionImageUploader from "../../components/admin/SectionImageUploader"
 
 const statusColor: Record<ProjectRecord["status"], string> = {
@@ -36,10 +33,10 @@ type FormState = {
   evidenza: boolean
   immagine: string
   imageCloudinaryPublicId: string
-  materiali: string
-  tagText: string
   galleryText: string
   galleryCloudinaryPublicIdsText: string
+  materiali: string
+  tagText: string
   seoMetaTitle: string
   seoMetaDescription: string
   seoSlug: string
@@ -56,10 +53,10 @@ const emptyForm: FormState = {
   evidenza: false,
   immagine: "",
   imageCloudinaryPublicId: "",
-  materiali: "",
-  tagText: "",
   galleryText: "",
   galleryCloudinaryPublicIdsText: "",
+  materiali: "",
+  tagText: "",
   seoMetaTitle: "",
   seoMetaDescription: "",
   seoSlug: "",
@@ -84,7 +81,7 @@ function projectToForm(project: ProjectRecord): FormState {
     stato: project.status,
     descrizione: project.description,
     evidenza: project.featured,
-    immagine: project.image,
+    immagine: project.coverImages && project.coverImages.length > 0 ? project.coverImages[0] : project.image,
     imageCloudinaryPublicId: project.imageCloudinaryPublicId ?? "",
     materiali: project.materials,
     tagText: project.tags.join(", "),
@@ -131,6 +128,8 @@ function toProjectRecord(
 
   const imageCloudinaryPublicId = form.imageCloudinaryPublicId.trim() || undefined
 
+  const coverImages = form.immagine.trim() ? [form.immagine.trim()] : []
+
   const seoSlug = form.seoSlug.trim() || slugify(form.titolo || "")
   const seoMetaTitle = form.seoMetaTitle.trim() || form.titolo.trim()
   const seoMetaDescription = form.seoMetaDescription.trim() || form.descrizione.trim().substring(0, 160)
@@ -146,6 +145,7 @@ function toProjectRecord(
     description: form.descrizione.trim(),
     image: form.immagine.trim() || normalizedGallery[0],
     imageCloudinaryPublicId,
+    coverImages,
     gallery: normalizedGallery,
     galleryCloudinaryPublicIds,
     tags: form.tagText
@@ -180,10 +180,6 @@ export default function AdminProjects() {
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [autoLoadedImagesCount, setAutoLoadedImagesCount] = useState<number>(0)
-  const [showMediaPicker, setShowMediaPicker] = useState<
-    "cover" | "gallery" | null
-  >(null)
-  const [recentUploads, setRecentUploads] = useState<RecentUpload[]>([])
   const [galleryDragIndex, setGalleryDragIndex] = useState<number | null>(null)
 
   useEffect(() => {
@@ -226,11 +222,6 @@ export default function AdminProjects() {
     }
   }, [location.pathname, routeId, projects])
 
-  useEffect(() => {
-    // MediaPickerModal ora carica i dati internamente dall'API
-    // Non serve più caricare recentUploads qui
-  }, [showForm, showMediaPicker])
-
   const set = (key: keyof FormState, value: string | boolean) =>
     setForm((current) => ({ ...current, [key]: value }))
 
@@ -258,23 +249,6 @@ export default function AdminProjects() {
         .map((it) => it.publicId)
         .join("\n"),
     }))
-  }
-
-  const pickAsCover = (upload: RecentUpload) => {
-    setForm((current) => ({
-      ...current,
-      immagine: upload.secureUrl,
-      imageCloudinaryPublicId: upload.publicId,
-    }))
-    setShowMediaPicker(null)
-  }
-
-  const addToGallery = (upload: RecentUpload) => {
-    const next = [
-      ...galleryItems,
-      { url: upload.secureUrl, publicId: upload.publicId },
-    ]
-    writeGalleryItems(next)
   }
 
   const removeFromGallery = (index: number) => {
@@ -489,7 +463,7 @@ export default function AdminProjects() {
                 <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#1B4332]/10 text-[#1B4332] text-xs font-semibold">
                   <span>📸</span> {autoLoadedImagesCount} foto{" "}
                   {autoLoadedImagesCount === 1 ? "caricata" : "caricate"}
-                  &nbsp;automaticamente dalla Libreria Media
+                  &nbsp;pronte per l'uso
                 </span>
               )}
               <button
@@ -522,57 +496,29 @@ export default function AdminProjects() {
             ))}
 
             <div className="sm:col-span-2">
-              <div className="flex items-center justify-between mb-1">
-                <label className="block text-xs uppercase tracking-wide text-[#888580]">
-                  Immagine copertina
-                </label>
-                <button
-                  type="button"
-                  onClick={() => setShowMediaPicker("cover")}
-                  className="text-xs text-[#1B4332] font-medium hover:underline"
-                >
-                  🖼️ Scegli dalla Libreria Media
-                </button>
-              </div>
-              <div className="flex gap-3 items-start">
-                <div className="h-32 w-44 flex-shrink-0 overflow-hidden border border-[#DDD9D0] bg-[#F7F5F0] flex items-center justify-center">
-                  {form.immagine ? (
-                    <img
-                      src={resolveImageUrl(
-                        {
-                          src: form.immagine,
-                          publicId: form.imageCloudinaryPublicId || null,
-                        },
-                        { width: 480, height: 320, objectFit: "cover" },
-                      )}
-                      alt="Copertina"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-xs text-[#888580] px-2 text-center">
-                      Nessuna immagine
-                    </span>
-                  )}
+              <label className="block text-xs uppercase tracking-wide text-[#888580] mb-2">
+                Copertina progetto – Carica una o più immagini
+              </label>
+              <SectionImageUploader
+                value={form.immagine ? [form.immagine] : []}
+                onChange={(urls) => {
+                  setForm((current) => ({
+                    ...current,
+                    immagine: urls[0] || "",
+                    imageCloudinaryPublicId: "",
+                  }))
+                }}
+                multiple={false}
+                maxFiles={1}
+                maxSizeMB={10}
+                category="project"
+                onError={(msg) => alert(msg)}
+              />
+              {form.immagine && (
+                <div className="mt-2 text-xs text-[#888580]">
+                  Immagine copertina attuale: {form.immagine.substring(0, 50)}...
                 </div>
-                <div className="flex-1 space-y-2">
-                  <input
-                    type="text"
-                    value={form.immagine}
-                    onChange={(e) => set("immagine", e.target.value)}
-                    placeholder="Oppure incolla qui l'URL immagine"
-                    className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
-                  />
-                  <input
-                    type="text"
-                    value={form.imageCloudinaryPublicId}
-                    onChange={(e) =>
-                      set("imageCloudinaryPublicId", e.target.value)
-                    }
-                    placeholder="Cloudinary Public ID (opzionale)"
-                    className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none font-mono text-xs"
-                  />
-                </div>
-              </div>
+              )}
             </div>
 
             <div>
@@ -647,28 +593,19 @@ export default function AdminProjects() {
             </div>
 
             <div className="sm:col-span-2">
-              <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
-                <label className="block text-xs uppercase tracking-wide text-[#888580]">
-                  Gallery Progetto
-                  {galleryItems.length > 0 && (
-                    <span className="ml-2 text-[#1B4332] font-medium normal-case">
-                      · {galleryItems.length}{" "}
-                      {galleryItems.length === 1 ? "immagine" : "immagini"} ·
-                      diventeranno un{" "}
-                      <strong>carosello</strong> nel dettaglio progetto
-                    </span>
-                  )}
-                </label>
-                <button
-                  type="button"
-                  onClick={() => setShowMediaPicker("gallery")}
-                  className="text-xs text-[#1B4332] font-medium hover:underline"
-                >
-                  🖼️ Scegli dalla Libreria Media
-                </button>
-              </div>
+              <label className="block text-xs uppercase tracking-wide text-[#888580] mb-2">
+                Carosello dettaglio progetto – Carica una o più immagini
+                {galleryItems.length > 0 && (
+                  <span className="ml-2 text-[#1B4332] font-medium normal-case">
+                    · {galleryItems.length}{" "}
+                    {galleryItems.length === 1 ? "immagine" : "immagini"} ·
+                    diventeranno un{" "}
+                    <strong>carosello</strong> nel dettaglio progetto
+                  </span>
+                )}
+              </label>
 
-              {/* New SectionImageUploader for direct upload */}
+              {/* SectionImageUploader for direct upload */}
               <SectionImageUploader
                 value={galleryItems.map(item => item.url)}
                 onChange={(urls) => {
@@ -851,17 +788,6 @@ export default function AdminProjects() {
               Annulla
             </button>
           </div>
-
-          {showMediaPicker && (
-            <MediaPickerModal
-              mode={showMediaPicker}
-              currentCoverUrl={form.immagine}
-              galleryUrls={galleryItems.map((item) => item.url)}
-              onClose={() => setShowMediaPicker(null)}
-              onPickAsCover={pickAsCover}
-              onAddToGallery={addToGallery}
-            />
-          )}
         </div>
       )}
 

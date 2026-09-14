@@ -88,7 +88,7 @@ export default function Projects() {
                 <img
                   src={resolveImageUrl(
                     {
-                      src: p.image,
+                      src: p.coverImages && p.coverImages.length > 0 ? p.coverImages[0] : p.image,
                       publicId: p.imageCloudinaryPublicId ?? null,
                     },
                     {
