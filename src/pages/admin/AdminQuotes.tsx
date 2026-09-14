@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useQuotes, saveQuotes, type QuoteRecord } from "../../quoteStore"
+import { useQuotes, saveQuotes, deleteQuote, type QuoteRecord } from "../../quoteStore"
 
 const statusColor: Record<QuoteRecord["stato"], string> = {
   nuovo: "bg-blue-100 text-blue-700",
@@ -23,6 +23,15 @@ export default function AdminQuotes() {
       q.id === quoteId ? { ...q, stato: newStatus } : q
     )
     saveQuotes(updatedQuotes)
+  }
+
+  const handleDeleteQuote = (quoteId: number) => {
+    if (window.confirm("Sei sicuro di voler eliminare questo preventivo?")) {
+      deleteQuote(quoteId)
+      if (selectedQuote?.id === quoteId) {
+        setSelectedQuote(null)
+      }
+    }
   }
 
   const handleExportCSV = () => {
@@ -144,15 +153,26 @@ export default function AdminQuotes() {
                     </span>
                   </td>
                   <td className="px-5 py-3">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setSelectedQuote(q)
-                      }}
-                      className="text-xs text-[#1B4332] hover:underline"
-                    >
-                      Dettaglio
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setSelectedQuote(q)
+                        }}
+                        className="text-xs text-[#1B4332] hover:underline"
+                      >
+                        Dettaglio
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleDeleteQuote(q.id)
+                        }}
+                        className="text-xs text-red-600 hover:text-red-800 hover:underline"
+                      >
+                        Elimina
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -167,12 +187,20 @@ export default function AdminQuotes() {
               <h2 className="font-display text-lg font-light text-[#1A1A18]">
                 {selectedQuote.nome} {selectedQuote.cognome}
               </h2>
-              <button
-                onClick={() => setSelectedQuote(null)}
-                className="text-[#888580] text-xs hover:text-[#1A1A18]"
-              >
-                ✕
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleDeleteQuote(selectedQuote.id)}
+                  className="text-xs text-red-600 hover:text-red-800 font-medium"
+                >
+                  Elimina
+                </button>
+                <button
+                  onClick={() => setSelectedQuote(null)}
+                  className="text-[#888580] text-xs hover:text-[#1A1A18]"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
 
             <dl className="space-y-3 text-sm mb-5">

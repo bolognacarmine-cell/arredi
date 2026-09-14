@@ -123,6 +123,12 @@ export function resetQuotes() {
   window.dispatchEvent(new CustomEvent(QUOTES_EVENT))
 }
 
+export function deleteQuote(quoteId: number) {
+  const quotes = readQuotes()
+  const updatedQuotes = quotes.filter((q) => q.id !== quoteId)
+  saveQuotes(updatedQuotes)
+}
+
 export function useQuotes() {
   const [quotes, setQuotes] = useState<QuoteRecord[]>(() => readQuotes())
 
