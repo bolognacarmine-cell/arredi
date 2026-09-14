@@ -36,8 +36,8 @@ export async function getMedia(filters?: {
   library?: string
   search?: string
 }): Promise<Media[]> {
-  // Se l'API non è disponibile (es. su Render), usa localStorage come fallback
-  if (!isApiAvailable) {
+  // Helper function to get and filter localStorage data
+  const getFromLocalStorage = (): Media[] => {
     if (typeof window !== "undefined") {
       try {
         const storedMedia = JSON.parse(localStorage.getItem("farcom-media-library") || "[]")
@@ -69,37 +69,43 @@ export async function getMedia(filters?: {
     return []
   }
 
-  try {
-    const url = new URL(`${API_BASE_URL}/api/media`)
-    if (filters?.category) url.searchParams.append("category", filters.category)
-    if (filters?.library && filters.library !== "Tutte") url.searchParams.append("library", filters.library)
-    if (filters?.search) url.searchParams.append("search", filters.search)
+  // Try API first, but fall back to localStorage on any error
+  if (isApiAvailable) {
+    try {
+      const url = new URL(`${API_BASE_URL}/api/media`)
+      if (filters?.category) url.searchParams.append("category", filters.category)
+      if (filters?.library && filters.library !== "Tutte") url.searchParams.append("library", filters.library)
+      if (filters?.search) url.searchParams.append("search", filters.search)
 
-    const response = await fetch(url.toString())
-    const result = await response.json()
+      const response = await fetch(url.toString())
+      const result = await response.json()
 
-    // Il backend ritorna direttamente l'array, non { success, data }
-    let media: Media[] = []
-    if (Array.isArray(result)) {
-      media = result
-    } else if (result.success) {
-      media = result.data
-    } else {
-      throw new Error(result.error?.message || "Failed to fetch media")
+      // Il backend ritorna direttamente l'array, non { success, data }
+      let media: Media[] = []
+      if (Array.isArray(result)) {
+        media = result
+      } else if (result.success) {
+        media = result.data
+      } else {
+        throw new Error(result.error?.message || "Failed to fetch media")
+      }
+
+      // Filter out deleted media IDs from localStorage
+      if (typeof window !== "undefined") {
+        const deletedMediaIds = JSON.parse(localStorage.getItem("farcom-deleted-media") || "[]")
+        media = media.filter((item) => !deletedMediaIds.includes(item._id))
+      }
+
+      return media
+    } catch (error) {
+      console.error("Error fetching media via API, falling back to localStorage:", error)
+      // Fall back to localStorage
+      return getFromLocalStorage()
     }
-
-    // Filter out deleted media IDs from localStorage
-    if (typeof window !== "undefined") {
-      const deletedMediaIds = JSON.parse(localStorage.getItem("farcom-deleted-media") || "[]")
-      media = media.filter((item) => !deletedMediaIds.includes(item._id))
-    }
-
-    return media
-  } catch (error) {
-    console.error("Error fetching media:", error)
-    // Ritorna array vuoto invece di bloccare
-    return []
   }
+
+  // API not available, use localStorage
+  return getFromLocalStorage()
 }
 
 export async function getMediaById(id: string): Promise<Media> {
@@ -144,56 +150,48 @@ export async function createMedia(data: CreateMediaData): Promise<Media> {
     updatedAt: new Date().toISOString(),
   }
 
-  if (!isApiAvailable) {
-    // Su Render, salva in localStorage
-    if (typeof window !== "undefined") {
-      try {
-        const storedMedia = JSON.parse(localStorage.getItem("farcom-media-library") || "[]")
-        storedMedia.push(newMedia)
-        localStorage.setItem("farcom-media-library", JSON.stringify(storedMedia))
-      } catch (error) {
-        console.error("Error saving to localStorage:", error)
+  // Try API first, but always fall back to localStorage on any error
+  if (isApiAvailable) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/media`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      })
+
+      const result = await response.json()
+
+      // Il backend ritorna direttamente l'oggetto media, non { success, data }
+      if (result._id) {
+        return result
       }
+
+      // Fallback per formato con { success, data }
+      if (result.success) {
+        return result.data
+      }
+
+      throw new Error(result.error?.message || "Failed to create media")
+    } catch (error) {
+      console.error("Error creating media via API, falling back to localStorage:", error)
+      // Fall through to localStorage
     }
-    return newMedia
   }
 
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/media`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    })
-
-    const result = await response.json()
-
-    // Il backend ritorna direttamente l'oggetto media, non { success, data }
-    if (result._id) {
-      return result
+  // Save to localStorage as fallback
+  if (typeof window !== "undefined") {
+    try {
+      const storedMedia = JSON.parse(localStorage.getItem("farcom-media-library") || "[]")
+      storedMedia.push(newMedia)
+      localStorage.setItem("farcom-media-library", JSON.stringify(storedMedia))
+      console.log("Media saved to localStorage as fallback")
+    } catch (error) {
+      console.error("Error saving to localStorage:", error)
     }
-
-    // Fallback per formato con { success, data }
-    if (result.success) {
-      return result.data
-    }
-
-    throw new Error(result.error?.message || "Failed to create media")
-  } catch (error) {
-    console.error("Error creating media:", error)
-    // Su errore API, salva in localStorage come fallback
-    if (typeof window !== "undefined") {
-      try {
-        const storedMedia = JSON.parse(localStorage.getItem("farcom-media-library") || "[]")
-        storedMedia.push(newMedia)
-        localStorage.setItem("farcom-media-library", JSON.stringify(storedMedia))
-      } catch (error) {
-        console.error("Error saving to localStorage:", error)
-      }
-    }
-    return newMedia
   }
+  return newMedia
 }
 
 export async function updateMedia(id: string, data: Partial<CreateMediaData>): Promise<Media> {
@@ -230,50 +228,48 @@ export async function updateMedia(id: string, data: Partial<CreateMediaData>): P
 }
 
 export async function deleteMedia(id: string): Promise<void> {
-  if (!isApiAvailable) {
-    // Su Render, rimuovi da localStorage
+  // Helper function to delete from localStorage
+  const deleteFromLocalStorage = (): void => {
     if (typeof window !== "undefined") {
       try {
         const storedMedia = JSON.parse(localStorage.getItem("farcom-media-library") || "[]")
         const updatedMedia = storedMedia.filter((item: Media) => item._id !== id)
         localStorage.setItem("farcom-media-library", JSON.stringify(updatedMedia))
+        console.log("Media deleted from localStorage")
       } catch (error) {
         console.error("Error deleting from localStorage:", error)
       }
     }
-    return
   }
 
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/media/${id}`, {
-      method: "DELETE",
-    })
+  // Try API first, but fall back to localStorage on any error
+  if (isApiAvailable) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/media/${id}`, {
+        method: "DELETE",
+      })
 
-    const result = await response.json()
+      const result = await response.json()
 
-    // Il backend ritorna { message: "Media deleted" }, non { success, data }
-    if (result.message || response.ok) {
-      return
-    }
-
-    // Fallback per formato con { success, data }
-    if (result.success) {
-      return
-    }
-
-    throw new Error(result.error?.message || "Failed to delete media")
-  } catch (error) {
-    console.error("Error deleting media:", error)
-    // Su errore API, rimuovi da localStorage come fallback
-    if (typeof window !== "undefined") {
-      try {
-        const storedMedia = JSON.parse(localStorage.getItem("farcom-media-library") || "[]")
-        const updatedMedia = storedMedia.filter((item: Media) => item._id !== id)
-        localStorage.setItem("farcom-media-library", JSON.stringify(updatedMedia))
-      } catch (error) {
-        console.error("Error deleting from localStorage:", error)
+      // Il backend ritorna { message: "Media deleted" }, non { success, data }
+      if (result.message || response.ok) {
+        return
       }
+
+      // Fallback per formato con { success, data }
+      if (result.success) {
+        return
+      }
+
+      throw new Error(result.error?.message || "Failed to delete media")
+    } catch (error) {
+      console.error("Error deleting media via API, falling back to localStorage:", error)
+      // Fall back to localStorage
+      deleteFromLocalStorage()
+      return
     }
-    return
   }
+
+  // API not available, use localStorage
+  deleteFromLocalStorage()
 }
