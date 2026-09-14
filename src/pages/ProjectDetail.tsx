@@ -5,7 +5,7 @@ import { useProjects } from "../projectStore";
 
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
-  const projects = useProjects()
+  const projects = useProjects() || []
   const project = projects.find((p) => p.id === id);
   const [activeImg, setActiveImg] = useState(0);
 

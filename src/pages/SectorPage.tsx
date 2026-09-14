@@ -46,7 +46,7 @@ export default function SectorPage() {
 
   const { id } = useParams<{ id: string }>();
   const sector = SECTORS.find((s) => s.id === id);
-  const projects = useProjects()
+  const projects = useProjects() || []
 
   if (!sector) {
     return (
@@ -63,7 +63,7 @@ export default function SectorPage() {
     )
   }
 
-  const sectorProjects = projects.filter((p) => p.sectorId === id);
+  const sectorProjects = projects?.filter((p) => p.sectorId === id) || []
 
   return (
     <div className="bg-[#F7F5F0]">

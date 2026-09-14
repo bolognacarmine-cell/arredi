@@ -27,7 +27,7 @@ export default function Projects() {
   }, [])
 
   const [active, setActive] = useState("all");
-  const projects = useProjects()
+  const projects = useProjects() || []
 
   const visible = active === "all" ? projects : projects.filter((p) => p.sectorId === active);
 
