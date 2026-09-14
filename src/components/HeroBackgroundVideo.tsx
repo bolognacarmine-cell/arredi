@@ -27,6 +27,8 @@ type Props = {
   priority?: boolean // true = carica SUBITO (per hero above the fold), false = lazy con IO
 
   onVideoReady?: () => void // Callback when video is ready and playing
+
+  isMuted?: boolean // Controlled muted state from parent
 }
 
 /**
@@ -50,12 +52,13 @@ export default function HeroBackgroundVideo({
   priority = true,
 
   onVideoReady,
+
+  isMuted = true,
 }: Props) {
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const containerRef = useRef<HTMLDivElement | null>(null)
 
   const [showFallback, setShowFallback] = useState(false)
-  const [isMuted, setIsMuted] = useState(true)
 
   const ioRef = useRef<IntersectionObserver | null>(null)
 
@@ -144,6 +147,22 @@ export default function HeroBackgroundVideo({
     }
   }, [onVideoReady])
 
+  // Sync video muted state with prop
+  useEffect(() => {
+    const v = videoRef.current
+    if (!v) return
+
+    v.muted = isMuted
+
+    // Se attiviamo l'audio, proviamo a fare play se il video è in pausa
+    if (!isMuted && v.paused) {
+      v.play().catch(() => {
+        // Se fallisce, rimettiamo il muto
+        v.muted = true
+      })
+    }
+  }, [isMuted])
+
   // Experimental mode: reveal animation sequence
   useEffect(() => {
     if (!ENABLE_EXPERIMENTAL_HERO) return
@@ -211,24 +230,6 @@ export default function HeroBackgroundVideo({
     if (videoRef.current) videoRef.current.style.display = "none"
   }
 
-  const toggleAudio = () => {
-    const video = videoRef.current
-    if (!video) return
-
-    const newMutedState = !isMuted
-    video.muted = newMutedState
-    setIsMuted(newMutedState)
-
-    // Se attiviamo l'audio, proviamo a fare play se il video è in pausa
-    if (!newMutedState && video.paused) {
-      video.play().catch(() => {
-        // Se fallisce, rimettiamo il muto
-        video.muted = true
-        setIsMuted(true)
-      })
-    }
-  }
-
   // NOTA: sorgenti ELENCATE SOLO se il file esiste davvero in public/videos.
 
   // Al browser piace una sorgente sola ben definita invece di 4 sorgenti inesistenti che generano 404.
@@ -282,15 +283,6 @@ export default function HeroBackgroundVideo({
           >
             <source src={`${basePath}.mp4`} type="video/mp4" />
           </video>
-
-          {/* Audio Toggle Button */}
-          <button
-            onClick={toggleAudio}
-            className="absolute top-4 right-4 z-[99999] bg-black/50 hover:bg-black/70 backdrop-blur-sm text-white px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 border border-white/20 hover:border-white/40 cursor-pointer"
-            aria-label={isMuted ? "Attiva audio" : "Disattiva audio"}
-          >
-            {isMuted ? "🔇 Muto" : "🔊 Audio"}
-          </button>
         </div>
       ) : (
         // Poster placeholder finché non entra in viewport (lazy)
