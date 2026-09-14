@@ -15,6 +15,8 @@ export default function ProjectDetail() {
 
   // Ensure gallery exists and is an array
   const gallery = project?.gallery || []
+  const tags = project?.tags || []
+  const galleryCloudinaryPublicIds = project?.galleryCloudinaryPublicIds || []
   const total = gallery.length
 
   const goPrev = useCallback(() => {
@@ -77,7 +79,7 @@ export default function ProjectDetail() {
                   {
                     src: gallery[activeImg],
                     publicId:
-                      project.galleryCloudinaryPublicIds?.[activeImg] ??
+                      galleryCloudinaryPublicIds[activeImg] ??
                       null,
                   },
                   {
@@ -173,7 +175,7 @@ export default function ProjectDetail() {
                         {
                           src: img,
                           publicId:
-                            project.galleryCloudinaryPublicIds?.[i] ?? null,
+                            galleryCloudinaryPublicIds[i] ?? null,
                         },
                         {
                           width: 240,
@@ -227,7 +229,7 @@ export default function ProjectDetail() {
                 Arredi realizzati
               </h3>
               <div className="flex flex-wrap gap-2">
-                {project.tags.map((t) => (
+                {tags.map((t) => (
                   <span
                     key={t}
                     className="bg-[#EAE7E0] text-[#4A4A46] text-xs px-4 py-2"

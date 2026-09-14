@@ -33,6 +33,7 @@ export interface ProjectDocument {
   description: string
   image: string
   imageCloudinaryPublicId?: string
+  coverImages?: string[]
   gallery: string[]
   galleryCloudinaryPublicIds?: string[]
   tags: string[]

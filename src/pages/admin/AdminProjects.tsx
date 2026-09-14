@@ -81,12 +81,12 @@ function projectToForm(project: ProjectRecord): FormState {
     stato: project.status,
     descrizione: project.description,
     evidenza: project.featured,
-    immagine: project.coverImages && project.coverImages.length > 0 ? project.coverImages[0] : project.image,
+    immagine: (project.coverImages && project.coverImages.length > 0 ? project.coverImages[0] : project.image) || "",
     imageCloudinaryPublicId: project.imageCloudinaryPublicId ?? "",
     materiali: project.materials,
-    tagText: project.tags.join(", "),
-    galleryText: project.gallery.join("\n"),
-    galleryCloudinaryPublicIdsText: (project.galleryCloudinaryPublicIds ?? []).join("\n"),
+    tagText: (project.tags || []).join(", "),
+    galleryText: (project.gallery || []).join("\n"),
+    galleryCloudinaryPublicIdsText: (project.galleryCloudinaryPublicIds || []).join("\n"),
     seoMetaTitle: project.seo?.metaTitle ?? "",
     seoMetaDescription: project.seo?.metaDescription ?? "",
     seoSlug: project.seo?.slug ?? "",
@@ -106,7 +106,7 @@ function toProjectRecord(
     : currentProjects.some((project) => project.id === nextId)
       ? `${nextId}-${Date.now()}`
       : nextId
-  const gallery = form.galleryText
+  const gallery = (form.galleryText || "")
     .split("\n")
     .map((item) => item.trim())
     .filter(Boolean)
@@ -117,7 +117,7 @@ function toProjectRecord(
         ? [form.immagine.trim()]
         : ["https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=800&fit=crop"]
 
-  const galleryPublicIdsRaw = form.galleryCloudinaryPublicIdsText
+  const galleryPublicIdsRaw = (form.galleryCloudinaryPublicIdsText || "")
     .split("\n")
     .map((s) => s.trim())
     .filter(Boolean)
@@ -148,7 +148,7 @@ function toProjectRecord(
     coverImages,
     gallery: normalizedGallery,
     galleryCloudinaryPublicIds,
-    tags: form.tagText
+    tags: (form.tagText || "")
       .split(",")
       .map((item) => item.trim())
       .filter(Boolean),
@@ -228,11 +228,11 @@ export default function AdminProjects() {
   const galleryItems = useMemo<
     Array<{ url: string; publicId: string }>
   >(() => {
-    const urls = form.galleryText
+    const urls = (form.galleryText || "")
       .split("\n")
       .map((s) => s.trim())
       .filter(Boolean)
-    const pids = form.galleryCloudinaryPublicIdsText
+    const pids = (form.galleryCloudinaryPublicIdsText || "")
       .split("\n")
       .map((s) => s.trim())
       .filter(Boolean)
@@ -244,10 +244,10 @@ export default function AdminProjects() {
   ) => {
     setForm((current) => ({
       ...current,
-      galleryText: items.map((it) => it.url).join("\n"),
+      galleryText: items.map((it) => it.url).join("\n") || "",
       galleryCloudinaryPublicIdsText: items
         .map((it) => it.publicId)
-        .join("\n"),
+        .join("\n") || "",
     }))
   }
 
