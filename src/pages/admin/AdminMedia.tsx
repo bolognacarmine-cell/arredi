@@ -324,6 +324,24 @@ export default function AdminMedia() {
   useEffect(() => {
     async function saveToDatabase() {
       if (lastResult && !error) {
+        // IMMEDIATELY add to state for display (emergency fix for project delivery)
+        const tempMedia: Media = {
+          _id: "temp-" + Date.now(),
+          cloudinaryUrl: lastResult.secure_url,
+          cloudinaryPublicId: lastResult.public_id,
+          title: title.trim() || undefined,
+          category,
+          library: uploadLibrary !== "Tutte" ? uploadLibrary : undefined,
+          width: lastResult.width,
+          height: lastResult.height,
+          format: lastResult.format,
+          bytes: lastResult.bytes,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+        setRecentUploads(prev => [tempMedia, ...prev])
+        console.log("Emergency: Added image directly to state for immediate display")
+
         try {
           const newMedia = await createMedia({
             cloudinaryUrl: lastResult.secure_url,
@@ -341,8 +359,6 @@ export default function AdminMedia() {
             const media = await getMedia()
             setRecentUploads(media)
             console.log("Media list refreshed, total items:", media.length, "new media ID:", newMedia._id)
-            // Force a re-render by updating a timestamp or similar
-            setRecentUploads([...media])
           } catch (refreshError) {
             console.error("Error refreshing media list:", refreshError)
             // Non bloccare se il refresh fallisce
