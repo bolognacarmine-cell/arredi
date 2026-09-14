@@ -286,7 +286,7 @@ export default function HeroBackgroundVideo({
           {/* Audio Toggle Button */}
           <button
             onClick={toggleAudio}
-            className="absolute bottom-8 right-8 z-[9999] bg-black/50 hover:bg-black/70 backdrop-blur-sm text-white px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 border border-white/20 hover:border-white/40 cursor-pointer"
+            className="absolute top-4 right-4 z-[99999] bg-black/50 hover:bg-black/70 backdrop-blur-sm text-white px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 border border-white/20 hover:border-white/40 cursor-pointer"
             aria-label={isMuted ? "Attiva audio" : "Disattiva audio"}
           >
             {isMuted ? "🔇 Muto" : "🔊 Audio"}
