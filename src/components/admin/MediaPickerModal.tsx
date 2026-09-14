@@ -213,6 +213,21 @@ export default function MediaPickerModal({
     loadMedia()
   }, [])
 
+  // Aggiungi upload temporanei da localStorage per visualizzazione immediata
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const tempMedia = JSON.parse(localStorage.getItem("farcom-temporary-uploads") || "[]")
+        if (tempMedia.length > 0) {
+          setMediaItems(prev => [...tempMedia, ...prev])
+          console.log("Added temporary uploads from localStorage:", tempMedia.length)
+        }
+      } catch (error) {
+        console.error("Error reading temporary uploads:", error)
+      }
+    }
+  }, [])
+
   // Applica filtri ai media caricati
   const filteredMedia = useMemo(() => {
     return mediaItems.filter((media) => {

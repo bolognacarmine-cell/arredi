@@ -351,7 +351,17 @@ export default function AdminMedia() {
           updatedAt: new Date().toISOString(),
         }
         setTemporaryUploads(prev => [tempMedia, ...prev])
-        console.log("Emergency: Added image to temporary state for immediate display")
+        // Also save to localStorage for MediaPickerModal
+        if (typeof window !== "undefined") {
+          try {
+            const existingTemp = JSON.parse(localStorage.getItem("farcom-temporary-uploads") || "[]")
+            const updatedTemp = [tempMedia, ...existingTemp]
+            localStorage.setItem("farcom-temporary-uploads", JSON.stringify(updatedTemp))
+            console.log("Emergency: Added image to temporary state and localStorage")
+          } catch (error) {
+            console.error("Error saving to localStorage:", error)
+          }
+        }
 
         try {
           const newMedia = await createMedia({
@@ -375,6 +385,16 @@ export default function AdminMedia() {
             // Non bloccare se il refresh fallisce
           }
           setLastUploadIdRef(newMedia._id)
+          // Clean up temporary localStorage for this image (remove from temp list since it's now in proper storage)
+          if (typeof window !== "undefined") {
+            try {
+              const tempUploads = JSON.parse(localStorage.getItem("farcom-temporary-uploads") || "[]")
+              const updatedTemp = tempUploads.filter((m: Media) => m.cloudinaryPublicId !== lastResult.public_id)
+              localStorage.setItem("farcom-temporary-uploads", JSON.stringify(updatedTemp))
+            } catch (error) {
+              console.error("Error cleaning temporary localStorage:", error)
+            }
+          }
         } catch (error) {
           console.error("Error saving media to database:", error)
           // Non bloccare se il salvataggio nel DB fallisce (es. su Render)
