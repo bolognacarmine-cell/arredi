@@ -55,6 +55,7 @@ export default function HeroBackgroundVideo({
   const containerRef = useRef<HTMLDivElement | null>(null)
 
   const [showFallback, setShowFallback] = useState(false)
+  const [isMuted, setIsMuted] = useState(true)
 
   const ioRef = useRef<IntersectionObserver | null>(null)
 
@@ -210,6 +211,24 @@ export default function HeroBackgroundVideo({
     if (videoRef.current) videoRef.current.style.display = "none"
   }
 
+  const toggleAudio = () => {
+    const video = videoRef.current
+    if (!video) return
+
+    const newMutedState = !isMuted
+    video.muted = newMutedState
+    setIsMuted(newMutedState)
+
+    // Se attiviamo l'audio, proviamo a fare play se il video è in pausa
+    if (!newMutedState && video.paused) {
+      video.play().catch(() => {
+        // Se fallisce, rimettiamo il muto
+        video.muted = true
+        setIsMuted(true)
+      })
+    }
+  }
+
   // NOTA: sorgenti ELENCATE SOLO se il file esiste davvero in public/videos.
 
   // Al browser piace una sorgente sola ben definita invece di 4 sorgenti inesistenti che generano 404.
@@ -250,7 +269,7 @@ export default function HeroBackgroundVideo({
             }`}
             autoPlay
             loop
-            muted
+            muted={isMuted}
             playsInline
             disablePictureInPicture
             controls={false}
@@ -264,6 +283,15 @@ export default function HeroBackgroundVideo({
           >
             <source src={`${basePath}.mp4`} type="video/mp4" />
           </video>
+
+          {/* Audio Toggle Button */}
+          <button
+            onClick={toggleAudio}
+            className="absolute bottom-4 right-4 z-10 bg-black/50 hover:bg-black/70 backdrop-blur-sm text-white px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 border border-white/20 hover:border-white/40"
+            aria-label={isMuted ? "Attiva audio" : "Disattiva audio"}
+          >
+            {isMuted ? "🔇 Muto" : "🔊 Audio"}
+          </button>
         </div>
       ) : (
         // Poster placeholder finché non entra in viewport (lazy)
