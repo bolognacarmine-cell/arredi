@@ -206,6 +206,7 @@ export default function AdminMedia() {
     backupPath?: string | null
   } | null>(null)
   const [recentUploads, setRecentUploads] = useState<Media[]>([])
+  const [temporaryUploads, setTemporaryUploads] = useState<Media[]>([])
   const [recentFilter, setRecentFilter] = useState<UploadCategory | "all">("all")
   const [libraryFilter, setLibraryFilter] = useState<"Tutte" | "Prodotti" | "BANNER" | "SFONDI" | "trasporto">("Tutte")
   const [uploadLibrary, setUploadLibrary] = useState<"Tutte" | "Prodotti" | "BANNER" | "SFONDI" | "trasporto">("Tutte")
@@ -217,6 +218,11 @@ export default function AdminMedia() {
   const gridFileInputRef = useRef<HTMLInputElement | null>(null)
   const reminderTimerRef = useRef<number | null>(null)
   const bigBtnRef = useRef<HTMLButtonElement | null>(null)
+
+  // Combine temporary and recent uploads for display
+  const displayUploads = useMemo(() => {
+    return [...temporaryUploads, ...recentUploads]
+  }, [temporaryUploads, recentUploads])
 
   useCloudinaryUpload()
 
@@ -250,6 +256,8 @@ export default function AdminMedia() {
     if (window.confirm("Sei sicuro di voler eliminare questa immagine?")) {
       try {
         await deleteMedia(mediaId)
+        // Remove from temporary uploads if it's there
+        setTemporaryUploads(prev => prev.filter(m => m._id !== mediaId))
         // Refresh the list
         const filters: { category?: string; library?: string; search?: string } = {}
         if (recentFilter !== "all") filters.category = recentFilter
@@ -276,6 +284,8 @@ export default function AdminMedia() {
         for (const mediaId of selectedMedia) {
           await deleteMedia(mediaId)
         }
+        // Remove from temporary uploads
+        setTemporaryUploads(prev => prev.filter(m => !selectedMedia.has(m._id)))
         // Refresh the list
         const filters: { category?: string; library?: string; search?: string } = {}
         if (recentFilter !== "all") filters.category = recentFilter
@@ -299,11 +309,12 @@ export default function AdminMedia() {
       // Add all current media IDs to deleted list for persistence
       if (typeof window !== "undefined") {
         const deletedMediaIds = JSON.parse(localStorage.getItem("farcom-deleted-media") || "[]")
-        const allIds = recentUploads.map((media) => media._id)
+        const allIds = displayUploads.map((media) => media._id)
         const updatedDeletedIds = [...new Set([...deletedMediaIds, ...allIds])]
         localStorage.setItem("farcom-deleted-media", JSON.stringify(updatedDeletedIds))
       }
       setRecentUploads([])
+      setTemporaryUploads([])
       setShowClearConfirm(false)
       showToast("Libreria pulita", "ok")
     }
@@ -324,7 +335,7 @@ export default function AdminMedia() {
   useEffect(() => {
     async function saveToDatabase() {
       if (lastResult && !error) {
-        // IMMEDIATELY add to state for display (emergency fix for project delivery)
+        // IMMEDIATELY add to temporary state for display (emergency fix for project delivery)
         const tempMedia: Media = {
           _id: "temp-" + Date.now(),
           cloudinaryUrl: lastResult.secure_url,
@@ -339,8 +350,8 @@ export default function AdminMedia() {
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         }
-        setRecentUploads(prev => [tempMedia, ...prev])
-        console.log("Emergency: Added image directly to state for immediate display")
+        setTemporaryUploads(prev => [tempMedia, ...prev])
+        console.log("Emergency: Added image to temporary state for immediate display")
 
         try {
           const newMedia = await createMedia({
@@ -679,7 +690,7 @@ export default function AdminMedia() {
         <div>
           <h1 className="font-display text-3xl font-light text-[#1A1A18]">Libreria Media</h1>
           <p className="text-[#888580] text-sm mt-0.5">
-            {allImages.length} file · Upload diretto su Cloudinary CDN
+            {displayUploads.length} file · Upload diretto su Cloudinary CDN
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -1451,7 +1462,7 @@ export default function AdminMedia() {
               className="px-3 py-1.5 text-sm border border-[#DDD9D0] rounded bg-white text-[#1A1A18] focus:border-[#1B4332] focus:outline-none focus:ring-2 focus:ring-[#1B4332]/20"
             />
 
-            {recentUploads.length > 0 && (
+            {displayUploads.length > 0 && (
               <>
                 {selectedMedia.size > 0 && (
                   <button
@@ -1472,13 +1483,13 @@ export default function AdminMedia() {
           </div>
         </div>
         
-        {recentUploads.length === 0 ? (
+        {displayUploads.length === 0 ? (
           <div className="bg-[#F7F5F0] border border-[#DDD9D0] rounded-lg p-8 text-center text-[#888580]">
             <p className="text-sm">Nessun upload recente</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-            {recentUploads.map((upload) => (
+            {displayUploads.map((upload) => (
                 <div
                   key={upload._id}
                   className={`group relative bg-[#EAE7E0] aspect-square overflow-hidden border transition-colors ${
