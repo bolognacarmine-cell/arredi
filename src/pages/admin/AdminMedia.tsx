@@ -208,6 +208,7 @@ export default function AdminMedia() {
   const [recentUploads, setRecentUploads] = useState<Media[]>([])
   const [recentFilter, setRecentFilter] = useState<UploadCategory | "all">("all")
   const [libraryFilter, setLibraryFilter] = useState<"Tutte" | "Prodotti" | "BANNER" | "SFONDI" | "trasporto">("Tutte")
+  const [uploadLibrary, setUploadLibrary] = useState<"Tutte" | "Prodotti" | "BANNER" | "SFONDI" | "trasporto">("Tutte")
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedMedia, setSelectedMedia] = useState<Set<string>>(new Set())
   const [showClearConfirm, setShowClearConfirm] = useState(false)
@@ -329,21 +330,17 @@ export default function AdminMedia() {
             cloudinaryPublicId: lastResult.public_id,
             title: title.trim() || undefined,
             category,
-            library: libraryFilter !== "Tutte" ? libraryFilter : undefined,
+            library: uploadLibrary !== "Tutte" ? uploadLibrary : undefined,
             width: lastResult.width,
             height: lastResult.height,
             format: lastResult.format,
             bytes: lastResult.bytes,
           })
-          // Refresh recent uploads with current filters
+          // Refresh recent uploads without filters to ensure the new image appears
           try {
-            const filters: { category?: string; library?: string; search?: string } = {}
-            if (recentFilter !== "all") filters.category = recentFilter
-            if (libraryFilter !== "Tutte") filters.library = libraryFilter
-            if (searchQuery) filters.search = searchQuery
-
-            const media = await getMedia(filters)
+            const media = await getMedia()
             setRecentUploads(media)
+            console.log("Media list refreshed, total items:", media.length)
           } catch (refreshError) {
             console.error("Error refreshing media list:", refreshError)
             // Non bloccare se il refresh fallisce
@@ -884,8 +881,8 @@ export default function AdminMedia() {
                 Libreria (opzionale)
               </label>
               <select
-                value={libraryFilter}
-                onChange={(e) => setLibraryFilter(e.target.value as "Tutte" | "Prodotti" | "BANNER" | "SFONDI" | "trasporto")}
+                value={uploadLibrary}
+                onChange={(e) => setUploadLibrary(e.target.value as "Tutte" | "Prodotti" | "BANNER" | "SFONDI" | "trasporto")}
                 className="w-full px-4 py-2.5 rounded-lg bg-white border border-[#DDD9D0] text-sm text-[#1A1A18] focus:outline-none focus:border-[#1B4332] focus:ring-2 focus:ring-[#1B4332]/20"
               >
                 <option value="Tutte">Nessuna libreria specifica</option>
