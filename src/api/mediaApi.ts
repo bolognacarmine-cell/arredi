@@ -78,7 +78,7 @@ export async function getMedia(filters?: {
       if (filters?.library && filters.library !== "Tutte") url.searchParams.append("library", filters.library)
       if (filters?.search) url.searchParams.append("search", filters.search)
 
-      const response = await fetch(url.toString())
+      const response = await fetch(url.toString(), { credentials: 'include' })
       const result = await response.json()
 
       // Il backend ritorna direttamente l'array, non { success, data }
@@ -115,7 +115,7 @@ export async function getMediaById(id: string): Promise<Media> {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/media/${id}`)
+    const response = await fetch(`${API_BASE_URL}/api/media/${id}`, { credentials: 'include' })
     const result = await response.json()
 
     // Il backend ritorna direttamente l'oggetto media, non { success, data }
@@ -159,6 +159,7 @@ export async function createMedia(data: CreateMediaData): Promise<Media> {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify(data),
       })
 
@@ -206,6 +207,7 @@ export async function updateMedia(id: string, data: Partial<CreateMediaData>): P
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include",
       body: JSON.stringify(data),
     })
 
@@ -248,6 +250,7 @@ export async function deleteMedia(id: string): Promise<void> {
     try {
       const response = await fetch(`${API_BASE_URL}/api/media/${id}`, {
         method: "DELETE",
+        credentials: "include",
       })
 
       const result = await response.json()
