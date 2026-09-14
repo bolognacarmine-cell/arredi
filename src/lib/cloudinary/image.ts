@@ -74,13 +74,13 @@ export function resolveImageUrl(
   options?: CloudinaryResizeOptions,
 ): string {
   const { src, publicId } = pair
+  // Use Cloudinary if configured and publicId is provided (priority over src)
+  if (publicId && isCloudinaryConfigured) {
+    return buildCloudinaryImageUrl(publicId, options)
+  }
   // If src is a full URL (Unsplash, etc.), use it directly
   if (src && (src.startsWith("http://") || src.startsWith("https://"))) {
     return src
-  }
-  // Otherwise, use Cloudinary if configured and publicId is provided
-  if (publicId && isCloudinaryConfigured) {
-    return buildCloudinaryImageUrl(publicId, options)
   }
   // Fallback to src
   return src
