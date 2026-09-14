@@ -21,6 +21,15 @@ interface Ctx {
 }
 const AC = createContext<Ctx | null>(null)
 
+// Get API base URL - use relative paths in same-origin, absolute when VITE_API_BASE_URL is set
+const getApiUrl = (path: string) => {
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
+  if (apiBaseUrl) {
+    return `${apiBaseUrl.replace(/\/+$/, '')}${path}`
+  }
+  return path // Use relative path for same-origin
+}
+
 export function AdminAuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AdminUser | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -28,11 +37,11 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 
   const checkAuth = async () => {
     try {
-      const response = await fetch('/api/admin/me', {
+      const response = await fetch(getApiUrl('/api/admin/me'), {
         credentials: 'include',
       })
       const data = await response.json()
-      
+
       if (data.success && data.user) {
         setUser({
           id: data.user.id,
@@ -53,7 +62,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch('/api/admin/login', {
+      const response = await fetch(getApiUrl('/api/admin/login'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -82,7 +91,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      await fetch('/api/admin/logout', {
+      await fetch(getApiUrl('/api/admin/logout'), {
         method: 'POST',
         credentials: 'include',
       })

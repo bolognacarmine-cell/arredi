@@ -34,7 +34,7 @@ export interface ProjectDocument {
   image: string
   imageCloudinaryPublicId?: string
   coverImages?: string[]
-  gallery: string[]
+  galleryImages: string[]
   galleryCloudinaryPublicIds?: string[]
   tags: string[]
   materials: string

@@ -33,8 +33,6 @@ type FormState = {
   evidenza: boolean
   immagine: string
   imageCloudinaryPublicId: string
-  galleryText: string
-  galleryCloudinaryPublicIdsText: string
   materiali: string
   tagText: string
   seoMetaTitle: string
@@ -53,8 +51,6 @@ const emptyForm: FormState = {
   evidenza: false,
   immagine: "",
   imageCloudinaryPublicId: "",
-  galleryText: "",
-  galleryCloudinaryPublicIdsText: "",
   materiali: "",
   tagText: "",
   seoMetaTitle: "",
@@ -85,8 +81,6 @@ function projectToForm(project: ProjectRecord): FormState {
     imageCloudinaryPublicId: project.imageCloudinaryPublicId ?? "",
     materiali: project.materials,
     tagText: (project.tags || []).join(", "),
-    galleryText: (project.gallery || []).join("\n"),
-    galleryCloudinaryPublicIdsText: (project.galleryCloudinaryPublicIds || []).join("\n"),
     seoMetaTitle: project.seo?.metaTitle ?? "",
     seoMetaDescription: project.seo?.metaDescription ?? "",
     seoSlug: project.seo?.slug ?? "",
@@ -97,6 +91,8 @@ function toProjectRecord(
   form: FormState,
   currentProjects: ProjectRecord[],
   editingId: string | null,
+  coverImages: string[],
+  galleryImages: string[],
 ): ProjectRecord {
   const selectedSector = SECTORS.find((sector) => sector.id === form.settore)
   const fallbackId = `${form.settore || "progetto"}-${slugify(form.titolo || "nuovo-progetto")}`
@@ -106,29 +102,11 @@ function toProjectRecord(
     : currentProjects.some((project) => project.id === nextId)
       ? `${nextId}-${Date.now()}`
       : nextId
-  const gallery = (form.galleryText || "")
-    .split("\n")
-    .map((item) => item.trim())
-    .filter(Boolean)
-  const normalizedGallery =
-    gallery.length > 0
-      ? gallery
-      : form.immagine.trim()
-        ? [form.immagine.trim()]
-        : ["https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=800&fit=crop"]
-
-  const galleryPublicIdsRaw = (form.galleryCloudinaryPublicIdsText || "")
-    .split("\n")
-    .map((s) => s.trim())
-    .filter(Boolean)
-  const galleryCloudinaryPublicIds: string[] | undefined =
-    galleryPublicIdsRaw.length > 0
-      ? normalizedGallery.map((_, i) => galleryPublicIdsRaw[i] ?? "")
-      : undefined
 
   const imageCloudinaryPublicId = form.imageCloudinaryPublicId.trim() || undefined
 
-  const coverImages = form.immagine.trim() ? [form.immagine.trim()] : []
+  const normalizedCoverImages = coverImages.length > 0 ? coverImages : (form.immagine.trim() ? [form.immagine.trim()] : [])
+  const normalizedGalleryImages = galleryImages.length > 0 ? galleryImages : normalizedCoverImages
 
   const seoSlug = form.seoSlug.trim() || slugify(form.titolo || "")
   const seoMetaTitle = form.seoMetaTitle.trim() || form.titolo.trim()
@@ -143,11 +121,10 @@ function toProjectRecord(
     year: Number(form.anno) || new Date().getFullYear(),
     client: form.cliente.trim() || undefined,
     description: form.descrizione.trim(),
-    image: form.immagine.trim() || normalizedGallery[0],
+    image: form.immagine.trim() || normalizedCoverImages[0] || "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=800&fit=crop",
     imageCloudinaryPublicId,
-    coverImages,
-    gallery: normalizedGallery,
-    galleryCloudinaryPublicIds,
+    coverImages: normalizedCoverImages,
+    galleryImages: normalizedGalleryImages,
     tags: (form.tagText || "")
       .split(",")
       .map((item) => item.trim())
@@ -182,18 +159,17 @@ export default function AdminProjects() {
   const [autoLoadedImagesCount, setAutoLoadedImagesCount] = useState<number>(0)
   const [galleryDragIndex, setGalleryDragIndex] = useState<number | null>(null)
 
+  const [coverImages, setCoverImages] = useState<string[]>([])
+  const [galleryImages, setGalleryImages] = useState<string[]>([])
+
   useEffect(() => {
     const isNuovo = location.pathname === "/admin/progetti/nuovo"
     if (isNuovo) {
       const pending = takePendingProjectImages()
       const gallery =
         pending.gallery.length > 0
-          ? pending.gallery.map((g) => g.secureUrl).join("\n")
-          : ""
-      const galleryPids =
-        pending.gallery.length > 0
-          ? pending.gallery.map((g) => g.publicId).join("\n")
-          : ""
+          ? pending.gallery.map((g) => g.secureUrl)
+          : []
       const loadedCount =
         (pending.cover ? 1 : 0) + pending.gallery.length
       setAutoLoadedImagesCount(loadedCount)
@@ -202,15 +178,17 @@ export default function AdminProjects() {
         ...emptyForm,
         immagine: pending.cover?.secureUrl ?? "",
         imageCloudinaryPublicId: pending.cover?.publicId ?? "",
-        galleryText: gallery,
-        galleryCloudinaryPublicIdsText: galleryPids,
       })
+      setCoverImages(pending.cover ? [pending.cover.secureUrl] : [])
+      setGalleryImages(gallery)
       setShowForm(true)
     } else if (routeId) {
       const existing = projects.find((project) => project.id === routeId)
       if (existing) {
         setEditingId(existing.id)
         setForm(projectToForm(existing))
+        setCoverImages(existing.coverImages || [])
+        setGalleryImages(existing.galleryImages || [])
         setShowForm(true)
       }
       setAutoLoadedImagesCount(0)
@@ -218,6 +196,8 @@ export default function AdminProjects() {
       setShowForm(false)
       setEditingId(null)
       setForm(emptyForm)
+      setCoverImages([])
+      setGalleryImages([])
       setAutoLoadedImagesCount(0)
     }
   }, [location.pathname, routeId, projects])
@@ -225,54 +205,27 @@ export default function AdminProjects() {
   const set = (key: keyof FormState, value: string | boolean) =>
     setForm((current) => ({ ...current, [key]: value }))
 
-  const galleryItems = useMemo<
-    Array<{ url: string; publicId: string }>
-  >(() => {
-    const urls = (form.galleryText || "")
-      .split("\n")
-      .map((s) => s.trim())
-      .filter(Boolean)
-    const pids = (form.galleryCloudinaryPublicIdsText || "")
-      .split("\n")
-      .map((s) => s.trim())
-      .filter(Boolean)
-    return urls.map((url, i) => ({ url, publicId: pids[i] ?? "" }))
-  }, [form.galleryText, form.galleryCloudinaryPublicIdsText])
-
-  const writeGalleryItems = (
-    items: Array<{ url: string; publicId: string }>,
-  ) => {
-    setForm((current) => ({
-      ...current,
-      galleryText: items.map((it) => it.url).join("\n") || "",
-      galleryCloudinaryPublicIdsText: items
-        .map((it) => it.publicId)
-        .join("\n") || "",
-    }))
-  }
-
   const removeFromGallery = (index: number) => {
-    const next = galleryItems.filter((_, i) => i !== index)
-    writeGalleryItems(next)
+    setGalleryImages(prev => prev.filter((_, i) => i !== index))
   }
 
   const moveInGallery = (from: number, to: number) => {
     if (from === to || from < 0 || to < 0) return
-    if (to >= galleryItems.length) return
-    const next = [...galleryItems]
+    if (to >= galleryImages.length) return
+    const next = [...galleryImages]
     const [item] = next.splice(from, 1)
     next.splice(to, 0, item)
-    writeGalleryItems(next)
+    setGalleryImages(next)
   }
 
   const setCoverFromGalleryIndex = (index: number) => {
-    const item = galleryItems[index]
+    const item = galleryImages[index]
     if (!item) return
     setForm((current) => ({
       ...current,
-      immagine: item.url,
-      imageCloudinaryPublicId: item.publicId,
+      immagine: item,
     }))
+    setCoverImages([item])
   }
 
   const filtered = projects
@@ -354,7 +307,7 @@ export default function AdminProjects() {
 
   const handleSave = async () => {
     setIsSaving(true)
-    const nextProject = toProjectRecord(form, projects, editingId)
+    const nextProject = toProjectRecord(form, projects, editingId, coverImages, galleryImages)
     const nextProjects = editingId
       ? projects.map((project) => (project.id === editingId ? nextProject : project))
       : [nextProject, ...projects]
@@ -500,23 +453,25 @@ export default function AdminProjects() {
                 Copertina progetto – Carica una o più immagini
               </label>
               <SectionImageUploader
-                value={form.immagine ? [form.immagine] : []}
+                value={coverImages}
                 onChange={(urls) => {
-                  setForm((current) => ({
-                    ...current,
-                    immagine: urls[0] || "",
-                    imageCloudinaryPublicId: "",
-                  }))
+                  setCoverImages(urls)
+                  if (urls.length > 0) {
+                    setForm((current) => ({
+                      ...current,
+                      immagine: urls[0],
+                    }))
+                  }
                 }}
-                multiple={false}
-                maxFiles={1}
+                multiple={true}
+                maxFiles={5}
                 maxSizeMB={10}
                 category="project"
                 onError={(msg) => alert(msg)}
               />
-              {form.immagine && (
+              {coverImages.length > 0 && (
                 <div className="mt-2 text-xs text-[#888580]">
-                  Immagine copertina attuale: {form.immagine.substring(0, 50)}...
+                  {coverImages.length} copertina{coverImages.length === 1 ? '' : 'e'} caricata{coverImages.length === 1 ? '' : 'e'}
                 </div>
               )}
             </div>
@@ -595,10 +550,10 @@ export default function AdminProjects() {
             <div className="sm:col-span-2">
               <label className="block text-xs uppercase tracking-wide text-[#888580] mb-2">
                 Carosello dettaglio progetto – Carica una o più immagini
-                {galleryItems.length > 0 && (
+                {galleryImages.length > 0 && (
                   <span className="ml-2 text-[#1B4332] font-medium normal-case">
-                    · {galleryItems.length}{" "}
-                    {galleryItems.length === 1 ? "immagine" : "immagini"} ·
+                    · {galleryImages.length}{" "}
+                    {galleryImages.length === 1 ? "immagine" : "immagini"} ·
                     diventeranno un{" "}
                     <strong>carosello</strong> nel dettaglio progetto
                   </span>
@@ -607,13 +562,9 @@ export default function AdminProjects() {
 
               {/* SectionImageUploader for direct upload */}
               <SectionImageUploader
-                value={galleryItems.map(item => item.url)}
+                value={galleryImages}
                 onChange={(urls) => {
-                  const next = urls.map(url => {
-                    const existing = galleryItems.find(item => item.url === url)
-                    return { url, publicId: existing?.publicId || "" }
-                  })
-                  writeGalleryItems(next)
+                  setGalleryImages(urls)
                 }}
                 multiple={true}
                 maxFiles={12}
@@ -623,11 +574,11 @@ export default function AdminProjects() {
               />
 
               {/* Existing gallery items display for drag & drop reordering */}
-              {galleryItems.length > 0 && (
+              {galleryImages.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 mt-3">
-                  {galleryItems.map((item, i) => (
+                  {galleryImages.map((url, i) => (
                     <div
-                      key={`${item.url}-${i}`}
+                      key={`${url}-${i}`}
                       draggable
                       onDragStart={() => setGalleryDragIndex(i)}
                       onDragOver={(e) => e.preventDefault()}
@@ -645,27 +596,15 @@ export default function AdminProjects() {
                       }`}
                     >
                       <img
-                        src={resolveImageUrl(
-                          { src: item.url, publicId: item.publicId || null },
-                          { width: 360, height: 360, objectFit: "cover" },
-                        )}
+                        src={url}
                         alt={`Gallery ${i + 1}`}
                         className="w-full h-full object-cover"
                       />
                       <div className="absolute top-1 left-1 bg-white/90 backdrop-blur px-1.5 py-0.5 text-[10px] font-medium text-[#4A4A46]">
-                        {i === 0 ? "Cover · 1" : i + 1}
+                        {i + 1}
                       </div>
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
                         <div className="flex flex-col gap-1.5">
-                          {i > 0 && (
-                            <button
-                              type="button"
-                              onClick={() => setCoverFromGalleryIndex(i)}
-                              className="bg-white text-[#1B4332] text-[10px] font-semibold px-2 py-1 rounded whitespace-nowrap"
-                            >
-                              ⭐ Imposta copertina
-                            </button>
-                          )}
                           <button
                             type="button"
                             onClick={() => removeFromGallery(i)}
@@ -679,30 +618,6 @@ export default function AdminProjects() {
                   ))}
                 </div>
               )}
-
-              <details className="border border-[#EAE7E0] bg-[#FAFAF7] rounded mt-3">
-                <summary className="px-3 py-2 text-xs cursor-pointer text-[#888580] hover:text-[#1A1A18]">
-                  ⚙️ Modo manuale: URL Gallery e Public ID
-                </summary>
-                <div className="p-3 pt-1 space-y-3">
-                  <textarea
-                    rows={3}
-                    value={form.galleryText}
-                    onChange={(e) => set("galleryText", e.target.value)}
-                    placeholder="URL immagini, una per riga"
-                    className="w-full resize-none border border-[#DDD9D0] bg-white px-3 py-2 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
-                  />
-                  <textarea
-                    rows={3}
-                    value={form.galleryCloudinaryPublicIdsText}
-                    onChange={(e) =>
-                      set("galleryCloudinaryPublicIdsText", e.target.value)
-                    }
-                    placeholder="Cloudinary Public ID · Gallery (uno per riga, stesso ordine delle URL sopra)"
-                    className="w-full resize-none border border-[#DDD9D0] bg-white px-3 py-2 text-xs text-[#1A1A18] focus:border-[#1B4332] focus:outline-none font-mono"
-                  />
-                </div>
-              </details>
             </div>
 
             <div className="sm:col-span-2">

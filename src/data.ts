@@ -20,7 +20,7 @@ export type Project = {
   image: string
   imageCloudinaryPublicId?: string
   coverImages?: string[]
-  gallery: string[]
+  galleryImages: string[]
   galleryCloudinaryPublicIds?: string[]
   tags: string[]
   materials: string
@@ -157,12 +157,12 @@ export const PROJECTS: Project[] = [
       "Progetto completo per un barbershop di fascia alta nel centro di Milano. Bancone reception in noce canaletto con piano in ottone, 4 postazioni taglio con specchiere retroilluminate, zona attesa con sedute su misura in pelle naturale.",
     image: "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=800&h=600&fit=crop",
     imageCloudinaryPublicId: "farcom/progetti/davinci____image1_utilizza_l_immagine_allegata_come_riferi-png",
-    gallery: [
+    galleryImagesImages: [
       "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=1200&h=800&fit=crop",
       "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=1200&h=800&fit=crop",
       "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?w=1200&h=800&fit=crop",
     ],
-    galleryCloudinaryPublicIds: ["farcom/progetti/arredo-2-jpg"],
+    galleryImagesCloudinaryPublicIds: ["farcom/progetti/arredo-2-jpg"],
     tags: ["Bancone", "Specchiere", "Zona attesa"],
     materials:
       "Noce canaletto, ottone satinato, pelle naturale conciata al vegetale",
@@ -180,7 +180,7 @@ export const PROJECTS: Project[] = [
       "Arredamento completo per uno studio legale in un palazzo liberty. Librerie su misura dal pavimento al soffitto, scrivania direzionale in rovere, sala riunioni con tavolo in marmo Calacatta.",
     image:
       "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop",
-    gallery: [
+    galleryImagesImages: [
       "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=800&fit=crop",
       "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=1200&h=800&fit=crop",
     ],
@@ -200,7 +200,7 @@ export const PROJECTS: Project[] = [
       "Boutique di abbigliamento artigianale nel cuore di Firenze. Espositori in ferro verniciato a polvere e legno di frassino, banco cassa circolare, camerini con tende in velluto.",
     image:
       "https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?w=800&h=600&fit=crop",
-    gallery: [
+    galleryImages: [
       "https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?w=1200&h=800&fit=crop",
       "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200&h=800&fit=crop",
     ],
@@ -219,7 +219,7 @@ export const PROJECTS: Project[] = [
       "Ristrutturazione delle aule e degli spazi comuni del Liceo Artistico Morandi. Banchi modulari in betulla, librerie aula in metallo e legno, arredo mensa in faggio naturale.",
     image:
       "https://images.unsplash.com/photo-1577896851231-70ef18881754?w=800&h=600&fit=crop",
-    gallery: [
+    galleryImages: [
       "https://images.unsplash.com/photo-1577896851231-70ef18881754?w=1200&h=800&fit=crop",
       "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=1200&h=800&fit=crop",
     ],
@@ -237,7 +237,7 @@ export const PROJECTS: Project[] = [
     description:
       "Salone di parrucchieri con 8 postazioni lavoro, zona shampoo con 4 lavandini integrati e reception panoramica.",
     image: "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?w=800&h=600&fit=crop",
-    gallery: [
+    galleryImages: [
       "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?w=1200&h=800&fit=crop",
     ],
     tags: ["Postazioni", "Lavandini", "Reception"],
@@ -255,7 +255,7 @@ export const PROJECTS: Project[] = [
       "Hub per startup con spazi coworking modulari, sala conferenze da 50 posti, phone booth acustici su misura.",
     image:
       "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop",
-    gallery: [
+    galleryImages: [
       "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=800&fit=crop",
     ],
     tags: ["Coworking", "Conferenze", "Phone booth"],
@@ -273,7 +273,7 @@ export const PROJECTS: Project[] = [
       "Cocktail bar nel centro storico con bancone in marmo Carrara, illuminazione design, zona clienti elegante e magazzino ottimizzato.",
     image:
       "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800&h=600&fit=crop",
-    gallery: [
+    galleryImages: [
       "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=1200&h=800&fit=crop",
       "https://images.unsplash.com/photo-1572116469696-31de0f17cc34?w=1200&h=800&fit=crop",
     ],
@@ -292,7 +292,7 @@ export const PROJECTS: Project[] = [
       "Wine bar con scaffali bottiglie a vista, banco degustazione in rovere, zona relax e vetrina espositiva.",
     image:
       "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&h=600&fit=crop",
-    gallery: [
+    galleryImages: [
       "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=1200&h=800&fit=crop",
     ],
     tags: ["Scaffali", "Banco degustazione", "Vetrina"],
@@ -310,7 +310,7 @@ export const PROJECTS: Project[] = [
       "Centro estetico di lusso con reception raffinata, 4 cabine trattamento, area relax con illuminazione soft e esposizione prodotti curata.",
     image:
       "https://images.unsplash.com/photo-1560750588-73207b1ef5b8?w=800&h=600&fit=crop",
-    gallery: [
+    galleryImages: [
       "https://images.unsplash.com/photo-1560750588-73207b1ef5b8?w=1200&h=800&fit=crop",
       "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=1200&h=800&fit=crop",
     ],
@@ -329,7 +329,7 @@ export const PROJECTS: Project[] = [
       "Centro estetico moderno con reception minimalista, cabine trattamento attrezzate, area relax e banco esposizione prodotti.",
     image:
       "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=800&h=600&fit=crop",
-    gallery: [
+    galleryImages: [
       "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=1200&h=800&fit=crop",
     ],
     tags: ["Reception", "Cabine", "Esposizione"],

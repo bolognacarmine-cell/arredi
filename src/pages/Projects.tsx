@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { resolveImageUrl } from "../lib/cloudinary";
 import { SECTORS } from "../data";
 import { useProjects } from "../projectStore";
 
@@ -86,18 +85,7 @@ export default function Projects() {
             >
               <div className="relative overflow-hidden aspect-[4/3] bg-[#EAE7E0]">
                 <img
-                  src={resolveImageUrl(
-                    {
-                      src: p.coverImages && p.coverImages.length > 0 ? p.coverImages[0] : p.image,
-                      publicId: p.imageCloudinaryPublicId ?? null,
-                    },
-                    {
-                      width: 1200,
-                      height: 900,
-                      objectFit: "cover",
-                      gravity: "auto",
-                    },
-                  )}
+                  src={(p.coverImages && p.coverImages.length > 0 ? p.coverImages[0] : p.image) || "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=900&fit=crop"}
                   alt={p.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />

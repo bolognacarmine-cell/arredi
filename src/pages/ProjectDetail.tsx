@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { resolveImageUrl } from "../lib/cloudinary";
 import { useProjects } from "../projectStore";
 
 export default function ProjectDetail() {
@@ -13,29 +12,32 @@ export default function ProjectDetail() {
     setActiveImg(0)
   }, [id])
 
-  // Ensure gallery exists and is an array
-  const gallery = project?.gallery || []
+  // Use direct URL arrays from project data - no API calls
+  const coverImages = project?.coverImages || []
+  const galleryImages = project?.galleryImages || []
   const tags = project?.tags || []
-  const galleryCloudinaryPublicIds = project?.galleryCloudinaryPublicIds || []
-  const total = gallery.length
+
+  // If galleryImages is empty, use coverImages as fallback
+  const displayGallery = galleryImages.length > 0 ? galleryImages : coverImages
+  const displayTotal = displayGallery.length
 
   const goPrev = useCallback(() => {
-    setActiveImg((i) => (i <= 0 ? total - 1 : i - 1))
-  }, [total])
+    setActiveImg((i) => (i <= 0 ? displayTotal - 1 : i - 1))
+  }, [displayTotal])
 
   const goNext = useCallback(() => {
-    setActiveImg((i) => (i >= total - 1 ? 0 : i + 1))
-  }, [total])
+    setActiveImg((i) => (i >= displayTotal - 1 ? 0 : i + 1))
+  }, [displayTotal])
 
   useEffect(() => {
-    if (!project || total <= 1) return
+    if (!project || displayTotal <= 1) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft") goPrev()
       if (e.key === "ArrowRight") goNext()
     }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
-  }, [project, total, goPrev, goNext])
+  }, [project, displayTotal, goPrev, goNext])
 
   if (!project) {
     return (
@@ -75,25 +77,12 @@ export default function ProjectDetail() {
             <div className="relative overflow-hidden bg-[#EAE7E0] aspect-[16/9] group">
               <img
                 key={`${project.id}-${activeImg}`}
-                src={resolveImageUrl(
-                  {
-                    src: gallery[activeImg],
-                    publicId:
-                      galleryCloudinaryPublicIds[activeImg] ??
-                      null,
-                  },
-                  {
-                    width: 2400,
-                    height: 1350,
-                    objectFit: "cover",
-                    gravity: "auto",
-                  },
-                )}
-                alt={`${project.title} — foto ${activeImg + 1} di ${total}`}
+                src={displayGallery[activeImg] || "https://images.unsplash.com/photo-1497366216548-37526070297c?w=2400&h=1350&fit=crop"}
+                alt={`${project.title} — foto ${activeImg + 1} di ${displayTotal}`}
                 className="w-full h-full object-cover animate-fade-in"
               />
 
-              {total > 1 && (
+              {displayTotal > 1 && (
                 <>
                   <button
                     type="button"
@@ -135,11 +124,11 @@ export default function ProjectDetail() {
                   </button>
 
                   <div className="absolute top-3 right-3 bg-black/55 text-white text-xs font-medium px-2.5 py-1 rounded backdrop-blur">
-                    {activeImg + 1} / {total}
+                    {activeImg + 1} / {displayTotal}
                   </div>
 
                   <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-                    {gallery.map((_, i) => (
+                    {displayGallery.map((_, i) => (
                       <button
                         key={i}
                         type="button"
@@ -157,9 +146,9 @@ export default function ProjectDetail() {
               )}
             </div>
 
-            {total > 1 && (
+            {displayTotal > 1 && (
               <div className="flex lg:flex-col gap-3 max-h-[520px] overflow-y-auto lg:max-h-none pr-0 lg:pr-1 scrollbar-thin">
-                {gallery.map((img, i) => (
+                {displayGallery.map((img, i) => (
                   <button
                     key={i}
                     onClick={() => setActiveImg(i)}
@@ -171,19 +160,7 @@ export default function ProjectDetail() {
                     }`}
                   >
                     <img
-                      src={resolveImageUrl(
-                        {
-                          src: img,
-                          publicId:
-                            galleryCloudinaryPublicIds[i] ?? null,
-                        },
-                        {
-                          width: 240,
-                          height: 240,
-                          objectFit: "cover",
-                          gravity: "auto",
-                        },
-                      )}
+                      src={img}
                       alt=""
                       className="w-full h-full object-cover"
                       loading={i > 3 ? "lazy" : "eager"}
@@ -197,7 +174,7 @@ export default function ProjectDetail() {
             )}
           </div>
 
-          {total > 1 && (
+          {displayTotal > 1 && (
             <p className="text-[11px] text-[#888580] mt-3 text-center lg:text-left">
               Usa le frecce{" "}
               <kbd className="px-1.5 py-0.5 mx-0.5 border border-[#DDD9D0] bg-white text-[#4A4A46] text-[10px] font-mono rounded">
@@ -300,18 +277,7 @@ export default function ProjectDetail() {
                 >
                   <div className="relative overflow-hidden aspect-[4/3] bg-[#EAE7E0]">
                     <img
-                      src={resolveImageUrl(
-                        {
-                          src: p.image,
-                          publicId: p.imageCloudinaryPublicId ?? null,
-                        },
-                        {
-                          width: 1200,
-                          height: 900,
-                          objectFit: "cover",
-                          gravity: "auto",
-                        },
-                      )}
+                      src={(p.coverImages && p.coverImages.length > 0 ? p.coverImages[0] : p.image) || "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=900&fit=crop"}
                       alt={p.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     />
