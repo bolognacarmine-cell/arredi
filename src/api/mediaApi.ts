@@ -50,16 +50,22 @@ export async function getMedia(filters?: {
     const result = await response.json()
 
     // Il backend ritorna direttamente l'array, non { success, data }
+    let media: Media[] = []
     if (Array.isArray(result)) {
-      return result
+      media = result
+    } else if (result.success) {
+      media = result.data
+    } else {
+      throw new Error(result.error?.message || "Failed to fetch media")
     }
 
-    // Fallback per formato con { success, data }
-    if (result.success) {
-      return result.data
+    // Filter out deleted media IDs from localStorage
+    if (typeof window !== "undefined") {
+      const deletedMediaIds = JSON.parse(localStorage.getItem("farcom-deleted-media") || "[]")
+      media = media.filter((item) => !deletedMediaIds.includes(item._id))
     }
 
-    throw new Error(result.error?.message || "Failed to fetch media")
+    return media
   } catch (error) {
     console.error("Error fetching media:", error)
     // Ritorna array vuoto invece di bloccare
@@ -187,7 +193,14 @@ export async function updateMedia(id: string, data: Partial<CreateMediaData>): P
 
 export async function deleteMedia(id: string): Promise<void> {
   if (!isApiAvailable) {
-    // Su Render, non facciamo nulla ma non blocchiamo
+    // Su Render, usiamo localStorage come fallback
+    if (typeof window !== "undefined") {
+      const deletedMediaIds = JSON.parse(localStorage.getItem("farcom-deleted-media") || "[]")
+      if (!deletedMediaIds.includes(id)) {
+        deletedMediaIds.push(id)
+        localStorage.setItem("farcom-deleted-media", JSON.stringify(deletedMediaIds))
+      }
+    }
     return
   }
 

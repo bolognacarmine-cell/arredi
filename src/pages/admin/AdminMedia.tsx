@@ -295,6 +295,13 @@ export default function AdminMedia() {
   // Handle clear all recent uploads with confirmation
   const handleClearAll = () => {
     if (window.confirm("ATTENZIONE: Questo eliminerà TUTTE le immagini dalla libreria. Sei sicuro di voler procedere?")) {
+      // Add all current media IDs to deleted list for persistence
+      if (typeof window !== "undefined") {
+        const deletedMediaIds = JSON.parse(localStorage.getItem("farcom-deleted-media") || "[]")
+        const allIds = recentUploads.map((media) => media._id)
+        const updatedDeletedIds = [...new Set([...deletedMediaIds, ...allIds])]
+        localStorage.setItem("farcom-deleted-media", JSON.stringify(updatedDeletedIds))
+      }
       setRecentUploads([])
       setShowClearConfirm(false)
       showToast("Libreria pulita", "ok")
