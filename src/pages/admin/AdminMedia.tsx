@@ -13,7 +13,7 @@ import {
   markPendingForNextNewProject,
   type UploadCategory,
 } from "../../lib/mediaRecent"
-import { getMedia, createMedia, type Media } from "../../api/mediaApi"
+import { getMedia, createMedia, deleteMedia, type Media } from "../../api/mediaApi"
 
 const categoryConfig: Record<
   UploadCategory,
@@ -209,6 +209,8 @@ export default function AdminMedia() {
   const [recentFilter, setRecentFilter] = useState<UploadCategory | "all">("all")
   const [libraryFilter, setLibraryFilter] = useState<"Tutte" | "Prodotti" | "BANNER" | "SFONDI">("Tutte")
   const [searchQuery, setSearchQuery] = useState("")
+  const [selectedMedia, setSelectedMedia] = useState<Set<string>>(new Set())
+  const [showClearConfirm, setShowClearConfirm] = useState(false)
 
   const mainFileInputRef = useRef<HTMLInputElement | null>(null)
   const gridFileInputRef = useRef<HTMLInputElement | null>(null)
@@ -230,7 +232,7 @@ export default function AdminMedia() {
         if (recentFilter !== "all") filters.category = recentFilter
         if (libraryFilter !== "Tutte") filters.library = libraryFilter
         if (searchQuery) filters.search = searchQuery
-        
+
         const media = await getMedia(filters)
         setRecentUploads(media)
       } catch (error) {
@@ -241,6 +243,74 @@ export default function AdminMedia() {
     }
     loadRecentUploads()
   }, [recentFilter, libraryFilter, searchQuery])
+
+  // Handle individual media deletion
+  const handleDeleteMedia = async (mediaId: string) => {
+    if (window.confirm("Sei sicuro di voler eliminare questa immagine?")) {
+      try {
+        await deleteMedia(mediaId)
+        // Refresh the list
+        const filters: { category?: string; library?: string; search?: string } = {}
+        if (recentFilter !== "all") filters.category = recentFilter
+        if (libraryFilter !== "Tutte") filters.library = libraryFilter
+        if (searchQuery) filters.search = searchQuery
+
+        const media = await getMedia(filters)
+        setRecentUploads(media)
+        setSelectedMedia(new Set())
+        showToast("Immagine eliminata", "ok")
+      } catch (error) {
+        console.error("Error deleting media:", error)
+        showToast("Errore durante l'eliminazione", "err")
+      }
+    }
+  }
+
+  // Handle bulk media deletion
+  const handleBulkDelete = async () => {
+    if (selectedMedia.size === 0) return
+
+    if (window.confirm(`Sei sicuro di voler eliminare ${selectedMedia.size} immagini?`)) {
+      try {
+        for (const mediaId of selectedMedia) {
+          await deleteMedia(mediaId)
+        }
+        // Refresh the list
+        const filters: { category?: string; library?: string; search?: string } = {}
+        if (recentFilter !== "all") filters.category = recentFilter
+        if (libraryFilter !== "Tutte") filters.library = libraryFilter
+        if (searchQuery) filters.search = searchQuery
+
+        const media = await getMedia(filters)
+        setRecentUploads(media)
+        setSelectedMedia(new Set())
+        showToast(`${selectedMedia.size} immagini eliminate`, "ok")
+      } catch (error) {
+        console.error("Error deleting media:", error)
+        showToast("Errore durante l'eliminazione", "err")
+      }
+    }
+  }
+
+  // Handle clear all recent uploads with confirmation
+  const handleClearAll = () => {
+    if (window.confirm("ATTENZIONE: Questo eliminerà TUTTE le immagini dalla libreria. Sei sicuro di voler procedere?")) {
+      setRecentUploads([])
+      setShowClearConfirm(false)
+      showToast("Libreria pulita", "ok")
+    }
+  }
+
+  // Toggle media selection
+  const toggleMediaSelection = (mediaId: string) => {
+    const newSelection = new Set(selectedMedia)
+    if (newSelection.has(mediaId)) {
+      newSelection.delete(mediaId)
+    } else {
+      newSelection.add(mediaId)
+    }
+    setSelectedMedia(newSelection)
+  }
 
   // Salva upload nel database quando completato con successo
   useEffect(() => {
@@ -1332,14 +1402,22 @@ export default function AdminMedia() {
             />
 
             {recentUploads.length > 0 && (
-              <button
-                onClick={() => {
-                  setRecentUploads([])
-                }}
-                className="text-xs px-3 py-1 rounded-full bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
-              >
-                Pulisci
-              </button>
+              <>
+                {selectedMedia.size > 0 && (
+                  <button
+                    onClick={handleBulkDelete}
+                    className="text-xs px-3 py-1 rounded-full bg-red-600 text-white hover:bg-red-700 transition-colors"
+                  >
+                    Elimina {selectedMedia.size} selezionati
+                  </button>
+                )}
+                <button
+                  onClick={handleClearAll}
+                  className="text-xs px-3 py-1 rounded-full bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
+                >
+                  Pulisci tutto
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -1353,7 +1431,11 @@ export default function AdminMedia() {
             {recentUploads.map((upload) => (
                 <div
                   key={upload._id}
-                  className="group relative bg-[#EAE7E0] aspect-square overflow-hidden border border-[#DDD9D0] hover:border-[#1B4332] transition-colors"
+                  className={`group relative bg-[#EAE7E0] aspect-square overflow-hidden border transition-colors ${
+                    selectedMedia.has(upload._id)
+                      ? "border-[#1B4332] ring-2 ring-[#1B4332]"
+                      : "border-[#DDD9D0] hover:border-[#1B4332]"
+                  }`}
                 >
                   <img
                     src={upload.cloudinaryUrl}
@@ -1373,16 +1455,32 @@ export default function AdminMedia() {
                           Usata in {upload.usedInProjects.length} progetti
                         </p>
                       )}
-                      <button
-                        onClick={() => {
-                          const ok = copyToClipboard(upload.cloudinaryUrl)
-                          showToast(ok ? "📋 URL copiato!" : "Copia fallita", ok ? "ok" : "err")
-                        }}
-                        className="mt-1 w-full text-[10px] bg-white/20 hover:bg-white/30 text-white px-2 py-1 rounded transition-colors"
-                      >
-                        Copia URL
-                      </button>
+                      <div className="flex gap-1 mt-1">
+                        <button
+                          onClick={() => {
+                            const ok = copyToClipboard(upload.cloudinaryUrl)
+                            showToast(ok ? "📋 URL copiato!" : "Copia fallita", ok ? "ok" : "err")
+                          }}
+                          className="flex-1 text-[10px] bg-white/20 hover:bg-white/30 text-white px-2 py-1 rounded transition-colors"
+                        >
+                          Copia URL
+                        </button>
+                        <button
+                          onClick={() => handleDeleteMedia(upload._id)}
+                          className="text-[10px] bg-red-600/80 hover:bg-red-600 text-white px-2 py-1 rounded transition-colors"
+                        >
+                          Elimina
+                        </button>
+                      </div>
                     </div>
+                  </div>
+                  <div className="absolute top-2 left-2">
+                    <input
+                      type="checkbox"
+                      checked={selectedMedia.has(upload._id)}
+                      onChange={() => toggleMediaSelection(upload._id)}
+                      className="w-4 h-4 rounded border-white/50 bg-white/20 text-[#1B4332] focus:ring-[#1B4332] cursor-pointer"
+                    />
                   </div>
                 </div>
               ))}
