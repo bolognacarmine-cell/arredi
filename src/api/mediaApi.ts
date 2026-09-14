@@ -60,6 +60,7 @@ export async function getMedia(filters?: {
           )
         }
 
+        console.log("Loaded from localStorage, total items:", filteredMedia.length)
         return filteredMedia
       } catch (error) {
         console.error("Error reading from localStorage:", error)
@@ -186,7 +187,7 @@ export async function createMedia(data: CreateMediaData): Promise<Media> {
       const storedMedia = JSON.parse(localStorage.getItem("farcom-media-library") || "[]")
       storedMedia.push(newMedia)
       localStorage.setItem("farcom-media-library", JSON.stringify(storedMedia))
-      console.log("Media saved to localStorage as fallback")
+      console.log("Media saved to localStorage as fallback, total items:", storedMedia.length)
     } catch (error) {
       console.error("Error saving to localStorage:", error)
     }

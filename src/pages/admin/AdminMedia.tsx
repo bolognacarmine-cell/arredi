@@ -340,7 +340,9 @@ export default function AdminMedia() {
           try {
             const media = await getMedia()
             setRecentUploads(media)
-            console.log("Media list refreshed, total items:", media.length)
+            console.log("Media list refreshed, total items:", media.length, "new media ID:", newMedia._id)
+            // Force a re-render by updating a timestamp or similar
+            setRecentUploads([...media])
           } catch (refreshError) {
             console.error("Error refreshing media list:", refreshError)
             // Non bloccare se il refresh fallisce
