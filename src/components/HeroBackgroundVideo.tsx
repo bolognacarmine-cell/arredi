@@ -212,16 +212,24 @@ export default function HeroBackgroundVideo({
   }
 
   const toggleAudio = () => {
+    console.log('toggleAudio called, isMuted:', isMuted)
     const video = videoRef.current
-    if (!video) return
+    console.log('videoRef.current:', video)
+    if (!video) {
+      console.log('No video element found')
+      return
+    }
 
     const newMutedState = !isMuted
+    console.log('Setting muted to:', newMutedState)
     video.muted = newMutedState
     setIsMuted(newMutedState)
 
     // Se attiviamo l'audio, proviamo a fare play se il video è in pausa
     if (!newMutedState && video.paused) {
-      video.play().catch(() => {
+      console.log('Video is paused, attempting to play')
+      video.play().catch((err) => {
+        console.log('Play failed:', err)
         // Se fallisce, rimettiamo il muto
         video.muted = true
         setIsMuted(true)
