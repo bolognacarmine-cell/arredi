@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useQuotes, type QuoteRecord } from "../../quoteStore"
 import * as quotesApi from "../../api/quotesApi"
+import { useAdminAuth } from "../../hooks/useAdminAuth"
 
 const statusColor: Record<QuoteRecord["stato"], string> = {
   nuovo: "bg-blue-100 text-blue-700",
@@ -11,7 +12,8 @@ const statusColor: Record<QuoteRecord["stato"], string> = {
 const statuses: QuoteRecord["stato"][] = ["nuovo", "contattato", "chiuso"]
 
 export default function AdminQuotes() {
-  const quotes = useQuotes()
+  const { quotes, refreshQuotes } = useQuotes()
+  const { checkAuth } = useAdminAuth()
   const [filter, setFilter] = useState<QuoteRecord["stato"] | "all">("all")
   const [selectedQuote, setSelectedQuote] = useState<QuoteRecord | null>(null)
   const [nota, setNota] = useState("")
@@ -27,7 +29,8 @@ export default function AdminQuotes() {
     setError(null)
     try {
       await quotesApi.updateQuoteStatus(quoteId, newStatus)
-      window.location.reload()
+      await refreshQuotes()
+      await checkAuth() // Re-verify auth after API call
     } catch (err) {
       console.error("Error updating quote status:", err)
       setError("Impossibile aggiornare lo stato. Riprova.")
@@ -45,7 +48,8 @@ export default function AdminQuotes() {
         if (selectedQuote?.id === quoteId) {
           setSelectedQuote(null)
         }
-        window.location.reload()
+        await refreshQuotes()
+        await checkAuth() // Re-verify auth after API call
       } catch (err) {
         console.error("Error deleting quote:", err)
         setError("Impossibile eliminare il preventivo. Riprova.")

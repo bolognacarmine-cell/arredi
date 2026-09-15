@@ -179,5 +179,29 @@ export function useQuotes() {
     loadQuotesFromApi()
   }, [])
 
-  return quotes
+  const refreshQuotes = async () => {
+    try {
+      const apiQuotes = await quotesApi.getQuotes()
+      const convertedQuotes: QuoteRecord[] = apiQuotes.map((q) => ({
+        id: q._id || q.id,
+        nome: q.nome,
+        cognome: q.cognome,
+        azienda: q.azienda,
+        settore: q.settore,
+        email: q.email,
+        telefono: q.telefono,
+        data: q.data,
+        stato: q.stato,
+        metratura: q.metratura,
+        arredo: q.arredo,
+        messaggio: q.messaggio,
+        note: q.note,
+      }))
+      setQuotes(convertedQuotes.length > 0 ? convertedQuotes : defaultQuotes)
+    } catch (err) {
+      console.error("Error refreshing quotes from API:", err)
+    }
+  }
+
+  return { quotes, refreshQuotes }
 }

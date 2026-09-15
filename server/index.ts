@@ -25,6 +25,9 @@ import adminRoutes from './routes/admin.js';
 const app = express();
 const PORT = process.env.PORT || 3002;
 
+// Trust proxy for Render and other reverse proxies
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(cors({
   origin: function(origin, callback) {
@@ -34,12 +37,11 @@ app.use(cors({
     if (process.env.NODE_ENV !== 'production') {
       return callback(null, true);
     }
-    // In production, allow your frontend domain
+    // In production, allow same-origin requests (no origin header for same-origin)
+    // and specific allowed origins for cross-origin if needed
     const allowedOrigins = [
       'https://arredi.onrender.com',
       'https://arredi.vercel.app',
-      'http://localhost:8444',
-      'http://localhost:3000'
     ];
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
@@ -66,8 +68,9 @@ app.use(session({
   cookie: {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    sameSite: 'lax', // Use 'lax' for same-origin, 'none' only for cross-origin
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    path: '/',
   },
   name: 'farcom.sid',
 }));

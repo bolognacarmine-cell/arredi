@@ -1,6 +1,5 @@
-// Su Render il backend non è disponibile, disabilitiamo le chiamate API
+// Use relative paths for same-origin, absolute when VITE_API_BASE_URL is set for cross-origin
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ""
-const isApiAvailable = !!API_BASE_URL
 
 export interface Quote {
   _id: string
@@ -25,16 +24,12 @@ const getApiUrl = (path: string) => {
   if (API_BASE_URL) {
     return `${API_BASE_URL.replace(/\/+$/, '')}${path}`
   }
-  return path
+  return path // Use relative path for same-origin
 }
 
 export async function getQuotes(filters?: { status?: string }): Promise<Quote[]> {
-  if (!isApiAvailable) {
-    return []
-  }
-
   try {
-    const url = new URL(getApiUrl('/api/quotes'))
+    const url = new URL(getApiUrl('/api/quotes'), window.location.origin)
     if (filters?.status) url.searchParams.append("status", filters.status)
 
     const response = await fetch(url.toString(), {
@@ -58,10 +53,6 @@ export async function getQuotes(filters?: { status?: string }): Promise<Quote[]>
 }
 
 export async function getQuoteById(id: string): Promise<Quote> {
-  if (!isApiAvailable) {
-    throw new Error("API not available")
-  }
-
   try {
     const response = await fetch(getApiUrl(`/api/quotes/${id}`), {
       credentials: 'include',
@@ -84,10 +75,6 @@ export async function getQuoteById(id: string): Promise<Quote> {
 }
 
 export async function createQuote(data: Omit<Quote, "_id" | "createdAt" | "updatedAt">): Promise<Quote> {
-  if (!isApiAvailable) {
-    throw new Error("API not available")
-  }
-
   try {
     const response = await fetch(getApiUrl('/api/quotes'), {
       method: "POST",
@@ -117,10 +104,6 @@ export async function createQuote(data: Omit<Quote, "_id" | "createdAt" | "updat
 }
 
 export async function updateQuote(id: string, data: Partial<Quote>): Promise<Quote> {
-  if (!isApiAvailable) {
-    throw new Error("API not available")
-  }
-
   try {
     const response = await fetch(getApiUrl(`/api/quotes/${id}`), {
       method: "PUT",
@@ -150,10 +133,6 @@ export async function updateQuote(id: string, data: Partial<Quote>): Promise<Quo
 }
 
 export async function updateQuoteStatus(id: string, stato: "nuovo" | "contattato" | "chiuso"): Promise<Quote> {
-  if (!isApiAvailable) {
-    throw new Error("API not available")
-  }
-
   try {
     const response = await fetch(getApiUrl(`/api/quotes/${id}/status`), {
       method: "PATCH",
@@ -183,10 +162,6 @@ export async function updateQuoteStatus(id: string, stato: "nuovo" | "contattato
 }
 
 export async function deleteQuote(id: string): Promise<void> {
-  if (!isApiAvailable) {
-    return
-  }
-
   try {
     const response = await fetch(getApiUrl(`/api/quotes/${id}`), {
       method: "DELETE",
@@ -206,6 +181,6 @@ export async function deleteQuote(id: string): Promise<void> {
     throw new Error(result.error?.message || result.message || "Failed to delete quote")
   } catch (error) {
     console.error("Error deleting quote:", error)
-    return
+    throw error
   }
 }

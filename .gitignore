@@ -9,7 +9,6 @@ build/
 .env.development
 server.env
 server/.env
-.server.env
 .vite/
 vite.config.*.timestamp-*
 *.tsbuildinfo
@@ -30,3 +29,5 @@ logs/
 trae-skills-collection/
 src/siteSettings.backups/
 src/data.backups/
+
+.server.env
