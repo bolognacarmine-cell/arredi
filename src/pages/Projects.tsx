@@ -88,6 +88,13 @@ export default function Projects() {
                   src={(p.coverImages && p.coverImages.length > 0 ? p.coverImages[0] : p.image) || "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=900&fit=crop"}
                   alt={p.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  onError={(e) => {
+                    // Fallback if image fails to load
+                    const target = e.target as HTMLImageElement;
+                    if (!target.src.includes('unsplash.com')) {
+                      target.src = "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=900&fit=crop";
+                    }
+                  }}
                 />
                 <span className="absolute top-4 left-4 bg-[#1B4332] text-white text-xs px-3 py-1 font-medium">
                   {p.sector}

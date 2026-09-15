@@ -1,27 +1,36 @@
 /**
  * BLOG API LOGIC - Fallback Strategy
- * 
+ *
  * This file implements a robust fallback strategy for blog data:
- * 
+ *
  * 1. If VITE_API_BASE_URL is set:
  *    - Try to fetch from the API first
  *    - If API fails (network error, 5xx, timeout), fallback to static data
  *    - This ensures the blog always works even if the API is down
- * 
+ *
  * 2. If VITE_API_BASE_URL is NOT set:
  *    - Use static data directly (GitHub Pages case)
  *    - No API calls are attempted
- * 
+ *
  * 3. Development environment:
  *    - Set VITE_API_BASE_URL to use local API (e.g., http://localhost:3002)
  *    - If not set, defaults to localhost:3002 with fallback to static data
- * 
+ *
  * STATIC DATA SOURCE: src/data/blogPosts.json
- * 
+ *
  * To configure API URL in production:
  * - Set VITE_API_BASE_URL in GitHub Actions secrets or deployment config
  * - Example: VITE_API_BASE_URL=https://your-api.onrender.com
  */
+
+// Get API base URL - use relative paths in same-origin, absolute when VITE_API_BASE_URL is set
+const getApiUrl = (path: string) => {
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
+  if (apiBaseUrl) {
+    return `${apiBaseUrl.replace(/\/+$/, '')}${path}`
+  }
+  return path // Use relative path for same-origin
+}
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3002"
 const hasApiConfigured = !!import.meta.env.VITE_API_BASE_URL
@@ -122,8 +131,9 @@ export async function getPosts(params?: {
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.limit) queryParams.append('limit', params.limit.toString());
 
-    console.log(`[Blog API] Fetching from ${API_BASE_URL}/api/blog/posts`);
-    const response = await fetch(`${API_BASE_URL}/api/blog/posts?${queryParams.toString()}`);
+    const url = getApiUrl('/api/blog/posts')
+    console.log(`[Blog API] Fetching from ${url}`);
+    const response = await fetch(`${url}?${queryParams.toString()}`);
     
     if (!response.ok) {
       throw new Error(`API returned ${response.status}`);
@@ -157,8 +167,9 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
 
   // Try API first, fallback to static on error
   try {
-    console.log(`[Blog API] Fetching post ${slug} from ${API_BASE_URL}/api/blog/posts/${slug}`);
-    const response = await fetch(`${API_BASE_URL}/api/blog/posts/${slug}`);
+    const url = getApiUrl(`/api/blog/posts/${slug}`)
+    console.log(`[Blog API] Fetching post ${slug} from ${url}`);
+    const response = await fetch(url);
     
     if (!response.ok) {
       throw new Error(`API returned ${response.status}`);
@@ -225,8 +236,9 @@ export async function getSectors(): Promise<BlogSector[]> {
 
   // Try API first, fallback to static on error
   try {
-    console.log(`[Blog API] Fetching sectors from ${API_BASE_URL}/api/blog/sectors`);
-    const response = await fetch(`${API_BASE_URL}/api/blog/sectors`);
+    const url = getApiUrl('/api/blog/sectors')
+    console.log(`[Blog API] Fetching sectors from ${url}`);
+    const response = await fetch(url);
     
     if (!response.ok) {
       throw new Error(`API returned ${response.status}`);
@@ -252,7 +264,7 @@ export async function createPost(data: Omit<Post, '_id' | 'publishedAt' | 'updat
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/blog/posts`, {
+    const response = await fetch(getApiUrl('/api/blog/posts'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -279,7 +291,7 @@ export async function updatePost(id: string, data: Partial<Post>): Promise<Post>
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/blog/posts/${id}`, {
+    const response = await fetch(getApiUrl(`/api/blog/posts/${id}`), {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -306,7 +318,7 @@ export async function deletePost(id: string): Promise<void> {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/blog/posts/${id}`, {
+    const response = await fetch(getApiUrl(`/api/blog/posts/${id}`), {
       method: 'DELETE',
     });
 

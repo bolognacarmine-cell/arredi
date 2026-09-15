@@ -15,29 +15,35 @@ export default function ProjectDetail() {
   // Use direct URL arrays from project data - no API calls
   const coverImages = project?.coverImages || []
   const galleryImages = project?.galleryImages || []
+  const mainImage = project?.image || ""
   const tags = project?.tags || []
 
-  // If galleryImages is empty, use coverImages as fallback
-  const displayGallery = galleryImages.length > 0 ? galleryImages : coverImages
-  const displayTotal = displayGallery.length
+  // Build display gallery with all available images
+  const displayGallery = [
+    ...(coverImages.length > 0 ? coverImages : mainImage ? [mainImage] : []),
+    ...galleryImages
+  ]
+
+  // Remove duplicates while preserving order
+  const uniqueGallery = Array.from(new Set(displayGallery))
 
   const goPrev = useCallback(() => {
-    setActiveImg((i) => (i <= 0 ? displayTotal - 1 : i - 1))
-  }, [displayTotal])
+    setActiveImg((i) => (i <= 0 ? uniqueGallery.length - 1 : i - 1))
+  }, [uniqueGallery.length])
 
   const goNext = useCallback(() => {
-    setActiveImg((i) => (i >= displayTotal - 1 ? 0 : i + 1))
-  }, [displayTotal])
+    setActiveImg((i) => (i >= uniqueGallery.length - 1 ? 0 : i + 1))
+  }, [uniqueGallery.length])
 
   useEffect(() => {
-    if (!project || displayTotal <= 1) return
+    if (!project || uniqueGallery.length <= 1) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft") goPrev()
       if (e.key === "ArrowRight") goNext()
     }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
-  }, [project, displayTotal, goPrev, goNext])
+  }, [project, uniqueGallery.length, goPrev, goNext])
 
   if (!project) {
     return (
@@ -77,12 +83,18 @@ export default function ProjectDetail() {
             <div className="relative overflow-hidden bg-[#EAE7E0] aspect-[16/9] group">
               <img
                 key={`${project.id}-${activeImg}`}
-                src={displayGallery[activeImg] || "https://images.unsplash.com/photo-1497366216548-37526070297c?w=2400&h=1350&fit=crop"}
-                alt={`${project.title} — foto ${activeImg + 1} di ${displayTotal}`}
+                src={uniqueGallery[activeImg] || "https://images.unsplash.com/photo-1497366216548-37526070297c?w=2400&h=1350&fit=crop"}
+                alt={`${project.title} — foto ${activeImg + 1} di ${uniqueGallery.length}`}
                 className="w-full h-full object-cover animate-fade-in"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  if (!target.src.includes('unsplash.com')) {
+                    target.src = "https://images.unsplash.com/photo-1497366216548-37526070297c?w=2400&h=1350&fit=crop";
+                  }
+                }}
               />
 
-              {displayTotal > 1 && (
+              {uniqueGallery.length > 1 && (
                 <>
                   <button
                     type="button"
@@ -124,11 +136,11 @@ export default function ProjectDetail() {
                   </button>
 
                   <div className="absolute top-3 right-3 bg-black/55 text-white text-xs font-medium px-2.5 py-1 rounded backdrop-blur">
-                    {activeImg + 1} / {displayTotal}
+                    {activeImg + 1} / {uniqueGallery.length}
                   </div>
 
                   <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-                    {displayGallery.map((_, i) => (
+                    {uniqueGallery.map((_, i) => (
                       <button
                         key={i}
                         type="button"
@@ -146,9 +158,9 @@ export default function ProjectDetail() {
               )}
             </div>
 
-            {displayTotal > 1 && (
+            {uniqueGallery.length > 1 && (
               <div className="flex lg:flex-col gap-3 max-h-[520px] overflow-y-auto lg:max-h-none pr-0 lg:pr-1 scrollbar-thin">
-                {displayGallery.map((img, i) => (
+                {uniqueGallery.map((img, i) => (
                   <button
                     key={i}
                     onClick={() => setActiveImg(i)}
@@ -164,6 +176,12 @@ export default function ProjectDetail() {
                       alt=""
                       className="w-full h-full object-cover"
                       loading={i > 3 ? "lazy" : "eager"}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        if (!target.src.includes('unsplash.com')) {
+                          target.src = "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=900&fit=crop";
+                        }
+                      }}
                     />
                     {activeImg === i && (
                       <div className="absolute inset-0 ring-2 ring-[#1B4332] ring-inset pointer-events-none" />
@@ -174,7 +192,7 @@ export default function ProjectDetail() {
             )}
           </div>
 
-          {displayTotal > 1 && (
+          {uniqueGallery.length > 1 && (
             <p className="text-[11px] text-[#888580] mt-3 text-center lg:text-left">
               Usa le frecce{" "}
               <kbd className="px-1.5 py-0.5 mx-0.5 border border-[#DDD9D0] bg-white text-[#4A4A46] text-[10px] font-mono rounded">

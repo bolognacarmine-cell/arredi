@@ -15,6 +15,15 @@ import {
 } from "../../lib/mediaRecent"
 import { getMedia, createMedia, deleteMedia, type Media } from "../../api/mediaApi"
 
+// Get API base URL - use relative paths in same-origin, absolute when VITE_API_BASE_URL is set
+const getApiUrl = (path: string) => {
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
+  if (apiBaseUrl) {
+    return `${apiBaseUrl.replace(/\/+$/, '')}${path}`
+  }
+  return path // Use relative path for same-origin
+}
+
 const categoryConfig: Record<
   UploadCategory,
   { label: string; folder: string; desc: string }
@@ -536,7 +545,7 @@ export default function AdminMedia() {
     setApiBusy(true)
     setApiResponse(null)
     try {
-      const resp = await fetch("/api/assign-public-id", {
+      const resp = await fetch(getApiUrl("/api/assign-public-id"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

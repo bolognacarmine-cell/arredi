@@ -1,4 +1,13 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001"
+// Get API base URL - use relative paths in same-origin, absolute when VITE_API_BASE_URL is set
+const getApiUrl = (path: string) => {
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
+  if (apiBaseUrl) {
+    return `${apiBaseUrl.replace(/\/+$/, '')}${path}`
+  }
+  return path // Use relative path for same-origin
+}
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3002"
 
 export interface Offer {
   _id: string
@@ -20,7 +29,8 @@ export interface Offer {
 
 export async function getOffers(filters?: { activitySector?: string; active?: boolean }): Promise<Offer[]> {
   try {
-    const url = new URL(`${API_BASE_URL}/api/offers`)
+    const baseUrl = getApiUrl('/api/offers')
+    const url = new URL(baseUrl, window.location.origin)
     if (filters?.activitySector) url.searchParams.append("activitySector", filters.activitySector)
     if (filters?.active !== undefined) url.searchParams.append("active", filters.active.toString())
 
@@ -40,7 +50,7 @@ export async function getOffers(filters?: { activitySector?: string; active?: bo
 
 export async function getOfferById(id: string): Promise<Offer> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/offers/${id}`)
+    const response = await fetch(getApiUrl(`/api/offers/${id}`))
     const result = await response.json()
 
     if (!result.success) {
@@ -56,7 +66,7 @@ export async function getOfferById(id: string): Promise<Offer> {
 
 export async function createOffer(data: Omit<Offer, "_id" | "createdAt" | "updatedAt">): Promise<Offer> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/offers`, {
+    const response = await fetch(getApiUrl('/api/offers'), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -79,7 +89,7 @@ export async function createOffer(data: Omit<Offer, "_id" | "createdAt" | "updat
 
 export async function updateOffer(id: string, data: Partial<Offer>): Promise<Offer> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/offers/${id}`, {
+    const response = await fetch(getApiUrl(`/api/offers/${id}`), {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -102,7 +112,7 @@ export async function updateOffer(id: string, data: Partial<Offer>): Promise<Off
 
 export async function deleteOffer(id: string): Promise<void> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/offers/${id}`, {
+    const response = await fetch(getApiUrl(`/api/offers/${id}`), {
       method: "DELETE",
     })
 

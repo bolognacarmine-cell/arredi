@@ -1,8 +1,15 @@
-import express, { Request, Response, NextFunction } from 'express';
-import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load environment variables BEFORE importing other modules
+dotenv.config({ path: path.resolve(__dirname, 'server.env') });
+
+import express, { Request, Response, NextFunction } from 'express';
+import cors from 'cors';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
 import { connectDB } from './db.js';
@@ -14,11 +21,6 @@ import quoteRoutes from './routes/quotes.js';
 import siteConfigRoutes from './routes/siteConfig.js';
 import blogRoutes from './routes/blog.js';
 import adminRoutes from './routes/admin.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-dotenv.config({ path: path.resolve(__dirname, 'server.env') });
 
 const app = express();
 const PORT = process.env.PORT || 3002;

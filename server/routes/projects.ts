@@ -60,6 +60,24 @@ router.get('/', async (req: Request, res: Response) => {
   }
   try {
     const projects = await Project.find().sort(defaultSort).lean();
+
+    // SOLO PER TEST LOCALE: se il DB è vuoto, restituisci dati di test
+    if (projects.length === 0) {
+      const testProjects = [
+        {
+          id: 'project-7',
+          slug: 'project-7',
+          title: 'Progetto test',
+          description: 'Descrizione test',
+          images: [
+            { url: 'https://picsum.photos/800/600?random=1', alt: 'Test 1' },
+            { url: 'https://picsum.photos/800/600?random=2', alt: 'Test 2' }
+          ]
+        }
+      ];
+      return res.json(testProjects);
+    }
+
     res.json(projects.map(toProjectPayload));
   } catch (error: any) {
     res.status(500).json({
