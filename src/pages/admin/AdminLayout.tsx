@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react"
 import { Link, useLocation, Outlet, useNavigate } from "react-router-dom"
-import { useAdminAuth } from "../../hooks/useAdminAuth"
+import { useAdminAuth, RequireAdmin } from "../../hooks/useAdminAuth"
 
 const nav = [
   { to: "/admin", label: "Dashboard", icon: "▦" },
@@ -92,7 +92,8 @@ export default function AdminLayout() {
   )
 
   return (
-    <div className="min-h-screen bg-[#F0EDE6] w-full relative overflow-x-hidden">
+    <RequireAdmin>
+      <div className="min-h-screen bg-[#F0EDE6] w-full relative overflow-x-hidden">
       {/* BACKDROP (click outside to close) */}
       <div
         aria-hidden="true"
@@ -228,6 +229,6 @@ export default function AdminLayout() {
           <Outlet />
         </main>
       </div>
-    </div>
+    </RequireAdmin>
   )
 }
