@@ -9,6 +9,7 @@ build/
 .env.development
 server.env
 server/.env
+.server.env
 .vite/
 vite.config.*.timestamp-*
 *.tsbuildinfo
