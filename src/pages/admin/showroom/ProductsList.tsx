@@ -32,7 +32,7 @@ export default function ProductsList() {
 
   const matching = useMemo(() => {
     const q = filters.q.trim().toLowerCase()
-    return all.filter((p) => {
+    return Array.isArray(all) ? all.filter((p) => {
       if (q && !p.name.toLowerCase().includes(q) && !p.sku.toLowerCase().includes(q))
         return false
       if (filters.activity !== "all" && p.activityCategory !== filters.activity) return false
@@ -44,7 +44,7 @@ export default function ProductsList() {
         if (eff.savings <= 0) return false
       }
       return true
-    })
+    }) : []
   }, [all, offers, filters])
 
   const onSave = async (

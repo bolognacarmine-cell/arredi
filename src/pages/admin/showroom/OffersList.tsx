@@ -28,7 +28,7 @@ export default function OffersList() {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const t = today.getTime()
-    return offers.filter((o) => {
+    return Array.isArray(offers) ? offers.filter((o) => {
       if (q && !o.title.toLowerCase().includes(q)) return false
       if (filters.sector !== "all" && o.activitySector !== filters.sector) return false
       if (filters.furniture !== "all" && o.furnitureType !== filters.furniture) return false
@@ -41,7 +41,7 @@ export default function OffersList() {
         if (filters.status === "expired" && !(t > e)) return false
       }
       return true
-    })
+    }) : []
   }, [offers, filters])
 
   const onSave = async (data: Omit<Offer, "id" | "createdAt" | "updatedAt">, id?: string) => {

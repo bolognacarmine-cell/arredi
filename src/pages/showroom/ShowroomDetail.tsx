@@ -63,13 +63,13 @@ export default function ShowroomDetail() {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const t = today.getTime()
-    return offers.filter((o) => {
+    return Array.isArray(offers) ? offers.filter((o) => {
       if (!o.active) return false
       if (!o.productIds.includes(product.id)) return false
       const s = new Date(o.startDate).getTime()
       const e = new Date(o.endDate + "T23:59:59").getTime()
       return t >= s && t <= e
-    })
+    }) : []
   }, [offers, product])
 
   if (product === undefined) {

@@ -23,8 +23,8 @@ export default function ShowroomList() {
     let alive = true
     Promise.all([getProducts(), getOffers()]).then(([p, o]) => {
       if (!alive) return
-      setProducts(p.filter((x) => x.active))
-      setOffers(o)
+      setProducts(Array.isArray(p) ? p.filter((x) => x.active) : [])
+      setOffers(Array.isArray(o) ? o : [])
       setLoading(false)
     })
     return () => {
