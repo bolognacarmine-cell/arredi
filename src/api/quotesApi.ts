@@ -23,16 +23,25 @@ export interface Quote {
   updatedAt: string
 }
 
+const getApiUrl = (path: string) => {
+  if (API_BASE_URL) {
+    return `${API_BASE_URL.replace(/\/+$/, '')}${path}`
+  }
+  return path
+}
+
 export async function getQuotes(filters?: { status?: string }): Promise<Quote[]> {
   if (!isApiAvailable) {
     return []
   }
 
   try {
-    const url = new URL(`${API_BASE_URL}/api/quotes`)
+    const url = new URL(getApiUrl('/api/quotes'))
     if (filters?.status) url.searchParams.append("status", filters.status)
 
-    const response = await fetch(url.toString())
+    const response = await fetch(url.toString(), {
+      credentials: 'include',
+    })
     const result = await response.json()
 
     if (Array.isArray(result)) {
@@ -43,7 +52,7 @@ export async function getQuotes(filters?: { status?: string }): Promise<Quote[]>
       return result.data
     }
 
-    throw new Error(result.error?.message || "Failed to fetch quotes")
+    throw new Error(result.error?.message || result.message || "Failed to fetch quotes")
   } catch (error) {
     console.error("Error fetching quotes:", error)
     return []
@@ -56,7 +65,9 @@ export async function getQuoteById(id: string): Promise<Quote> {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/quotes/${id}`)
+    const response = await fetch(getApiUrl(`/api/quotes/${id}`), {
+      credentials: 'include',
+    })
     const result = await response.json()
 
     if (result._id) {
@@ -67,7 +78,7 @@ export async function getQuoteById(id: string): Promise<Quote> {
       return result.data
     }
 
-    throw new Error(result.error?.message || "Failed to fetch quote")
+    throw new Error(result.error?.message || result.message || "Failed to fetch quote")
   } catch (error) {
     console.error("Error fetching quote:", error)
     throw error
@@ -80,11 +91,13 @@ export async function createQuote(data: Omit<Quote, "_id" | "createdAt" | "updat
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/quotes`, {
+    const response = await fetch(getApiUrl('/api/quotes'), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Accept: "application/json",
       },
+      credentials: 'include',
       body: JSON.stringify(data),
     })
 
@@ -98,7 +111,7 @@ export async function createQuote(data: Omit<Quote, "_id" | "createdAt" | "updat
       return result.data
     }
 
-    throw new Error(result.error?.message || "Failed to create quote")
+    throw new Error(result.error?.message || result.message || "Failed to create quote")
   } catch (error) {
     console.error("Error creating quote:", error)
     throw error
@@ -111,11 +124,13 @@ export async function updateQuote(id: string, data: Partial<Quote>): Promise<Quo
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/quotes/${id}`, {
+    const response = await fetch(getApiUrl(`/api/quotes/${id}`), {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        Accept: "application/json",
       },
+      credentials: 'include',
       body: JSON.stringify(data),
     })
 
@@ -129,7 +144,7 @@ export async function updateQuote(id: string, data: Partial<Quote>): Promise<Quo
       return result.data
     }
 
-    throw new Error(result.error?.message || "Failed to update quote")
+    throw new Error(result.error?.message || result.message || "Failed to update quote")
   } catch (error) {
     console.error("Error updating quote:", error)
     throw error
@@ -142,8 +157,9 @@ export async function deleteQuote(id: string): Promise<void> {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/quotes/${id}`, {
+    const response = await fetch(getApiUrl(`/api/quotes/${id}`), {
       method: "DELETE",
+      credentials: 'include',
     })
 
     const result = await response.json()
@@ -156,7 +172,7 @@ export async function deleteQuote(id: string): Promise<void> {
       return
     }
 
-    throw new Error(result.error?.message || "Failed to delete quote")
+    throw new Error(result.error?.message || result.message || "Failed to delete quote")
   } catch (error) {
     console.error("Error deleting quote:", error)
     return

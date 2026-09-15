@@ -133,7 +133,9 @@ export async function getPosts(params?: {
 
     const url = getApiUrl('/api/blog/posts')
     console.log(`[Blog API] Fetching from ${url}`);
-    const response = await fetch(`${url}?${queryParams.toString()}`);
+    const response = await fetch(`${url}?${queryParams.toString()}`, {
+      credentials: 'include',
+    });
     
     if (!response.ok) {
       throw new Error(`API returned ${response.status}`);
@@ -169,7 +171,9 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
   try {
     const url = getApiUrl(`/api/blog/posts/${slug}`)
     console.log(`[Blog API] Fetching post ${slug} from ${url}`);
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      credentials: 'include',
+    });
     
     if (!response.ok) {
       throw new Error(`API returned ${response.status}`);
@@ -238,7 +242,9 @@ export async function getSectors(): Promise<BlogSector[]> {
   try {
     const url = getApiUrl('/api/blog/sectors')
     console.log(`[Blog API] Fetching sectors from ${url}`);
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      credentials: 'include',
+    });
     
     if (!response.ok) {
       throw new Error(`API returned ${response.status}`);
@@ -268,15 +274,21 @@ export async function createPost(data: Omit<Post, '_id' | 'publishedAt' | 'updat
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Accept: 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify(data),
     });
 
     const result = await response.json();
 
+    if (!response.ok) throw new Error(result?.error?.message || result?.message || result.error || 'Failed to create post');
+
     if (result.success) {
       return result.data;
     }
+
+    if (result._id || result.id) return result as Post;
 
     throw new Error(result.error || 'Failed to create post');
   } catch (error) {
@@ -295,15 +307,21 @@ export async function updatePost(id: string, data: Partial<Post>): Promise<Post>
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
+        Accept: 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify(data),
     });
 
     const result = await response.json();
 
+    if (!response.ok) throw new Error(result?.error?.message || result?.message || result.error || 'Failed to update post');
+
     if (result.success) {
       return result.data;
     }
+
+    if (result._id || result.id) return result as Post;
 
     throw new Error(result.error || 'Failed to update post');
   } catch (error) {
@@ -320,11 +338,16 @@ export async function deletePost(id: string): Promise<void> {
   try {
     const response = await fetch(getApiUrl(`/api/blog/posts/${id}`), {
       method: 'DELETE',
+      credentials: 'include',
     });
 
     const result = await response.json();
 
-    if (!result.success) {
+    if (!response.ok && result?.error) {
+      throw new Error(result.error.message || result.error || 'Failed to delete post');
+    }
+
+    if (!result.success && !(result.message || response.ok)) {
       throw new Error(result.error || 'Failed to delete post');
     }
   } catch (error) {

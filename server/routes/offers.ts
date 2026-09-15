@@ -7,10 +7,34 @@ const router = Router();
 // GET all offers
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const offers = await Offer.find().sort({ createdAt: -1 });
+    const { activitySector, active } = req.query;
+    const filter: any = {};
+
+    if (activitySector) {
+      filter.activitySector = activitySector;
+    }
+    if (active !== undefined) {
+      filter.active = active === 'true' || active === true;
+    }
+
+    const offers = await Offer.find(filter).sort({ createdAt: -1 });
     res.json(offers);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch offers' });
+    res.status(500).json({ success: false, error: { message: 'Failed to fetch offers' } });
+  }
+});
+
+// GET single offer by id or _id
+router.get('/:id', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const offer = await Offer.findOne({ $or: [{ _id: id }, { id }] });
+    if (!offer) {
+      return res.status(404).json({ success: false, error: { message: 'Offer not found' } });
+    }
+    res.json(offer);
+  } catch (error) {
+    res.status(400).json({ success: false, error: { message: 'Failed to fetch offer' } });
   }
 });
 
@@ -19,9 +43,9 @@ router.post('/', requireAdmin, async (req: Request, res: Response) => {
   try {
     const offer = new Offer(req.body);
     await offer.save();
-    res.status(201).json(offer);
+    res.status(201).json(offer.toObject());
   } catch (error) {
-    res.status(400).json({ error: 'Failed to create offer' });
+    res.status(400).json({ success: false, error: { message: 'Failed to create offer' } });
   }
 });
 
@@ -29,14 +53,18 @@ router.post('/', requireAdmin, async (req: Request, res: Response) => {
 router.put('/:id', requireAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const offer = await Offer.findByIdAndUpdate(id, req.body, { new: true });
+    const offer = await Offer.findOneAndUpdate(
+      { $or: [{ _id: id }, { id }] },
+      req.body,
+      { new: true, runValidators: true }
+    );
     if (!offer) {
-      res.status(404).json({ error: 'Offer not found' });
+      res.status(404).json({ success: false, error: { message: 'Offer not found' } });
     } else {
       res.json(offer);
     }
   } catch (error) {
-    res.status(400).json({ error: 'Failed to update offer' });
+    res.status(400).json({ success: false, error: { message: 'Failed to update offer' } });
   }
 });
 
@@ -44,14 +72,14 @@ router.put('/:id', requireAdmin, async (req: Request, res: Response) => {
 router.delete('/:id', requireAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const offer = await Offer.findByIdAndDelete(id);
+    const offer = await Offer.findOneAndDelete({ $or: [{ _id: id }, { id }] });
     if (!offer) {
-      res.status(404).json({ error: 'Offer not found' });
+      res.status(404).json({ success: false, error: { message: 'Offer not found' } });
     } else {
-      res.json({ message: 'Offer deleted' });
+      res.json({ success: true, message: 'Offer deleted' });
     }
   } catch (error) {
-    res.status(400).json({ error: 'Failed to delete offer' });
+    res.status(400).json({ success: false, error: { message: 'Failed to delete offer' } });
   }
 });
 

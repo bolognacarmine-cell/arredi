@@ -34,14 +34,18 @@ export async function getOffers(filters?: { activitySector?: string; active?: bo
     if (filters?.activitySector) url.searchParams.append("activitySector", filters.activitySector)
     if (filters?.active !== undefined) url.searchParams.append("active", filters.active.toString())
 
-    const response = await fetch(url.toString())
+    const response = await fetch(url.toString(), {
+      credentials: 'include',
+    })
     const result = await response.json()
 
+    if (Array.isArray(result)) return result
+    if (result.success && Array.isArray(result.data)) return result.data
+    if (result._id || result.id) return [result as Offer]
     if (!result.success) {
-      throw new Error(result.error?.message || "Failed to fetch offers")
+      throw new Error(result.error?.message || result.message || "Failed to fetch offers")
     }
-
-    return result.data
+    return []
   } catch (error) {
     console.error("Error fetching offers:", error)
     throw error
@@ -50,14 +54,17 @@ export async function getOffers(filters?: { activitySector?: string; active?: bo
 
 export async function getOfferById(id: string): Promise<Offer> {
   try {
-    const response = await fetch(getApiUrl(`/api/offers/${id}`))
+    const response = await fetch(getApiUrl(`/api/offers/${id}`), {
+      credentials: 'include',
+    })
     const result = await response.json()
 
+    if (result._id || result.id) return result as Offer
+    if (result.success && (result.data._id || result.data.id)) return result.data as Offer
     if (!result.success) {
-      throw new Error(result.error?.message || "Failed to fetch offer")
+      throw new Error(result.error?.message || result.message || "Failed to fetch offer")
     }
-
-    return result.data
+    throw new Error("Failed to fetch offer")
   } catch (error) {
     console.error("Error fetching offer:", error)
     throw error
@@ -70,17 +77,21 @@ export async function createOffer(data: Omit<Offer, "_id" | "createdAt" | "updat
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Accept: "application/json",
       },
+      credentials: 'include',
       body: JSON.stringify(data),
     })
 
     const result = await response.json()
 
-    if (!result.success) {
-      throw new Error(result.error?.message || "Failed to create offer")
+    if (!response.ok) {
+      throw new Error(result.error?.message || result.message || "Failed to create offer")
     }
 
-    return result.data
+    if (result._id || result.id) return result as Offer
+    if (result.success && (result.data._id || result.data.id)) return result.data as Offer
+    throw new Error("Invalid offer payload from server")
   } catch (error) {
     console.error("Error creating offer:", error)
     throw error
@@ -93,17 +104,21 @@ export async function updateOffer(id: string, data: Partial<Offer>): Promise<Off
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        Accept: "application/json",
       },
+      credentials: 'include',
       body: JSON.stringify(data),
     })
 
     const result = await response.json()
 
-    if (!result.success) {
-      throw new Error(result.error?.message || "Failed to update offer")
+    if (!response.ok) {
+      throw new Error(result.error?.message || result.message || "Failed to update offer")
     }
 
-    return result.data
+    if (result._id || result.id) return result as Offer
+    if (result.success && (result.data._id || result.data.id)) return result.data as Offer
+    throw new Error("Invalid offer payload from server")
   } catch (error) {
     console.error("Error updating offer:", error)
     throw error
@@ -114,12 +129,13 @@ export async function deleteOffer(id: string): Promise<void> {
   try {
     const response = await fetch(getApiUrl(`/api/offers/${id}`), {
       method: "DELETE",
+      credentials: 'include',
     })
 
-    const result = await response.json()
+    const result = await response.json().catch(() => ({}))
 
-    if (!result.success) {
-      throw new Error(result.error?.message || "Failed to delete offer")
+    if (!response.ok && result.error) {
+      throw new Error(result.error?.message || result.message || "Failed to delete offer")
     }
   } catch (error) {
     console.error("Error deleting offer:", error)

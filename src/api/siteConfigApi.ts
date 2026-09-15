@@ -26,13 +26,22 @@ export interface SiteConfig {
   updatedAt: string
 }
 
+const getApiUrl = (path: string) => {
+  if (API_BASE_URL) {
+    return `${API_BASE_URL.replace(/\/+$/, '')}${path}`
+  }
+  return path
+}
+
 export async function getSiteConfig(): Promise<SiteConfig> {
   if (!isApiAvailable) {
     throw new Error("API not available")
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/site-config`)
+    const response = await fetch(getApiUrl('/api/site-config'), {
+      credentials: 'include',
+    })
     const result = await response.json()
 
     if (result._id) {
@@ -43,7 +52,7 @@ export async function getSiteConfig(): Promise<SiteConfig> {
       return result.data
     }
 
-    throw new Error(result.error?.message || "Failed to fetch site config")
+    throw new Error(result.error?.message || result.message || "Failed to fetch site config")
   } catch (error) {
     throw error
   }
@@ -55,11 +64,13 @@ export async function updateSiteConfig(data: Partial<SiteConfig>): Promise<SiteC
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/site-config`, {
+    const response = await fetch(getApiUrl('/api/site-config'), {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        Accept: "application/json",
       },
+      credentials: 'include',
       body: JSON.stringify(data),
     })
 
@@ -73,7 +84,7 @@ export async function updateSiteConfig(data: Partial<SiteConfig>): Promise<SiteC
       return result.data
     }
 
-    throw new Error(result.error?.message || "Failed to update site config")
+    throw new Error(result.error?.message || result.message || "Failed to update site config")
   } catch (error) {
     throw error
   }

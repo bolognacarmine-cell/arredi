@@ -35,14 +35,18 @@ export async function getProducts(filters?: { activitySector?: string; active?: 
     if (filters?.activitySector) url.searchParams.append("activitySector", filters.activitySector)
     if (filters?.active !== undefined) url.searchParams.append("active", filters.active.toString())
 
-    const response = await fetch(url.toString())
+    const response = await fetch(url.toString(), {
+      credentials: 'include',
+    })
     const result = await response.json()
 
+    if (Array.isArray(result)) return result
+    if (result.success && Array.isArray(result.data)) return result.data
+    if (result._id || result.id) return [result as Product]
     if (!result.success) {
-      throw new Error(result.error?.message || "Failed to fetch products")
+      throw new Error(result.error?.message || result.message || "Failed to fetch products")
     }
-
-    return result.data
+    return []
   } catch (error) {
     console.error("Error fetching products:", error)
     throw error
@@ -51,14 +55,17 @@ export async function getProducts(filters?: { activitySector?: string; active?: 
 
 export async function getProductById(id: string): Promise<Product> {
   try {
-    const response = await fetch(getApiUrl(`/api/products/${id}`))
+    const response = await fetch(getApiUrl(`/api/products/${id}`), {
+      credentials: 'include',
+    })
     const result = await response.json()
 
+    if (result._id || result.id) return result as Product
+    if (result.success && (result.data._id || result.data.id)) return result.data as Product
     if (!result.success) {
-      throw new Error(result.error?.message || "Failed to fetch product")
+      throw new Error(result.error?.message || result.message || "Failed to fetch product")
     }
-
-    return result.data
+    throw new Error("Failed to fetch product")
   } catch (error) {
     console.error("Error fetching product:", error)
     throw error
@@ -67,14 +74,17 @@ export async function getProductById(id: string): Promise<Product> {
 
 export async function getProductBySlug(slug: string): Promise<Product> {
   try {
-    const response = await fetch(getApiUrl(`/api/products/slug/${slug}`))
+    const response = await fetch(getApiUrl(`/api/products/slug/${slug}`), {
+      credentials: 'include',
+    })
     const result = await response.json()
 
+    if (result._id || result.id) return result as Product
+    if (result.success && (result.data._id || result.data.id)) return result.data as Product
     if (!result.success) {
-      throw new Error(result.error?.message || "Failed to fetch product")
+      throw new Error(result.error?.message || result.message || "Failed to fetch product")
     }
-
-    return result.data
+    throw new Error("Failed to fetch product")
   } catch (error) {
     console.error("Error fetching product:", error)
     throw error
@@ -87,17 +97,21 @@ export async function createProduct(data: Omit<Product, "_id" | "createdAt" | "u
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Accept: "application/json",
       },
+      credentials: 'include',
       body: JSON.stringify(data),
     })
 
     const result = await response.json()
 
-    if (!result.success) {
-      throw new Error(result.error?.message || "Failed to create product")
+    if (!response.ok) {
+      throw new Error(result.error?.message || result.message || "Failed to create product")
     }
 
-    return result.data
+    if (result._id || result.id) return result as Product
+    if (result.success && (result.data._id || result.data.id)) return result.data as Product
+    throw new Error("Invalid product payload from server")
   } catch (error) {
     console.error("Error creating product:", error)
     throw error
@@ -110,17 +124,21 @@ export async function updateProduct(id: string, data: Partial<Product>): Promise
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        Accept: "application/json",
       },
+      credentials: 'include',
       body: JSON.stringify(data),
     })
 
     const result = await response.json()
 
-    if (!result.success) {
-      throw new Error(result.error?.message || "Failed to update product")
+    if (!response.ok) {
+      throw new Error(result.error?.message || result.message || "Failed to update product")
     }
 
-    return result.data
+    if (result._id || result.id) return result as Product
+    if (result.success && (result.data._id || result.data.id)) return result.data as Product
+    throw new Error("Invalid product payload from server")
   } catch (error) {
     console.error("Error updating product:", error)
     throw error
@@ -131,12 +149,13 @@ export async function deleteProduct(id: string): Promise<void> {
   try {
     const response = await fetch(getApiUrl(`/api/products/${id}`), {
       method: "DELETE",
+      credentials: 'include',
     })
 
-    const result = await response.json()
+    const result = await response.json().catch(() => ({}))
 
-    if (!result.success) {
-      throw new Error(result.error?.message || "Failed to delete product")
+    if (!response.ok && result.error) {
+      throw new Error(result.error?.message || result.message || "Failed to delete product")
     }
   } catch (error) {
     console.error("Error deleting product:", error)

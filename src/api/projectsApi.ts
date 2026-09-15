@@ -42,6 +42,7 @@ export async function getProjects(): Promise<Project[]> {
     const response = await fetch(apiUrl("/api/projects"), {
       method: "GET",
       headers: { "Accept": "application/json" },
+      credentials: 'include',
     })
     if (!response.ok) {
       if (response.status === 404 || response.status === 503 || response.status >= 500) {
@@ -65,6 +66,7 @@ export async function getProjectById(id: string): Promise<Project> {
     const response = await fetch(apiUrl(`/api/projects/${encodeURIComponent(id)}`), {
       method: "GET",
       headers: { "Accept": "application/json" },
+      credentials: 'include',
     })
     const result = await response.json().catch(() => ({}))
     if (response.ok && (result._id || result.id || result?.data?._id)) {
@@ -82,6 +84,7 @@ export async function createProject(data: Omit<Project, "_id" | "createdAt" | "u
     const response = await fetch(apiUrl("/api/projects"), {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
+      credentials: 'include',
       body: JSON.stringify(data),
     })
     const result = await response.json().catch(() => ({}))
@@ -100,6 +103,7 @@ export async function updateProject(id: string, data: Partial<Project>): Promise
     const response = await fetch(apiUrl(`/api/projects/${encodeURIComponent(id)}`), {
       method: "PUT",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
+      credentials: 'include',
       body: JSON.stringify(data),
     })
     const result = await response.json().catch(() => ({}))
@@ -118,6 +122,7 @@ export async function deleteProject(id: string): Promise<void> {
     const response = await fetch(apiUrl(`/api/projects/${encodeURIComponent(id)}`), {
       method: "DELETE",
       headers: { Accept: "application/json" },
+      credentials: 'include',
     })
     const result = await response.json().catch(() => null)
     if (!response.ok && result?.error) {
@@ -139,6 +144,7 @@ export async function replaceAllProjects(projects: Project[]): Promise<{ ok: tru
       const response = await fetch(fullUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
+        credentials: 'include',
         body: JSON.stringify(projects),
       })
       if (response.status === 404 || response.status === 405) {

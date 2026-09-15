@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import Post from '../models/Post.js';
+import { requireAdmin } from '../middleware/requireAdmin.js';
 
 // @ts-ignore - MongoDB aggregation types are complex
 
@@ -111,7 +112,7 @@ router.get('/sectors', async (req: Request, res: Response) => {
 });
 
 // POST create new post (admin)
-router.post('/posts', async (req: Request, res: Response) => {
+router.post('/posts', requireAdmin, async (req: Request, res: Response) => {
   try {
     const post = new Post(req.body);
     await post.save();
@@ -123,7 +124,7 @@ router.post('/posts', async (req: Request, res: Response) => {
 });
 
 // PUT update post (admin)
-router.put('/posts/:id', async (req: Request, res: Response) => {
+router.put('/posts/:id', requireAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const post = await Post.findByIdAndUpdate(id, req.body, { new: true });
@@ -140,7 +141,7 @@ router.put('/posts/:id', async (req: Request, res: Response) => {
 });
 
 // DELETE post (admin)
-router.delete('/posts/:id', async (req: Request, res: Response) => {
+router.delete('/posts/:id', requireAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const post = await Post.findByIdAndDelete(id);
