@@ -110,8 +110,7 @@ router.post('/logout', (req: Request, res: Response) => {
 router.get('/me', (req: Request, res: Response) => {
   try {
     console.log('[AUTH CHECK] Method:', req.method, 'URL:', req.url);
-    console.log('[AUTH CHECK] Session exists:', !!req.session);
-    console.log('[AUTH CHECK] Session ID:', req.sessionID ? 'present' : 'missing');
+    console.log('[AUTH CHECK] Session object exists:', !!req.session);
     console.log('[AUTH CHECK] User ID in session:', req.session?.userId ? 'present' : 'missing');
     console.log('[AUTH CHECK] User role in session:', req.session?.userRole || 'missing');
     
