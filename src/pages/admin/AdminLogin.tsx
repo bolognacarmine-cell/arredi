@@ -1,14 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-
-// Get API base URL - use relative paths in same-origin, absolute when VITE_API_BASE_URL is set
-const getApiUrl = (path: string) => {
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
-  if (apiBaseUrl) {
-    return `${apiBaseUrl.replace(/\/+$/, '')}${path}`
-  }
-  return path // Use relative path for same-origin
-}
+import { useAdminAuth } from '../../hooks/useAdminAuth';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -16,6 +8,7 @@ export default function AdminLogin() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAdminAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,21 +16,12 @@ export default function AdminLogin() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(getApiUrl('/api/admin/login'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ email, password }),
-      });
+      const result = await login(email, password);
 
-      const data = await response.json();
-
-      if (data.success) {
+      if (result.success) {
         navigate('/admin');
       } else {
-        setError(data.message || 'Login failed');
+        setError(result.message || 'Login failed');
       }
     } catch (err) {
       setError('An error occurred. Please try again.');
