@@ -54,7 +54,8 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       console.error('Auth check failed:', error)
-      setUser(null)
+      // Don't set user to null on network errors - keep existing state
+      // Only set null on explicit 401 responses
     } finally {
       setIsLoading(false)
     }
@@ -140,14 +141,16 @@ export function useAdminAuth(): Ctx {
 
 // Wrapper per bloccare rotte non-admin
 export function RequireAdmin({ children }: { children: ReactNode }) {
-  const { isAuthenticated, isLoading } = useAdminAuth()
+  const { isAuthenticated, isLoading, user } = useAdminAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    // Only redirect if we're definitely not authenticated (user is null) and not loading
+    // Don't redirect on network errors - keep existing state
+    if (!isLoading && user === null) {
       navigate('/admin/login')
     }
-  }, [isAuthenticated, isLoading, navigate])
+  }, [user, isLoading, navigate])
 
   if (isLoading) {
     return (
@@ -157,7 +160,7 @@ export function RequireAdmin({ children }: { children: ReactNode }) {
       </div>
     )
   }
-  if (!isAuthenticated) {
+  if (user === null) {
     return null // Will redirect via useEffect
   }
   return <>{children}</>

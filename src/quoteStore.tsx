@@ -20,92 +20,21 @@ export type QuoteRecord = {
 const QUOTES_STORAGE_KEY = "farcom-quotes"
 const QUOTES_EVENT = "farcom-quotes-updated"
 
-const defaultQuotes: QuoteRecord[] = [
-  {
-    id: "default-1",
-    nome: "Luca",
-    cognome: "Bernardi",
-    azienda: "Barberia Moderna",
-    settore: "Barbieri",
-    email: "luca.b@email.it",
-    telefono: "333 1234567",
-    data: "24/08/2025",
-    stato: "nuovo",
-    metratura: "45",
-    arredo: "Banco reception, 3 postazioni taglio, zona attesa",
-    messaggio: "Sto aprendo un nuovo barbershop a Milano, in zona Navigli. Ho già un locale di circa 45mq. Ho bisogno di un'idea completa.",
-  },
-  {
-    id: "default-2",
-    nome: "Marta",
-    cognome: "Vitali",
-    azienda: "Studio V Architettura",
-    settore: "Uffici",
-    email: "m.vitali@studiov.it",
-    telefono: "02 9876543",
-    data: "23/08/2025",
-    stato: "contattato",
-    metratura: "120",
-    arredo: "Reception, sala riunioni, 6 postazioni",
-    messaggio: "Nuovo ufficio al quarto piano, edificio ristrutturato. Vogliamo uno stile minimal e funzionale.",
-  },
-  {
-    id: "default-3",
-    nome: "Roberto",
-    cognome: "Greco",
-    azienda: "Boutique Greco",
-    settore: "Negozi",
-    email: "r.greco@boutique.it",
-    telefono: "055 7654321",
-    data: "21/08/2025",
-    stato: "contattato",
-    metratura: "60",
-    arredo: "Espositori, banco cassa, camerini",
-    messaggio: "Abbigliamento donna luxury, Firenze centro storico. Budget non è il primo criterio.",
-  },
-  {
-    id: "default-4",
-    nome: "Istituto",
-    cognome: "Pacinotti",
-    azienda: "Istituto Tecnico Pacinotti",
-    settore: "Scuole",
-    email: "segreteria@pacinotti.edu.it",
-    telefono: "051 456789",
-    data: "19/08/2025",
-    stato: "chiuso",
-    metratura: "400",
-    arredo: "20 aule, mensa, biblioteca",
-    messaggio: "Ristrutturazione completa. Gara d'appalto vinta. Procedere con la progettazione.",
-  },
-  {
-    id: "default-5",
-    nome: "Federica",
-    cognome: "Amato",
-    azienda: "Amato Hair Studio",
-    settore: "Barbieri",
-    email: "f.amato@hair.it",
-    telefono: "349 8765432",
-    data: "17/08/2025",
-    stato: "nuovo",
-    metratura: "30",
-    arredo: "3 postazioni, banco shampoo, reception",
-    messaggio: "",
-  },
-]
+const defaultQuotes: QuoteRecord[] = []
 
 export function readQuotes(): QuoteRecord[] {
-  if (typeof window === "undefined") return defaultQuotes
+  if (typeof window === "undefined") return []
 
   try {
     const storedValue = window.localStorage.getItem(QUOTES_STORAGE_KEY)
-    if (!storedValue) return defaultQuotes
+    if (!storedValue) return []
 
     const parsed = JSON.parse(storedValue) as QuoteRecord[]
-    if (!Array.isArray(parsed) || parsed.length === 0) return defaultQuotes
+    if (!Array.isArray(parsed) || parsed.length === 0) return []
 
     return parsed
   } catch {
-    return defaultQuotes
+    return []
   }
 }
 
@@ -168,11 +97,11 @@ export function useQuotes() {
           messaggio: q.messaggio,
           note: q.note,
         }))
-        setQuotes(convertedQuotes.length > 0 ? convertedQuotes : defaultQuotes)
+        setQuotes(convertedQuotes.length > 0 ? convertedQuotes : [])
       } catch (err) {
         console.error("Error loading quotes from API:", err)
-        // Fallback to localStorage if API fails
-        setQuotes(readQuotes())
+        // Fallback to empty array if API fails - don't show mock data
+        setQuotes([])
       }
     }
 
@@ -197,7 +126,7 @@ export function useQuotes() {
         messaggio: q.messaggio,
         note: q.note,
       }))
-      setQuotes(convertedQuotes.length > 0 ? convertedQuotes : defaultQuotes)
+      setQuotes(convertedQuotes.length > 0 ? convertedQuotes : [])
     } catch (err) {
       console.error("Error refreshing quotes from API:", err)
     }

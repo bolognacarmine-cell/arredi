@@ -19,9 +19,9 @@ router.get('/', async (req: Request, res: Response) => {
     }
 
     const products = await Product.find(filter).sort({ createdAt: -1 });
-    res.json(products);
+    res.json({ success: true, data: products });
   } catch (error) {
-    res.status(500).json({ success: false, error: { message: 'Failed to fetch products' } });
+    res.status(500).json({ success: false, message: 'Failed to fetch products' });
   }
 });
 
@@ -31,11 +31,11 @@ router.get('/slug/:slug', async (req: Request, res: Response) => {
     const { slug } = req.params;
     const product = await Product.findOne({ slug });
     if (!product) {
-      return res.status(404).json({ success: false, error: { message: 'Product not found' } });
+      return res.status(404).json({ success: false, message: 'Product not found' });
     }
-    res.json(product);
+    res.json({ success: true, data: product });
   } catch (error) {
-    res.status(500).json({ success: false, error: { message: 'Failed to fetch product' } });
+    res.status(500).json({ success: false, message: 'Failed to fetch product' });
   }
 });
 
@@ -45,11 +45,11 @@ router.get('/:id', async (req: Request, res: Response) => {
     const { id } = req.params;
     const product = await Product.findOne({ $or: [{ _id: id }, { id }] });
     if (!product) {
-      return res.status(404).json({ success: false, error: { message: 'Product not found' } });
+      return res.status(404).json({ success: false, message: 'Product not found' });
     }
-    res.json(product);
+    res.json({ success: true, data: product });
   } catch (error) {
-    res.status(400).json({ success: false, error: { message: 'Failed to fetch product' } });
+    res.status(400).json({ success: false, message: 'Failed to fetch product' });
   }
 });
 
@@ -58,9 +58,9 @@ router.post('/', requireAdmin, async (req: Request, res: Response) => {
   try {
     const product = new Product(req.body);
     await product.save();
-    res.status(201).json(product.toObject());
+    res.status(201).json({ success: true, data: product.toObject() });
   } catch (error) {
-    res.status(400).json({ success: false, error: { message: 'Failed to create product' } });
+    res.status(400).json({ success: false, message: 'Failed to create product' });
   }
 });
 
@@ -74,12 +74,12 @@ router.put('/:id', requireAdmin, async (req: Request, res: Response) => {
       { new: true, runValidators: true }
     );
     if (!product) {
-      res.status(404).json({ success: false, error: { message: 'Product not found' } });
+      res.status(404).json({ success: false, message: 'Product not found' });
     } else {
-      res.json(product);
+      res.json({ success: true, data: product });
     }
   } catch (error) {
-    res.status(400).json({ success: false, error: { message: 'Failed to update product' } });
+    res.status(400).json({ success: false, message: 'Failed to update product' });
   }
 });
 
@@ -89,12 +89,12 @@ router.delete('/:id', requireAdmin, async (req: Request, res: Response) => {
     const { id } = req.params;
     const product = await Product.findOneAndDelete({ $or: [{ _id: id }, { id }] });
     if (!product) {
-      res.status(404).json({ success: false, error: { message: 'Product not found' } });
+      res.status(404).json({ success: false, message: 'Product not found' });
     } else {
       res.json({ success: true, message: 'Product deleted' });
     }
   } catch (error) {
-    res.status(400).json({ success: false, error: { message: 'Failed to delete product' } });
+    res.status(400).json({ success: false, message: 'Failed to delete product' });
   }
 });
 

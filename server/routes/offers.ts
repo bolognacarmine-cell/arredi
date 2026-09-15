@@ -19,9 +19,9 @@ router.get('/', async (req: Request, res: Response) => {
     }
 
     const offers = await Offer.find(filter).sort({ createdAt: -1 });
-    res.json(offers);
+    res.json({ success: true, data: offers });
   } catch (error) {
-    res.status(500).json({ success: false, error: { message: 'Failed to fetch offers' } });
+    res.status(500).json({ success: false, message: 'Failed to fetch offers' });
   }
 });
 
@@ -31,11 +31,11 @@ router.get('/:id', async (req: Request, res: Response) => {
     const { id } = req.params;
     const offer = await Offer.findOne({ $or: [{ _id: id }, { id }] });
     if (!offer) {
-      return res.status(404).json({ success: false, error: { message: 'Offer not found' } });
+      return res.status(404).json({ success: false, message: 'Offer not found' });
     }
-    res.json(offer);
+    res.json({ success: true, data: offer });
   } catch (error) {
-    res.status(400).json({ success: false, error: { message: 'Failed to fetch offer' } });
+    res.status(400).json({ success: false, message: 'Failed to fetch offer' });
   }
 });
 
@@ -44,9 +44,9 @@ router.post('/', requireAdmin, async (req: Request, res: Response) => {
   try {
     const offer = new Offer(req.body);
     await offer.save();
-    res.status(201).json(offer.toObject());
+    res.status(201).json({ success: true, data: offer.toObject() });
   } catch (error) {
-    res.status(400).json({ success: false, error: { message: 'Failed to create offer' } });
+    res.status(400).json({ success: false, message: 'Failed to create offer' });
   }
 });
 
@@ -60,12 +60,12 @@ router.put('/:id', requireAdmin, async (req: Request, res: Response) => {
       { new: true, runValidators: true }
     );
     if (!offer) {
-      res.status(404).json({ success: false, error: { message: 'Offer not found' } });
+      res.status(404).json({ success: false, message: 'Offer not found' });
     } else {
-      res.json(offer);
+      res.json({ success: true, data: offer });
     }
   } catch (error) {
-    res.status(400).json({ success: false, error: { message: 'Failed to update offer' } });
+    res.status(400).json({ success: false, message: 'Failed to update offer' });
   }
 });
 
@@ -75,12 +75,12 @@ router.delete('/:id', requireAdmin, async (req: Request, res: Response) => {
     const { id } = req.params;
     const offer = await Offer.findOneAndDelete({ $or: [{ _id: id }, { id }] });
     if (!offer) {
-      res.status(404).json({ success: false, error: { message: 'Offer not found' } });
+      res.status(404).json({ success: false, message: 'Offer not found' });
     } else {
       res.json({ success: true, message: 'Offer deleted' });
     }
   } catch (error) {
-    res.status(400).json({ success: false, error: { message: 'Failed to delete offer' } });
+    res.status(400).json({ success: false, message: 'Failed to delete offer' });
   }
 });
 

@@ -39,13 +39,17 @@ export async function getOffers(filters?: { activitySector?: string; active?: bo
     })
     const result = await response.json()
 
-    if (Array.isArray(result)) return result
-    if (result.success && Array.isArray(result.data)) return result.data
-    if (result._id || result.id) return [result as Offer]
-    if (!result.success) {
-      throw new Error(result.error?.message || result.message || "Failed to fetch offers")
+    if (result.success && Array.isArray(result.data)) {
+      return result.data
     }
-    return []
+
+    // Fallback for legacy array responses
+    if (Array.isArray(result)) return result
+
+    // Fallback for legacy single object responses
+    if (result._id || result.id) return [result as Offer]
+
+    throw new Error(result.message || "Failed to fetch offers")
   } catch (error) {
     console.error("Error fetching offers:", error)
     throw error
@@ -59,12 +63,14 @@ export async function getOfferById(id: string): Promise<Offer> {
     })
     const result = await response.json()
 
-    if (result._id || result.id) return result as Offer
-    if (result.success && (result.data._id || result.data.id)) return result.data as Offer
-    if (!result.success) {
-      throw new Error(result.error?.message || result.message || "Failed to fetch offer")
+    if (result.success && result.data) {
+      return result.data as Offer
     }
-    throw new Error("Failed to fetch offer")
+
+    // Fallback for legacy direct object responses
+    if (result._id || result.id) return result as Offer
+
+    throw new Error(result.message || "Failed to fetch offer")
   } catch (error) {
     console.error("Error fetching offer:", error)
     throw error
@@ -86,11 +92,16 @@ export async function createOffer(data: Omit<Offer, "_id" | "createdAt" | "updat
     const result = await response.json()
 
     if (!response.ok) {
-      throw new Error(result.error?.message || result.message || "Failed to create offer")
+      throw new Error(result.message || "Failed to create offer")
     }
 
+    if (result.success && result.data) {
+      return result.data as Offer
+    }
+
+    // Fallback for legacy direct object responses
     if (result._id || result.id) return result as Offer
-    if (result.success && (result.data._id || result.data.id)) return result.data as Offer
+
     throw new Error("Invalid offer payload from server")
   } catch (error) {
     console.error("Error creating offer:", error)
@@ -113,11 +124,16 @@ export async function updateOffer(id: string, data: Partial<Offer>): Promise<Off
     const result = await response.json()
 
     if (!response.ok) {
-      throw new Error(result.error?.message || result.message || "Failed to update offer")
+      throw new Error(result.message || "Failed to update offer")
     }
 
+    if (result.success && result.data) {
+      return result.data as Offer
+    }
+
+    // Fallback for legacy direct object responses
     if (result._id || result.id) return result as Offer
-    if (result.success && (result.data._id || result.data.id)) return result.data as Offer
+
     throw new Error("Invalid offer payload from server")
   } catch (error) {
     console.error("Error updating offer:", error)

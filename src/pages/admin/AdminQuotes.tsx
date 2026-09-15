@@ -22,7 +22,7 @@ export default function AdminQuotes() {
   const [error, setError] = useState<string | null>(null)
 
   const filtered =
-    filter === "all" ? quotes : quotes.filter((q) => q.stato === filter)
+    filter === "all" ? quotes : (Array.isArray(quotes) ? quotes.filter((q) => q.stato === filter) : [])
 
   const handleStatusChange = async (quoteId: string, newStatus: QuoteRecord["stato"]) => {
     setIsUpdating(quoteId)
@@ -30,7 +30,6 @@ export default function AdminQuotes() {
     try {
       await quotesApi.updateQuoteStatus(quoteId, newStatus)
       await refreshQuotes()
-      await checkAuth() // Re-verify auth after API call
     } catch (err) {
       console.error("Error updating quote status:", err)
       setError("Impossibile aggiornare lo stato. Riprova.")
@@ -49,7 +48,6 @@ export default function AdminQuotes() {
           setSelectedQuote(null)
         }
         await refreshQuotes()
-        await checkAuth() // Re-verify auth after API call
       } catch (err) {
         console.error("Error deleting quote:", err)
         setError("Impossibile eliminare il preventivo. Riprova.")

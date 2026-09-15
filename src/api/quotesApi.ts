@@ -37,15 +37,16 @@ export async function getQuotes(filters?: { status?: string }): Promise<Quote[]>
     })
     const result = await response.json()
 
+    if (result.success && Array.isArray(result.data)) {
+      return result.data
+    }
+
+    // Fallback for legacy array responses
     if (Array.isArray(result)) {
       return result
     }
 
-    if (result.success) {
-      return result.data
-    }
-
-    throw new Error(result.error?.message || result.message || "Failed to fetch quotes")
+    throw new Error(result.message || "Failed to fetch quotes")
   } catch (error) {
     console.error("Error fetching quotes:", error)
     return []
@@ -59,15 +60,16 @@ export async function getQuoteById(id: string): Promise<Quote> {
     })
     const result = await response.json()
 
+    if (result.success && result.data) {
+      return result.data
+    }
+
+    // Fallback for legacy direct object responses
     if (result._id) {
       return result
     }
 
-    if (result.success) {
-      return result.data
-    }
-
-    throw new Error(result.error?.message || result.message || "Failed to fetch quote")
+    throw new Error(result.message || "Failed to fetch quote")
   } catch (error) {
     console.error("Error fetching quote:", error)
     throw error
@@ -88,15 +90,16 @@ export async function createQuote(data: Omit<Quote, "_id" | "createdAt" | "updat
 
     const result = await response.json()
 
+    if (result.success && result.data) {
+      return result.data
+    }
+
+    // Fallback for legacy direct object responses
     if (result._id) {
       return result
     }
 
-    if (result.success) {
-      return result.data
-    }
-
-    throw new Error(result.error?.message || result.message || "Failed to create quote")
+    throw new Error(result.message || "Failed to create quote")
   } catch (error) {
     console.error("Error creating quote:", error)
     throw error
@@ -117,15 +120,16 @@ export async function updateQuote(id: string, data: Partial<Quote>): Promise<Quo
 
     const result = await response.json()
 
+    if (result.success && result.data) {
+      return result.data
+    }
+
+    // Fallback for legacy direct object responses
     if (result._id) {
       return result
     }
 
-    if (result.success) {
-      return result.data
-    }
-
-    throw new Error(result.error?.message || result.message || "Failed to update quote")
+    throw new Error(result.message || "Failed to update quote")
   } catch (error) {
     console.error("Error updating quote:", error)
     throw error
@@ -146,15 +150,16 @@ export async function updateQuoteStatus(id: string, stato: "nuovo" | "contattato
 
     const result = await response.json()
 
+    if (result.success && result.data) {
+      return result.data
+    }
+
+    // Fallback for legacy direct object responses
     if (result._id) {
       return result
     }
 
-    if (result.success) {
-      return result.data
-    }
-
-    throw new Error(result.error?.message || result.message || "Failed to update quote status")
+    throw new Error(result.message || "Failed to update quote status")
   } catch (error) {
     console.error("Error updating quote status:", error)
     throw error

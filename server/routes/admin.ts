@@ -113,18 +113,19 @@ router.get('/me', (req: Request, res: Response) => {
     console.log('[AUTH CHECK] Session object exists:', !!req.session);
     console.log('[AUTH CHECK] User ID in session:', req.session?.userId ? 'present' : 'missing');
     console.log('[AUTH CHECK] User role in session:', req.session?.userRole || 'missing');
-    
+    console.log('[AUTH CHECK] Response status:', req.session?.userId ? '200' : '401');
+
     if (!req.session || !req.session.userId) {
       console.log('[AUTH CHECK] Returning 401 - No valid session');
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Not authenticated' 
+      return res.status(401).json({
+        success: false,
+        message: 'Not authenticated'
       });
     }
 
-    console.log('[AUTH CHECK] Auth check successful for user:', req.session.userId);
-    res.json({ 
-      success: true, 
+    console.log('[AUTH CHECK] Auth check successful');
+    res.json({
+      success: true,
       user: {
         id: req.session.userId,
         role: req.session.userRole,
@@ -132,9 +133,9 @@ router.get('/me', (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('❌ Error getting user info:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Internal server error' 
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
     });
   }
 });

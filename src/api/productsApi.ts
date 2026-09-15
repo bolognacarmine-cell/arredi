@@ -40,13 +40,17 @@ export async function getProducts(filters?: { activitySector?: string; active?: 
     })
     const result = await response.json()
 
-    if (Array.isArray(result)) return result
-    if (result.success && Array.isArray(result.data)) return result.data
-    if (result._id || result.id) return [result as Product]
-    if (!result.success) {
-      throw new Error(result.error?.message || result.message || "Failed to fetch products")
+    if (result.success && Array.isArray(result.data)) {
+      return result.data
     }
-    return []
+
+    // Fallback for legacy array responses
+    if (Array.isArray(result)) return result
+
+    // Fallback for legacy single object responses
+    if (result._id || result.id) return [result as Product]
+
+    throw new Error(result.message || "Failed to fetch products")
   } catch (error) {
     console.error("Error fetching products:", error)
     throw error
@@ -60,12 +64,14 @@ export async function getProductById(id: string): Promise<Product> {
     })
     const result = await response.json()
 
-    if (result._id || result.id) return result as Product
-    if (result.success && (result.data._id || result.data.id)) return result.data as Product
-    if (!result.success) {
-      throw new Error(result.error?.message || result.message || "Failed to fetch product")
+    if (result.success && result.data) {
+      return result.data as Product
     }
-    throw new Error("Failed to fetch product")
+
+    // Fallback for legacy direct object responses
+    if (result._id || result.id) return result as Product
+
+    throw new Error(result.message || "Failed to fetch product")
   } catch (error) {
     console.error("Error fetching product:", error)
     throw error
@@ -79,12 +85,14 @@ export async function getProductBySlug(slug: string): Promise<Product> {
     })
     const result = await response.json()
 
-    if (result._id || result.id) return result as Product
-    if (result.success && (result.data._id || result.data.id)) return result.data as Product
-    if (!result.success) {
-      throw new Error(result.error?.message || result.message || "Failed to fetch product")
+    if (result.success && result.data) {
+      return result.data as Product
     }
-    throw new Error("Failed to fetch product")
+
+    // Fallback for legacy direct object responses
+    if (result._id || result.id) return result as Product
+
+    throw new Error(result.message || "Failed to fetch product")
   } catch (error) {
     console.error("Error fetching product:", error)
     throw error
@@ -106,11 +114,16 @@ export async function createProduct(data: Omit<Product, "_id" | "createdAt" | "u
     const result = await response.json()
 
     if (!response.ok) {
-      throw new Error(result.error?.message || result.message || "Failed to create product")
+      throw new Error(result.message || "Failed to create product")
     }
 
+    if (result.success && result.data) {
+      return result.data as Product
+    }
+
+    // Fallback for legacy direct object responses
     if (result._id || result.id) return result as Product
-    if (result.success && (result.data._id || result.data.id)) return result.data as Product
+
     throw new Error("Invalid product payload from server")
   } catch (error) {
     console.error("Error creating product:", error)
@@ -133,11 +146,16 @@ export async function updateProduct(id: string, data: Partial<Product>): Promise
     const result = await response.json()
 
     if (!response.ok) {
-      throw new Error(result.error?.message || result.message || "Failed to update product")
+      throw new Error(result.message || "Failed to update product")
     }
 
+    if (result.success && result.data) {
+      return result.data as Product
+    }
+
+    // Fallback for legacy direct object responses
     if (result._id || result.id) return result as Product
-    if (result.success && (result.data._id || result.data.id)) return result.data as Product
+
     throw new Error("Invalid product payload from server")
   } catch (error) {
     console.error("Error updating product:", error)
