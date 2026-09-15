@@ -107,7 +107,7 @@ router.post('/logout', (req: Request, res: Response) => {
  * GET /api/admin/me
  * Get current admin user info
  */
-router.get('/me', (req: Request, res: Response) => {
+router.get('/me', async (req: Request, res: Response) => {
   try {
     console.log('[AUTH CHECK] Method:', req.method, 'URL:', req.url);
     console.log('[AUTH CHECK] Session object exists:', !!req.session);
@@ -123,12 +123,24 @@ router.get('/me', (req: Request, res: Response) => {
       });
     }
 
+    // Fetch user details from database to get email and name
+    const user = await UserModel.findById(req.session.userId);
+    if (!user) {
+      console.log('[AUTH CHECK] User not found in database');
+      return res.status(401).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
     console.log('[AUTH CHECK] Auth check successful');
     res.json({
       success: true,
       user: {
-        id: req.session.userId,
-        role: req.session.userRole,
+        id: user._id.toString(),
+        email: user.email,
+        name: user.name,
+        role: user.role,
       }
     });
   } catch (error) {
