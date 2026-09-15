@@ -135,11 +135,7 @@ export default function ProjectDetail() {
                     </svg>
                   </button>
 
-                  <div className="absolute top-3 right-3 bg-black/55 text-white text-xs font-medium px-2.5 py-1 rounded backdrop-blur">
-                    {activeImg + 1} / {uniqueGallery.length}
-                  </div>
-
-                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
                     {uniqueGallery.map((_, i) => (
                       <button
                         key={i}
@@ -148,8 +144,8 @@ export default function ProjectDetail() {
                         onClick={() => setActiveImg(i)}
                         className={`h-1.5 rounded-full transition-all ${
                           activeImg === i
-                            ? "w-6 bg-white shadow-md"
-                            : "w-1.5 bg-white/55 hover:bg-white/80"
+                            ? "w-8 bg-white shadow-md"
+                            : "w-1.5 bg-white/40 hover:bg-white/60"
                         }`}
                       />
                     ))}
