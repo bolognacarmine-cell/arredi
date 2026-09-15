@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { useSearchParams, Link } from "react-router-dom"
 import { SECTORS } from "../data"
+import * as quotesApi from "../api/quotesApi"
 
 export default function Quote() {
   useEffect(() => {
@@ -22,6 +23,8 @@ export default function Quote() {
   const [params] = useSearchParams()
   const preselect = params.get("settore") || ""
   const [submitted, setSubmitted] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [form, setForm] = useState({
     nome: "",
     cognome: "",
@@ -38,9 +41,37 @@ export default function Quote() {
   const set = (k: string, v: string | boolean) =>
     setForm((f) => ({ ...f, [k]: v }))
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setSubmitted(true)
+    setIsSubmitting(true)
+    setError(null)
+
+    try {
+      const today = new Date().toLocaleDateString("it-IT")
+      await quotesApi.createQuote({
+        id: "",
+        nome: form.nome,
+        cognome: form.cognome,
+        azienda: form.azienda,
+        settore: form.settore,
+        email: form.email,
+        telefono: form.telefono,
+        data: today,
+        stato: "nuovo",
+        metratura: form.metratura,
+        arredo: form.arredo,
+        messaggio: form.messaggio,
+        note: "",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })
+      setSubmitted(true)
+    } catch (err) {
+      console.error("Error submitting quote:", err)
+      setError("Impossibile inviare la richiesta. Riprova o contattaci direttamente.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   if (submitted) {
@@ -84,6 +115,12 @@ export default function Quote() {
             la prima consulenza sono sempre gratuiti e senza impegno.
           </p>
         </div>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Personal */}
@@ -221,9 +258,10 @@ export default function Quote() {
 
           <button
             type="submit"
-            className="w-full sm:w-auto bg-[#1B4332] text-white text-sm font-semibold px-10 py-4 hover:bg-[#143326] transition-colors"
+            disabled={isSubmitting}
+            className="w-full sm:w-auto bg-[#1B4332] text-white text-sm font-semibold px-10 py-4 hover:bg-[#143326] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Invia richiesta
+            {isSubmitting ? "Invio in corso..." : "Invia richiesta"}
           </button>
         </form>
       </div>

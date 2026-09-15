@@ -2,23 +2,21 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ""
 const isApiAvailable = !!API_BASE_URL
 
-export interface QuoteItem {
-  productId: string
-  productName: string
-  quantity: number
-  price: number
-}
-
 export interface Quote {
   _id: string
   id: string
-  customerName: string
-  customerEmail: string
-  customerPhone?: string
-  items: QuoteItem[]
-  totalAmount: number
-  status: "pending" | "confirmed" | "cancelled"
-  notes?: string
+  nome: string
+  cognome: string
+  azienda: string
+  settore: string
+  email: string
+  telefono: string
+  data: string
+  stato: "nuovo" | "contattato" | "chiuso"
+  metratura: string
+  arredo: string
+  messaggio: string
+  note?: string
   createdAt: string
   updatedAt: string
 }
@@ -147,6 +145,39 @@ export async function updateQuote(id: string, data: Partial<Quote>): Promise<Quo
     throw new Error(result.error?.message || result.message || "Failed to update quote")
   } catch (error) {
     console.error("Error updating quote:", error)
+    throw error
+  }
+}
+
+export async function updateQuoteStatus(id: string, stato: "nuovo" | "contattato" | "chiuso"): Promise<Quote> {
+  if (!isApiAvailable) {
+    throw new Error("API not available")
+  }
+
+  try {
+    const response = await fetch(getApiUrl(`/api/quotes/${id}/status`), {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      credentials: 'include',
+      body: JSON.stringify({ stato }),
+    })
+
+    const result = await response.json()
+
+    if (result._id) {
+      return result
+    }
+
+    if (result.success) {
+      return result.data
+    }
+
+    throw new Error(result.error?.message || result.message || "Failed to update quote status")
+  } catch (error) {
+    console.error("Error updating quote status:", error)
     throw error
   }
 }

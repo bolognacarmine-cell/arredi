@@ -3,11 +3,18 @@ import mongoose from 'mongoose';
 const { Schema } = mongoose;
 
 const QuoteSchema = new Schema({
-  name: { type: String, required: true },
+  nome: { type: String, required: true },
+  cognome: { type: String, required: true },
+  azienda: { type: String, default: '' },
+  settore: { type: String, default: '' },
   email: { type: String, required: true },
-  phone: { type: String, default: '' },
-  message: { type: String, required: true },
-  status: { type: String, default: 'pending' },
+  telefono: { type: String, default: '' },
+  data: { type: String, required: true },
+  stato: { type: String, enum: ['nuovo', 'contattato', 'chiuso'], default: 'nuovo' },
+  metratura: { type: String, default: '' },
+  arredo: { type: String, default: '' },
+  messaggio: { type: String, default: '' },
+  note: { type: String, default: '' },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });

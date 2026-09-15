@@ -14,8 +14,8 @@ router.get('/', async (req: Request, res: Response) => {
   }
 });
 
-// POST create quote
-router.post('/', requireAdmin, async (req: Request, res: Response) => {
+// POST create quote (public endpoint for form submissions)
+router.post('/', async (req: Request, res: Response) => {
   try {
     const quote = new Quote(req.body);
     await quote.save();
@@ -37,6 +37,32 @@ router.put('/:id', requireAdmin, async (req: Request, res: Response) => {
     }
   } catch (error) {
     res.status(400).json({ error: 'Failed to update quote' });
+  }
+});
+
+// PATCH update quote status
+router.patch('/:id/status', requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { stato } = req.body;
+    
+    if (!stato || !['nuovo', 'contattato', 'chiuso'].includes(stato)) {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
+    
+    const quote = await Quote.findByIdAndUpdate(
+      id,
+      { stato, updatedAt: new Date() },
+      { new: true }
+    );
+    
+    if (!quote) {
+      res.status(404).json({ error: 'Quote not found' });
+    } else {
+      res.json(quote);
+    }
+  } catch (error) {
+    res.status(400).json({ error: 'Failed to update quote status' });
   }
 });
 

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import * as quotesApi from "./api/quotesApi"
 
 export type QuoteRecord = {
-  id: number
+  id: string
   nome: string
   cognome: string
   azienda: string
@@ -22,7 +22,7 @@ const QUOTES_EVENT = "farcom-quotes-updated"
 
 const defaultQuotes: QuoteRecord[] = [
   {
-    id: 1,
+    id: "default-1",
     nome: "Luca",
     cognome: "Bernardi",
     azienda: "Barberia Moderna",
@@ -36,7 +36,7 @@ const defaultQuotes: QuoteRecord[] = [
     messaggio: "Sto aprendo un nuovo barbershop a Milano, in zona Navigli. Ho già un locale di circa 45mq. Ho bisogno di un'idea completa.",
   },
   {
-    id: 2,
+    id: "default-2",
     nome: "Marta",
     cognome: "Vitali",
     azienda: "Studio V Architettura",
@@ -50,7 +50,7 @@ const defaultQuotes: QuoteRecord[] = [
     messaggio: "Nuovo ufficio al quarto piano, edificio ristrutturato. Vogliamo uno stile minimal e funzionale.",
   },
   {
-    id: 3,
+    id: "default-3",
     nome: "Roberto",
     cognome: "Greco",
     azienda: "Boutique Greco",
@@ -64,7 +64,7 @@ const defaultQuotes: QuoteRecord[] = [
     messaggio: "Abbigliamento donna luxury, Firenze centro storico. Budget non è il primo criterio.",
   },
   {
-    id: 4,
+    id: "default-4",
     nome: "Istituto",
     cognome: "Pacinotti",
     azienda: "Istituto Tecnico Pacinotti",
@@ -78,7 +78,7 @@ const defaultQuotes: QuoteRecord[] = [
     messaggio: "Ristrutturazione completa. Gara d'appalto vinta. Procedere con la progettazione.",
   },
   {
-    id: 5,
+    id: "default-5",
     nome: "Federica",
     cognome: "Amato",
     azienda: "Amato Hair Studio",
@@ -123,10 +123,13 @@ export function resetQuotes() {
   window.dispatchEvent(new CustomEvent(QUOTES_EVENT))
 }
 
-export function deleteQuote(quoteId: number) {
-  const quotes = readQuotes()
-  const updatedQuotes = quotes.filter((q) => q.id !== quoteId)
-  saveQuotes(updatedQuotes)
+export async function deleteQuote(quoteId: string): Promise<void> {
+  try {
+    await quotesApi.deleteQuote(quoteId)
+  } catch (error) {
+    console.error("Error deleting quote from API:", error)
+    throw error
+  }
 }
 
 export function useQuotes() {
@@ -150,20 +153,20 @@ export function useQuotes() {
       try {
         const apiQuotes = await quotesApi.getQuotes()
         // Convert API quotes to local format
-        const convertedQuotes: QuoteRecord[] = apiQuotes.map((q, index) => ({
-          id: index + 1,
-          nome: q.customerName.split(" ")[0] || "",
-          cognome: q.customerName.split(" ").slice(1).join(" ") || "",
-          azienda: "",
-          settore: "",
-          email: q.customerEmail,
-          telefono: q.customerPhone || "",
-          data: new Date(q.createdAt).toLocaleDateString("it-IT"),
-          stato: q.status === "confirmed" ? "contattato" : q.status === "cancelled" ? "chiuso" : "nuovo",
-          metratura: "",
-          arredo: q.items.map(item => item.productName).join(", "),
-          messaggio: q.notes || "",
-          note: q.notes,
+        const convertedQuotes: QuoteRecord[] = apiQuotes.map((q) => ({
+          id: q._id || q.id,
+          nome: q.nome,
+          cognome: q.cognome,
+          azienda: q.azienda,
+          settore: q.settore,
+          email: q.email,
+          telefono: q.telefono,
+          data: q.data,
+          stato: q.stato,
+          metratura: q.metratura,
+          arredo: q.arredo,
+          messaggio: q.messaggio,
+          note: q.note,
         }))
         setQuotes(convertedQuotes.length > 0 ? convertedQuotes : defaultQuotes)
       } catch (err) {

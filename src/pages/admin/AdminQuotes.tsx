@@ -1,5 +1,6 @@
 import { useState } from "react"
-import { useQuotes, saveQuotes, deleteQuote, type QuoteRecord } from "../../quoteStore"
+import { useQuotes, type QuoteRecord } from "../../quoteStore"
+import * as quotesApi from "../../api/quotesApi"
 
 const statusColor: Record<QuoteRecord["stato"], string> = {
   nuovo: "bg-blue-100 text-blue-700",
@@ -14,22 +15,42 @@ export default function AdminQuotes() {
   const [filter, setFilter] = useState<QuoteRecord["stato"] | "all">("all")
   const [selectedQuote, setSelectedQuote] = useState<QuoteRecord | null>(null)
   const [nota, setNota] = useState("")
+  const [isDeleting, setIsDeleting] = useState<string | null>(null)
+  const [isUpdating, setIsUpdating] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   const filtered =
     filter === "all" ? quotes : quotes.filter((q) => q.stato === filter)
 
-  const handleStatusChange = (quoteId: number, newStatus: QuoteRecord["stato"]) => {
-    const updatedQuotes = quotes.map((q) =>
-      q.id === quoteId ? { ...q, stato: newStatus } : q
-    )
-    saveQuotes(updatedQuotes)
+  const handleStatusChange = async (quoteId: string, newStatus: QuoteRecord["stato"]) => {
+    setIsUpdating(quoteId)
+    setError(null)
+    try {
+      await quotesApi.updateQuoteStatus(quoteId, newStatus)
+      window.location.reload()
+    } catch (err) {
+      console.error("Error updating quote status:", err)
+      setError("Impossibile aggiornare lo stato. Riprova.")
+    } finally {
+      setIsUpdating(null)
+    }
   }
 
-  const handleDeleteQuote = (quoteId: number) => {
+  const handleDeleteQuote = async (quoteId: string) => {
     if (window.confirm("Sei sicuro di voler eliminare questo preventivo?")) {
-      deleteQuote(quoteId)
-      if (selectedQuote?.id === quoteId) {
-        setSelectedQuote(null)
+      setIsDeleting(quoteId)
+      setError(null)
+      try {
+        await quotesApi.deleteQuote(quoteId)
+        if (selectedQuote?.id === quoteId) {
+          setSelectedQuote(null)
+        }
+        window.location.reload()
+      } catch (err) {
+        console.error("Error deleting quote:", err)
+        setError("Impossibile eliminare il preventivo. Riprova.")
+      } finally {
+        setIsDeleting(null)
       }
     }
   }
@@ -82,6 +103,12 @@ export default function AdminQuotes() {
           Export CSV
         </button>
       </div>
+
+      {error && (
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          {error}
+        </div>
+      )}
 
       {/* Filter tabs */}
       <div className="flex gap-1 mb-5">
@@ -168,9 +195,10 @@ export default function AdminQuotes() {
                           e.stopPropagation()
                           handleDeleteQuote(q.id)
                         }}
-                        className="text-xs text-red-600 hover:text-red-800 hover:underline"
+                        disabled={isDeleting === q.id}
+                        className="text-xs text-red-600 hover:text-red-800 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        Elimina
+                        {isDeleting === q.id ? "Eliminazione..." : "Elimina"}
                       </button>
                     </div>
                   </td>
@@ -190,9 +218,10 @@ export default function AdminQuotes() {
               <div className="flex gap-2">
                 <button
                   onClick={() => handleDeleteQuote(selectedQuote.id)}
-                  className="text-xs text-red-600 hover:text-red-800 font-medium"
+                  disabled={isDeleting === selectedQuote.id}
+                  className="text-xs text-red-600 hover:text-red-800 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Elimina
+                  {isDeleting === selectedQuote.id ? "Eliminazione..." : "Elimina"}
                 </button>
                 <button
                   onClick={() => setSelectedQuote(null)}
