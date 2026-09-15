@@ -63,7 +63,7 @@ export default function ProjectDetail() {
     )
   }
 
-  const related = projects.filter((p) => p.sectorId === project.sectorId && p.id !== project.id).slice(0, 3);
+  const related = Array.isArray(projects) ? projects.filter((p) => p.sectorId === project.sectorId && p.id !== project.id).slice(0, 3) : [];
 
   return (
     <div className="bg-[#F7F5F0] min-h-screen pt-24">

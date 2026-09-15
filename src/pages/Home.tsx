@@ -233,9 +233,9 @@ const whys = [
 
 export default function Home() {
   const projects = useProjects()
-  const featuredProjects = projects?.filter((project) => project.featured).slice(0, 1) || []
+  const featuredProjects = Array.isArray(projects) ? projects.filter((project) => project.featured).slice(0, 1) : []
   const displayedProjects =
-    featuredProjects.length > 0 ? featuredProjects : (projects?.slice(0, 1) || [])
+    featuredProjects.length > 0 ? featuredProjects : (Array.isArray(projects) ? projects.slice(0, 1) : [])
 
   // Safety check to ensure displayedProjects is always an array
   const safeDisplayedProjects = Array.isArray(displayedProjects) ? displayedProjects : []

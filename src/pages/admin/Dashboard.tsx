@@ -10,36 +10,36 @@ export default function Dashboard() {
   const kpis = [
     {
       label: "Preventivi ricevuti",
-      value: String(quotes.length),
+      value: String(Array.isArray(quotes) ? quotes.length : 0),
       sub: "ultimi 30 giorni",
       color: "#1B4332",
-      delta: quotes.filter(q => q.stato === "nuovo").length > 0 ? `+${quotes.filter(q => q.stato === "nuovo").length}` : "0",
+      delta: Array.isArray(quotes) && quotes.filter(q => q.stato === "nuovo").length > 0 ? `+${quotes.filter(q => q.stato === "nuovo").length}` : "0",
     },
     {
       label: "Progetti in lavorazione",
-      value: String(projects.filter(p => p.status === "in lavorazione").length),
+      value: String(Array.isArray(projects) ? projects.filter(p => p.status === "in lavorazione").length : 0),
       sub: "in corso",
       color: "#B5965A",
       delta: "0",
     },
     {
       label: "Progetti completati",
-      value: String(projects.filter(p => p.status === "completato").length),
+      value: String(Array.isArray(projects) ? projects.filter(p => p.status === "completato").length : 0),
       sub: `anno ${new Date().getFullYear()}`,
       color: "#4A4A46",
       delta: "+0",
     },
     {
       label: "Lead da contattare",
-      value: String(quotes.filter(q => q.stato === "nuovo").length),
+      value: String(Array.isArray(quotes) ? quotes.filter(q => q.stato === "nuovo").length : 0),
       sub: "in attesa risposta",
       color: "#C0392B",
-      delta: quotes.filter(q => q.stato === "nuovo").length > 0 ? `+${quotes.filter(q => q.stato === "nuovo").length}` : "0",
+      delta: Array.isArray(quotes) && quotes.filter(q => q.stato === "nuovo").length > 0 ? `+${quotes.filter(q => q.stato === "nuovo").length}` : "0",
     },
   ]
 
-  const recentQuotes = quotes.slice(0, 5)
-  const recentProjects = projects.slice(0, 3)
+  const recentQuotes = Array.isArray(quotes) ? quotes.slice(0, 5) : []
+  const recentProjects = Array.isArray(projects) ? projects.slice(0, 3) : []
 
   const statusColor: Record<string, string> = {
     nuovo: "bg-blue-100 text-blue-700",

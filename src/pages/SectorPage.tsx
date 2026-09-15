@@ -63,7 +63,7 @@ export default function SectorPage() {
     )
   }
 
-  const sectorProjects = projects?.filter((p) => p.sectorId === id) || []
+  const sectorProjects = Array.isArray(projects) ? projects.filter((p) => p.sectorId === id) : []
 
   return (
     <div className="bg-[#F7F5F0]">

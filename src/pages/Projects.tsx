@@ -28,7 +28,7 @@ export default function Projects() {
   const [active, setActive] = useState("all");
   const projects = useProjects() || []
 
-  const visible = active === "all" ? projects : projects.filter((p) => p.sectorId === active);
+  const visible = active === "all" ? projects : (Array.isArray(projects) ? projects.filter((p) => p.sectorId === active) : []);
 
   return (
     <div className="bg-[#F7F5F0] min-h-screen pt-24">
