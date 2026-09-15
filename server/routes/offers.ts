@@ -14,7 +14,8 @@ router.get('/', async (req: Request, res: Response) => {
       filter.activitySector = activitySector;
     }
     if (active !== undefined) {
-      filter.active = active === 'true' || active === true;
+      const activeStr = String(active).toLowerCase();
+      filter.active = activeStr === 'true' || activeStr === '1';
     }
 
     const offers = await Offer.find(filter).sort({ createdAt: -1 });
