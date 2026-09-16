@@ -59,12 +59,21 @@ export const fallbackSiteSettings: SiteSettings = {
   mapTitle: "Farcom Srl - Via P. Vertaldi, 27 Macerata Campania",
 }
 
+// Dicitura superata rimasta nelle impostazioni salvate dai browser.
+const LEGACY_HOURS_EXTRA = "Sabato su appuntamento"
+
 function normalizeSiteSettings(
   partialSettings: Partial<SiteSettings> | undefined,
 ): SiteSettings {
+  const hoursExtra =
+    !partialSettings?.hoursExtra || partialSettings.hoursExtra.trim() === LEGACY_HOURS_EXTRA
+      ? fallbackSiteSettings.hoursExtra
+      : partialSettings.hoursExtra
+
   return {
     ...fallbackSiteSettings,
     ...partialSettings,
+    hoursExtra,
     footerBadges:
       partialSettings?.footerBadges && partialSettings.footerBadges.length > 0
         ? partialSettings.footerBadges
