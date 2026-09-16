@@ -26,7 +26,14 @@ function normalizeProject(project: Project | ApiProject, index: number): Project
   }
 }
 
-export const defaultProjects: ProjectRecord[] = PROJECTS.map(normalizeProject)
+// Archivio base: un solo progetto di esempio come riferimento di compilazione,
+// così "Ripristina archivio base" non riporta indietro i progetti eliminati.
+const BASE_ARCHIVE_ID = "barber-milano"
+const baseArchive = PROJECTS.filter((p) => p.id === BASE_ARCHIVE_ID)
+
+export const defaultProjects: ProjectRecord[] = (
+  baseArchive.length > 0 ? baseArchive : PROJECTS.slice(0, 1)
+).map(normalizeProject)
 
 function normalizeProjects(projects: (Project | ApiProject)[]): ProjectRecord[] {
   return projects.map(normalizeProject)
