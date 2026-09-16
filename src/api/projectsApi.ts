@@ -37,28 +37,23 @@ export interface Project {
   updatedAt: string
 }
 
+// Solleva quando l'archivio non è raggiungibile: una lista vuota è una risposta
+// legittima (tutti i progetti eliminati) e non deve attivare i dati di fallback.
 export async function getProjects(): Promise<Project[]> {
-  try {
-    const response = await fetch(apiUrl("/api/projects"), {
-      method: "GET",
-      headers: { "Accept": "application/json" },
-      credentials: 'include',
-    })
-    if (!response.ok) {
-      if (response.status === 404 || response.status === 503 || response.status >= 500) {
-        return []
-      }
-    }
-    const result = await response.json().catch(() => ({}))
-
-    if (Array.isArray(result)) return result
-    if (Array.isArray(result?.data)) return result.data
-    if (result && typeof result === "object" && (result as any)._id) return [result as Project]
-    return []
-  } catch (error) {
-    console.warn("[projectsApi] getProjects fallito (frontend userà localStorage/data.ts):", error instanceof Error ? error.message : error)
-    return []
+  const response = await fetch(apiUrl("/api/projects"), {
+    method: "GET",
+    headers: { "Accept": "application/json" },
+    credentials: 'include',
+  })
+  if (!response.ok) {
+    throw new Error(`Archivio progetti non disponibile (HTTP ${response.status})`)
   }
+  const result = await response.json().catch(() => null)
+
+  if (Array.isArray(result)) return result
+  if (Array.isArray(result?.data)) return result.data
+  if (result && typeof result === "object" && (result as any)._id) return [result as Project]
+  throw new Error("Risposta non valida dall'archivio progetti")
 }
 
 export async function getProjectById(id: string): Promise<Project> {

@@ -45,6 +45,11 @@ function toProjectPayload(p: any) {
 
 const defaultSort = { createdAt: -1 } as any;
 
+// Gli id applicativi (es. "project-7") non sono ObjectId: includerli nel ramo
+// _id farebbe fallire la query con un CastError.
+const byId = (id: string) =>
+  mongoose.isValidObjectId(id) ? { $or: [{ _id: id }, { id }] } : { id };
+
 // GET all projects
 router.get('/', async (req: Request, res: Response) => {
   const db = dbReady();
@@ -60,24 +65,6 @@ router.get('/', async (req: Request, res: Response) => {
   }
   try {
     const projects = await Project.find().sort(defaultSort).lean();
-
-    // SOLO PER TEST LOCALE: se il DB è vuoto, restituisci dati di test
-    if (projects.length === 0) {
-      const testProjects = [
-        {
-          id: 'project-7',
-          slug: 'project-7',
-          title: 'Progetto test',
-          description: 'Descrizione test',
-          images: [
-            { url: 'https://picsum.photos/800/600?random=1', alt: 'Test 1' },
-            { url: 'https://picsum.photos/800/600?random=2', alt: 'Test 2' }
-          ]
-        }
-      ];
-      return res.json(testProjects);
-    }
-
     res.json(projects.map(toProjectPayload));
   } catch (error: any) {
     res.status(500).json({
@@ -96,7 +83,7 @@ router.get('/:id', async (req: Request, res: Response) => {
   if (!db.ok) return dbError(res, db.reason!);
   try {
     const { id } = req.params;
-    const project = await Project.findOne({ $or: [{ _id: id }, { id }] }).lean();
+    const project = await Project.findOne(byId(id)).lean();
     if (!project) {
       return res.status(404).json({ ok: false, error: { code: 'NOT_FOUND', message: 'Project not found' } });
     }
@@ -126,7 +113,7 @@ router.put('/:id', requireAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const project = await Project.findOneAndUpdate(
-      { $or: [{ _id: id }, { id }] },
+      byId(id),
       req.body,
       { new: true, runValidators: true, upsert: false }
     ).lean();
@@ -146,7 +133,7 @@ router.delete('/:id', requireAdmin, async (req: Request, res: Response) => {
   if (!db.ok) return dbError(res, db.reason!);
   try {
     const { id } = req.params;
-    const project = await Project.findOneAndDelete({ $or: [{ _id: id }, { id }] });
+    const project = await Project.findOneAndDelete(byId(id));
     if (!project) {
       return res.status(404).json({ ok: false, error: { code: 'NOT_FOUND', message: 'Project not found' } });
     } else {

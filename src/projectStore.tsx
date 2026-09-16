@@ -95,32 +95,15 @@ export function useProjects() {
     }
   }, [])
 
-  // Load projects from API on mount (if API is configured)
+  // L'archivio remoto è la fonte di verità: un elenco vuoto significa "nessun
+  // progetto", non "usa i dati di esempio" (altrimenti gli eliminati riappaiono).
   useEffect(() => {
-    // Check if API is configured (VITE_API_BASE_URL is set)
-    const isApiConfigured = !!import.meta.env.VITE_API_BASE_URL
-
-    if (!isApiConfigured) {
-      console.log('[projectStore] API not configured, using localStorage/default projects')
-      return
-    }
-
     async function loadProjectsFromApi() {
       try {
         const apiProjects = await getProjectsApi()
-        console.log('[projectStore] API returned projects:', apiProjects.length, apiProjects)
-        // If API returns empty array, fallback to localStorage/default projects
-        if (apiProjects.length === 0) {
-          console.log('[projectStore] API returned empty, using localStorage/default projects')
-          setProjects(readProjects())
-        } else {
-          console.log('[projectStore] Using API projects')
-          setProjects(normalizeProjects(apiProjects))
-        }
+        setProjects(normalizeProjects(apiProjects))
       } catch (err) {
-        console.error("Error loading projects from API:", err)
-        // Fallback to localStorage/default projects if API fails
-        console.log('[projectStore] API failed, using localStorage/default projects')
+        console.error("[projectStore] archivio remoto non raggiungibile, uso i dati locali:", err)
         setProjects(readProjects())
       }
     }
