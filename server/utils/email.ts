@@ -206,15 +206,20 @@ export async function sendQuoteNotification(quoteData: {
   messaggio?: string;
   note?: string;
 }): Promise<{ detailedEmailSent: boolean; notificationEmailSent: boolean }> {
+  console.log('[Quote Notification] Starting quote notification process for:', quoteData.email);
+  
   const config = await loadEmailConfig();
   
   if (!config) {
-    console.warn('[Email] Cannot send quote notifications - SMTP configuration incomplete');
+    console.warn('[Quote Notification] Cannot send quote notifications - SMTP configuration incomplete');
     return { detailedEmailSent: false, notificationEmailSent: false };
   }
 
   const destinationEmail = 'farcomsrl@hotmail.com';
   const ownerEmail = config.quoteNotificationEmail || destinationEmail;
+
+  console.log('[Quote Notification] Sending detailed email to:', destinationEmail);
+  console.log('[Quote Notification] Sending notification email to:', ownerEmail);
 
   // Email 1: Detailed quote to destination email
   const detailedSubject = `Nuovo preventivo da ${quoteData.nome} ${quoteData.cognome}`;
@@ -302,6 +307,9 @@ ${quoteData.note ? `<h3>NOTE</h3><p>${quoteData.note}</p>` : ''}
     detailedEmailPromise,
     notificationEmailPromise
   ]);
+
+  console.log('[Quote Notification] Detailed email result:', detailedEmailResult.success ? 'SUCCESS' : 'FAILED', detailedEmailResult.error || '');
+  console.log('[Quote Notification] Notification email result:', notificationEmailResult.success ? 'SUCCESS' : 'FAILED', notificationEmailResult.error || '');
 
   return {
     detailedEmailSent: detailedEmailResult.success,

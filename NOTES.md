@@ -49,6 +49,35 @@ Quando un cliente invia un preventivo tramite il form pubblico:
    - **Email dettagliata** a farcomsrl@hotmail.com con tutti i dettagli del preventivo
    - **Email di notifica** all'indirizzo configurato (o fallback a farcomsrl@hotmail.com)
 
+### Logging delle Notifiche Email
+
+Il sistema logga dettagliatamente il processo di invio email per i preventivi:
+
+- `[Quote Notification] Starting quote notification process for: {email}` - Inizio processo
+- `[Quote Notification] Sending detailed email to: {destination}` - Invio email dettagliata
+- `[Quote Notification] Sending notification email to: {owner}` - Invio email notifica
+- `[Quote Notification] Detailed email result: SUCCESS/FAILED {error}` - Risultato email dettagliata
+- `[Quote Notification] Notification email result: SUCCESS/FAILED {error}` - Risultato email notifica
+- `[Quotes] Quote notification emails sent successfully` - Successo completo
+- `[Quotes] Failed to send quote notification emails` - Fallimento con configurazione incompleta
+- `[Quotes] Error sending quote notification emails: {error}` - Errore imprevisto
+
+### Verifica Funzionamento Email Preventivi
+
+Per verificare che le email di notifica funzionino correttamente:
+
+1. **Configurare SMTP** nell'admin panel (Settings > Email)
+2. **Testare la configurazione** con "Invia email di test"
+3. **Inviare un preventivo** dal form pubblico
+4. **Controllare i log del server** per vedere i messaggi `[Quote Notification]`
+5. **Verificare la ricezione** delle email su farcomsrl@hotmail.com
+
+Se le email non arrivano:
+- Controlla i log del server per errori specifici
+- Usa "Debug configurazione" per verificare che la configurazione sia completa
+- Verifica che le credenziali SMTP siano corrette
+- Controlla la cartella spam della email di destinazione
+
 ### Risoluzione Problemi
 
 #### I campi tornano vuoti dopo il salvataggio
