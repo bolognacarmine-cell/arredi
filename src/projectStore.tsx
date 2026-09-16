@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { PROJECTS, type Project } from "./data"
+import { type Project } from "./data"
 import {
   getProjects as getProjectsApi,
   replaceAllProjects,
@@ -26,14 +26,9 @@ function normalizeProject(project: Project | ApiProject, index: number): Project
   }
 }
 
-// Archivio base: un solo progetto di esempio come riferimento di compilazione,
-// così "Ripristina archivio base" non riporta indietro i progetti eliminati.
-const BASE_ARCHIVE_ID = "barber-milano"
-const baseArchive = PROJECTS.filter((p) => p.id === BASE_ARCHIVE_ID)
-
-export const defaultProjects: ProjectRecord[] = (
-  baseArchive.length > 0 ? baseArchive : PROJECTS.slice(0, 1)
-).map(normalizeProject)
+// Archivio base vuoto: "Ripristina archivio base" azzera l'elenco per i
+// progetti futuri, senza riportare indietro nessun esempio.
+export const defaultProjects: ProjectRecord[] = []
 
 function normalizeProjects(projects: (Project | ApiProject)[]): ProjectRecord[] {
   return projects.map(normalizeProject)
