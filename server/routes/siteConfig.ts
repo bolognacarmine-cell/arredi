@@ -314,7 +314,8 @@ router.post('/test-email', requireAdmin, async (req: Request, res: Response) => 
       res.json({ success: true, message: 'Test email sent successfully' });
     } else {
       console.error('[Test Email] Failed to send test email:', result.error);
-      res.status(500).json({ error: result.error || 'Failed to send test email - check SMTP configuration' });
+      // Always return the specific error from sendEmail, never fall back to generic message
+      res.status(500).json({ error: result.error || 'Errore nell\'invio dell\'email di test' });
     }
   } catch (error) {
     console.error('[Test Email] Unexpected error sending test email:', error);

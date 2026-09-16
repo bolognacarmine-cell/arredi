@@ -106,43 +106,53 @@ async function createTransporter() {
  */
 function classifySmtpError(error: any): string {
   const errorMessage = error?.message || String(error);
+  const errorString = errorMessage.toLowerCase();
+  
+  console.log('[Email Classification] Original error:', errorMessage);
   
   // Authentication errors
-  if (errorMessage.includes('Invalid login') || 
-      errorMessage.includes('authentication failed') ||
-      errorMessage.includes('535') ||
-      errorMessage.includes('530') ||
-      errorMessage.includes('AUTH')) {
+  if (errorString.includes('invalid login') || 
+      errorString.includes('authentication failed') ||
+      errorString.includes('535') ||
+      errorString.includes('530') ||
+      errorString.includes('auth') ||
+      errorString.includes('credentials') ||
+      errorString.includes('username') ||
+      errorString.includes('password')) {
     return 'Errore di autenticazione SMTP: verifica username e password.';
   }
   
   // Connection errors
-  if (errorMessage.includes('ECONNREFUSED') ||
-      errorMessage.includes('connection refused') ||
-      errorMessage.includes('ENOTFOUND') ||
-      errorMessage.includes('getaddrinfo') ||
-      errorMessage.includes('timeout') ||
-      errorMessage.includes('ETIMEDOUT')) {
+  if (errorString.includes('econnrefused') ||
+      errorString.includes('connection refused') ||
+      errorString.includes('enotfound') ||
+      errorString.includes('getaddrinfo') ||
+      errorString.includes('timeout') ||
+      errorString.includes('etimedout') ||
+      errorString.includes('host') ||
+      errorString.includes('network')) {
     return 'Impossibile connettersi al server SMTP: verifica host e porta.';
   }
   
   // TLS/SSL errors
-  if (errorMessage.includes('TLS') ||
-      errorMessage.includes('SSL') ||
-      errorMessage.includes('certificate') ||
-      errorMessage.includes('self-signed')) {
+  if (errorString.includes('tls') ||
+      errorString.includes('ssl') ||
+      errorString.includes('certificate') ||
+      errorString.includes('self-signed')) {
     return 'Errore di sicurezza SMTP: verifica configurazione TLS/SSL e porta.';
   }
   
   // Configuration errors
-  if (errorMessage.includes('configuration') ||
-      errorMessage.includes('incomplete') ||
-      errorMessage.includes('missing')) {
+  if (errorString.includes('configuration') ||
+      errorString.includes('incomplete') ||
+      errorString.includes('missing') ||
+      errorString.includes('required')) {
     return 'Configurazione SMTP incompleta: verifica tutti i campi obbligatori.';
   }
   
-  // Generic error
-  return 'Errore nell\'invio dell\'email: verifica la configurazione SMTP.';
+  // Generic error with original message for debugging
+  console.log('[Email Classification] Could not classify error, using generic message');
+  return `Errore nell'invio dell'email: ${errorMessage}`;
 }
 
 /**
