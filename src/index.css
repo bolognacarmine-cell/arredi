@@ -63,9 +63,20 @@ main {
   padding-top: var(--header-height);
 }
 
-/* Fix scroll position for section anchors */
-section[id] {
-  scroll-margin-top: calc(var(--header-height) + 16px);
+/* Fix scroll position for section anchors: l'header e' fisso, senza questo
+   margine il titolo della sezione finisce sotto la barra di navigazione. */
+[id] {
+  scroll-margin-top: calc(var(--header-height) + 24px);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 /* Ensure logo is never truncated */

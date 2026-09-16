@@ -7,6 +7,8 @@ import { useProjects } from "../projectStore"
 
 import Hero from "../components/Hero"
 import ReviewsSection from "../components/ReviewsSection"
+import ProductCard from "../components/showroom/ProductCard"
+import { getProducts, type Product } from "../services/showroomApi"
 import { resolveImageUrl } from "../lib/cloudinary"
 
 // Experimental mode: check URL parameter ?settoriTest=true or environment variable
@@ -240,6 +242,23 @@ export default function Home() {
   // Safety check to ensure displayedProjects is always an array
   const safeDisplayedProjects = Array.isArray(displayedProjects) ? displayedProjects : []
 
+  const [showroomProducts, setShowroomProducts] = useState<Product[]>([])
+
+  useEffect(() => {
+    let alive = true
+    getProducts()
+      .then((list) => {
+        if (!alive) return
+        setShowroomProducts(
+          Array.isArray(list) ? list.filter((p) => p.active).slice(0, 3) : [],
+        )
+      })
+      .catch(() => setShowroomProducts([]))
+    return () => {
+      alive = false
+    }
+  }, [])
+
   // IntersectionObserver for scroll-based background changes
   useEffect(() => {
     const sections = document.querySelectorAll('section[data-bg]')
@@ -287,7 +306,7 @@ export default function Home() {
       </section>
 
       {/* SECTORS */}
-      <section className="py-8 sm:py-10 md:py-12 lg:py-16 xl:py-20 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 relative bg-white" data-bg="#FFFFFF">
+      <section id="settori" className="py-8 sm:py-10 md:py-12 lg:py-16 xl:py-20 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 relative bg-white" data-bg="#FFFFFF">
         {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 
@@ -342,8 +361,42 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FEATURED PROJECTS */}
-      <section className="py-8 sm:py-10 md:py-12 lg:py-16 xl:py-20 bg-[#1A1A2E] relative" data-bg="#1A1A2E">
+      {/* SHOWROOM: nascosto finche' non c'e' almeno un prodotto attivo */}
+      {showroomProducts.length > 0 && (
+        <section id="showroom" className="py-8 sm:py-10 md:py-12 lg:py-16 xl:py-20 bg-[#FAFAF7] relative" data-bg="#FAFAF7">
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
+
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-5 md:gap-6 mb-5 sm:mb-6 md:mb-8 lg:mb-10">
+              <div className="relative">
+                <div className="absolute -left-1.5 sm:-left-2 md:-left-4 top-0 w-1 h-full bg-gradient-to-b from-[#E69138] to-transparent" />
+                <span className="text-[#6B7280] text-[10px] sm:text-[11px] md:text-xs tracking-[0.16em] sm:tracking-[0.18em] md:tracking-[0.2em] uppercase font-semibold pl-2.5 sm:pl-3 md:pl-4">
+                  Showroom
+                </span>
+                <h2 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-[#1A1A2E] mt-1.5 sm:mt-2 pl-2.5 sm:pl-3 md:pl-4 leading-[1.15] sm:leading-tight text-balance">
+                  Arredi pronti da scoprire
+                </h2>
+              </div>
+              <Link
+                to="/showroom"
+                className="inline-flex items-center self-start min-h-[36px] sm:min-h-[40px] -ml-2 px-2 text-[#E69138] text-xs sm:text-sm font-medium hover:underline rounded-md"
+              >
+                Vedi tutto lo showroom →
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
+              {showroomProducts.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* FEATURED PROJECTS: nascosto se non ci sono progetti da mostrare */}
+      {safeDisplayedProjects.length > 0 && (
+      <section id="progetti" className="py-8 sm:py-10 md:py-12 lg:py-16 xl:py-20 bg-[#1A1A2E] relative" data-bg="#1A1A2E">
         {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 
@@ -432,12 +485,13 @@ export default function Home() {
           </div>
         </div>
       </section>
+      )}
 
       {/* RECENSIONI */}
       <ReviewsSection />
 
       {/* SERVICES */}
-      <section className="py-8 sm:py-10 md:py-12 lg:py-16 xl:py-20 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 relative bg-white" data-bg="#FFFFFF">
+      <section id="servizi" className="py-8 sm:py-10 md:py-12 lg:py-16 xl:py-20 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 relative bg-white" data-bg="#FFFFFF">
         {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 
