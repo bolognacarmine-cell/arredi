@@ -137,7 +137,12 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
   const addImagesFiles = async (files: FileList | File[]) => {
     const arr = Array.from(files).filter((f) => f.type.startsWith("image/"))
     const urls: string[] = []
-    for (const f of arr)
+    for (const f of arr) {
+      // Check file size (max 2MB per image)
+      if (f.size > 2 * 1024 * 1024) {
+        alert(`L'immagine ${f.name} è troppo grande (max 2MB). Comprimila prima di caricarla.`)
+        continue
+      }
       urls.push(
         await new Promise<string>((r) => {
           const rd = new FileReader()
@@ -145,6 +150,7 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
           rd.readAsDataURL(f)
         }),
       )
+    }
     setForm((f) => ({ ...f, images: [...f.images, ...urls] }))
   }
   const onFiles = (e: ChangeEvent<HTMLInputElement>) => {
@@ -304,6 +310,7 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
                 </button>
               </div>
             </div>
+            <p className="text-xs text-[#888580] mb-2">Max 2MB per immagine. Consigliato formato WebP o JPG compresso.</p>
             <div
               onDragOver={(e) => e.preventDefault()}
               onDrop={onDrop}
