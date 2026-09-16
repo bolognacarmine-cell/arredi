@@ -13,7 +13,7 @@ import {
   displaySector,
   displayFurnitureType,
 } from "../../types/showroom"
-import ImageCarousel from "../../components/showroom/ImageCarousel"
+import ImageCarousel from "../../components/ImageCarousel"
 
 const eur = (n: number) =>
   n.toLocaleString("it-IT", {

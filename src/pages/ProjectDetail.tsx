@@ -1,16 +1,14 @@
-import { useCallback, useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useProjects } from "../projectStore";
+import ImageCarousel from "../components/ImageCarousel";
+
+const FALLBACK_IMAGE =
+  "https://images.unsplash.com/photo-1497366216548-37526070297c?w=2400&h=1350&fit=crop";
 
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
   const projects = useProjects() || []
   const project = projects.find((p) => p.id === id);
-  const [activeImg, setActiveImg] = useState(0);
-
-  useEffect(() => {
-    setActiveImg(0)
-  }, [id])
 
   // Use direct URL arrays from project data - no API calls
   const coverImages = project?.coverImages || []
@@ -26,24 +24,6 @@ export default function ProjectDetail() {
 
   // Remove duplicates while preserving order
   const uniqueGallery = Array.from(new Set(displayGallery))
-
-  const goPrev = useCallback(() => {
-    setActiveImg((i) => (i <= 0 ? uniqueGallery.length - 1 : i - 1))
-  }, [uniqueGallery.length])
-
-  const goNext = useCallback(() => {
-    setActiveImg((i) => (i >= uniqueGallery.length - 1 ? 0 : i + 1))
-  }, [uniqueGallery.length])
-
-  useEffect(() => {
-    if (!project || uniqueGallery.length <= 1) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft") goPrev()
-      if (e.key === "ArrowRight") goNext()
-    }
-    window.addEventListener("keydown", onKey)
-    return () => window.removeEventListener("keydown", onKey)
-  }, [project, uniqueGallery.length, goPrev, goNext])
 
   if (!project) {
     return (
@@ -79,127 +59,12 @@ export default function ProjectDetail() {
 
         {/* Carosello Gallery */}
         <div className="mb-14">
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4">
-            <div className="relative overflow-hidden bg-[#EAE7E0] aspect-[16/9] group">
-              <img
-                key={`${project.id}-${activeImg}`}
-                src={uniqueGallery[activeImg] || "https://images.unsplash.com/photo-1497366216548-37526070297c?w=2400&h=1350&fit=crop"}
-                alt={`${project.title} — foto ${activeImg + 1} di ${uniqueGallery.length}`}
-                className="w-full h-full object-cover animate-fade-in"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  if (!target.src.includes('unsplash.com')) {
-                    target.src = "https://images.unsplash.com/photo-1497366216548-37526070297c?w=2400&h=1350&fit=crop";
-                  }
-                }}
-              />
-
-              {uniqueGallery.length > 1 && (
-                <>
-                  <button
-                    type="button"
-                    aria-label="Foto precedente"
-                    onClick={goPrev}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/80 backdrop-blur border border-[#DDD9D0] flex items-center justify-center text-[#1A1A18] opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all hover:bg-white hover:scale-105 shadow-lg"
-                  >
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <polyline points="15 18 9 12 15 6"></polyline>
-                    </svg>
-                  </button>
-                  <button
-                    type="button"
-                    aria-label="Foto successiva"
-                    onClick={goNext}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/80 backdrop-blur border border-[#DDD9D0] flex items-center justify-center text-[#1A1A18] opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all hover:bg-white hover:scale-105 shadow-lg"
-                  >
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <polyline points="9 18 15 12 9 6"></polyline>
-                    </svg>
-                  </button>
-
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                    {uniqueGallery.map((_, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        aria-label={`Vai alla foto ${i + 1}`}
-                        onClick={() => setActiveImg(i)}
-                        className={`h-1.5 rounded-full transition-all ${
-                          activeImg === i
-                            ? "w-8 bg-white shadow-md"
-                            : "w-1.5 bg-white/40 hover:bg-white/60"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-
-            {uniqueGallery.length > 1 && (
-              <div className="flex lg:flex-col gap-3 max-h-[520px] overflow-y-auto lg:max-h-none pr-0 lg:pr-1 scrollbar-thin">
-                {uniqueGallery.map((img, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setActiveImg(i)}
-                    aria-label={`Visualizza foto ${i + 1}`}
-                    className={`relative overflow-hidden w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 flex-shrink-0 border-2 transition-all ${
-                      activeImg === i
-                        ? "border-[#1B4332] shadow-md"
-                        : "border-transparent opacity-65 hover:opacity-100 hover:border-[#1B4332]/50"
-                    }`}
-                  >
-                    <img
-                      src={img}
-                      alt=""
-                      className="w-full h-full object-cover"
-                      loading={i > 3 ? "lazy" : "eager"}
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        if (!target.src.includes('unsplash.com')) {
-                          target.src = "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=900&fit=crop";
-                        }
-                      }}
-                    />
-                    {activeImg === i && (
-                      <div className="absolute inset-0 ring-2 ring-[#1B4332] ring-inset pointer-events-none" />
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {uniqueGallery.length > 1 && (
-            <p className="text-[11px] text-[#888580] mt-3 text-center lg:text-left">
-              Usa le frecce{" "}
-              <kbd className="px-1.5 py-0.5 mx-0.5 border border-[#DDD9D0] bg-white text-[#4A4A46] text-[10px] font-mono rounded">
-                ←
-              </kbd>{" "}
-              <kbd className="px-1.5 py-0.5 mx-0.5 border border-[#DDD9D0] bg-white text-[#4A4A46] text-[10px] font-mono rounded">
-                →
-              </kbd>{" "}
-              della tastiera oppure i pallini per navigare nel carosello.
-            </p>
-          )}
+          <ImageCarousel
+            images={uniqueGallery.length > 0 ? uniqueGallery : [FALLBACK_IMAGE]}
+            alt={project.title}
+            aspectClass="aspect-[16/9]"
+            fallbackSrc={FALLBACK_IMAGE}
+          />
         </div>
 
         {/* Details */}

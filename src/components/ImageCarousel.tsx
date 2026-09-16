@@ -1,4 +1,4 @@
-// Carosello immagini showroom: slide fluido, swipe/drag, frecce, indicatori e thumbnail.
+// Carosello immagini: autoplay, slide fluido, swipe/drag, frecce, indicatori e thumbnail.
 import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react"
 
 type Props = {
@@ -6,6 +6,13 @@ type Props = {
   alt: string
   /** Contenuto opzionale sovrapposto in alto a sinistra (es. badge offerta). */
   overlay?: React.ReactNode
+  /** Classe Tailwind per le proporzioni del viewport. */
+  aspectClass?: string
+  /** Immagine mostrata se una URL non si carica. */
+  fallbackSrc?: string
+  /** Scorrimento automatico (in pausa su hover, focus e durante il drag). */
+  autoPlay?: boolean
+  autoPlayMs?: number
 }
 
 // Oltre questa distanza (in px) il drag cambia slide invece di tornare indietro.
@@ -13,7 +20,15 @@ const SWIPE_THRESHOLD = 50
 // Sotto questa distanza il gesto resta un click: il drag non parte.
 const DRAG_START_SLOP = 8
 
-export default function ImageCarousel({ images, alt, overlay }: Props) {
+export default function ImageCarousel({
+  images,
+  alt,
+  overlay,
+  aspectClass = "aspect-[4/3]",
+  fallbackSrc,
+  autoPlay = true,
+  autoPlayMs = 5000,
+}: Props) {
   const list = Array.isArray(images) ? images.filter(Boolean) : []
   const count = list.length
 
@@ -21,6 +36,7 @@ export default function ImageCarousel({ images, alt, overlay }: Props) {
   const [drag, setDrag] = useState(0)
   const [dragging, setDragging] = useState(false)
   const [loaded, setLoaded] = useState<Record<number, boolean>>({})
+  const [paused, setPaused] = useState(false)
 
   const viewportRef = useRef<HTMLDivElement>(null)
   const thumbsRef = useRef<HTMLDivElement>(null)
@@ -39,6 +55,13 @@ export default function ImageCarousel({ images, alt, overlay }: Props) {
   )
   const prev = useCallback(() => goTo(index - 1), [goTo, index])
   const next = useCallback(() => goTo(index + 1), [goTo, index])
+
+  useEffect(() => {
+    if (!autoPlay || paused || dragging || count < 2) return
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+    const id = window.setInterval(() => setIndex((i) => (i + 1) % count), autoPlayMs)
+    return () => window.clearInterval(id)
+  }, [autoPlay, autoPlayMs, paused, dragging, count, index])
 
   // Mantiene la thumbnail attiva sempre visibile.
   useEffect(() => {
@@ -85,7 +108,9 @@ export default function ImageCarousel({ images, alt, overlay }: Props) {
 
   if (count === 0) {
     return (
-      <div className="aspect-[4/3] w-full border border-[#DDD9D0] bg-white flex items-center justify-center text-[#DDD9D0] text-7xl">
+      <div
+        className={`${aspectClass} w-full border border-[#DDD9D0] bg-white flex items-center justify-center text-[#DDD9D0] text-7xl`}
+      >
         🖼️
       </div>
     )
@@ -106,11 +131,15 @@ export default function ImageCarousel({ images, alt, overlay }: Props) {
           if (e.key === "ArrowLeft") { e.preventDefault(); prev() }
           if (e.key === "ArrowRight") { e.preventDefault(); next() }
         }}
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+        onFocus={() => setPaused(true)}
+        onBlur={() => setPaused(false)}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
-        className={`group relative aspect-[4/3] w-full overflow-hidden border border-[#DDD9D0] bg-white select-none touch-pan-y focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4332]/40 ${
+        className={`group relative ${aspectClass} w-full overflow-hidden border border-[#DDD9D0] bg-white select-none touch-pan-y focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4332]/40 ${
           count > 1 ? (dragging ? "cursor-grabbing" : "cursor-grab") : ""
         }`}
       >
@@ -131,6 +160,10 @@ export default function ImageCarousel({ images, alt, overlay }: Props) {
                 loading={i === 0 ? "eager" : "lazy"}
                 decoding="async"
                 onLoad={() => setLoaded((s) => ({ ...s, [i]: true }))}
+                onError={(e) => {
+                  const el = e.currentTarget
+                  if (fallbackSrc && el.src !== fallbackSrc) el.src = fallbackSrc
+                }}
                 className={`h-full w-full object-cover transition-opacity duration-300 ${
                   loaded[i] ? "opacity-100" : "opacity-0"
                 }`}
