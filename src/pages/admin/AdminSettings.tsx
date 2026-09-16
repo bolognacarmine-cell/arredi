@@ -163,8 +163,8 @@ function EmailSettingsTab() {
           setSmtpConfig({
             smtpHost: config.smtpHost || '',
             smtpPort: config.smtpPort || '',
-            smtpUsername: config.smtpUsername || '',
-            smtpPassword: '', // Never load password from server for security
+            smtpUsername: config.smtpUsername || '', // Note: smtpUsername is write-only (sensitive), may not be returned
+            smtpPassword: '', // Never load password from server for security (write-only)
             smtpFrom: config.smtpFrom || '',
             smtpFromName: config.smtpFromName || '',
             quoteNotificationEmail: config.quoteNotificationEmail || ''
@@ -219,6 +219,21 @@ function EmailSettingsTab() {
         throw new Error(errorData.error || 'Failed to save SMTP configuration')
       }
 
+      // Reload configuration after successful save to verify persistence
+      const reloadResponse = await fetch('/api/site-config/smtp')
+      if (reloadResponse.ok) {
+        const config = await reloadResponse.json()
+        setSmtpConfig({
+          smtpHost: config.smtpHost || '',
+          smtpPort: config.smtpPort || '',
+          smtpUsername: smtpConfig.smtpUsername, // Keep current username (write-only)
+          smtpPassword: '', // Always clear password after save (write-only)
+          smtpFrom: config.smtpFrom || '',
+          smtpFromName: config.smtpFromName || '',
+          quoteNotificationEmail: config.quoteNotificationEmail || ''
+        })
+      }
+
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
     } catch (err) {
@@ -258,7 +273,8 @@ function EmailSettingsTab() {
     <div className="max-w-4xl space-y-6">
       <div className="border border-[#DDD9D0] bg-[#F7F5F0] p-4 text-sm text-[#4A4A46]">
         Configurazione invio email per notifiche preventivi e contatti. 
-        Le password SMTP vengono salvate in modo sicuro e non vengono mai mostrate nel frontend.
+        Username e password SMTP vengono salvati in modo sicuro e non vengono mostrati nel frontend (write-only).
+        Dopo il salvataggio, questi campi appariranno vuoti ma la configurazione rimarrà attiva.
       </div>
       <div className="space-y-6 border border-[#DDD9D0] bg-white p-6">
         <div>
@@ -305,6 +321,7 @@ function EmailSettingsTab() {
               placeholder="noreply@farcom.com"
               className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2.5 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
             />
+            <p className="mt-1 text-xs text-[#888580]">Username è salvato in modo sicuro e non viene mostrato dopo il salvataggio</p>
           </div>
           <div>
             <label className="mb-1.5 block text-xs uppercase tracking-wide text-[#888580]">
@@ -317,6 +334,7 @@ function EmailSettingsTab() {
               placeholder="••••••••"
               className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2.5 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
             />
+            <p className="mt-1 text-xs text-[#888580]">Password è salvata in modo sicuro e non viene mai mostrata (write-only)</p>
           </div>
           <div>
             <label className="mb-1.5 block text-xs uppercase tracking-wide text-[#888580]">

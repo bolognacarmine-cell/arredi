@@ -57,8 +57,9 @@ router.get('/smtp', async (req: Request, res: Response) => {
 
     const configMap: Record<string, string> = {};
     configs.forEach(config => {
-      // Don't send password to frontend
-      if (config.key !== 'smtpPassword') {
+      // Security: Don't send password to frontend (write-only)
+      // Also don't send smtpUsername as it's marked as sensitive
+      if (config.key !== 'smtpPassword' && config.key !== 'smtpUsername') {
         configMap[config.key] = config.value;
       }
     });

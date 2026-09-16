@@ -285,6 +285,8 @@ Email notifications require SMTP configuration to be set up in the admin panel u
 
 **Important:** All required fields must be non-empty strings. The system validates that each required field is present and not just whitespace before saving.
 
+**Persistence Fix:** The SMTP configuration now persists correctly in the database. Username and password are marked as write-only (sensitive) and are never sent to the frontend after the initial save. Other fields (Host, Port, From email, From name, Notification email) are loaded and displayed correctly after saving.
+
 **Optional Configuration Fields:**
 - `quoteNotificationEmail` - Email address for owner notifications (defaults to farcomsrl@hotmail.com if not set)
 
