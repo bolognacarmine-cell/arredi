@@ -11,11 +11,35 @@ router.post('/login', async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
-    // Validate input
+    // Validate input - basic type and presence checks
     if (!email || !password) {
       return res.status(400).json({ 
         success: false, 
         message: 'Email and password are required' 
+      });
+    }
+    
+    // Ensure email is a string and password is a string
+    if (typeof email !== 'string' || typeof password !== 'string') {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid input types' 
+      });
+    }
+    
+    // Basic email format validation (minimal, non-blocking)
+    if (!email.includes('@') || email.length < 5) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid email format' 
+      });
+    }
+    
+    // Password length validation (minimal, non-blocking)
+    if (password.length < 1) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Password cannot be empty' 
       });
     }
 
@@ -193,8 +217,14 @@ router.post('/reset-admin-password', async (req: Request, res: Response) => {
       });
     }
 
-    // Reset password to environment variable value or default
-    const resetPassword = process.env.ADMIN_RESET_PASSWORD || 'Farcom2026';
+    // Reset password to environment variable value - no default for security
+    const resetPassword = process.env.ADMIN_RESET_PASSWORD;
+    if (!resetPassword) {
+      return res.status(500).json({
+        success: false,
+        message: 'ADMIN_RESET_PASSWORD environment variable not configured'
+      });
+    }
     
     user.password = resetPassword;
     await user.save();

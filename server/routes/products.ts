@@ -66,6 +66,14 @@ router.get('/:id', async (req: Request, res: Response) => {
 // POST create product
 router.post('/', requireAdmin, async (req: Request, res: Response) => {
   try {
+    // Minimal input validation - ensure required fields exist and are strings
+    if (!req.body.name || typeof req.body.name !== 'string') {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Product name is required and must be a string' 
+      });
+    }
+    
     const productData = {
       ...req.body,
       id: req.body.id || 'p' + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-3),
@@ -84,6 +92,14 @@ router.post('/', requireAdmin, async (req: Request, res: Response) => {
 router.put('/:id', requireAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    
+    // Minimal validation - ensure id parameter exists
+    if (!id || typeof id !== 'string') {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Valid product ID is required' 
+      });
+    }
     const { _id, id: _ignoredId, createdAt, ...update } = req.body;
     const product = await Product.findOneAndUpdate(
       byId(id),
@@ -105,6 +121,14 @@ router.put('/:id', requireAdmin, async (req: Request, res: Response) => {
 router.delete('/:id', requireAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    
+    // Minimal validation - ensure id parameter exists
+    if (!id || typeof id !== 'string') {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Valid product ID is required' 
+      });
+    }
     const product = await Product.findOneAndDelete(byId(id));
     if (!product) {
       res.status(404).json({ success: false, message: 'Product not found' });

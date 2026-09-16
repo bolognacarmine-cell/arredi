@@ -56,6 +56,45 @@ app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Security headers - conservative, non-blocking implementation
+// These headers add defense-in-depth without changing application behavior
+app.use((req: Request, res: Response, next: NextFunction) => {
+  // Prevent MIME type sniffing
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  
+  // Prevent clickjacking - allow same-origin only (permissive but safe)
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  
+  // XSS protection (legacy but still useful for older browsers)
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  
+  // Control referrer information leakage
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  
+  // Permissions policy - disable unused features for security hardening
+  // This is non-blocking as the app doesn't use these features
+  res.setHeader('Permissions-Policy', 
+    'camera=(), microphone=(), geolocation=(), payment=()');
+  
+  // Content Security Policy - initial permissive implementation
+  // Designed to NOT block existing functionality while providing a base for future tightening
+  // Note: 'unsafe-inline' and 'unsafe-eval' are allowed to ensure React/Vite and inline scripts work
+  // Future improvement: tighten CSP by removing unsafe-inline once all scripts are externalized
+  res.setHeader('Content-Security-Policy',
+    "default-src 'self'; " +
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; " +
+    "style-src 'self' 'unsafe-inline' https:; " +
+    "img-src 'self' data: https:; " +
+    "connect-src 'self' https:; " +
+    "font-src 'self' data: https:; " +
+    "media-src 'self' data: https:; " +
+    "frame-src 'self' https:; " +
+    "object-src 'none';"
+  );
+  
+  next();
+});
+
 // Session configuration
 const sessionSecret = process.env.SESSION_SECRET;
 if (!sessionSecret) {
@@ -166,6 +205,42 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     return res.status(400).json({ success: false, message: 'JSON della richiesta non valido' });
   }
   return next(err);
+});
+
+// Global error handler - masks sensitive details from client responses
+// Logs full error details server-side but returns generic messages to client
+// This prevents information leakage (stack traces, DB queries, file paths, etc.)
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  // Log full error details server-side for debugging
+  console.error('[Error Handler]', {
+    message: err.message,
+    stack: err.stack,
+    url: req.url,
+    method: req.method,
+    timestamp: new Date().toISOString()
+  });
+  
+  // Return generic error message to client - never expose stack traces or internal details
+  // Keep existing error messages for known client-facing errors
+  const isKnownError = err?.message && (
+    err.message.includes('Payload troppo grande') ||
+    err.message.includes('JSON della richiesta non valido') ||
+    err.message.includes('Unauthorized') ||
+    err.message.includes('Non autorizzato')
+  );
+  
+  if (isKnownError) {
+    return res.status(err.status || 500).json({
+      success: false,
+      message: err.message
+    });
+  }
+  
+  // Generic error for unknown issues - prevents information leakage
+  res.status(err.status || 500).json({
+    success: false,
+    message: 'Errore del server. Riprova più tardi.'
+  });
 });
 
 // Start server after DB connection
