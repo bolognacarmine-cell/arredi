@@ -13,6 +13,7 @@ import {
   displaySector,
   displayFurnitureType,
 } from "../../types/showroom"
+import ImageCarousel from "../../components/showroom/ImageCarousel"
 
 const eur = (n: number) =>
   n.toLocaleString("it-IT", {
@@ -32,12 +33,10 @@ export default function ShowroomDetail() {
   const { slug } = useParams<{ slug: string }>()
   const [product, setProduct] = useState<Product | null | undefined>(undefined)
   const [offers, setOffers] = useState<Offer[]>([])
-  const [imgIdx, setImgIdx] = useState(0)
   const [infoOpen, setInfoOpen] = useState(false)
   const [infoForm, setInfoForm] = useState({ nome: "", email: "", telefono: "", messaggio: "" })
 
   useEffect(() => {
-    setImgIdx(0)
     if (!slug) {
       setProduct(null)
       return
@@ -135,65 +134,20 @@ export default function ShowroomDetail() {
         </nav>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
-          <div className="space-y-4">
-            <div className="relative aspect-[4/3] overflow-hidden border border-[#DDD9D0] bg-white">
-              {p.images[imgIdx] ? (
-                <img
-                  src={p.images[imgIdx]}
-                  alt={p.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-[#DDD9D0] text-7xl">🖼️</div>
-              )}
-              {eff?.badge && (
-                <div className="absolute top-4 left-4">
-                  <span
-                    className="px-4 py-1.5 rounded-full text-sm font-bold text-white shadow-lg tracking-wide"
-                    style={{ background: p.discountPct ? "#B5965A" : "#1B4332" }}
-                  >
-                    {eff.badge}
-                  </span>
-                </div>
-              )}
-              {p.images.length > 1 && (
-                <>
-                  <button
-                    aria-label="Immagine precedente"
-                    onClick={() => setImgIdx((i) => (i - 1 + p.images.length) % p.images.length)}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white text-[#1A1A18] shadow-lg transition-colors flex items-center justify-center text-xl"
-                  >
-                    ‹
-                  </button>
-                  <button
-                    aria-label="Immagine successiva"
-                    onClick={() => setImgIdx((i) => (i + 1) % p.images.length)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white text-[#1A1A18] shadow-lg transition-colors flex items-center justify-center text-xl"
-                  >
-                    ›
-                  </button>
-                </>
-              )}
-            </div>
-
-            {p.images.length > 1 && (
-              <div className="grid grid-cols-5 md:grid-cols-6 gap-3">
-                {p.images.map((url, i) => (
-                  <button
-                    key={url.slice(-30) + i}
-                    onClick={() => setImgIdx(i)}
-                    className={`aspect-square overflow-hidden border transition-all ${
-                      i === imgIdx
-                        ? "border-[#1B4332] ring-2 ring-[#1B4332]/20"
-                        : "border-[#DDD9D0] hover:border-[#888580]"
-                    } bg-white`}
-                  >
-                    <img src={url} alt="" className="w-full h-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          <ImageCarousel
+            images={p.images}
+            alt={p.name}
+            overlay={
+              eff?.badge ? (
+                <span
+                  className="px-4 py-1.5 rounded-full text-sm font-bold text-white shadow-lg tracking-wide"
+                  style={{ background: p.discountPct ? "#B5965A" : "#1B4332" }}
+                >
+                  {eff.badge}
+                </span>
+              ) : null
+            }
+          />
 
           <div className="space-y-7">
             <div className="space-y-4">
