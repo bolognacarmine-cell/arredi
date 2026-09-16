@@ -256,10 +256,17 @@ router.post('/test-email', requireAdmin, async (req: Request, res: Response) => 
   }
   
   try {
-    // Load current SMTP configuration
+    // Load current SMTP configuration - check all required fields
     const configs = await SiteConfig.find({
       key: {
-        $in: ['smtpFrom', 'smtpFromName']
+        $in: [
+          'smtpHost',
+          'smtpPort',
+          'smtpUsername',
+          'smtpPassword',
+          'smtpFrom',
+          'smtpFromName'
+        ]
       }
     });
 
@@ -268,31 +275,103 @@ router.post('/test-email', requireAdmin, async (req: Request, res: Response) => 
       configMap.set(config.key, config.value);
     });
 
+    const smtpHost = configMap.get('smtpHost');
+    const smtpPort = configMap.get('smtpPort');
+    const smtpUsername = configMap.get('smtpUsername');
+    const smtpPassword = configMap.get('smtpPassword');
     const smtpFrom = configMap.get('smtpFrom');
     const smtpFromName = configMap.get('smtpFromName');
 
-    if (!smtpFrom || !smtpFromName) {
+    // Verify all required fields are present
+    const missingFields: string[] = [];
+    if (!smtpHost) missingFields.push('Host SMTP');
+    if (!smtpPort) missingFields.push('Porta');
+    if (!smtpUsername) missingFields.push('Username');
+    if (!smtpPassword) missingFields.push('Password');
+    if (!smtpFrom) missingFields.push('Email mittente');
+    if (!smtpFromName) missingFields.push('Nome mittente');
+
+    if (missingFields.length > 0) {
+      console.error('[Test Email] Missing SMTP configuration fields:', missingFields);
       return res.status(400).json({ 
-        error: 'SMTP configuration incomplete. Please configure SMTP settings first.' 
+        error: `Configurazione SMTP incompleta: mancano i campi ${missingFields.join(', ')}` 
       });
     }
 
+    console.log('[Test Email] Sending test email to:', smtpFrom);
+    console.log('[Test Email] Using SMTP host:', smtpHost, 'port:', smtpPort);
+
     // Send test email to the configured from address
-    const testEmailSent = await sendEmail({
+    const result = await sendEmail({
       to: smtpFrom,
       subject: 'Test email from Farcom Arredi',
       text: 'This is a test email from the Farcom Arredi website. Your SMTP configuration is working correctly.',
       html: '<p>This is a test email from the Farcom Arredi website. Your SMTP configuration is working correctly.</p>'
     });
 
-    if (testEmailSent) {
+    if (result.success) {
+      console.log('[Test Email] Test email sent successfully');
       res.json({ success: true, message: 'Test email sent successfully' });
     } else {
-      res.status(500).json({ error: 'Failed to send test email - check SMTP configuration' });
+      console.error('[Test Email] Failed to send test email:', result.error);
+      res.status(500).json({ error: result.error || 'Failed to send test email - check SMTP configuration' });
     }
   } catch (error) {
-    console.error('Error sending test email:', error);
-    res.status(500).json({ error: 'Failed to send test email' });
+    console.error('[Test Email] Unexpected error sending test email:', error);
+    res.status(500).json({ error: 'Errore imprevisto nell\'invio dell\'email di test' });
+  }
+});
+
+// GET debug SMTP configuration (admin only, for troubleshooting)
+router.get('/smtp/debug', requireAdmin, async (req: Request, res: Response) => {
+  // Security: Ensure only GET method is accepted
+  if (req.method !== 'GET') {
+    return res.status(405).json({ 
+      error: 'Method not allowed' 
+    });
+  }
+  
+  try {
+    const configs = await SiteConfig.find({
+      key: {
+        $in: [
+          'smtpHost',
+          'smtpPort',
+          'smtpUsername',
+          'smtpFrom',
+          'smtpFromName',
+          'quoteNotificationEmail'
+        ]
+      }
+    });
+
+    const configMap: Record<string, any> = {};
+    configs.forEach(config => {
+      // Security: Never send password to frontend
+      if (config.key !== 'smtpPassword') {
+        configMap[config.key] = {
+          value: config.value,
+          configured: !!config.value && config.value.trim() !== '',
+          description: config.description
+        };
+      }
+    });
+
+    // Add password status (without the actual value)
+    const passwordConfig = configs.find(c => c.key === 'smtpPassword');
+    configMap['smtpPassword'] = {
+      configured: !!passwordConfig && !!passwordConfig.value && passwordConfig.value.trim() !== '',
+      description: 'SMTP password (write-only, never shown)'
+    };
+
+    res.json({
+      configuration: configMap,
+      complete: Object.values(configMap).every((field: any) => field.configured),
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('[Debug] Error fetching SMTP configuration:', error);
+    res.status(500).json({ error: 'Failed to fetch SMTP configuration for debugging' });
   }
 });
 

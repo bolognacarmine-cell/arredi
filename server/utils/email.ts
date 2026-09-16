@@ -101,22 +101,69 @@ async function createTransporter() {
 }
 
 /**
+ * Classify SMTP error for user-friendly messaging
+ * Returns a user-friendly error message based on the error type
+ */
+function classifySmtpError(error: any): string {
+  const errorMessage = error?.message || String(error);
+  
+  // Authentication errors
+  if (errorMessage.includes('Invalid login') || 
+      errorMessage.includes('authentication failed') ||
+      errorMessage.includes('535') ||
+      errorMessage.includes('530') ||
+      errorMessage.includes('AUTH')) {
+    return 'Errore di autenticazione SMTP: verifica username e password.';
+  }
+  
+  // Connection errors
+  if (errorMessage.includes('ECONNREFUSED') ||
+      errorMessage.includes('connection refused') ||
+      errorMessage.includes('ENOTFOUND') ||
+      errorMessage.includes('getaddrinfo') ||
+      errorMessage.includes('timeout') ||
+      errorMessage.includes('ETIMEDOUT')) {
+    return 'Impossibile connettersi al server SMTP: verifica host e porta.';
+  }
+  
+  // TLS/SSL errors
+  if (errorMessage.includes('TLS') ||
+      errorMessage.includes('SSL') ||
+      errorMessage.includes('certificate') ||
+      errorMessage.includes('self-signed')) {
+    return 'Errore di sicurezza SMTP: verifica configurazione TLS/SSL e porta.';
+  }
+  
+  // Configuration errors
+  if (errorMessage.includes('configuration') ||
+      errorMessage.includes('incomplete') ||
+      errorMessage.includes('missing')) {
+    return 'Configurazione SMTP incompleta: verifica tutti i campi obbligatori.';
+  }
+  
+  // Generic error
+  return 'Errore nell\'invio dell\'email: verifica la configurazione SMTP.';
+}
+
+/**
  * Send email using configuration from database
  * This function is designed to fail gracefully - it won't throw exceptions
  * that would block the main application flow
+ * 
+ * Returns an object with success status and optional error message
  */
 export async function sendEmail(options: {
   to: string;
   subject: string;
   text: string;
   html?: string;
-}): Promise<boolean> {
+}): Promise<{ success: boolean; error?: string }> {
   try {
     const transportConfig = await createTransporter();
     
     if (!transportConfig) {
       console.warn('[Email] Cannot send email - SMTP configuration incomplete or invalid');
-      return false;
+      return { success: false, error: 'Configurazione SMTP incompleta o non valida.' };
     }
 
     const { transporter, config } = transportConfig;
@@ -131,10 +178,12 @@ export async function sendEmail(options: {
 
     const info = await transporter.sendMail(mailOptions);
     console.log('[Email] Email sent successfully:', info.messageId);
-    return true;
+    return { success: true };
   } catch (error) {
+    const errorMessage = classifySmtpError(error);
     console.error('[Email] Error sending email:', error);
-    return false;
+    console.error('[Email] Classified error:', errorMessage);
+    return { success: false, error: errorMessage };
   }
 }
 
@@ -249,13 +298,13 @@ ${quoteData.note ? `<h3>NOTE</h3><p>${quoteData.note}</p>` : ''}
   });
 
   // Wait for both emails to complete (but don't block the main response)
-  const [detailedEmailSent, notificationEmailSent] = await Promise.all([
+  const [detailedEmailResult, notificationEmailResult] = await Promise.all([
     detailedEmailPromise,
     notificationEmailPromise
   ]);
 
   return {
-    detailedEmailSent,
-    notificationEmailSent
+    detailedEmailSent: detailedEmailResult.success,
+    notificationEmailSent: notificationEmailResult.success
   };
 }

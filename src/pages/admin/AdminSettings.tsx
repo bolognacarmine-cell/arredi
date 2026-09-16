@@ -152,6 +152,8 @@ function EmailSettingsTab() {
   const [loading, setLoading] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
+  const [debugInfo, setDebugInfo] = useState<any>(null)
+  const [showDebug, setShowDebug] = useState(false)
 
   // Load existing SMTP configuration on mount
   useEffect(() => {
@@ -256,14 +258,49 @@ function EmailSettingsTab() {
       })
 
       if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(errorText || 'Failed to send test email')
+        const errorData = await response.json()
+        const errorMessage = errorData.error || 'Failed to send test email'
+        throw new Error(errorMessage)
       }
 
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send test email')
+      const errorMessage = err instanceof Error ? err.message : 'Failed to send test email'
+      
+      // Provide specific guidance based on error type
+      let userMessage = errorMessage
+      if (errorMessage.includes('autenticazione')) {
+        userMessage = `${errorMessage} Controlla che username e password siano corretti.`
+      } else if (errorMessage.includes('connettersi')) {
+        userMessage = `${errorMessage} Verifica che host e porta siano corretti e che il server sia accessibile.`
+      } else if (errorMessage.includes('incompleta')) {
+        userMessage = `${errorMessage} Compila tutti i campi obbligatori nella configurazione SMTP.`
+      } else if (errorMessage.includes('TLS') || errorMessage.includes('SSL')) {
+        userMessage = `${errorMessage} Verifica che la porta sia corretta (587 per TLS, 465 per SSL).`
+      }
+      
+      setError(userMessage)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDebugConfig = async () => {
+    setLoading(true)
+    setError('')
+    
+    try {
+      const response = await fetch('/api/site-config/smtp/debug')
+      if (response.ok) {
+        const data = await response.json()
+        setDebugInfo(data)
+        setShowDebug(true)
+      } else {
+        throw new Error('Failed to fetch debug information')
+      }
+    } catch (err) {
+      setError('Impossibile recuperare le informazioni di debug')
     } finally {
       setLoading(false)
     }
@@ -388,10 +425,43 @@ function EmailSettingsTab() {
           >
             {loading ? 'Invio in corso...' : 'Invia email di test'}
           </button>
+          <button
+            onClick={handleDebugConfig}
+            disabled={loading}
+            className="border border-[#DDD9D0] px-6 py-2.5 text-sm font-medium text-[#1A1A18] transition-colors hover:border-[#1B4332] hover:text-[#1B4332] disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Debug configurazione
+          </button>
         </div>
         {error && (
           <div className="text-sm text-red-600 border border-red-200 bg-red-50 p-3 rounded">
             {error}
+          </div>
+        )}
+        {showDebug && debugInfo && (
+          <div className="text-sm border border-blue-200 bg-blue-50 p-3 rounded">
+            <div className="font-medium mb-2">Informazioni di debug configurazione SMTP:</div>
+            <div className="space-y-1">
+              <div>Host: {debugInfo.configuration.smtpHost?.value || 'Non configurato'} ({debugInfo.configuration.smtpHost?.configured ? '✓' : '✗'})</div>
+              <div>Porta: {debugInfo.configuration.smtpPort?.value || 'Non configurato'} ({debugInfo.configuration.smtpPort?.configured ? '✓' : '✗'})</div>
+              <div>Username: {debugInfo.configuration.smtpUsername?.configured ? '✓ Configurato' : '✗ Non configurato'}</div>
+              <div>Password: {debugInfo.configuration.smtpPassword?.configured ? '✓ Configurata' : '✗ Non configurata'}</div>
+              <div>Email mittente: {debugInfo.configuration.smtpFrom?.value || 'Non configurato'} ({debugInfo.configuration.smtpFrom?.configured ? '✓' : '✗'})</div>
+              <div>Nome mittente: {debugInfo.configuration.smtpFromName?.value || 'Non configurato'} ({debugInfo.configuration.smtpFromName?.configured ? '✓' : '✗'})</div>
+              <div>Email notifiche: {debugInfo.configuration.quoteNotificationEmail?.value || 'Non configurato'} ({debugInfo.configuration.quoteNotificationEmail?.configured ? '✓' : '✗'})</div>
+              <div className="mt-2 pt-2 border-t border-blue-200">
+                Configurazione completa: {debugInfo.complete ? '✓ Sì' : '✗ No'}
+              </div>
+              <div className="text-xs text-gray-500">
+                Timestamp: {new Date(debugInfo.timestamp).toLocaleString('it-IT')}
+              </div>
+            </div>
+            <button
+              onClick={() => setShowDebug(false)}
+              className="mt-2 text-xs text-blue-600 hover:text-blue-800 underline"
+            >
+              Chiudi debug
+            </button>
           </div>
         )}
       </div>

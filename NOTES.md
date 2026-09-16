@@ -61,16 +61,51 @@ Quando un cliente invia un preventivo tramite il form pubblico:
 - Controlla che i nomi dei campi corrispondano a quelli attesi dal backend
 
 #### Email di test non funziona
-- Verifica che le credenziali SMTP siano corrette
-- Controlla che il firewall o il provider SMTP non stia bloccando le connessioni
-- Verifica che la porta sia corretta (587 per TLS, 465 per SSL)
-- Controlla i log del server per errori dettagliati
+Il sistema ora fornisce messaggi di errore più specifici per aiutare nel debug:
+
+**Errore di autenticazione SMTP:**
+- Messaggio: "Errore di autenticazione SMTP: verifica username e password."
+- Cosa controllare:
+  - Username e password SMTP sono corretti
+  - Per Gmail, potrebbe essere necessaria una "App Password" invece della password normale
+  - Per Office 365, verifica che l'account non abbia l'autenticazione a 2 fattori che blocca le app
+  - Controlla che il username sia nel formato corretto (es. farcomsrl@hotmail.com)
+
+**Errore di connessione SMTP:**
+- Messaggio: "Impossibile connettersi al server SMTP: verifica host e porta."
+- Cosa controllare:
+  - Host SMTP è corretto (es. smtp.office365.com, smtp.gmail.com)
+  - Porta è corretta (587 per TLS, 465 per SSL)
+  - Firewall o provider non sta bloccando le connessioni
+  - Server SMTP è accessibile dalla rete del server
+
+**Errore di configurazione incompleta:**
+- Messaggio: "Configurazione SMTP incompleta: mancano i campi..."
+- Cosa controllare:
+  - Tutti i campi obbligatori sono compilati
+  - Usa il pulsante "Debug configurazione" per vedere quali campi mancano
+
+**Errore TLS/SSL:**
+- Messaggio: "Errore di sicurezza SMTP: verifica configurazione TLS/SSL e porta."
+- Cosa controllare:
+  - Porta corretta per il tipo di connessione (587 per TLS, 465 per SSL)
+  - Certificati SSL del server SMTP sono validi
+
+#### Debug configurazione SMTP
+Il pulsante "Debug configurazione" nell'admin panel mostra:
+- Stato di ogni campo della configurazione SMTP
+- Indica se la configurazione è completa
+- Mostra i valori salvati (esclusi password e username per sicurezza)
+- Timestamp dell'ultima verifica
+
+Utilizza questa funzione per verificare che la configurazione sia salvata correttamente nel database.
 
 #### Le email di notifica non arrivano
 - Verifica che la configurazione SMTP sia stata salvata correttamente
 - Controlla che il campo "Email notifiche preventivi" sia configurato correttamente
 - Verifica nella cartella spam della email di destinazione
 - Controlla i log del server per errori di invio
+- Usa "Debug configurazione" per verificare lo stato della configurazione
 
 ### Configurazione Esempio per Office 365
 
@@ -102,6 +137,57 @@ Email notifiche preventivi: (opzionale)
 - **Non hardcodare valori di default**: La configurazione deve persistere nel DB e non essere sovrascritta da valori predefiniti.
 - **La configurazione rimane attiva**: Una volta salvata, la configurazione rimane attiva finché non viene modificata dall'admin.
 - **Graceful degradation**: Il sistema funziona perfettamente anche senza configurazione SMTP (le email semplicemente non vengono inviate).
+- **Logging migliorato**: Il sistema ora logga dettagliatamente gli errori SMTP sul server per facilitare il debug, senza esporre informazioni sensibili al frontend.
+- **Messaggi di errore specifici**: Il frontend mostra messaggi di errore mirati in base al tipo di problema (autenticazione, connessione, configurazione, ecc.).
+
+### API Endpoints per Debug
+
+#### GET /api/site-config/smtp/debug (Admin only)
+Restituisce informazioni dettagliate sulla configurazione SMTP attuale senza esporre password o username:
+
+```json
+{
+  "configuration": {
+    "smtpHost": {
+      "value": "smtp.office365.com",
+      "configured": true,
+      "description": "SMTP server host"
+    },
+    "smtpPort": {
+      "value": "587",
+      "configured": true,
+      "description": "SMTP server port"
+    },
+    "smtpUsername": {
+      "configured": true,
+      "description": "SMTP username"
+    },
+    "smtpPassword": {
+      "configured": true,
+      "description": "SMTP password (write-only, never shown)"
+    },
+    "smtpFrom": {
+      "value": "farcomsrl@hotmail.com",
+      "configured": true,
+      "description": "From email address"
+    },
+    "smtpFromName": {
+      "value": "Arredi Farcom",
+      "configured": true,
+      "description": "From name"
+    },
+    "quoteNotificationEmail": {
+      "value": "farcomsrl@hotmail.com",
+      "configured": true,
+      "description": "Email for quote notifications"
+    }
+  },
+  "complete": true,
+  "timestamp": "2026-09-16T10:30:00.000Z"
+}
+```
+
+Questo endpoint è utile per verificare che la configurazione sia salvata correttamente nel database senza dover accedere direttamente al DB.
 
 ### Dipendenze
 
