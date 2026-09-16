@@ -302,8 +302,9 @@ router.post('/test-email', requireAdmin, async (req: Request, res: Response) => 
     console.log('[Test Email] Using SMTP host:', smtpHost, 'port:', smtpPort);
 
     // Send test email to the configured from address
+    // Note: smtpFrom is guaranteed to be defined here due to the missingFields check above
     const result = await sendEmail({
-      to: smtpFrom,
+      to: smtpFrom!,
       subject: 'Test email from Farcom Arredi',
       text: 'This is a test email from the Farcom Arredi website. Your SMTP configuration is working correctly.',
       html: '<p>This is a test email from the Farcom Arredi website. Your SMTP configuration is working correctly.</p>'
