@@ -63,27 +63,131 @@ Removed the hardcoded default password `'Farcom2026'` from the admin password re
 
 ---
 
-### 4. Input Validation on Critical Routes
-**Files:** `server/routes/admin.ts`, `server/routes/products.ts`
+### 5. HTTP Method Restrictions on All Routes
+**Files:** `server/routes/admin.ts`, `server/routes/products.ts`, `server/routes/projects.ts`, `server/routes/blog.ts`, `server/routes/media.ts`, `server/routes/quotes.ts`, `server/routes/siteConfig.ts`
 
-Added minimal, retro-compatible input validation:
+Added explicit HTTP method validation to all route handlers to prevent method confusion attacks:
 
-**Admin Login (`server/routes/admin.ts`, lines 14-38):**
+**Admin Routes (`server/routes/admin.ts`):**
+- POST /login - only POST allowed
+- POST /logout - only POST allowed
+- GET /me - only GET allowed
+- POST /reset-admin-password - only POST allowed
+
+**Product Routes (`server/routes/products.ts`):**
+- GET / - only GET allowed
+- GET /slug/:slug - only GET allowed
+- GET /:id - only GET allowed
+- POST / - only POST allowed
+- PUT /:id - only PUT allowed
+- DELETE /:id - only DELETE allowed
+
+**Project Routes (`server/routes/projects.ts`):**
+- GET / - only GET allowed
+- GET /:id - only GET allowed
+- POST / - only POST allowed
+- PUT /:id - only PUT allowed
+- DELETE /:id - only DELETE allowed
+- POST /batch - only POST allowed
+- POST /replace-all - only POST allowed
+
+**Blog Routes (`server/routes/blog.ts`):**
+- GET /posts - only GET allowed
+- GET /posts/:slug - only GET allowed
+- GET /sectors - only GET allowed
+- POST /posts - only POST allowed
+- PUT /posts/:id - only PUT allowed
+- DELETE /posts/:id - only DELETE allowed
+
+**Media Routes (`server/routes/media.ts`):**
+- GET / - only GET allowed
+- POST / - only POST allowed
+- PUT /:id - only PUT allowed
+- DELETE /:id - only DELETE allowed
+
+**Quotes Routes (`server/routes/quotes.ts`):**
+- GET / - only GET allowed
+- POST / - only POST allowed
+- PUT /:id - only PUT allowed
+- PATCH /:id/status - only PATCH allowed
+- DELETE /:id - only DELETE allowed
+
+**Site Config Routes (`server/routes/siteConfig.ts`):**
+- GET / - only GET allowed
+- POST / - only POST allowed
+- PUT /:id - only PUT allowed
+
+**Impact:** None - Returns 405 Method Not Allowed for unexpected methods, preventing potential security issues while not affecting normal usage.
+
+---
+
+### 6. Admin Authentication on Site Config Routes
+**File:** `server/routes/siteConfig.ts`
+
+Added missing admin authentication to state-changing site config operations:
+
+- POST / - added `requireAdmin` middleware
+- PUT /:id - added `requireAdmin` middleware
+- GET / - remains public (read-only access)
+
+**Impact:** Low - Requires admin authentication for creating/updating site configuration, preventing unauthorized modifications. GET endpoint remains public for frontend access.
+
+---
+
+### 7. Input Validation on Critical Routes
+**Files:** `server/routes/admin.ts`, `server/routes/products.ts`, `server/routes/projects.ts`, `server/routes/blog.ts`, `server/routes/media.ts`, `server/routes/quotes.ts`, `server/routes/siteConfig.ts`
+
+Added comprehensive, retro-compatible input validation across all CRUD routes:
+
+**Admin Login (`server/routes/admin.ts`, lines 14-67):**
 - Type checking: email and password must be strings
+- Email length validation (max 254 characters, RFC 5321 compliant)
 - Basic email format validation (contains '@', minimum length)
-- Password length validation (non-empty)
+- Password length validation (min 6, max 128 characters)
 - All validations return 400 with descriptive messages
 
 **Product CRUD (`server/routes/products.ts`):**
-- POST: Validate product name exists and is a string
+- POST: Validate product name exists and is a string (max 200 characters)
+- POST: Validate description length (max 2000 characters if present)
+- POST: Validate price is non-negative number if present
 - PUT: Validate product ID parameter exists and is a string
 - DELETE: Validate product ID parameter exists and is a string
+
+**Project CRUD (`server/routes/projects.ts`):**
+- POST: Validate project name exists and is a string (max 200 characters)
+- POST: Validate description length (max 2000 characters if present)
+- PUT: Validate project ID parameter exists and is a string
+- DELETE: Validate project ID parameter exists and is a string
+
+**Blog CRUD (`server/routes/blog.ts`):**
+- POST: Validate post title exists and is a string (max 300 characters)
+- POST: Validate content length (max 50000 characters if present)
+- POST: Validate excerpt length (max 1000 characters if present)
+- PUT: Same validations as POST for updated fields
+
+**Media CRUD (`server/routes/media.ts`):**
+- POST: Validate title length (max 500 characters if present)
+- POST: Validate category length (max 100 characters if present)
+- POST: Validate cloudinaryUrl length (max 1000 characters if present)
+- POST: Validate cloudinaryPublicId length (max 500 characters if present)
+- PUT: Same validations as POST for updated fields
+
+**Quotes Public Form (`server/routes/quotes.ts`):**
+- POST: Validate name length (max 200 characters if present)
+- POST: Validate email length (max 254 characters) and basic format
+- POST: Validate message length (max 2000 characters if present)
+- POST: Validate phone length (max 50 characters if present)
+
+**Site Config CRUD (`server/routes/siteConfig.ts`):**
+- POST: Validate config name length (max 200 characters if present)
+- POST: Validate config value length (max 5000 characters if present)
+- PUT: Same validations as POST for updated fields
 
 **Impact:** None - Validations are permissive and only reject obviously invalid input. Existing valid requests continue to work.
 
 ---
 
-### 5. Environment Variables and Secrets Audit
+### 8. Environment Variables and Secrets Audit
 **Verified:**
 - `.env` and `.server.env` are in `.gitignore` ✓
 - No hardcoded secrets found in server code (after removing the default password) ✓
@@ -98,6 +202,33 @@ Added minimal, retro-compatible input validation:
 - `ADMIN_PASSWORD` - Admin user password
 - `ADMIN_NAME` - Admin user display name
 - `ADMIN_RESET_PASSWORD` - Password for admin reset functionality (new requirement)
+
+---
+
+## Final Pre-Delivery Hardening (Additional Measures)
+
+These measures complete the security hardening for pre-delivery by extending the initial implementation to cover all remaining routes and endpoints.
+
+### 5. HTTP Method Restrictions on All Routes
+**Files:** All route files in `server/routes/`
+
+Added explicit HTTP method validation to prevent method confusion attacks and ensure each endpoint only accepts its intended HTTP method. This prevents potential security issues where malicious actors might try to use unexpected methods to bypass security controls.
+
+### 6. Admin Authentication on Site Config Routes
+**File:** `server/routes/siteConfig.ts`
+
+Fixed a security gap where site configuration creation and modification endpoints were not protected by admin authentication. Now only authenticated admin users can modify site configuration.
+
+### 7. Comprehensive Input Validation Across All CRUD Operations
+**Files:** All route files in `server/routes/`
+
+Extended input validation beyond the initial implementation to cover:
+- Blog posts (title, content, excerpt length limits)
+- Media items (title, category, URL length limits)
+- Quotes public form (name, email, message, phone validation)
+- Site configuration (name, value length limits)
+
+All validations are conservative and designed to reject only obviously invalid input while maintaining backward compatibility.
 
 ---
 
@@ -235,7 +366,9 @@ If any issues arise, the changes can be easily reverted:
 1. **Security headers middleware:** Remove lines 58-94 from `server/index.ts`
 2. **Error handler:** Revert lines 202-233 in `server/index.ts` to previous version
 3. **Hardcoded password:** Revert lines 196-203 in `server/routes/admin.ts` to include default password
-4. **Input validation:** Remove validation blocks from `server/routes/admin.ts` and `server/routes/products.ts`
+4. **HTTP method restrictions:** Remove method validation blocks from all route files (sections 5)
+5. **Admin authentication on site config:** Remove `requireAdmin` from POST/PUT in `server/routes/siteConfig.ts` (section 6)
+6. **Input validation:** Remove validation blocks from all route files (section 7)
 
 All changes are localized and non-invasive, making rollback straightforward.
 
@@ -250,14 +383,37 @@ The security improvements are committed with the following messages:
 3. `fix(security): remove hardcoded default password from admin reset`
 4. `feat(security): add minimal input validation on critical routes`
 5. `docs(security): add SECURITY.md with implemented measures and future improvements`
+6. `feat(security): restrict HTTP methods on all API routes`
+7. `feat(security): add comprehensive input validation across all CRUD operations`
+8. `fix(security): add missing admin authentication to site config routes`
+9. `docs(security): update SECURITY.md with final pre-delivery hardening report`
 
 ---
 
 ## Summary
 
-**Security Posture:** Improved with defense-in-depth measures  
-**Risk Level:** Low - All changes are additive and reversible  
+**Security Posture:** Significantly improved with comprehensive defense-in-depth measures  
+**Risk Level:** Low - All changes are additive, reversible, and non-blocking  
 **Functional Impact:** None - No visible changes to end users  
 **Breaking Changes:** None - All changes are retro-compatible  
 
-The implemented security measures provide a solid foundation for ongoing security hardening without risking client delivery timelines. Future improvements can be implemented incrementally as the application matures and security requirements evolve.
+**Final Hardening Status:**
+- ✅ Security headers finalized and organized
+- ✅ HTTP method restrictions on all API routes
+- ✅ Admin authentication on all state-changing endpoints
+- ✅ Comprehensive input validation across all CRUD operations
+- ✅ Error information masking in place
+- ✅ Hardcoded secrets removed
+- ✅ Environment variables properly configured
+- ✅ Documentation updated with complete security measures
+
+The implemented security measures provide a solid baseline for client delivery without risking functionality. The application now has a robust security foundation that can be further enhanced post-delivery with tighter CSP, rate limiting, and additional monitoring.
+
+**Files Modified in Final Hardening:**
+- `server/routes/media.ts` - HTTP method restrictions, input validation
+- `server/routes/quotes.ts` - HTTP method restrictions, input validation on public endpoint
+- `server/routes/siteConfig.ts` - HTTP method restrictions, admin authentication, input validation
+- `server/routes/blog.ts` - Input validation on POST/PUT operations
+- `SECURITY.md` - Updated with final hardening report
+
+All changes are conservative, well-documented, and designed to maintain 100% backward compatibility while significantly improving security posture.

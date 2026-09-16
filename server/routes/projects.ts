@@ -52,6 +52,14 @@ const byId = (id: string) =>
 
 // GET all projects
 router.get('/', async (req: Request, res: Response) => {
+  // Security: Ensure only GET method is accepted
+  if (req.method !== 'GET') {
+    return res.status(405).json({ 
+      ok: false, 
+      error: { code: 'METHOD_NOT_ALLOWED', message: 'Method not allowed' }
+    });
+  }
+  
   const db = dbReady();
   if (!db.ok) {
     return res.status(503).json({
@@ -79,6 +87,14 @@ router.get('/', async (req: Request, res: Response) => {
 
 // GET single project
 router.get('/:id', async (req: Request, res: Response) => {
+  // Security: Ensure only GET method is accepted
+  if (req.method !== 'GET') {
+    return res.status(405).json({ 
+      ok: false, 
+      error: { code: 'METHOD_NOT_ALLOWED', message: 'Method not allowed' }
+    });
+  }
+  
   const db = dbReady();
   if (!db.ok) return dbError(res, db.reason!);
   try {
@@ -89,25 +105,71 @@ router.get('/:id', async (req: Request, res: Response) => {
     }
     res.json(toProjectPayload(project));
   } catch (error: any) {
-    res.status(400).json({ ok: false, error: { code: 'FETCH_FAILED', message: error?.message || 'Failed to fetch project' } });
+    console.error('Error fetching project:', error);
+    // Security: Mask detailed error messages from client - only generic message
+    res.status(400).json({ ok: false, error: { code: 'FETCH_FAILED', message: 'Failed to fetch project' } });
   }
 });
 
 // POST create single project
 router.post('/', requireAdmin, async (req: Request, res: Response) => {
+  // Security: Ensure only POST method is accepted
+  if (req.method !== 'POST') {
+    return res.status(405).json({ 
+      ok: false, 
+      error: { code: 'METHOD_NOT_ALLOWED', message: 'Method not allowed' }
+    });
+  }
+  
   const db = dbReady();
   if (!db.ok) return dbError(res, db.reason!);
   try {
+    // Minimal input validation for project creation
+    if (!req.body.name || typeof req.body.name !== 'string') {
+      return res.status(400).json({ 
+        ok: false, 
+        error: { code: 'VALIDATION_FAILED', message: 'Project name is required and must be a string' }
+      });
+    }
+    
+    // Project name length validation
+    if (req.body.name.length > 200) {
+      return res.status(400).json({ 
+        ok: false, 
+        error: { code: 'VALIDATION_FAILED', message: 'Project name too long (max 200 characters)' }
+      });
+    }
+    
+    // Description length validation (if present)
+    if (req.body.description && typeof req.body.description === 'string') {
+      if (req.body.description.length > 2000) {
+        return res.status(400).json({ 
+          ok: false, 
+          error: { code: 'VALIDATION_FAILED', message: 'Description too long (max 2000 characters)' }
+        });
+      }
+    }
+    
     const project = new Project(req.body);
     await project.save();
     res.status(201).json(project.toObject());
   } catch (error: any) {
-    res.status(400).json({ ok: false, error: { code: 'CREATE_FAILED', message: error?.message || 'Failed to create project' } });
+    console.error('Error creating project:', error);
+    // Security: Mask detailed error messages from client - only generic message
+    res.status(400).json({ ok: false, error: { code: 'CREATE_FAILED', message: 'Failed to create project' } });
   }
 });
 
 // PUT update project
 router.put('/:id', requireAdmin, async (req: Request, res: Response) => {
+  // Security: Ensure only PUT method is accepted
+  if (req.method !== 'PUT') {
+    return res.status(405).json({ 
+      ok: false, 
+      error: { code: 'METHOD_NOT_ALLOWED', message: 'Method not allowed' }
+    });
+  }
+  
   const db = dbReady();
   if (!db.ok) return dbError(res, db.reason!);
   try {
@@ -123,12 +185,22 @@ router.put('/:id', requireAdmin, async (req: Request, res: Response) => {
       res.json(project);
     }
   } catch (error: any) {
-    res.status(400).json({ ok: false, error: { code: 'UPDATE_FAILED', message: error?.message || 'Failed to update project' } });
+    console.error('Error updating project:', error);
+    // Security: Mask detailed error messages from client - only generic message
+    res.status(400).json({ ok: false, error: { code: 'UPDATE_FAILED', message: 'Failed to update project' } });
   }
 });
 
 // DELETE project
 router.delete('/:id', requireAdmin, async (req: Request, res: Response) => {
+  // Security: Ensure only DELETE method is accepted
+  if (req.method !== 'DELETE') {
+    return res.status(405).json({ 
+      ok: false, 
+      error: { code: 'METHOD_NOT_ALLOWED', message: 'Method not allowed' }
+    });
+  }
+  
   const db = dbReady();
   if (!db.ok) return dbError(res, db.reason!);
   try {
@@ -140,7 +212,9 @@ router.delete('/:id', requireAdmin, async (req: Request, res: Response) => {
       res.json({ ok: true, message: 'Project deleted' });
     }
   } catch (error: any) {
-    res.status(400).json({ ok: false, error: { code: 'DELETE_FAILED', message: error?.message || 'Failed to delete project' } });
+    console.error('Error deleting project:', error);
+    // Security: Mask detailed error messages from client - only generic message
+    res.status(400).json({ ok: false, error: { code: 'DELETE_FAILED', message: 'Failed to delete project' } });
   }
 });
 

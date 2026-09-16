@@ -16,6 +16,13 @@ const errMessage = (error: unknown) =>
 // GET all products
 router.get('/', async (req: Request, res: Response) => {
   try {
+    // Security: Ensure only GET method is accepted
+    if (req.method !== 'GET') {
+      return res.status(405).json({ 
+        success: false, 
+        message: 'Method not allowed' 
+      });
+    }
     const { activitySector, active } = req.query;
     const filter: any = {};
 
@@ -37,6 +44,13 @@ router.get('/', async (req: Request, res: Response) => {
 // GET product by slug
 router.get('/slug/:slug', async (req: Request, res: Response) => {
   try {
+    // Security: Ensure only GET method is accepted
+    if (req.method !== 'GET') {
+      return res.status(405).json({ 
+        success: false, 
+        message: 'Method not allowed' 
+      });
+    }
     const { slug } = req.params;
     const product = await Product.findOne({ slug });
     if (!product) {
@@ -59,19 +73,57 @@ router.get('/:id', async (req: Request, res: Response) => {
     res.json({ success: true, data: product });
   } catch (error) {
     console.error('Error fetching product:', error);
-    res.status(400).json({ success: false, message: 'Failed to fetch product', error: errMessage(error) });
+    // Security: Mask detailed error messages from client - only generic message
+    res.status(400).json({ success: false, message: 'Failed to fetch product' });
   }
 });
 
 // POST create product
 router.post('/', requireAdmin, async (req: Request, res: Response) => {
   try {
+    // Security: Ensure only POST method is accepted
+    if (req.method !== 'POST') {
+      return res.status(405).json({ 
+        success: false, 
+        message: 'Method not allowed' 
+      });
+    }
+    
     // Minimal input validation - ensure required fields exist and are strings
     if (!req.body.name || typeof req.body.name !== 'string') {
       return res.status(400).json({ 
         success: false, 
         message: 'Product name is required and must be a string' 
       });
+    }
+    
+    // Product name length validation (reasonable limits for UX and security)
+    if (req.body.name.length > 200) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Product name too long (max 200 characters)' 
+      });
+    }
+    
+    // Description length validation (if present)
+    if (req.body.description && typeof req.body.description === 'string') {
+      if (req.body.description.length > 2000) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Description too long (max 2000 characters)' 
+        });
+      }
+    }
+    
+    // Price validation (if present and numeric)
+    if (req.body.price !== undefined) {
+      const price = Number(req.body.price);
+      if (isNaN(price) || price < 0) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Price must be a non-negative number' 
+        });
+      }
     }
     
     const productData = {
@@ -84,13 +136,22 @@ router.post('/', requireAdmin, async (req: Request, res: Response) => {
     res.status(201).json({ success: true, data: product.toObject() });
   } catch (error) {
     console.error('Error creating product:', error);
-    res.status(400).json({ success: false, message: 'Failed to create product', error: error instanceof Error ? error.message : 'Unknown error' });
+    // Security: Mask detailed error messages from client - only generic message
+    res.status(400).json({ success: false, message: 'Failed to create product' });
   }
 });
 
 // PUT update product
 router.put('/:id', requireAdmin, async (req: Request, res: Response) => {
   try {
+    // Security: Ensure only PUT method is accepted
+    if (req.method !== 'PUT') {
+      return res.status(405).json({ 
+        success: false, 
+        message: 'Method not allowed' 
+      });
+    }
+    
     const { id } = req.params;
     
     // Minimal validation - ensure id parameter exists
@@ -113,13 +174,22 @@ router.put('/:id', requireAdmin, async (req: Request, res: Response) => {
     }
   } catch (error) {
     console.error('Error updating product:', error);
-    res.status(400).json({ success: false, message: 'Failed to update product', error: errMessage(error) });
+    // Security: Mask detailed error messages from client - only generic message
+    res.status(400).json({ success: false, message: 'Failed to update product' });
   }
 });
 
 // DELETE product
 router.delete('/:id', requireAdmin, async (req: Request, res: Response) => {
   try {
+    // Security: Ensure only DELETE method is accepted
+    if (req.method !== 'DELETE') {
+      return res.status(405).json({ 
+        success: false, 
+        message: 'Method not allowed' 
+      });
+    }
+    
     const { id } = req.params;
     
     // Minimal validation - ensure id parameter exists
@@ -137,7 +207,8 @@ router.delete('/:id', requireAdmin, async (req: Request, res: Response) => {
     }
   } catch (error) {
     console.error('Error deleting product:', error);
-    res.status(400).json({ success: false, message: 'Failed to delete product', error: errMessage(error) });
+    // Security: Mask detailed error messages from client - only generic message
+    res.status(400).json({ success: false, message: 'Failed to delete product' });
   }
 });
 

@@ -76,7 +76,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   res.setHeader('Permissions-Policy', 
     'camera=(), microphone=(), geolocation=(), payment=()');
   
-  // Content Security Policy - initial permissive implementation
+  // Content Security Policy - organized and explicit permissive implementation
   // Designed to NOT block existing functionality while providing a base for future tightening
   // Note: 'unsafe-inline' and 'unsafe-eval' are allowed to ensure React/Vite and inline scripts work
   // Future improvement: tighten CSP by removing unsafe-inline once all scripts are externalized
@@ -89,7 +89,9 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     "font-src 'self' data: https:; " +
     "media-src 'self' data: https:; " +
     "frame-src 'self' https:; " +
-    "object-src 'none';"
+    "frame-ancestors 'self'; " +
+    "object-src 'none'; " +
+    "base-uri 'self';"
   );
   
   next();

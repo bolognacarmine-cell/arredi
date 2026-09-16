@@ -8,6 +8,14 @@ const router = Router();
 
 // GET all published posts with optional filters
 router.get('/posts', async (req: Request, res: Response) => {
+  // Security: Ensure only GET method is accepted
+  if (req.method !== 'GET') {
+    return res.status(405).json({ 
+      success: false, 
+      error: 'Method not allowed' 
+    });
+  }
+  
   try {
     const { sectorSlug, page = '1', limit = '10' } = req.query;
     
@@ -45,6 +53,14 @@ router.get('/posts', async (req: Request, res: Response) => {
 
 // GET single post by slug
 router.get('/posts/:slug', async (req: Request, res: Response) => {
+  // Security: Ensure only GET method is accepted
+  if (req.method !== 'GET') {
+    return res.status(405).json({ 
+      success: false, 
+      error: 'Method not allowed' 
+    });
+  }
+  
   try {
     const { slug } = req.params;
     const post = await Post.findOne({ slug, isPublished: true });
@@ -62,6 +78,14 @@ router.get('/posts/:slug', async (req: Request, res: Response) => {
 
 // GET all sectors with post counts
 router.get('/sectors', async (req: Request, res: Response) => {
+  // Security: Ensure only GET method is accepted
+  if (req.method !== 'GET') {
+    return res.status(405).json({ 
+      success: false, 
+      error: 'Method not allowed' 
+    });
+  }
+  
   try {
     const sectors = await Post.aggregate([
       { $match: { isPublished: true } },
@@ -107,13 +131,58 @@ router.get('/sectors', async (req: Request, res: Response) => {
     res.json({ success: true, data: sectors });
   } catch (error) {
     console.error('Error fetching sectors:', error);
+    // Security: Mask detailed error messages from client - only generic message
     res.status(500).json({ success: false, error: 'Failed to fetch sectors' });
   }
 });
 
 // POST create new post (admin)
 router.post('/posts', requireAdmin, async (req: Request, res: Response) => {
+  // Security: Ensure only POST method is accepted
+  if (req.method !== 'POST') {
+    return res.status(405).json({ 
+      success: false, 
+      error: 'Method not allowed' 
+    });
+  }
+  
   try {
+    // Security: Basic input validation
+    if (!req.body.title || typeof req.body.title !== 'string') {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Post title is required and must be a string' 
+      });
+    }
+    
+    // Title length validation
+    if (req.body.title.length > 300) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Post title too long (max 300 characters)' 
+      });
+    }
+    
+    // Content length validation (if present)
+    if (req.body.content && typeof req.body.content === 'string') {
+      if (req.body.content.length > 50000) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Post content too long (max 50000 characters)' 
+        });
+      }
+    }
+    
+    // Excerpt length validation (if present)
+    if (req.body.excerpt && typeof req.body.excerpt === 'string') {
+      if (req.body.excerpt.length > 1000) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Post excerpt too long (max 1000 characters)' 
+        });
+      }
+    }
+    
     const post = new Post(req.body);
     await post.save();
     res.status(201).json({ success: true, data: post });
@@ -125,8 +194,47 @@ router.post('/posts', requireAdmin, async (req: Request, res: Response) => {
 
 // PUT update post (admin)
 router.put('/posts/:id', requireAdmin, async (req: Request, res: Response) => {
+  // Security: Ensure only PUT method is accepted
+  if (req.method !== 'PUT') {
+    return res.status(405).json({ 
+      success: false, 
+      error: 'Method not allowed' 
+    });
+  }
+  
   try {
     const { id } = req.params;
+    
+    // Security: Basic input validation
+    if (req.body.title && typeof req.body.title === 'string') {
+      if (req.body.title.length > 300) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Post title too long (max 300 characters)' 
+        });
+      }
+    }
+    
+    // Content length validation (if present)
+    if (req.body.content && typeof req.body.content === 'string') {
+      if (req.body.content.length > 50000) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Post content too long (max 50000 characters)' 
+        });
+      }
+    }
+    
+    // Excerpt length validation (if present)
+    if (req.body.excerpt && typeof req.body.excerpt === 'string') {
+      if (req.body.excerpt.length > 1000) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Post excerpt too long (max 1000 characters)' 
+        });
+      }
+    }
+    
     const post = await Post.findByIdAndUpdate(id, req.body, { new: true });
     
     if (!post) {
@@ -142,6 +250,14 @@ router.put('/posts/:id', requireAdmin, async (req: Request, res: Response) => {
 
 // DELETE post (admin)
 router.delete('/posts/:id', requireAdmin, async (req: Request, res: Response) => {
+  // Security: Ensure only DELETE method is accepted
+  if (req.method !== 'DELETE') {
+    return res.status(405).json({ 
+      success: false, 
+      error: 'Method not allowed' 
+    });
+  }
+  
   try {
     const { id } = req.params;
     const post = await Post.findByIdAndDelete(id);

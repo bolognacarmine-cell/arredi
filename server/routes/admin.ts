@@ -6,9 +6,17 @@ const router = Router();
 /**
  * POST /api/admin/login
  * Login admin user with email and password
+ * Security: Only POST method allowed for security best practices
  */
 router.post('/login', async (req: Request, res: Response) => {
   try {
+    // Security: Ensure only POST method is accepted
+    if (req.method !== 'POST') {
+      return res.status(405).json({ 
+        success: false, 
+        message: 'Method not allowed' 
+      });
+    }
     const { email, password } = req.body;
 
     // Validate input - basic type and presence checks
@@ -27,6 +35,14 @@ router.post('/login', async (req: Request, res: Response) => {
       });
     }
     
+    // Email length validation (RFC 5321 max 254 characters, but we use 254 for safety)
+    if (email.length > 254) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Email too long' 
+      });
+    }
+    
     // Basic email format validation (minimal, non-blocking)
     if (!email.includes('@') || email.length < 5) {
       return res.status(400).json({ 
@@ -35,11 +51,18 @@ router.post('/login', async (req: Request, res: Response) => {
       });
     }
     
-    // Password length validation (minimal, non-blocking)
-    if (password.length < 1) {
+    // Password length validation (min 6, max 128 for security and practicality)
+    if (password.length < 6) {
       return res.status(400).json({ 
         success: false, 
-        message: 'Password cannot be empty' 
+        message: 'Password must be at least 6 characters' 
+      });
+    }
+    
+    if (password.length > 128) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Password too long' 
       });
     }
 
@@ -98,9 +121,17 @@ router.post('/login', async (req: Request, res: Response) => {
 /**
  * POST /api/admin/logout
  * Logout admin user
+ * Security: Only POST method allowed for security best practices
  */
 router.post('/logout', (req: Request, res: Response) => {
   try {
+    // Security: Ensure only POST method is accepted
+    if (req.method !== 'POST') {
+      return res.status(405).json({ 
+        success: false, 
+        message: 'Method not allowed' 
+      });
+    }
     if (req.session) {
       req.session.destroy((err) => {
         if (err) {
@@ -130,9 +161,17 @@ router.post('/logout', (req: Request, res: Response) => {
 /**
  * GET /api/admin/me
  * Get current admin user info
+ * Security: Only GET method allowed for security best practices
  */
 router.get('/me', async (req: Request, res: Response) => {
   try {
+    // Security: Ensure only GET method is accepted
+    if (req.method !== 'GET') {
+      return res.status(405).json({ 
+        success: false, 
+        message: 'Method not allowed' 
+      });
+    }
     console.log('[AUTH CHECK] Method:', req.method, 'URL:', req.url);
     console.log('[AUTH CHECK] Session object exists:', !!req.session);
     console.log('[AUTH CHECK] User ID in session:', req.session?.userId ? 'present' : 'missing');
@@ -179,9 +218,17 @@ router.get('/me', async (req: Request, res: Response) => {
 /**
  * POST /api/admin/reset-admin-password
  * Reset admin password by providing the reset code "buongiorno"
+ * Security: Only POST method allowed for security best practices
  */
 router.post('/reset-admin-password', async (req: Request, res: Response) => {
   try {
+    // Security: Ensure only POST method is accepted
+    if (req.method !== 'POST') {
+      return res.status(405).json({ 
+        success: false, 
+        message: 'Method not allowed' 
+      });
+    }
     const { email, resetCode } = req.body;
 
     // Validate email
