@@ -10,6 +10,11 @@ type Props = {
   aspectClass?: string
   /** Immagine mostrata se una URL non si carica. */
   fallbackSrc?: string
+  /**
+   * "contain" mostra la foto intera (niente ritaglio né ingrandimento) su uno
+   * sfondo sfocato ricavato dalla foto stessa; "cover" riempie il viewport.
+   */
+  fit?: "cover" | "contain"
   /** Scorrimento automatico (in pausa su hover, focus e durante il drag). */
   autoPlay?: boolean
   autoPlayMs?: number
@@ -26,6 +31,7 @@ export default function ImageCarousel({
   overlay,
   aspectClass = "aspect-[4/3]",
   fallbackSrc,
+  fit = "contain",
   autoPlay = true,
   autoPlayMs = 5000,
 }: Props) {
@@ -151,8 +157,15 @@ export default function ImageCarousel({
           }}
         >
           {list.map((url, i) => (
-            <div key={url.slice(-40) + i} className="relative h-full w-full shrink-0 bg-[#F3F1EC]">
+            <div key={url.slice(-40) + i} className="relative h-full w-full shrink-0 overflow-hidden bg-[#F3F1EC]">
               {!loaded[i] && <div className="absolute inset-0 animate-pulse bg-[#EAE7E0]" />}
+              {fit === "contain" && loaded[i] && (
+                <div
+                  aria-hidden
+                  className="absolute inset-0 scale-110 bg-cover bg-center blur-2xl opacity-40"
+                  style={{ backgroundImage: `url("${url}")` }}
+                />
+              )}
               <img
                 src={url}
                 alt={`${alt} — immagine ${i + 1} di ${count}`}
@@ -164,7 +177,9 @@ export default function ImageCarousel({
                   const el = e.currentTarget
                   if (fallbackSrc && el.src !== fallbackSrc) el.src = fallbackSrc
                 }}
-                className={`h-full w-full object-cover transition-opacity duration-300 ${
+                className={`relative h-full w-full ${
+                  fit === "contain" ? "object-contain" : "object-cover"
+                } transition-opacity duration-300 ${
                   loaded[i] ? "opacity-100" : "opacity-0"
                 }`}
               />
