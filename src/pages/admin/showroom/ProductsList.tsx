@@ -25,6 +25,7 @@ export default function ProductsList() {
   const [creating, setCreating] = useState(false)
   const [busy, setBusy] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
+  const [errorToast, setErrorToast] = useState<string | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
 
   // Force refresh after CRUD operations
@@ -54,6 +55,12 @@ export default function ProductsList() {
   const showToast = (msg: string) => {
     setToast(msg)
     setTimeout(() => setToast(null), 2000)
+  }
+
+  const showError = (err: unknown, fallback: string) => {
+    console.error(fallback, err)
+    setErrorToast(err instanceof Error ? err.message : fallback)
+    setTimeout(() => setErrorToast(null), 6000)
   }
 
   const matching = useMemo(() => {
@@ -90,6 +97,8 @@ export default function ProductsList() {
       setCreating(false)
       // Trigger refresh
       setRefreshKey(prev => prev + 1)
+    } catch (error) {
+      showError(error, "Salvataggio del prodotto non riuscito")
     } finally {
       setBusy(false)
     }
@@ -103,6 +112,8 @@ export default function ProductsList() {
       // Trigger refresh
       setRefreshKey(prev => prev + 1)
       showToast("Prodotto eliminato")
+    } catch (error) {
+      showError(error, "Eliminazione del prodotto non riuscita")
     } finally {
       setBusy(false)
     }
@@ -112,6 +123,9 @@ export default function ProductsList() {
     setBusy(true)
     try {
       await updateProduct(id, { active: next })
+      setRefreshKey(prev => prev + 1)
+    } catch (error) {
+      showError(error, "Aggiornamento dello stato non riuscito")
     } finally {
       setBusy(false)
     }
@@ -165,6 +179,12 @@ export default function ProductsList() {
       {toast && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] bg-[#1A1A18] text-white text-sm px-5 py-2.5 shadow-2xl animate-fade-in">
           {toast}
+        </div>
+      )}
+
+      {errorToast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] max-w-md bg-red-700 text-white text-sm px-5 py-2.5 shadow-2xl animate-fade-in">
+          {errorToast}
         </div>
       )}
     </div>

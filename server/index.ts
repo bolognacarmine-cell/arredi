@@ -11,6 +11,7 @@ dotenv.config({ path: path.resolve(__dirname, '../.server.env') });
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import session from 'express-session';
+import MongoStore from 'connect-mongo';
 import cookieParser from 'cookie-parser';
 import { connectDB } from './db.js';
 import mediaRoutes from './routes/media.js';
@@ -61,7 +62,23 @@ if (!sessionSecret) {
   throw new Error('SESSION_SECRET environment variable is not defined');
 }
 
+// Le sessioni vivono su MongoDB: con lo store in memoria ogni riavvio o sleep
+// dell'istanza invalidava il login admin e le API rispondevano 401.
+const sessionStore = process.env.MONGODB_URI
+  ? MongoStore.create({
+      mongoUrl: process.env.MONGODB_URI,
+      collectionName: 'sessions',
+      ttl: 24 * 60 * 60,
+      touchAfter: 3600,
+    })
+  : undefined;
+
+if (!sessionStore) {
+  console.warn('⚠️  MONGODB_URI mancante: sessioni in memoria, il login admin non sopravvive ai riavvii');
+}
+
 app.use(session({
+  store: sessionStore,
   secret: sessionSecret,
   resave: false,
   saveUninitialized: false,
@@ -136,6 +153,21 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     }
   })
 })
+
+// Body parser errors (payload troppo grande, JSON malformato) devono tornare JSON:
+// il client fa response.json() e con l'HTML di default fallisce con un errore opaco.
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  if (err?.type === 'entity.too.large') {
+    return res.status(413).json({
+      success: false,
+      message: 'Payload troppo grande: carica le immagini come URL invece che in base64.',
+    });
+  }
+  if (err?.type === 'entity.parse.failed') {
+    return res.status(400).json({ success: false, message: 'JSON della richiesta non valido' });
+  }
+  return next(err);
+});
 
 // Start server after DB connection
 connectDB().then(() => {

@@ -391,64 +391,26 @@ export async function createProduct(
     slug?: string
   },
 ): Promise<Product> {
-  try {
-    const p: Product = {
-      ...data,
-      id: "p" + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-3),
-      slug: data.slug || slugify(data.name) + "-" + Math.random().toString(36).slice(2, 6),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }
-    return await productsApi.createProduct(p)
-  } catch (error) {
-    console.error("Error creating product via API, falling back to localStorage:", error)
-    const list = read<Product[]>(P_KEY, seedProducts)
-    const p: Product = {
-      ...data,
-      id: "p" + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-3),
-      slug: data.slug || slugify(data.name) + "-" + Math.random().toString(36).slice(2, 6),
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    }
-    const next = [p, ...list]
-    write(P_KEY, next)
-    return delay(p)
+  // Nessun fallback su localStorage in scrittura: un salvataggio solo locale
+  // verrebbe segnalato come riuscito ma sparirebbe al ricaricamento della pagina.
+  const p: Product = {
+    ...data,
+    id: "p" + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-3),
+    slug: data.slug || slugify(data.name) + "-" + Math.random().toString(36).slice(2, 6),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   }
+  return await productsApi.createProduct(p)
 }
 export async function updateProduct(
   id: string,
   patch: Partial<Omit<Product, "id" | "createdAt" | "updatedAt">>,
 ): Promise<Product | null> {
-  try {
-    return await productsApi.updateProduct(id, patch)
-  } catch (error) {
-    console.error("Error updating product via API, falling back to localStorage:", error)
-    const list = read<Product[]>(P_KEY, seedProducts)
-    const i = list.findIndex((p) => p.id === id)
-    if (i === -1) return delay(null)
-    const updated: Product = {
-      ...list[i],
-      ...patch,
-      slug: patch.name ? slugify(patch.name) + "-" + list[i].id.slice(-3) : list[i].slug,
-      updatedAt: Date.now(),
-    }
-    list[i] = updated
-    write(P_KEY, list)
-    return delay(updated)
-  }
+  return await productsApi.updateProduct(id, patch)
 }
 export async function deleteProduct(id: string): Promise<boolean> {
-  try {
-    await productsApi.deleteProduct(id)
-    return true
-  } catch (error) {
-    console.error("Error deleting product via API, falling back to localStorage:", error)
-    const list = read<Product[]>(P_KEY, seedProducts)
-    const before = list.length
-    const next = list.filter((p) => p.id !== id)
-    if (next.length < before) write(P_KEY, next)
-    return delay(next.length < before)
-  }
+  await productsApi.deleteProduct(id)
+  return true
 }
 
 export async function getOffers(): Promise<Offer[]> {

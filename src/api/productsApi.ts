@@ -9,6 +9,19 @@ const getApiUrl = (path: string) => {
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3002"
 
+const AUTH_EXPIRED = "Sessione admin scaduta: esegui di nuovo il login e riprova"
+
+// Una risposta non-JSON (es. pagina di errore 413/502) altrimenti farebbe fallire
+// response.json() con un errore di parsing che nasconde lo status reale.
+async function readJson(response: Response): Promise<any> {
+  const text = await response.text()
+  try {
+    return JSON.parse(text)
+  } catch {
+    throw new Error(`Risposta non valida dal server (HTTP ${response.status})`)
+  }
+}
+
 export interface Product {
   _id: string
   id: string
@@ -111,7 +124,11 @@ export async function createProduct(data: Omit<Product, "_id" | "createdAt" | "u
       body: JSON.stringify(data),
     })
 
-    const result = await response.json()
+    if (response.status === 401 || response.status === 403) {
+      throw new Error(AUTH_EXPIRED)
+    }
+
+    const result = await readJson(response)
 
     if (!response.ok) {
       throw new Error(result.message || "Failed to create product")
@@ -143,7 +160,11 @@ export async function updateProduct(id: string, data: Partial<Product>): Promise
       body: JSON.stringify(data),
     })
 
-    const result = await response.json()
+    if (response.status === 401 || response.status === 403) {
+      throw new Error(AUTH_EXPIRED)
+    }
+
+    const result = await readJson(response)
 
     if (!response.ok) {
       throw new Error(result.message || "Failed to update product")
@@ -170,9 +191,13 @@ export async function deleteProduct(id: string): Promise<void> {
       credentials: 'include',
     })
 
+    if (response.status === 401 || response.status === 403) {
+      throw new Error(AUTH_EXPIRED)
+    }
+
     const result = await response.json().catch(() => ({}))
 
-    if (!response.ok && result.error) {
+    if (!response.ok) {
       throw new Error(result.error?.message || result.message || "Failed to delete product")
     }
   } catch (error) {

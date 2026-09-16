@@ -6,6 +6,8 @@ import type { Product } from "../../../types/showroom"
 import type { ActivitySector } from "../../../constants/showroomSectors"
 import { FURNITURE_BY_SECTOR } from "../../../constants/showroomSectors"
 import { useProducts, slugify } from "../../../services/showroomApi"
+import { isCloudinaryConfigured, useCloudinaryUpload } from "../../../lib/cloudinary"
+import { createMedia } from "../../../api/mediaApi"
 
 interface Props {
   initial?: Product
@@ -51,6 +53,8 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
   const all = useProducts()
   const [form, setForm] = useState<FS>(empty)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [uploading, setUploading] = useState(0)
+  const { upload: uploadToCloudinary } = useCloudinaryUpload()
   const dragIdxRef = { current: -1 }
 
   useEffect(() => {
@@ -108,6 +112,7 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
       if (isNaN(d) || d < 0 || d > 100) e.discountPct = "Sconto % tra 0 e 100"
     }
     if (form.images.length === 0) e.images = "Aggiungi almeno un'immagine"
+    if (uploading > 0) e.images = "Attendi il completamento dell'upload delle immagini"
     return e
   }
 
@@ -134,24 +139,52 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
     await onSave(data, initial?.id)
   }
 
+  // Le immagini vanno su Cloudinary: il prodotto salva solo l'URL, non il base64
+  // (un payload di data URL supera il limite del body parser e il salvataggio fallisce).
   const addImagesFiles = async (files: FileList | File[]) => {
     const arr = Array.from(files).filter((f) => f.type.startsWith("image/"))
-    const urls: string[] = []
+    if (arr.length === 0) return
+    if (!isCloudinaryConfigured) {
+      setErrors((e) => ({
+        ...e,
+        images:
+          "Upload immagini non disponibile: Cloudinary non è configurato (VITE_CLOUDINARY_CLOUD_NAME / VITE_CLOUDINARY_UPLOAD_PRESET).",
+      }))
+      return
+    }
+
+    setUploading((n) => n + arr.length)
     for (const f of arr) {
-      // Check file size (max 2MB per image)
-      if (f.size > 2 * 1024 * 1024) {
-        alert(`L'immagine ${f.name} è troppo grande (max 2MB). Comprimila prima di caricarla.`)
+      if (f.size > 10 * 1024 * 1024) {
+        setErrors((e) => ({ ...e, images: `L'immagine ${f.name} supera i 10MB.` }))
+        setUploading((n) => n - 1)
         continue
       }
-      urls.push(
-        await new Promise<string>((r) => {
-          const rd = new FileReader()
-          rd.onload = () => r(String(rd.result))
-          rd.readAsDataURL(f)
-        }),
-      )
+      try {
+        const res = await uploadToCloudinary(f, "farcom/showroom/prodotti")
+        if (!res) throw new Error("Upload Cloudinary fallito")
+        // Registra il file nella media library (non bloccante per il prodotto).
+        createMedia({
+          cloudinaryUrl: res.secure_url,
+          cloudinaryPublicId: res.public_id,
+          width: res.width,
+          height: res.height,
+          format: res.format,
+          bytes: res.bytes,
+          category: "gallery",
+          library: "Prodotti",
+        }).catch((err) => console.error("Media library non aggiornata:", err))
+        setForm((s) => ({ ...s, images: [...s.images, res.secure_url] }))
+        setErrors((e) => ({ ...e, images: "" }))
+      } catch (err) {
+        setErrors((e) => ({
+          ...e,
+          images: err instanceof Error ? err.message : `Upload di ${f.name} fallito`,
+        }))
+      } finally {
+        setUploading((n) => n - 1)
+      }
     }
-    setForm((f) => ({ ...f, images: [...f.images, ...urls] }))
   }
   const onFiles = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) addImagesFiles(e.target.files)
@@ -305,12 +338,23 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
                   ＋ Seleziona file
                   <input type="file" accept="image/*" multiple hidden onChange={onFiles} />
                 </label>
+                {uploading > 0 && (
+                  <span className="flex items-center gap-1.5 text-xs text-[#888580]">
+                    <span className="w-3 h-3 border-2 border-[#1B4332]/30 border-t-[#1B4332] rounded-full animate-spin" />
+                    Caricamento {uploading}…
+                  </span>
+                )}
                 <button type="button" onClick={addPlaceholder} className="text-xs text-[#888580] hover:text-[#1B4332]">
                   Placeholder
                 </button>
               </div>
             </div>
-            <p className="text-xs text-[#888580] mb-2">Max 2MB per immagine. Consigliato formato WebP o JPG compresso.</p>
+            <p className="text-xs text-[#888580] mb-2">
+              Max 10MB per immagine. Consigliato formato WebP o JPG compresso.
+            </p>
+            {errors.images && form.images.length > 0 && (
+              <p className="text-xs text-red-600 mb-2">{errors.images}</p>
+            )}
             <div
               onDragOver={(e) => e.preventDefault()}
               onDrop={onDrop}
@@ -386,7 +430,7 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
             </button>
             <button
               type="submit"
-              disabled={busy}
+              disabled={busy || uploading > 0}
               className="bg-[#1B4332] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#143326] disabled:opacity-50 flex items-center gap-2"
             >
               {busy && (
