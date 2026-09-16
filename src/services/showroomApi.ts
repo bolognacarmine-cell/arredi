@@ -285,10 +285,15 @@ export function write<T>(k: string, v: T) {
     )
   } catch {}
 }
-const delay = <T>(v: T, min = 120, max = 500) =>
-  new Promise<T>((r) =>
-    setTimeout(() => r(v), Math.floor(Math.random() * (max - min + 1)) + min),
-  )
+// L'admin e le pagine pubbliche leggono dall'API: dopo una scrittura le liste
+// montate vanno rilette anche quando non e' passato nulla da localStorage.
+function notifyShowroomUpdated() {
+  try {
+    window.dispatchEvent(
+      new CustomEvent("farcom-showroom2-updated", { detail: { k: "api" } }),
+    )
+  } catch {}
+}
 
 export async function getProducts(): Promise<Product[]> {
   try {
@@ -328,16 +333,21 @@ export async function createProduct(
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   }
-  return await productsApi.createProduct(p)
+  const created = await productsApi.createProduct(p)
+  notifyShowroomUpdated()
+  return created
 }
 export async function updateProduct(
   id: string,
   patch: Partial<Omit<Product, "id" | "createdAt" | "updatedAt">>,
 ): Promise<Product | null> {
-  return await productsApi.updateProduct(id, patch)
+  const updated = await productsApi.updateProduct(id, patch)
+  notifyShowroomUpdated()
+  return updated
 }
 export async function deleteProduct(id: string): Promise<boolean> {
   await productsApi.deleteProduct(id)
+  notifyShowroomUpdated()
   return true
 }
 
@@ -357,59 +367,33 @@ export async function getOfferById(id: string): Promise<Offer | null> {
     return readOffers().find((o) => o.id === id) ?? null
   }
 }
+// Nessun fallback su localStorage in scrittura: l'offerta resterebbe nel solo
+// browser dell'admin e non comparirebbe mai in vetrina.
 export async function createOffer(
   data: Omit<Offer, "id" | "createdAt" | "updatedAt">,
 ): Promise<Offer> {
-  try {
-    const o: Offer = {
-      ...data,
-      id: "o" + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-3),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }
-    return await offersApi.createOffer(o)
-  } catch (error) {
-    console.error("Error creating offer via API, falling back to localStorage:", error)
-    const list = readOffers()
-    const o: Offer = {
-      ...data,
-      id: "o" + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-3),
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    }
-    write(O_KEY, [o, ...list])
-    return delay(o)
+  const o: Offer = {
+    ...data,
+    id: "o" + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-3),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   }
+  const created = await offersApi.createOffer(o)
+  notifyShowroomUpdated()
+  return created
 }
 export async function updateOffer(
   id: string,
   patch: Partial<Omit<Offer, "id" | "createdAt" | "updatedAt">>,
 ): Promise<Offer | null> {
-  try {
-    return await offersApi.updateOffer(id, patch)
-  } catch (error) {
-    console.error("Error updating offer via API, falling back to localStorage:", error)
-    const list = readOffers()
-    const i = list.findIndex((o) => o.id === id)
-    if (i === -1) return delay(null)
-    const updated: Offer = { ...list[i], ...patch, updatedAt: Date.now() }
-    list[i] = updated
-    write(O_KEY, list)
-    return delay(updated)
-  }
+  const updated = await offersApi.updateOffer(id, patch)
+  notifyShowroomUpdated()
+  return updated
 }
 export async function deleteOffer(id: string): Promise<boolean> {
-  try {
-    await offersApi.deleteOffer(id)
-    return true
-  } catch (error) {
-    console.error("Error deleting offer via API, falling back to localStorage:", error)
-    const list = readOffers()
-    const before = list.length
-    const next = list.filter((o) => o.id !== id)
-    if (next.length < before) write(O_KEY, next)
-    return delay(next.length < before)
-  }
+  await offersApi.deleteOffer(id)
+  notifyShowroomUpdated()
+  return true
 }
 
 export interface EffectivePrice {
@@ -454,37 +438,39 @@ export function computeEffectivePrice(
   return best
 }
 
-export function useProducts(): Product[] {
-  const [val, setVal] = useState<Product[]>(() =>
-    typeof window !== "undefined" ? read<Product[]>(P_KEY, seedProducts) : seedProducts,
-  )
+// Stessa fonte dati delle pagine pubbliche: l'API, con ricarica a ogni
+// scrittura o aggiornamento proveniente da un'altra scheda.
+function useRemoteList<T>(load: () => Promise<T[]>): T[] {
+  const [val, setVal] = useState<T[]>([])
 
   useEffect(() => {
-    const cb = () => setVal(read<Product[]>(P_KEY, seedProducts))
-    window.addEventListener?.("farcom-showroom2-updated", cb)
-    window.addEventListener?.("storage", cb)
-    return () => {
-      window.removeEventListener?.("farcom-showroom2-updated", cb)
-      window.removeEventListener?.("storage", cb)
+    let active = true
+    const refresh = () => {
+      load()
+        .then((list) => {
+          if (active) setVal(Array.isArray(list) ? list : [])
+        })
+        .catch((error) => console.error("Error loading showroom data:", error))
     }
+    refresh()
+    window.addEventListener?.("farcom-showroom2-updated", refresh)
+    window.addEventListener?.("storage", refresh)
+    return () => {
+      active = false
+      window.removeEventListener?.("farcom-showroom2-updated", refresh)
+      window.removeEventListener?.("storage", refresh)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return val
 }
+
+export function useProducts(): Product[] {
+  return useRemoteList(getProducts)
+}
 export function useOffers(): Offer[] {
-  const [val, setVal] = useState<Offer[]>(() =>
-    typeof window !== "undefined" ? readOffers() : seedOffers,
-  )
-  useEffect(() => {
-    const cb = () => setVal(readOffers())
-    window.addEventListener?.("farcom-showroom2-updated", cb)
-    window.addEventListener?.("storage", cb)
-    return () => {
-      window.removeEventListener?.("farcom-showroom2-updated", cb)
-      window.removeEventListener?.("storage", cb)
-    }
-  }, [])
-  return val
+  return useRemoteList(getOffers)
 }
 
 export { SECTORS, furnitureTypesFor }

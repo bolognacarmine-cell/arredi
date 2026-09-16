@@ -17,10 +17,17 @@ export default function OffersList() {
   const [creating, setCreating] = useState(false)
   const [busy, setBusy] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
+  const [errorToast, setErrorToast] = useState<string | null>(null)
 
   const showToast = (msg: string) => {
     setToast(msg)
     setTimeout(() => setToast(null), 2000)
+  }
+
+  const showError = (err: unknown, fallback: string) => {
+    console.error(fallback, err)
+    setErrorToast(err instanceof Error ? err.message : fallback)
+    setTimeout(() => setErrorToast(null), 6000)
   }
 
   const matching = useMemo(() => {
@@ -56,6 +63,8 @@ export default function OffersList() {
       }
       setEditing(null)
       setCreating(false)
+    } catch (err) {
+      showError(err, "Salvataggio dell'offerta non riuscito")
     } finally {
       setBusy(false)
     }
@@ -67,6 +76,8 @@ export default function OffersList() {
     try {
       await deleteOffer(o.id)
       showToast("Offerta eliminata")
+    } catch (err) {
+      showError(err, "Eliminazione dell'offerta non riuscita")
     } finally {
       setBusy(false)
     }
@@ -76,6 +87,8 @@ export default function OffersList() {
     setBusy(true)
     try {
       await updateOffer(id, { active: next })
+    } catch (err) {
+      showError(err, "Aggiornamento dell'offerta non riuscito")
     } finally {
       setBusy(false)
     }
@@ -129,6 +142,12 @@ export default function OffersList() {
       {toast && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] bg-[#1A1A18] text-white text-sm px-5 py-2.5 shadow-2xl animate-fade-in">
           {toast}
+        </div>
+      )}
+
+      {errorToast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] bg-[#B23B3B] text-white text-sm px-5 py-2.5 shadow-2xl animate-fade-in max-w-[90vw]">
+          {errorToast}
         </div>
       )}
     </div>
