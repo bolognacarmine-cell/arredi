@@ -7,11 +7,16 @@ import { useInViewOnce } from "../hooks/useInViewOnce"
 import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion"
 
 // Configurable delay constants (in milliseconds)
-// Il video resta "pulito", senza scritte sopra, per questo tempo dall'avvio.
-const HERO_TEXT_INITIAL_DELAY = 1500
+// I testi entrano poco prima che il video riparta dall'inizio: questo e' il
+// margine di anticipo rispetto alla fine del loop.
+const HERO_TEXT_LEAD_BEFORE_LOOP = 900
+// Se la durata del video non e' nota, il video resta "pulito" per questo tempo.
+const HERO_TEXT_INITIAL_DELAY = 3000
 // Se il video non parte (autoplay bloccato, errore, connessione lenta) i testi
 // devono comparire lo stesso.
-const HERO_TEXT_FALLBACK_DELAY = 2000
+const HERO_TEXT_FALLBACK_DELAY = 3500
+// Ritardo minimo, per non far comparire i testi subito su video molto corti.
+const HERO_TEXT_MIN_DELAY = 1500
 // Entrata sfalsata: titolo -> sottotitolo -> CTA -> trust row.
 const HERO_SUBTITLE_DELAY = 220
 const HERO_CTA_DELAY = 420
@@ -24,12 +29,16 @@ export default function Hero() {
 
   // State for video ready and text visibility
   const [videoReady, setVideoReady] = useState(false)
+  const [videoDuration, setVideoDuration] = useState<number | null>(null)
   const [showText, setShowText] = useState(false)
   const [isMuted, setIsMuted] = useState(true)
 
   // Handle video ready callback
-  const handleVideoReady = () => {
+  const handleVideoReady = (durationSeconds?: number) => {
     setVideoReady(true)
+    if (durationSeconds && durationSeconds > 0) {
+      setVideoDuration(durationSeconds)
+    }
   }
 
   // Handle audio toggle
@@ -56,12 +65,17 @@ export default function Hero() {
 
   // Delay text appearance after video is ready
   useEffect(() => {
-    const timer = setTimeout(
-      () => setShowText(true),
-      videoReady ? HERO_TEXT_INITIAL_DELAY : HERO_TEXT_FALLBACK_DELAY,
-    )
+    const delay = !videoReady
+      ? HERO_TEXT_FALLBACK_DELAY
+      : videoDuration
+        ? Math.max(
+            videoDuration * 1000 - HERO_TEXT_LEAD_BEFORE_LOOP,
+            HERO_TEXT_MIN_DELAY,
+          )
+        : HERO_TEXT_INITIAL_DELAY
+    const timer = setTimeout(() => setShowText(true), delay)
     return () => clearTimeout(timer)
-  }, [videoReady])
+  }, [videoReady, videoDuration])
 
   return (
     <section

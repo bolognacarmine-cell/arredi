@@ -26,7 +26,8 @@ type Props = {
 
   priority?: boolean // true = carica SUBITO (per hero above the fold), false = lazy con IO
 
-  onVideoReady?: () => void // Callback when video is ready and playing
+  /** Chiamata quando il video e' pronto/in riproduzione, con la durata in secondi se nota. */
+  onVideoReady?: (durationSeconds?: number) => void
 
   isMuted?: boolean // Controlled muted state from parent
 }
@@ -130,13 +131,12 @@ export default function HeroBackgroundVideo({
     const v = videoRef.current
     if (!v) return
 
-    const handleCanPlay = () => {
-      onVideoReady()
+    const notify = () => {
+      onVideoReady(Number.isFinite(v.duration) ? v.duration : undefined)
     }
 
-    const handlePlaying = () => {
-      onVideoReady()
-    }
+    const handleCanPlay = notify
+    const handlePlaying = notify
 
     v.addEventListener('canplay', handleCanPlay)
     v.addEventListener('playing', handlePlaying)
