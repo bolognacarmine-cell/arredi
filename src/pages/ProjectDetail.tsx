@@ -58,11 +58,12 @@ export default function ProjectDetail() {
         </div>
 
         {/* Carosello Gallery */}
-        <div className="mb-14">
+        <div className="mb-14 mx-auto w-full max-w-[1040px]">
           <ImageCarousel
             images={uniqueGallery.length > 0 ? uniqueGallery : [FALLBACK_IMAGE]}
             alt={project.title}
-            aspectClass="aspect-[16/9]"
+            aspectClass="aspect-[16/10]"
+            maxHeightClass="max-h-[65vh]"
             fallbackSrc={FALLBACK_IMAGE}
           />
         </div>

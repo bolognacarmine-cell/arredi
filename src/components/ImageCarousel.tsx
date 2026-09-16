@@ -8,6 +8,8 @@ type Props = {
   overlay?: React.ReactNode
   /** Classe Tailwind per le proporzioni del viewport. */
   aspectClass?: string
+  /** Classe Tailwind per limitare l'altezza del viewport (es. "max-h-[65vh]"). */
+  maxHeightClass?: string
   /** Immagine mostrata se una URL non si carica. */
   fallbackSrc?: string
   /**
@@ -30,6 +32,7 @@ export default function ImageCarousel({
   alt,
   overlay,
   aspectClass = "aspect-[4/3]",
+  maxHeightClass = "",
   fallbackSrc,
   fit = "contain",
   autoPlay = true,
@@ -145,7 +148,7 @@ export default function ImageCarousel({
         onPointerMove={onPointerMove}
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
-        className={`group relative ${aspectClass} w-full overflow-hidden border border-[#DDD9D0] bg-white select-none touch-pan-y focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4332]/40 ${
+        className={`group relative ${aspectClass} ${maxHeightClass} w-full overflow-hidden border border-[#DDD9D0] bg-white select-none touch-pan-y focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4332]/40 ${
           count > 1 ? (dragging ? "cursor-grabbing" : "cursor-grab") : ""
         }`}
       >

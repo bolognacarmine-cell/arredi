@@ -137,6 +137,7 @@ export default function ShowroomDetail() {
           <ImageCarousel
             images={p.images}
             alt={p.name}
+            maxHeightClass="max-h-[60vh]"
             overlay={
               eff?.badge ? (
                 <span
