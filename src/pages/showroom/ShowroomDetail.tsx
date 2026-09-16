@@ -6,6 +6,7 @@ import {
   getOffers,
   getProductBySlug,
   offerBadge,
+  offersForProduct,
   type Offer,
   type Product,
 } from "../../services/showroomApi"
@@ -57,19 +58,10 @@ export default function ShowroomDetail() {
     [product, offers],
   )
 
-  const linkedOffers = useMemo(() => {
-    if (!product) return []
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const t = today.getTime()
-    return Array.isArray(offers) ? offers.filter((o) => {
-      if (!o.active) return false
-      if (!o.productIds.includes(product.id)) return false
-      const s = new Date(o.startDate).getTime()
-      const e = new Date(o.endDate + "T23:59:59").getTime()
-      return t >= s && t <= e
-    }) : []
-  }, [offers, product])
+  const linkedOffers = useMemo(
+    () => (product ? offersForProduct(product.id, offers) : []),
+    [offers, product],
+  )
 
   if (product === undefined) {
     return (
@@ -233,6 +225,14 @@ export default function ShowroomDetail() {
                         <div className="text-xs text-[#4A4A46] mt-0.5 line-clamp-2">
                           {o.description}
                         </div>
+                        <div className="flex flex-wrap items-center gap-2 mt-2">
+                          <span className="text-[10px] uppercase tracking-wider font-medium px-2 py-0.5 bg-[#EAE7E0] text-[#4A4A46]">
+                            {displaySector(o.activitySector, o.activitySectorOther)}
+                          </span>
+                          <span className="text-[10px] text-[#888580]">
+                            {displayFurnitureType(o.furnitureType, o.furnitureTypeOther)}
+                          </span>
+                        </div>
                         <div className="text-[11px] text-[#888580] mt-1.5">
                           Valida dal {itDate(o.startDate)} al {itDate(o.endDate)}
                         </div>
@@ -240,6 +240,12 @@ export default function ShowroomDetail() {
                     </div>
                   </div>
                 ))}
+                <Link
+                  to="/showroom/offerte"
+                  className="inline-flex text-xs font-medium text-[#B5965A] hover:text-[#9A7F48] transition-colors"
+                >
+                  Vedi tutte le offerte attive →
+                </Link>
               </div>
             )}
 

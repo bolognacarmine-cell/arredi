@@ -396,6 +396,25 @@ export async function deleteOffer(id: string): Promise<boolean> {
   return true
 }
 
+export function isOfferRunning(o: Offer, at = new Date()): boolean {
+  if (!o.active) return false
+  const t = new Date(at.getFullYear(), at.getMonth(), at.getDate()).getTime()
+  const start = new Date(o.startDate).getTime()
+  const end = new Date(o.endDate + "T23:59:59").getTime()
+  return t >= start && t <= end
+}
+
+export function offersForProduct(
+  productId: string,
+  offers: Offer[],
+  at = new Date(),
+): Offer[] {
+  if (!Array.isArray(offers)) return []
+  return offers.filter(
+    (o) => isOfferRunning(o, at) && o.productIds.includes(productId),
+  )
+}
+
 export interface EffectivePrice {
   finalPrice: number
   savings: number

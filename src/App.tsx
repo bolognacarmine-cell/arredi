@@ -31,6 +31,7 @@ import {
 import {
   PublicShowroomList,
   PublicShowroomDetail,
+  PublicShowroomOffers,
 } from "./routes/publicShowroomRoutes";
 import { AdminAuthProvider } from "./hooks/useAdminAuth";
 
@@ -48,6 +49,7 @@ export default function App() {
           <Route path="/progetti" element={<Projects />} />
           <Route path="/progetti/:id" element={<ProjectDetail />} />
           <Route path="/showroom" element={<PublicShowroomList />} />
+          <Route path="/showroom/offerte" element={<PublicShowroomOffers />} />
           <Route path="/showroom/:slug" element={<PublicShowroomDetail />} />
           <Route path="/preventivo" element={<Quote />} />
           <Route path="/chi-siamo" element={<About />} />

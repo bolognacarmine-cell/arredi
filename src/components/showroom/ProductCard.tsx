@@ -1,7 +1,7 @@
 // Card prodotto per lista pubblica showroom (activitySector + campi Other)
 import { Link } from "react-router-dom"
 import type { Product, Offer } from "../../services/showroomApi"
-import { computeEffectivePrice } from "../../services/showroomApi"
+import { computeEffectivePrice, offersForProduct } from "../../services/showroomApi"
 import { displaySector, displayFurnitureType } from "../../types/showroom"
 
 interface Props {
@@ -18,6 +18,7 @@ const eur = (n: number) =>
 
 export default function ProductCard({ product, offers }: Props) {
   const eff = computeEffectivePrice(product, offers)
+  const linkedOffers = offersForProduct(product.id, offers)
   const sectorLabel = displaySector(product.activitySector, product.activitySectorOther)
   const furnitureLabel = displayFurnitureType(product.furnitureType, product.furnitureTypeOther)
 
@@ -45,6 +46,13 @@ export default function ProductCard({ product, offers }: Props) {
               style={{ background: product.discountPct ? "#B5965A" : "#1B4332" }}
             >
               {eff.badge}
+            </span>
+          </div>
+        )}
+        {linkedOffers.length > 0 && (
+          <div className="absolute top-3 right-3">
+            <span className="px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider font-semibold text-white bg-[#1B4332] shadow-md">
+              In offerta
             </span>
           </div>
         )}

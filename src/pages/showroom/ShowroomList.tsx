@@ -1,5 +1,6 @@
 // Pagina pubblica: lista prodotti showroom
 import { useEffect, useMemo, useState } from "react"
+import { Link } from "react-router-dom"
 import ProductCard from "../../components/showroom/ProductCard"
 import ProductFilters, {
   defaultPublicFilters,
@@ -7,6 +8,8 @@ import ProductFilters, {
 } from "../../components/showroom/ProductFilters"
 import {
   computeEffectivePrice,
+  isOfferRunning,
+  offersForProduct,
   getOffers,
   getProducts,
   type Offer,
@@ -41,7 +44,7 @@ export default function ShowroomList() {
       if (filters.furniture !== "all" && p.furnitureType !== filters.furniture) return false
       if (filters.onlyOffers) {
         const eff = computeEffectivePrice(p, offers)
-        if (eff.savings <= 0) return false
+        if (eff.savings <= 0 && offersForProduct(p.id, offers).length === 0) return false
       }
       return true
     })
@@ -64,6 +67,14 @@ export default function ShowroomList() {
             Una selezione curata di arredi realizzati su misura per barberie, parrucchieri,
             uffici, scuole e attività speciali. Qualità artigianale e design italiano.
           </p>
+          {offers.some((o) => isOfferRunning(o)) && (
+            <Link
+              to="/showroom/offerte"
+              className="mt-6 inline-flex items-center gap-2 text-sm font-medium px-6 py-2.5 bg-[#B5965A] text-white hover:bg-[#9d8049] transition-colors"
+            >
+              🏷️ Vedi le offerte attive
+            </Link>
+          )}
         </div>
 
         <ProductFilters
