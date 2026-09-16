@@ -349,7 +349,7 @@ function read<T>(k: string, fb: T): T {
     return fb
   }
 }
-function write<T>(k: string, v: T) {
+export function write<T>(k: string, v: T) {
   try {
     window.localStorage.setItem(k, JSON.stringify(v))
     window.dispatchEvent(
@@ -568,6 +568,7 @@ export function useProducts(): Product[] {
   const [val, setVal] = useState<Product[]>(() =>
     typeof window !== "undefined" ? read<Product[]>(P_KEY, seedProducts) : seedProducts,
   )
+
   useEffect(() => {
     const cb = () => setVal(read<Product[]>(P_KEY, seedProducts))
     window.addEventListener?.("farcom-showroom2-updated", cb)
@@ -577,6 +578,7 @@ export function useProducts(): Product[] {
       window.removeEventListener?.("storage", cb)
     }
   }, [])
+
   return val
 }
 export function useOffers(): Offer[] {

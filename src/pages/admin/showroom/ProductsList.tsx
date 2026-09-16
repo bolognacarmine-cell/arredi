@@ -1,5 +1,5 @@
 // Pagina admin: lista prodotti showroom con CRUD
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 import ProductForm from "./ProductForm"
 import ProductTable from "../../../components/admin/showroom/ProductTable"
 import ProductFilters, {
@@ -13,6 +13,7 @@ import {
   useOffers,
   useProducts,
   computeEffectivePrice,
+  getProducts,
 } from "../../../services/showroomApi"
 import type { Product } from "../../../types/showroom"
 
@@ -24,6 +25,31 @@ export default function ProductsList() {
   const [creating, setCreating] = useState(false)
   const [busy, setBusy] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
+  const [refreshKey, setRefreshKey] = useState(0)
+
+  // Force refresh after CRUD operations
+  useEffect(() => {
+    const refreshProducts = async () => {
+      try {
+        const products = await getProducts()
+        if (Array.isArray(products)) {
+          try {
+            window.localStorage.setItem("farcom-showroom-products-v2", JSON.stringify(products))
+            window.dispatchEvent(new CustomEvent("farcom-showroom2-updated", { detail: { k: "farcom-showroom-products-v2" } }))
+          } catch (e) {
+            console.error("Error updating localStorage:", e)
+          }
+        }
+      } catch (error) {
+        console.error("Error refreshing products:", error)
+      }
+    }
+
+    if (refreshKey > 0) {
+      refreshProducts()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshKey])
 
   const showToast = (msg: string) => {
     setToast(msg)
@@ -62,6 +88,8 @@ export default function ProductsList() {
       }
       setEditing(null)
       setCreating(false)
+      // Trigger refresh
+      setRefreshKey(prev => prev + 1)
     } finally {
       setBusy(false)
     }
@@ -72,6 +100,8 @@ export default function ProductsList() {
     setBusy(true)
     try {
       await deleteProduct(p.id)
+      // Trigger refresh
+      setRefreshKey(prev => prev + 1)
       showToast("Prodotto eliminato")
     } finally {
       setBusy(false)
