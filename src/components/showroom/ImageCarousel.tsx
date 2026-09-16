@@ -10,6 +10,8 @@ type Props = {
 
 // Oltre questa distanza (in px) il drag cambia slide invece di tornare indietro.
 const SWIPE_THRESHOLD = 50
+// Sotto questa distanza il gesto resta un click: il drag non parte.
+const DRAG_START_SLOP = 8
 
 export default function ImageCarousel({ images, alt, overlay }: Props) {
   const list = Array.isArray(images) ? images.filter(Boolean) : []
@@ -45,23 +47,32 @@ export default function ImageCarousel({ images, alt, overlay }: Props) {
   }, [index])
 
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
-    if (count < 2 || e.pointerType === "mouse" && e.button !== 0) return
+    if (count < 2 || (e.pointerType === "mouse" && e.button !== 0)) return
+    // Frecce e indicatori vivono dentro il viewport: catturare il pointer qui
+    // dirotterebbe il loro click sul contenitore.
+    if ((e.target as HTMLElement).closest("button")) return
     pointerStart.current = { x: e.clientX, y: e.clientY }
-    setDragging(true)
-    e.currentTarget.setPointerCapture(e.pointerId)
   }
 
   const onPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
     const start = pointerStart.current
-    if (!start || !dragging) return
+    if (!start) return
     const dx = e.clientX - start.x
+    if (!dragging) {
+      if (Math.abs(dx) < DRAG_START_SLOP) return
+      setDragging(true)
+      e.currentTarget.setPointerCapture(e.pointerId)
+    }
     // Resistenza ai bordi: nessun loop visivo durante il drag.
     const atEdge = (index === 0 && dx > 0) || (index === count - 1 && dx < 0)
     setDrag(atEdge ? dx * 0.3 : dx)
   }
 
   const endDrag = (e: ReactPointerEvent<HTMLDivElement>) => {
-    if (!dragging) return
+    if (!dragging) {
+      pointerStart.current = null
+      return
+    }
     if (e.currentTarget.hasPointerCapture(e.pointerId)) {
       e.currentTarget.releasePointerCapture(e.pointerId)
     }
@@ -140,7 +151,7 @@ export default function ImageCarousel({ images, alt, overlay }: Props) {
               type="button"
               aria-label="Immagine precedente"
               onClick={prev}
-              className="absolute left-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-xl text-[#1A1A18] shadow-lg backdrop-blur-sm transition-all duration-200 hover:bg-white hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4332] md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
+              className="absolute left-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-xl text-[#1A1A18] shadow-lg backdrop-blur-sm transition-all duration-200 hover:bg-white hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4332]"
             >
               ‹
             </button>
@@ -148,7 +159,7 @@ export default function ImageCarousel({ images, alt, overlay }: Props) {
               type="button"
               aria-label="Immagine successiva"
               onClick={next}
-              className="absolute right-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-xl text-[#1A1A18] shadow-lg backdrop-blur-sm transition-all duration-200 hover:bg-white hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4332] md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
+              className="absolute right-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-xl text-[#1A1A18] shadow-lg backdrop-blur-sm transition-all duration-200 hover:bg-white hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4332]"
             >
               ›
             </button>
