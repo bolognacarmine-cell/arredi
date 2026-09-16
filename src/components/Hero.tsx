@@ -109,6 +109,7 @@ export default function Hero() {
         priority={true}
         onVideoReady={handleVideoReady}
         isMuted={isMuted}
+        framed
       />
 
       {/* Overlay + glow animato (no-layout, solo transform/opacity) */}

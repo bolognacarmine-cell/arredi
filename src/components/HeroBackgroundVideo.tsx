@@ -30,6 +30,9 @@ type Props = {
   onVideoReady?: (durationSeconds?: number) => void
 
   isMuted?: boolean // Controlled muted state from parent
+
+  /** Se true il video non riempie tutto lo schermo ma resta in una cornice interna. */
+  framed?: boolean
 }
 
 /**
@@ -55,6 +58,8 @@ export default function HeroBackgroundVideo({
   onVideoReady,
 
   isMuted = true,
+
+  framed = false,
 }: Props) {
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -239,7 +244,11 @@ export default function HeroBackgroundVideo({
   return (
     <div
       ref={containerRef}
-      className={`${className} absolute inset-0 overflow-hidden bg-black`}
+      className={`${className} absolute overflow-hidden bg-black ${
+        framed
+          ? "inset-2 sm:inset-3 rounded-xl ring-1 ring-white/10"
+          : "inset-0"
+      }`}
     >
       {/* Fallback IMG se nessun video è supportato o errore MP4 */}
       <img
