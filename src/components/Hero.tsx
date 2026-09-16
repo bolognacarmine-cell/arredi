@@ -7,8 +7,11 @@ import { useInViewOnce } from "../hooks/useInViewOnce"
 import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion"
 
 // Configurable delay constants (in milliseconds)
-const HERO_TEXT_INITIAL_DELAY = 3000 // 3 seconds after video is ready
+const HERO_TEXT_INITIAL_DELAY = 450 // dopo l'avvio del video
 const HERO_RIGHT_TEXT_DELAY = 200 // 200ms after left text starts
+// Se il video non parte (autoplay bloccato, errore, connessione lenta) i testi
+// devono comparire lo stesso.
+const HERO_TEXT_FALLBACK_DELAY = 1200
 
 export default function Hero() {
   // Above-the-fold: consideriamo l’hero “in view” subito per non dipendere da IO.
@@ -49,12 +52,16 @@ export default function Hero() {
 
   // Delay text appearance after video is ready
   useEffect(() => {
-    if (!videoReady) return
-    const timer = setTimeout(() => {
+    if (reducedMotion) {
       setShowText(true)
-    }, HERO_TEXT_INITIAL_DELAY)
+      return
+    }
+    const timer = setTimeout(
+      () => setShowText(true),
+      videoReady ? HERO_TEXT_INITIAL_DELAY : HERO_TEXT_FALLBACK_DELAY,
+    )
     return () => clearTimeout(timer)
-  }, [videoReady])
+  }, [videoReady, reducedMotion])
 
   return (
     <section
@@ -64,7 +71,7 @@ export default function Hero() {
       style={{ paddingTop: "env(safe-area-inset-top)" }}
     >
       {/* Grid di progettazione (molto sottile) */}
-      <div className="absolute inset-0 opacity-[0.06] pointer-events-none">
+      <div className="absolute inset-0 opacity-[0.035] pointer-events-none">
         <div
           className="absolute inset-0"
           style={{
@@ -95,7 +102,7 @@ export default function Hero() {
         className="pointer-events-none absolute inset-0 z-[1]"
         style={{
           background:
-            "linear-gradient(135deg, rgba(26,26,46,0.55) 0%, rgba(26,26,46,0.25) 45%, rgba(26,26,46,0.60) 100%)",
+            "linear-gradient(135deg, rgba(26,26,46,0.42) 0%, rgba(26,26,46,0.12) 45%, rgba(26,26,46,0.48) 100%)",
         }}
       />
       {/* Overlay selettivo su mobile solo dietro il testo */}
@@ -103,7 +110,7 @@ export default function Hero() {
         className="pointer-events-none absolute inset-0 z-[1] lg:hidden"
         style={{
           background:
-            "linear-gradient(to bottom, rgba(26,26,46,0.75) 0%, rgba(26,26,46,0.50) 50%, rgba(26,26,46,0.30) 100%)",
+            "linear-gradient(to bottom, rgba(26,26,46,0.62) 0%, rgba(26,26,46,0.34) 50%, rgba(26,26,46,0.18) 100%)",
         }}
       />
       <div
@@ -111,7 +118,7 @@ export default function Hero() {
         className="pointer-events-none absolute -inset-24 z-[2] blur-3xl"
         style={{
           background:
-            "radial-gradient(closest-side, rgba(230,145,56,0.22), transparent 62%), radial-gradient(closest-side, rgba(212,172,92,0.16), transparent 55%)",
+            "radial-gradient(closest-side, rgba(230,145,56,0.12), transparent 62%), radial-gradient(closest-side, rgba(212,172,92,0.08), transparent 55%)",
           animation: reducedMotion ? undefined : "heroGlowDrift 8s ease-in-out infinite",
         }}
       />

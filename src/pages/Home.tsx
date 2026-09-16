@@ -8,6 +8,7 @@ import { useProjects } from "../projectStore"
 import Hero from "../components/Hero"
 import ReviewsSection from "../components/ReviewsSection"
 import ProductCard from "../components/showroom/ProductCard"
+import Reveal from "../components/Reveal"
 import { getProducts, type Product } from "../services/showroomApi"
 import { resolveImageUrl } from "../lib/cloudinary"
 
@@ -306,7 +307,7 @@ export default function Home() {
       </section>
 
       {/* SECTORS */}
-      <section id="settori" className="py-8 sm:py-10 md:py-12 lg:py-16 xl:py-20 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 relative bg-white" data-bg="#FFFFFF">
+      <section id="settori" className="py-12 sm:py-16 md:py-20 lg:py-24 xl:py-28 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 relative bg-white" data-bg="#FFFFFF">
         {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 
@@ -363,7 +364,7 @@ export default function Home() {
 
       {/* SHOWROOM: nascosto finche' non c'e' almeno un prodotto attivo */}
       {showroomProducts.length > 0 && (
-        <section id="showroom" className="py-8 sm:py-10 md:py-12 lg:py-16 xl:py-20 bg-[#FAFAF7] relative" data-bg="#FAFAF7">
+        <section id="showroom" className="py-12 sm:py-16 md:py-20 lg:py-24 xl:py-28 bg-[#FAFAF7] relative" data-bg="#FAFAF7">
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 
           <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16">
@@ -385,18 +386,18 @@ export default function Home() {
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
+            <Reveal delay={80} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
               {showroomProducts.map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}
-            </div>
+            </Reveal>
           </div>
         </section>
       )}
 
       {/* FEATURED PROJECTS: nascosto se non ci sono progetti da mostrare */}
       {safeDisplayedProjects.length > 0 && (
-      <section id="progetti" className="py-8 sm:py-10 md:py-12 lg:py-16 xl:py-20 bg-[#1A1A2E] relative" data-bg="#1A1A2E">
+      <section id="progetti" className="py-12 sm:py-16 md:py-20 lg:py-24 xl:py-28 bg-[#1A1A2E] relative" data-bg="#1A1A2E">
         {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 
@@ -491,18 +492,18 @@ export default function Home() {
       <ReviewsSection />
 
       {/* SERVICES */}
-      <section id="servizi" className="py-8 sm:py-10 md:py-12 lg:py-16 xl:py-20 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 relative bg-white" data-bg="#FFFFFF">
+      <section id="servizi" className="py-12 sm:py-16 md:py-20 lg:py-24 xl:py-28 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 relative bg-white" data-bg="#FFFFFF">
         {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 
-        <div className="text-center mb-5 sm:mb-6 md:mb-8 lg:mb-10">
+        <Reveal className="text-center mb-5 sm:mb-6 md:mb-8 lg:mb-10">
           <span className="text-[#6B7280] text-[10px] sm:text-[11px] md:text-xs tracking-[0.16em] sm:tracking-[0.18em] md:tracking-[0.2em] uppercase font-semibold">
             Come lavoriamo
           </span>
           <h2 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-[#1A1A2E] mt-1.5 sm:mt-2 leading-[1.15] sm:leading-tight text-balance">
             Il nostro processo
           </h2>
-        </div>
+        </Reveal>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
           {services.map((svc, i) => (
@@ -533,19 +534,19 @@ export default function Home() {
       </section>
 
       {/* WHY US */}
-      <section className="py-8 sm:py-10 md:py-12 lg:py-16 xl:py-20 bg-[#1A1A2E] relative" data-bg="#1A1A2E">
+      <section className="py-12 sm:py-16 md:py-20 lg:py-24 xl:py-28 bg-[#1A1A2E] relative" data-bg="#1A1A2E">
         {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 
         <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16">
-          <div className="text-center mb-5 sm:mb-6 md:mb-8 lg:mb-10">
+          <Reveal className="text-center mb-5 sm:mb-6 md:mb-8 lg:mb-10">
             <span className="text-[#E69138] text-[10px] sm:text-[11px] md:text-xs tracking-[0.16em] sm:tracking-[0.18em] md:tracking-[0.2em] uppercase font-semibold">
               Perché sceglierci
             </span>
             <h2 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mt-1.5 sm:mt-2 leading-[1.15] sm:leading-tight text-balance">
               La differenza artigianale
             </h2>
-          </div>
+          </Reveal>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
             {whys.map((w, index) => (
               <div
@@ -569,7 +570,7 @@ export default function Home() {
       </section>
 
       {/* STATS BAND */}
-      <section className="py-8 sm:py-10 md:py-12 lg:py-16 xl:py-20 bg-white relative" data-bg="#FFFFFF">
+      <section className="py-12 sm:py-16 md:py-20 lg:py-24 xl:py-28 bg-white relative" data-bg="#FFFFFF">
         {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 
@@ -601,17 +602,17 @@ export default function Home() {
       </section>
 
       {/* CTA BAND */}
-      <section className="py-8 sm:py-10 md:py-12 lg:py-16 xl:py-20 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 sm:gap-5 md:gap-6 lg:gap-8 relative bg-white" data-bg="#FFFFFF">
+      <section className="py-12 sm:py-16 md:py-20 lg:py-24 xl:py-28 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 sm:gap-5 md:gap-6 lg:gap-8 relative bg-white" data-bg="#FFFFFF">
         {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 
-        <div className="w-full lg:w-auto">
+        <Reveal className="w-full lg:w-auto">
           <h2 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-[#1A1A2E] max-w-xl leading-[1.15] sm:leading-tight">
             Hai un'idea per il tuo spazio?
             <br />
             <span className="text-[#E69138]">Parliamone.</span>
           </h2>
-        </div>
+        </Reveal>
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 md:gap-4 w-full sm:w-auto">
           <Link
             to="/preventivo"
