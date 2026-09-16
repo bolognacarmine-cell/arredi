@@ -187,7 +187,42 @@ Added comprehensive, retro-compatible input validation across all CRUD routes:
 
 ---
 
-### 8. Environment Variables and Secrets Audit
+### 8. Email Notification System for Quotes
+**Files:** `server/utils/email.ts`, `server/routes/quotes.ts`, `server/routes/siteConfig.ts`, `src/pages/admin/AdminSettings.tsx`
+
+Implemented automatic email notifications for quote submissions:
+
+**Email Utility (`server/utils/email.ts`):**
+- Created reusable email sending function using nodemailer
+- SMTP configuration loaded from database (SiteConfig collection)
+- Graceful degradation - emails are optional and non-blocking
+- Security: SMTP passwords marked as sensitive (write-only)
+- TLS/SSL support based on port configuration
+
+**Quote Notifications (`server/routes/quotes.ts`):**
+- Automatically sends two emails when quote is submitted:
+  - Detailed quote to farcomsrl@hotmail.com
+  - Owner notification to configured address (or fallback)
+- Email sending happens in background (non-blocking)
+- Quote is saved regardless of email success/failure
+- Comprehensive error logging for debugging
+
+**Admin Panel (`src/pages/admin/AdminSettings.tsx`):**
+- Email configuration tab with SMTP settings form
+- Load/save SMTP configuration via API
+- Test email functionality for configuration verification
+- Security: Passwords never loaded from server (write-only)
+
+**API Endpoints (`server/routes/siteConfig.ts`):**
+- GET /api/site-config/smtp - Load SMTP config (passwords masked)
+- POST /api/site-config/smtp - Save SMTP configuration
+- POST /api/site-config/test-email - Send test email
+
+**Impact:** None - Email notifications are optional and non-blocking. System functions perfectly without SMTP configuration.
+
+---
+
+### 10. Environment Variables and Secrets Audit
 **Verified:**
 - `.env` and `.server.env` are in `.gitignore` ✓
 - No hardcoded secrets found in server code (after removing the default password) ✓
@@ -205,30 +240,94 @@ Added comprehensive, retro-compatible input validation across all CRUD routes:
 
 ---
 
-## Final Pre-Delivery Hardening (Additional Measures)
+## Final Pre-Delivery Hardening Summary
 
-These measures complete the security hardening for pre-delivery by extending the initial implementation to cover all remaining routes and endpoints.
+This additional hardening completes the security measures by extending the initial implementation to cover all remaining routes and endpoints:
 
-### 5. HTTP Method Restrictions on All Routes
-**Files:** All route files in `server/routes/`
+### Additional Measures Implemented:
 
-Added explicit HTTP method validation to prevent method confusion attacks and ensure each endpoint only accepts its intended HTTP method. This prevents potential security issues where malicious actors might try to use unexpected methods to bypass security controls.
+1. **HTTP Method Restrictions on All Routes** - Extended method validation to cover all API endpoints in media, quotes, siteConfig, and blog routes, preventing method confusion attacks.
 
-### 6. Admin Authentication on Site Config Routes
-**File:** `server/routes/siteConfig.ts`
+2. **Admin Authentication on Site Config Routes** - Fixed a security gap where site configuration creation and modification endpoints were not protected by admin authentication.
 
-Fixed a security gap where site configuration creation and modification endpoints were not protected by admin authentication. Now only authenticated admin users can modify site configuration.
+3. **Comprehensive Input Validation** - Extended input validation to cover:
+   - Blog posts (title, content, excerpt length limits)
+   - Media items (title, category, URL length limits)  
+   - Quotes public form (name, email, message, phone validation)
+   - Site configuration (name, value length limits)
 
-### 7. Comprehensive Input Validation Across All CRUD Operations
-**Files:** All route files in `server/routes/`
+### Files Modified in Final Hardening:
+- `server/routes/media.ts` - HTTP method restrictions, input validation
+- `server/routes/quotes.ts` - HTTP method restrictions, input validation on public endpoint
+- `server/routes/siteConfig.ts` - HTTP method restrictions, admin authentication, input validation
+- `server/routes/blog.ts` - Input validation on POST/PUT operations
+- `SECURITY.md` - Updated with final hardening report
 
-Extended input validation beyond the initial implementation to cover:
-- Blog posts (title, content, excerpt length limits)
-- Media items (title, category, URL length limits)
-- Quotes public form (name, email, message, phone validation)
-- Site configuration (name, value length limits)
+All changes maintain 100% backward compatibility while significantly improving security posture.
 
-All validations are conservative and designed to reject only obviously invalid input while maintaining backward compatibility.
+---
+
+## Email Notification System for Quotes
+
+### Overview
+The system includes automatic email notifications when quotes are submitted through the public form. This feature is designed to be non-blocking and secure.
+
+### SMTP Configuration
+Email notifications require SMTP configuration to be set up in the admin panel under Settings > Email.
+
+**Required SMTP Configuration Fields:**
+- `smtpHost` - SMTP server hostname (e.g., smtp.gmail.com)
+- `smtpPort` - SMTP server port (typically 587 for TLS, 465 for SSL)
+- `smtpUsername` - SMTP authentication username
+- `smtpPassword` - SMTP authentication password (stored securely, write-only)
+- `smtpFrom` - From email address for sent emails
+- `smtpFromName` - From name for sent emails (e.g., "Farcom Arredi")
+
+**Optional Configuration Fields:**
+- `quoteNotificationEmail` - Email address for owner notifications (defaults to farcomsrl@hotmail.com if not set)
+
+### Email Notification Behavior
+When a quote is submitted via the public form:
+
+1. **Quote is saved to database** - This happens regardless of email configuration
+2. **Email notifications are sent in background** - Non-blocking, doesn't affect user experience
+3. **Two emails are sent:**
+   - **Detailed quote email** to `farcomsrl@hotmail.com` with full quote details
+   - **Owner notification email** to configured address (or fallback to farcomsrl@hotmail.com)
+
+### Security Considerations
+- **SMTP passwords are write-only** - Never exposed to frontend, marked as sensitive in database
+- **Non-blocking email sending** - Quote submission succeeds even if email fails
+- **Graceful degradation** - System functions without SMTP configuration (emails simply aren't sent)
+- **Error logging** - Email failures are logged server-side for debugging
+- **TLS/SSL support** - Secure connections based on port configuration
+
+### Email Content
+**Detailed email to farcomsrl@hotmail.com:**
+- Subject: "Nuovo preventivo da {nome cognome}"
+- Content: Full quote details including customer information, project details, and message
+- Format: Both plain text and HTML versions
+
+**Owner notification email:**
+- Subject: "Avviso preventivo"
+- Content: "Nuovo preventivo inviato. Controlla farcomsrl@hotmail.com"
+- Purpose: Quick alert to check the detailed email
+
+### Error Handling
+- If SMTP configuration is incomplete, emails are not sent but quote is still saved
+- Email sending failures are logged with `[Email]` prefix
+- No user-facing errors for email failures (graceful degradation)
+- Test email functionality available in admin panel for configuration verification
+
+### Configuration Management
+- SMTP settings are managed via admin panel (Settings > Email tab)
+- Passwords are never loaded from server to frontend for security
+- Configuration is stored in SiteConfig collection with sensitive field marking
+- Test email feature allows verification of SMTP configuration
+
+### Dependencies
+- `nodemailer` - Email sending library
+- `smtpUsername` and `smtpPassword` fields marked as sensitive (write-only)
 
 ---
 
@@ -369,6 +468,7 @@ If any issues arise, the changes can be easily reverted:
 4. **HTTP method restrictions:** Remove method validation blocks from all route files (sections 5)
 5. **Admin authentication on site config:** Remove `requireAdmin` from POST/PUT in `server/routes/siteConfig.ts` (section 6)
 6. **Input validation:** Remove validation blocks from all route files (section 7)
+7. **Email notifications:** Remove email sending logic from `server/routes/quotes.ts` and remove `server/utils/email.ts`
 
 All changes are localized and non-invasive, making rollback straightforward.
 
@@ -387,6 +487,11 @@ The security improvements are committed with the following messages:
 7. `feat(security): add comprehensive input validation across all CRUD operations`
 8. `fix(security): add missing admin authentication to site config routes`
 9. `docs(security): update SECURITY.md with final pre-delivery hardening report`
+10. `feat(email): add SMTP configuration and email notifications for quotes`
+11. `feat(email): add nodemailer dependency and email utility functions`
+12. `feat(email): integrate email notifications into quote submission flow`
+13. `feat(email): add admin panel SMTP configuration interface`
+14. `docs(email): document email notification system in SECURITY.md`
 
 ---
 

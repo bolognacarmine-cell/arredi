@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   defaultSiteSettings,
   fallbackSiteSettings,
@@ -137,6 +137,229 @@ const generalFields = [
 }>
 
 type SettingsTab = "generali" | "seo" | "email" | "sicurezza" | "backup" | "utenti"
+
+// Email Settings Tab Component
+function EmailSettingsTab() {
+  const [smtpConfig, setSmtpConfig] = useState({
+    smtpHost: '',
+    smtpPort: '',
+    smtpUsername: '',
+    smtpPassword: '',
+    smtpFrom: '',
+    smtpFromName: '',
+    quoteNotificationEmail: ''
+  })
+  const [loading, setLoading] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [error, setError] = useState('')
+
+  // Load existing SMTP configuration on mount
+  useEffect(() => {
+    async function loadSmtpConfig() {
+      try {
+        const response = await fetch('/api/site-config/smtp')
+        if (response.ok) {
+          const config = await response.json()
+          setSmtpConfig({
+            smtpHost: config.smtpHost || '',
+            smtpPort: config.smtpPort || '',
+            smtpUsername: config.smtpUsername || '',
+            smtpPassword: '', // Never load password from server for security
+            smtpFrom: config.smtpFrom || '',
+            smtpFromName: config.smtpFromName || '',
+            quoteNotificationEmail: config.quoteNotificationEmail || ''
+          })
+        }
+      } catch (err) {
+        console.error('Failed to load SMTP configuration:', err)
+      }
+    }
+    loadSmtpConfig()
+  }, [])
+
+  const updateSmtpField = (key: keyof typeof smtpConfig, value: string) => {
+    setSmtpConfig(current => ({ ...current, [key]: value }))
+  }
+
+  const handleSaveSmtpConfig = async () => {
+    setLoading(true)
+    setError('')
+    
+    try {
+      const response = await fetch('/api/site-config/smtp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(smtpConfig),
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(errorText || 'Failed to save SMTP configuration')
+      }
+
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2000)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save SMTP configuration')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSendTestEmail = async () => {
+    setLoading(true)
+    setError('')
+    
+    try {
+      const response = await fetch('/api/site-config/test-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(errorText || 'Failed to send test email')
+      }
+
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2000)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to send test email')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="max-w-4xl space-y-6">
+      <div className="border border-[#DDD9D0] bg-[#F7F5F0] p-4 text-sm text-[#4A4A46]">
+        Configurazione invio email per notifiche preventivi e contatti. 
+        Le password SMTP vengono salvate in modo sicuro e non vengono mai mostrate nel frontend.
+      </div>
+      <div className="space-y-6 border border-[#DDD9D0] bg-white p-6">
+        <div>
+          <h2 className="font-display text-2xl font-light text-[#1A1A18]">
+            Configurazione SMTP
+          </h2>
+          <p className="mt-1 text-sm text-[#888580]">
+            Imposta il server SMTP per l'invio automatico delle email di notifica preventivi.
+          </p>
+        </div>
+        <div className="grid gap-5 md:grid-cols-2">
+          <div>
+            <label className="mb-1.5 block text-xs uppercase tracking-wide text-[#888580]">
+              Host SMTP
+            </label>
+            <input
+              type="text"
+              value={smtpConfig.smtpHost}
+              onChange={(e) => updateSmtpField('smtpHost', e.target.value)}
+              placeholder="smtp.example.com"
+              className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2.5 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-xs uppercase tracking-wide text-[#888580]">
+              Porta
+            </label>
+            <input
+              type="number"
+              value={smtpConfig.smtpPort}
+              onChange={(e) => updateSmtpField('smtpPort', e.target.value)}
+              placeholder="587"
+              className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2.5 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-xs uppercase tracking-wide text-[#888580]">
+              Username
+            </label>
+            <input
+              type="text"
+              value={smtpConfig.smtpUsername}
+              onChange={(e) => updateSmtpField('smtpUsername', e.target.value)}
+              placeholder="noreply@farcom.com"
+              className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2.5 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-xs uppercase tracking-wide text-[#888580]">
+              Password
+            </label>
+            <input
+              type="password"
+              value={smtpConfig.smtpPassword}
+              onChange={(e) => updateSmtpField('smtpPassword', e.target.value)}
+              placeholder="••••••••"
+              className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2.5 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-xs uppercase tracking-wide text-[#888580]">
+              Email mittente
+            </label>
+            <input
+              type="email"
+              value={smtpConfig.smtpFrom}
+              onChange={(e) => updateSmtpField('smtpFrom', e.target.value)}
+              placeholder="noreply@farcom.com"
+              className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2.5 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-xs uppercase tracking-wide text-[#888580]">
+              Nome mittente
+            </label>
+            <input
+              type="text"
+              value={smtpConfig.smtpFromName}
+              onChange={(e) => updateSmtpField('smtpFromName', e.target.value)}
+              placeholder="Farcom Arredi"
+              className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2.5 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
+            />
+          </div>
+          <div className="md:col-span-2">
+            <label className="mb-1.5 block text-xs uppercase tracking-wide text-[#888580]">
+              Email notifiche preventivi (opzionale)
+            </label>
+            <input
+              type="email"
+              value={smtpConfig.quoteNotificationEmail}
+              onChange={(e) => updateSmtpField('quoteNotificationEmail', e.target.value)}
+              placeholder="owner@farcom.com (lascia vuoto per usare farcomsrl@hotmail.com)"
+              className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2.5 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
+            />
+          </div>
+        </div>
+        <div className="flex gap-3 border-t border-[#EAE7E0] pt-4">
+          <button
+            onClick={handleSaveSmtpConfig}
+            disabled={loading}
+            className="bg-[#1B4332] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#143326] disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Salvataggio...' : saved ? '✓ Salvato' : 'Salva configurazione SMTP'}
+          </button>
+          <button
+            onClick={handleSendTestEmail}
+            disabled={loading}
+            className="border border-[#DDD9D0] px-6 py-2.5 text-sm font-medium text-[#1A1A18] transition-colors hover:border-[#1B4332] hover:text-[#1B4332] disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Invio in corso...' : 'Invia email di test'}
+          </button>
+        </div>
+        {error && (
+          <div className="text-sm text-red-600">
+            {error}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
 
 export default function AdminSettings() {
   const [activeTab, setActiveTab] = useState<SettingsTab>("generali")
@@ -377,71 +600,7 @@ export default function AdminSettings() {
       )}
 
       {activeTab === "email" && (
-        <div className="max-w-4xl space-y-6">
-          <div className="border border-[#DDD9D0] bg-[#F7F5F0] p-4 text-sm text-[#4A4A46]">
-            Configurazione invio email per notifiche preventivi e contatti.
-          </div>
-          <div className="space-y-6 border border-[#DDD9D0] bg-white p-6">
-            <div>
-              <h2 className="font-display text-2xl font-light text-[#1A1A18]">
-                Configurazione SMTP
-              </h2>
-              <p className="mt-1 text-sm text-[#888580]">
-                Imposta il server SMTP per l'invio automatico delle email.
-              </p>
-            </div>
-            <div className="grid gap-5 md:grid-cols-2">
-              <div>
-                <label className="mb-1.5 block text-xs uppercase tracking-wide text-[#888580]">
-                  Host SMTP
-                </label>
-                <input
-                  type="text"
-                  placeholder="smtp.example.com"
-                  className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2.5 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="mb-1.5 block text-xs uppercase tracking-wide text-[#888580]">
-                  Porta
-                </label>
-                <input
-                  type="number"
-                  placeholder="587"
-                  className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2.5 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="mb-1.5 block text-xs uppercase tracking-wide text-[#888580]">
-                  Username
-                </label>
-                <input
-                  type="text"
-                  placeholder="noreply@farcom.com"
-                  className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2.5 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="mb-1.5 block text-xs uppercase tracking-wide text-[#888580]">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2.5 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
-                />
-              </div>
-            </div>
-            <div className="flex gap-3 border-t border-[#EAE7E0] pt-4">
-              <button className="bg-[#1B4332] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#143326]">
-                Salva configurazione email
-              </button>
-              <button className="border border-[#DDD9D0] px-6 py-2.5 text-sm font-medium text-[#1A1A18] transition-colors hover:border-[#1B4332] hover:text-[#1B4332]">
-                Invia email di test
-              </button>
-            </div>
-          </div>
-        </div>
+        <EmailSettingsTab />
       )}
 
       {activeTab === "sicurezza" && (
