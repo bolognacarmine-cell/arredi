@@ -222,87 +222,19 @@ const seedProducts: Product[] = [
   ),
 ]
 
-const seedOffers: Offer[] = [
-  {
-    id: "o01",
-    title: "Opening Parrucchieri -15%",
-    description: "Sconto dedicato a nuove aperture di saloni. Postazioni taglio, specchiere e lavandini in promozione.",
-    activitySector: "barber",
-    furnitureType: "Altro",
-    furnitureTypeOther: "Kit apertura salone",
-    discountType: "percent",
-    discountValue: 15,
-    productIds: ["p02", "p06", "p11"],
-    startDate: ISO(-1),
-    endDate: ISO(30),
-    active: true,
-    createdAt: now - 2 * DAY,
-    updatedAt: now - 1 * DAY,
-  },
-  {
-    id: "o02",
-    title: "Pacchetto Barberia Gold",
-    description: "Kit completo per aprire una barberia: specchiera + armadio + 300€ di sconto fisso.",
-    activitySector: "barber",
-    furnitureType: "Altro",
-    furnitureTypeOther: "Pacchetto arredamento barberia",
-    discountType: "fixed",
-    discountValue: 300,
-    productIds: ["p03", "p05"],
-    startDate: ISO(-5),
-    endDate: ISO(45),
-    active: true,
-    createdAt: now - 5 * DAY,
-    updatedAt: now - 3 * DAY,
-  },
-  {
-    id: "o03",
-    title: "Back to School -10%",
-    description: "Promozione inizio anno scolastico: -10% su scaffalature, banchi scuola e scrivanie.",
-    activitySector: "school",
-    furnitureType: "Altro",
-    furnitureTypeOther: "Kit arredamento aule",
-    discountType: "percent",
-    discountValue: 10,
-    productIds: ["p10", "p09", "p13"],
-    startDate: ISO(10),
-    endDate: ISO(60),
-    active: false,
-    createdAt: now - 10 * DAY,
-    updatedAt: now - 1 * DAY,
-  },
-  {
-    id: "o04",
-    title: "Arreda il tuo Studio",
-    description: "Zone attesa e reception per studi professionali: -8% + consegna inclusa.",
-    activitySector: "other",
-    activitySectorOther: "Studi professionali / Poliambulatori",
-    furnitureType: "Reception e banconi ingresso",
-    discountType: "percent",
-    discountValue: 8,
-    productIds: ["p04", "p01"],
-    startDate: ISO(-20),
-    endDate: ISO(10),
-    active: true,
-    createdAt: now - 20 * DAY,
-    updatedAt: now - 10 * DAY,
-  },
-  {
-    id: "o05",
-    title: "Showroom Ufficio -12%",
-    description: "Rinnova il tuo ufficio: -12% su scrivanie, sedute e armadietti. Spedizione gratuita oltre i 2000€.",
-    activitySector: "office",
-    furnitureType: "Scrivanie e postazioni",
-    discountType: "percent",
-    discountValue: 12,
-    productIds: ["p09", "p08", "p15"],
-    startDate: ISO(-3),
-    endDate: ISO(25),
-    active: true,
-    createdAt: now - 3 * DAY,
-    updatedAt: now - 2 * DAY,
-  },
-]
+// Nessuna offerta di esempio: l'elenco parte vuoto e le offerte eliminate
+// non riappaiono se l'API non risponde.
+const seedOffers: Offer[] = []
+
+// Offerte demo storiche rimaste in localStorage sui browser gia' usati.
+const LEGACY_OFFER_IDS = new Set(["o01", "o02", "o03", "o04", "o05"])
+
+function readOffers(): Offer[] {
+  const list = read<Offer[]>(O_KEY, seedOffers)
+  const cleaned = list.filter((o) => !LEGACY_OFFER_IDS.has(o.id))
+  if (cleaned.length !== list.length) write(O_KEY, cleaned)
+  return cleaned
+}
 
 function mkP(
   id: string,
@@ -336,10 +268,6 @@ function mkP(
   }
 }
 
-function ISO(offsetDays: number) {
-  const d = new Date(now + offsetDays * DAY)
-  return d.toISOString().slice(0, 10)
-}
 
 function read<T>(k: string, fb: T): T {
   try {
@@ -418,7 +346,7 @@ export async function getOffers(): Promise<Offer[]> {
     return await offersApi.getOffers()
   } catch (error) {
     console.error("Error fetching offers from API, falling back to localStorage:", error)
-    return read<Offer[]>(O_KEY, seedOffers)
+    return readOffers()
   }
 }
 export async function getOfferById(id: string): Promise<Offer | null> {
@@ -426,7 +354,7 @@ export async function getOfferById(id: string): Promise<Offer | null> {
     return await offersApi.getOfferById(id)
   } catch (error) {
     console.error("Error fetching offer from API, falling back to localStorage:", error)
-    return read<Offer[]>(O_KEY, seedOffers).find((o) => o.id === id) ?? null
+    return readOffers().find((o) => o.id === id) ?? null
   }
 }
 export async function createOffer(
@@ -442,7 +370,7 @@ export async function createOffer(
     return await offersApi.createOffer(o)
   } catch (error) {
     console.error("Error creating offer via API, falling back to localStorage:", error)
-    const list = read<Offer[]>(O_KEY, seedOffers)
+    const list = readOffers()
     const o: Offer = {
       ...data,
       id: "o" + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-3),
@@ -461,7 +389,7 @@ export async function updateOffer(
     return await offersApi.updateOffer(id, patch)
   } catch (error) {
     console.error("Error updating offer via API, falling back to localStorage:", error)
-    const list = read<Offer[]>(O_KEY, seedOffers)
+    const list = readOffers()
     const i = list.findIndex((o) => o.id === id)
     if (i === -1) return delay(null)
     const updated: Offer = { ...list[i], ...patch, updatedAt: Date.now() }
@@ -476,7 +404,7 @@ export async function deleteOffer(id: string): Promise<boolean> {
     return true
   } catch (error) {
     console.error("Error deleting offer via API, falling back to localStorage:", error)
-    const list = read<Offer[]>(O_KEY, seedOffers)
+    const list = readOffers()
     const before = list.length
     const next = list.filter((o) => o.id !== id)
     if (next.length < before) write(O_KEY, next)
@@ -545,10 +473,10 @@ export function useProducts(): Product[] {
 }
 export function useOffers(): Offer[] {
   const [val, setVal] = useState<Offer[]>(() =>
-    typeof window !== "undefined" ? read<Offer[]>(O_KEY, seedOffers) : seedOffers,
+    typeof window !== "undefined" ? readOffers() : seedOffers,
   )
   useEffect(() => {
-    const cb = () => setVal(read<Offer[]>(O_KEY, seedOffers))
+    const cb = () => setVal(readOffers())
     window.addEventListener?.("farcom-showroom2-updated", cb)
     window.addEventListener?.("storage", cb)
     return () => {
