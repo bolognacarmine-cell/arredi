@@ -55,14 +55,17 @@ router.get('/:id', async (req: Request, res: Response) => {
 
 // POST create product
 router.post('/', requireAdmin, async (req: Request, res: Response) => {
+  console.log('POST /api/products received:', req.body);
   try {
     const productData = {
       ...req.body,
       id: req.body.id || 'p' + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-3),
       slug: req.body.slug || req.body.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + Date.now().toString(36).slice(-3),
     };
+    console.log('Creating product with data:', productData);
     const product = new Product(productData);
     await product.save();
+    console.log('Product created successfully:', product);
     res.status(201).json({ success: true, data: product.toObject() });
   } catch (error) {
     console.error('Error creating product:', error);

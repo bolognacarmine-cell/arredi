@@ -101,7 +101,11 @@ export async function getProductBySlug(slug: string): Promise<Product> {
 
 export async function createProduct(data: Omit<Product, "_id" | "createdAt" | "updatedAt">): Promise<Product> {
   try {
-    const response = await fetch(getApiUrl('/api/products'), {
+    const url = getApiUrl('/api/products')
+    console.log('Creating product at URL:', url)
+    console.log('Request data:', data)
+
+    const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -111,7 +115,13 @@ export async function createProduct(data: Omit<Product, "_id" | "createdAt" | "u
       body: JSON.stringify(data),
     })
 
-    const result = await response.json()
+    console.log('Response status:', response.status)
+    console.log('Response headers:', Object.fromEntries(response.headers.entries()))
+
+    const text = await response.text()
+    console.log('Response body:', text)
+
+    const result = JSON.parse(text)
 
     if (!response.ok) {
       throw new Error(result.message || "Failed to create product")
