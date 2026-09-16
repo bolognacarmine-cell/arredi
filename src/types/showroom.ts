@@ -1,4 +1,4 @@
-// Interfacce prodotti e offerte showroom (activitySector come union literal)
+// Interfacce prodotti showroom (activitySector come union literal)
 import type { ActivitySector } from "../constants/showroomSectors"
 import {
   displaySectorLabel,
@@ -17,31 +17,24 @@ export interface Product {
   furnitureType: string
   furnitureTypeOther?: string
   basePrice: number
+  /** Sconto storico dei prodotti creati prima della promozione in scheda. */
   discountPct: number | null
   images: string[]
   sku?: string
   active: boolean
   createdAt: number
   updatedAt: number
+  // Promozione: tutti i campi sono opzionali, un prodotto senza promozione
+  // viene mostrato senza badge ne' prezzo barrato.
+  promoActive?: boolean
+  promoDiscountType?: PromoDiscountType | null
+  promoDiscountValue?: number | null
+  promoStartDate?: string | null
+  promoEndDate?: string | null
+  promoText?: string | null
 }
 
-export interface Offer {
-  id: string
-  title: string
-  description: string
-  activitySector: ActivitySector
-  activitySectorOther?: string
-  furnitureType: string
-  furnitureTypeOther?: string
-  discountType: "percent" | "fixed"
-  discountValue: number
-  productIds: string[]
-  startDate: string
-  endDate: string
-  active: boolean
-  createdAt: number
-  updatedAt: number
-}
+export type PromoDiscountType = "percent" | "amount"
 
 export const displaySector = (
   s: ActivitySector,

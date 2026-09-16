@@ -2,7 +2,6 @@
 import { useMemo, useState } from "react"
 import {
   computeEffectivePrice,
-  type Offer,
   type Product,
 } from "../../../services/showroomApi"
 import {
@@ -13,7 +12,6 @@ import {
 
 interface Props {
   products: Product[]
-  offers: Offer[]
   onEdit: (p: Product) => void
   onDelete: (p: Product) => void
   onToggle: (id: string, next: boolean) => void
@@ -30,7 +28,6 @@ type SK = "name" | "basePrice" | "createdAt" | "activitySector" | "furnitureType
 
 export default function ProductTable({
   products,
-  offers,
   onEdit,
   onDelete,
   onToggle,
@@ -44,11 +41,11 @@ export default function ProductTable({
     () =>
       products.map((p) => ({
         p,
-        eff: computeEffectivePrice(p, offers),
+        eff: computeEffectivePrice(p),
         sectorLabel: displaySector(p.activitySector, p.activitySectorOther),
         furnitureLabel: displayFurnitureType(p.furnitureType, p.furnitureTypeOther),
       })),
-    [products, offers],
+    [products],
   )
 
   const sorted = useMemo(() => {

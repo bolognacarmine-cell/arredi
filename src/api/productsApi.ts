@@ -39,6 +39,12 @@ export interface Product {
   active: boolean
   createdAt: string
   updatedAt: string
+  promoActive?: boolean
+  promoDiscountType?: "percent" | "amount" | null
+  promoDiscountValue?: number | null
+  promoStartDate?: string | null
+  promoEndDate?: string | null
+  promoText?: string | null
 }
 
 export async function getProducts(filters?: { activitySector?: string; active?: boolean }): Promise<Product[]> {

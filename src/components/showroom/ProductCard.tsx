@@ -1,12 +1,12 @@
 // Card prodotto per lista pubblica showroom (activitySector + campi Other)
 import { Link } from "react-router-dom"
-import type { Product, Offer } from "../../services/showroomApi"
-import { computeEffectivePrice, offersForProduct } from "../../services/showroomApi"
+import type { Product } from "../../services/showroomApi"
+import { activePromo, computeEffectivePrice } from "../../services/showroomApi"
 import { displaySector, displayFurnitureType } from "../../types/showroom"
+import PromoCountdown from "./PromoCountdown"
 
 interface Props {
   product: Product
-  offers: Offer[]
 }
 
 const eur = (n: number) =>
@@ -16,9 +16,9 @@ const eur = (n: number) =>
     maximumFractionDigits: 0,
   })
 
-export default function ProductCard({ product, offers }: Props) {
-  const eff = computeEffectivePrice(product, offers)
-  const linkedOffers = offersForProduct(product.id, offers)
+export default function ProductCard({ product }: Props) {
+  const eff = computeEffectivePrice(product)
+  const promo = activePromo(product)
   const sectorLabel = displaySector(product.activitySector, product.activitySectorOther)
   const furnitureLabel = displayFurnitureType(product.furnitureType, product.furnitureTypeOther)
 
@@ -41,19 +41,15 @@ export default function ProductCard({ product, offers }: Props) {
           </div>
         )}
         {eff.badge && (
-          <div className="absolute top-3 left-3">
-            <span className="px-3 py-1 rounded-full text-xs font-bold text-white shadow-md tracking-wide"
-              style={{ background: product.discountPct ? "#B5965A" : "#1B4332" }}
-            >
+          <div className="absolute top-3 left-3 flex flex-col items-start gap-1.5">
+            <span className="px-3 py-1 rounded-full text-xs font-bold text-white shadow-md tracking-wide bg-[#B5965A]">
               {eff.badge}
             </span>
-          </div>
-        )}
-        {linkedOffers.length > 0 && (
-          <div className="absolute top-3 right-3">
-            <span className="px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider font-semibold text-white bg-[#1B4332] shadow-md">
-              In offerta
-            </span>
+            {promo && (
+              <span className="px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider font-semibold text-white bg-[#1B4332] shadow-md">
+                Promo
+              </span>
+            )}
           </div>
         )}
         {!product.active && (
@@ -82,6 +78,11 @@ export default function ProductCard({ product, offers }: Props) {
         <p className="text-sm text-[#4A4A46] line-clamp-2 min-h-[2.5rem]">
           {product.description}
         </p>
+
+        {promo?.text && (
+          <p className="text-xs font-medium text-[#B5965A] line-clamp-1">{promo.text}</p>
+        )}
+        {promo?.endDate && <PromoCountdown endDate={promo.endDate} className="text-xs" />}
 
         <div className="pt-2 flex items-end justify-between border-t border-[#EAE7E0]">
           <div>

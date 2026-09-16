@@ -1,13 +1,11 @@
-// API prodotti + offerte showroom (API server + fallback localStorage)
+// API prodotti showroom (API server + fallback localStorage in lettura)
 import { useEffect, useState } from "react"
-import type { Product, Offer } from "../types/showroom"
+import type { Product, PromoDiscountType } from "../types/showroom"
 import type { ActivitySector } from "../constants/showroomSectors"
 import { SECTORS, furnitureTypesFor } from "../constants/showroomSectors"
 import * as productsApi from "../api/productsApi"
-import * as offersApi from "../api/offersApi"
 
 const P_KEY = "farcom-showroom-products-v2"
-const O_KEY = "farcom-showroom-offers-v2"
 
 const DAY = 86_400_000
 const now = Date.now()
@@ -25,11 +23,8 @@ export const discountedPrice = (p: { basePrice: number; discountPct: number | nu
     ? Math.round(p.basePrice * (1 - p.discountPct / 100) * 100) / 100
     : p.basePrice
 
-export const offerBadge = (o: {
-  discountType: "percent" | "fixed"
-  discountValue: number
-}) =>
-  o.discountType === "percent" ? `-${Math.round(o.discountValue)}%` : `${Math.round(o.discountValue)}€ OFF`
+export const promoBadge = (type: PromoDiscountType, value: number) =>
+  type === "percent" ? `-${Math.round(value)}%` : `-${Math.round(value)}€`
 
 const img = (seed: string, bg = "EAE7E0", fg = "1A1A18") =>
   `https://placehold.co/1200x800/${bg}/${fg}?text=${encodeURIComponent(seed)}`
@@ -222,20 +217,6 @@ const seedProducts: Product[] = [
   ),
 ]
 
-// Nessuna offerta di esempio: l'elenco parte vuoto e le offerte eliminate
-// non riappaiono se l'API non risponde.
-const seedOffers: Offer[] = []
-
-// Offerte demo storiche rimaste in localStorage sui browser gia' usati.
-const LEGACY_OFFER_IDS = new Set(["o01", "o02", "o03", "o04", "o05"])
-
-function readOffers(): Offer[] {
-  const list = read<Offer[]>(O_KEY, seedOffers)
-  const cleaned = list.filter((o) => !LEGACY_OFFER_IDS.has(o.id))
-  if (cleaned.length !== list.length) write(O_KEY, cleaned)
-  return cleaned
-}
-
 function mkP(
   id: string,
   name: string,
@@ -351,107 +332,75 @@ export async function deleteProduct(id: string): Promise<boolean> {
   return true
 }
 
-export async function getOffers(): Promise<Offer[]> {
-  try {
-    return await offersApi.getOffers()
-  } catch (error) {
-    console.error("Error fetching offers from API, falling back to localStorage:", error)
-    return readOffers()
-  }
-}
-export async function getOfferById(id: string): Promise<Offer | null> {
-  try {
-    return await offersApi.getOfferById(id)
-  } catch (error) {
-    console.error("Error fetching offer from API, falling back to localStorage:", error)
-    return readOffers().find((o) => o.id === id) ?? null
-  }
-}
-// Nessun fallback su localStorage in scrittura: l'offerta resterebbe nel solo
-// browser dell'admin e non comparirebbe mai in vetrina.
-export async function createOffer(
-  data: Omit<Offer, "id" | "createdAt" | "updatedAt">,
-): Promise<Offer> {
-  const o: Offer = {
-    ...data,
-    id: "o" + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-3),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  }
-  const created = await offersApi.createOffer(o)
-  notifyShowroomUpdated()
-  return created
-}
-export async function updateOffer(
-  id: string,
-  patch: Partial<Omit<Offer, "id" | "createdAt" | "updatedAt">>,
-): Promise<Offer | null> {
-  const updated = await offersApi.updateOffer(id, patch)
-  notifyShowroomUpdated()
-  return updated
-}
-export async function deleteOffer(id: string): Promise<boolean> {
-  await offersApi.deleteOffer(id)
-  notifyShowroomUpdated()
-  return true
+export interface ActivePromo {
+  discountType: PromoDiscountType
+  discountValue: number
+  text?: string
+  startDate?: string
+  endDate?: string
+  badge: string
+  finalPrice: number
+  savings: number
 }
 
-export function isOfferRunning(o: Offer, at = new Date()): boolean {
-  if (!o.active) return false
+// Promozione valida: sconto positivo, flag attivo e data odierna dentro
+// l'eventuale finestra (le date sono opzionali, quindi aperte da entrambi i lati).
+export function activePromo(p: Product, at = new Date()): ActivePromo | null {
+  const value = Number(p.promoDiscountValue)
+  if (p.promoActive === false) return null
+  if (!Number.isFinite(value) || value <= 0) return null
   const t = new Date(at.getFullYear(), at.getMonth(), at.getDate()).getTime()
-  const start = new Date(o.startDate).getTime()
-  const end = new Date(o.endDate + "T23:59:59").getTime()
-  return t >= start && t <= end
-}
+  if (p.promoStartDate && t < new Date(p.promoStartDate + "T00:00:00").getTime())
+    return null
+  if (p.promoEndDate && t > new Date(p.promoEndDate + "T23:59:59").getTime())
+    return null
 
-export function offersForProduct(
-  productId: string,
-  offers: Offer[],
-  at = new Date(),
-): Offer[] {
-  if (!Array.isArray(offers)) return []
-  return offers.filter(
-    (o) => isOfferRunning(o, at) && o.productIds.includes(productId),
-  )
+  const type: PromoDiscountType = p.promoDiscountType === "amount" ? "amount" : "percent"
+  const raw =
+    type === "percent"
+      ? p.basePrice * (1 - Math.min(100, value) / 100)
+      : p.basePrice - value
+  const finalPrice = Math.max(0, Math.round(raw * 100) / 100)
+  if (finalPrice >= p.basePrice) return null
+
+  return {
+    discountType: type,
+    discountValue: value,
+    text: p.promoText?.trim() || undefined,
+    startDate: p.promoStartDate || undefined,
+    endDate: p.promoEndDate || undefined,
+    badge: promoBadge(type, value),
+    finalPrice,
+    savings: Math.round((p.basePrice - finalPrice) * 100) / 100,
+  }
 }
 
 export interface EffectivePrice {
   finalPrice: number
   savings: number
   badge?: string
-  offerId?: string
+  promoText?: string
+  promoEndDate?: string
 }
-export function computeEffectivePrice(
-  p: Product,
-  offers: Offer[],
-  at = new Date(),
-): EffectivePrice {
-  const t = new Date(at.getFullYear(), at.getMonth(), at.getDate()).getTime()
+export function computeEffectivePrice(p: Product, at = new Date()): EffectivePrice {
   const base = p.basePrice
   let best: EffectivePrice = { finalPrice: base, savings: 0 }
+
+  // Prodotti creati prima della promozione in scheda: lo sconto fisso resta valido.
   if (p.discountPct && p.discountPct > 0) {
     const pd = discountedPrice(p)
     if (pd < best.finalPrice)
       best = { finalPrice: pd, savings: base - pd, badge: `-${p.discountPct}%` }
   }
-  for (const o of offers) {
-    if (!o.active) continue
-    if (!o.productIds.includes(p.id)) continue
-    const s = new Date(o.startDate).getTime()
-    const e = new Date(o.endDate + "T23:59:59").getTime()
-    if (t < s || t > e) continue
-    const op =
-      o.discountType === "percent"
-        ? base * (1 - Math.min(100, Math.max(0, o.discountValue)) / 100)
-        : base - o.discountValue
-    const rounded = Math.max(0, Math.round(op * 100) / 100)
-    if (rounded < best.finalPrice) {
-      best = {
-        finalPrice: rounded,
-        savings: base - rounded,
-        badge: offerBadge(o),
-        offerId: o.id,
-      }
+
+  const promo = activePromo(p, at)
+  if (promo && promo.finalPrice < best.finalPrice) {
+    best = {
+      finalPrice: promo.finalPrice,
+      savings: promo.savings,
+      badge: promo.badge,
+      promoText: promo.text,
+      promoEndDate: promo.endDate,
     }
   }
   return best
@@ -488,10 +437,7 @@ function useRemoteList<T>(load: () => Promise<T[]>): T[] {
 export function useProducts(): Product[] {
   return useRemoteList(getProducts)
 }
-export function useOffers(): Offer[] {
-  return useRemoteList(getOffers)
-}
 
 export { SECTORS, furnitureTypesFor }
-export type { Product, Offer }
+export type { Product, PromoDiscountType }
 

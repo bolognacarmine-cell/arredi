@@ -1,6 +1,5 @@
 // Pagina pubblica: lista prodotti showroom
 import { useEffect, useMemo, useState } from "react"
-import { Link } from "react-router-dom"
 import ProductCard from "../../components/showroom/ProductCard"
 import ProductFilters, {
   defaultPublicFilters,
@@ -8,26 +7,20 @@ import ProductFilters, {
 } from "../../components/showroom/ProductFilters"
 import {
   computeEffectivePrice,
-  isOfferRunning,
-  offersForProduct,
-  getOffers,
   getProducts,
-  type Offer,
   type Product,
 } from "../../services/showroomApi"
 
 export default function ShowroomList() {
   const [products, setProducts] = useState<Product[]>([])
-  const [offers, setOffers] = useState<Offer[]>([])
   const [filters, setFilters] = useState<PublicFilterState>(defaultPublicFilters)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     let alive = true
-    Promise.all([getProducts(), getOffers()]).then(([p, o]) => {
+    getProducts().then((p) => {
       if (!alive) return
       setProducts(Array.isArray(p) ? p.filter((x) => x.active) : [])
-      setOffers(Array.isArray(o) ? o : [])
       setLoading(false)
     })
     return () => {
@@ -42,13 +35,10 @@ export default function ShowroomList() {
         return false
       if (filters.sector !== "all" && p.activitySector !== filters.sector) return false
       if (filters.furniture !== "all" && p.furnitureType !== filters.furniture) return false
-      if (filters.onlyOffers) {
-        const eff = computeEffectivePrice(p, offers)
-        if (eff.savings <= 0 && offersForProduct(p.id, offers).length === 0) return false
-      }
+      if (filters.onlyOffers && computeEffectivePrice(p).savings <= 0) return false
       return true
     })
-  }, [products, offers, filters])
+  }, [products, filters])
 
   return (
     <main className="pt-24 pb-24 bg-[#FAFAF7] min-h-screen">
@@ -67,13 +57,14 @@ export default function ShowroomList() {
             Una selezione curata di arredi realizzati su misura per barberie, parrucchieri,
             uffici, scuole e attività speciali. Qualità artigianale e design italiano.
           </p>
-          {offers.some((o) => isOfferRunning(o)) && (
-            <Link
-              to="/showroom/offerte"
+          {products.some((p) => computeEffectivePrice(p).savings > 0) && (
+            <button
+              type="button"
+              onClick={() => setFilters((f) => ({ ...f, onlyOffers: true }))}
               className="mt-6 inline-flex items-center gap-2 text-sm font-medium px-6 py-2.5 bg-[#B5965A] text-white hover:bg-[#9d8049] transition-colors"
             >
-              🏷️ Vedi le offerte attive
-            </Link>
+              🏷️ Vedi i prodotti in promozione
+            </button>
           )}
         </div>
 
@@ -117,7 +108,7 @@ export default function ShowroomList() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
             {visible.map((p) => (
-              <ProductCard key={p.id} product={p} offers={offers} />
+              <ProductCard key={p.id} product={p} />
             ))}
           </div>
         )}

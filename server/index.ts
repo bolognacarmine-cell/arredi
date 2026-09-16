@@ -14,8 +14,8 @@ import session from 'express-session';
 import MongoStore from 'connect-mongo';
 import cookieParser from 'cookie-parser';
 import { connectDB } from './db.js';
+import { migrateOffersToProducts } from './migrateOffersToProducts.js';
 import mediaRoutes from './routes/media.js';
-import offerRoutes from './routes/offers.js';
 import productRoutes from './routes/products.js';
 import projectRoutes from './routes/projects.js';
 import quoteRoutes from './routes/quotes.js';
@@ -98,7 +98,6 @@ app.use(express.static(staticPath));
 
 // API Routes
 app.use('/api/media', mediaRoutes);
-app.use('/api/offers', offerRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/quotes', quoteRoutes);
@@ -170,7 +169,12 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 });
 
 // Start server after DB connection
-connectDB().then(() => {
+connectDB().then(async () => {
+  try {
+    await migrateOffersToProducts();
+  } catch (error) {
+    console.error('Migrazione offerte non riuscita:', error);
+  }
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`📁 Serving static files from ${staticPath}`);

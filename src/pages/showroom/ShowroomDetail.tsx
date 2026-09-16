@@ -2,12 +2,9 @@
 import { useEffect, useMemo, useState } from "react"
 import { Link, useParams } from "react-router-dom"
 import {
+  activePromo,
   computeEffectivePrice,
-  getOffers,
   getProductBySlug,
-  offerBadge,
-  offersForProduct,
-  type Offer,
   type Product,
 } from "../../services/showroomApi"
 import {
@@ -15,6 +12,7 @@ import {
   displayFurnitureType,
 } from "../../types/showroom"
 import ImageCarousel from "../../components/ImageCarousel"
+import PromoCountdown from "../../components/showroom/PromoCountdown"
 
 const eur = (n: number) =>
   n.toLocaleString("it-IT", {
@@ -33,7 +31,6 @@ const itDate = (d: string) =>
 export default function ShowroomDetail() {
   const { slug } = useParams<{ slug: string }>()
   const [product, setProduct] = useState<Product | null | undefined>(undefined)
-  const [offers, setOffers] = useState<Offer[]>([])
   const [infoOpen, setInfoOpen] = useState(false)
   const [infoForm, setInfoForm] = useState({ nome: "", email: "", telefono: "", messaggio: "" })
 
@@ -43,10 +40,9 @@ export default function ShowroomDetail() {
       return
     }
     let alive = true
-    Promise.all([getProductBySlug(slug), getOffers()]).then(([p, o]) => {
+    getProductBySlug(slug).then((p) => {
       if (!alive) return
       setProduct(p)
-      setOffers(o)
     })
     return () => {
       alive = false
@@ -54,14 +50,11 @@ export default function ShowroomDetail() {
   }, [slug])
 
   const eff = useMemo(
-    () => (product ? computeEffectivePrice(product, offers) : null),
-    [product, offers],
+    () => (product ? computeEffectivePrice(product) : null),
+    [product],
   )
 
-  const linkedOffers = useMemo(
-    () => (product ? offersForProduct(product.id, offers) : []),
-    [offers, product],
-  )
+  const promo = useMemo(() => (product ? activePromo(product) : null), [product])
 
   if (product === undefined) {
     return (
@@ -132,10 +125,7 @@ export default function ShowroomDetail() {
             maxHeightClass="max-h-[60vh]"
             overlay={
               eff?.badge ? (
-                <span
-                  className="px-4 py-1.5 rounded-full text-sm font-bold text-white shadow-lg tracking-wide"
-                  style={{ background: p.discountPct ? "#B5965A" : "#1B4332" }}
-                >
+                <span className="px-4 py-1.5 rounded-full text-sm font-bold text-white shadow-lg tracking-wide bg-[#B5965A]">
                   {eff.badge}
                 </span>
               ) : null
@@ -204,48 +194,26 @@ export default function ShowroomDetail() {
               </div>
             </div>
 
-            {linkedOffers.length > 0 && (
-              <div className="space-y-3">
-                <div className="text-xs uppercase tracking-wider text-[#888580]">
-                  Offerte collegate attive
-                </div>
-                {linkedOffers.map((o) => (
-                  <div
-                    key={o.id}
-                    className="p-4 border border-[#B5965A]/40 bg-gradient-to-r from-[#B5965A]/5 to-transparent"
-                  >
-                    <div className="flex items-start gap-3">
-                      <span className="text-xs font-bold px-2.5 py-1 text-white rounded"
-                        style={{ background: o.discountType === "percent" ? "#B5965A" : "#1B4332" }}
-                      >
-                        {offerBadge(o)}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-[#1A1A18]">{o.title}</div>
-                        <div className="text-xs text-[#4A4A46] mt-0.5 line-clamp-2">
-                          {o.description}
-                        </div>
-                        <div className="flex flex-wrap items-center gap-2 mt-2">
-                          <span className="text-[10px] uppercase tracking-wider font-medium px-2 py-0.5 bg-[#EAE7E0] text-[#4A4A46]">
-                            {displaySector(o.activitySector, o.activitySectorOther)}
-                          </span>
-                          <span className="text-[10px] text-[#888580]">
-                            {displayFurnitureType(o.furnitureType, o.furnitureTypeOther)}
-                          </span>
-                        </div>
-                        <div className="text-[11px] text-[#888580] mt-1.5">
-                          Valida dal {itDate(o.startDate)} al {itDate(o.endDate)}
-                        </div>
-                      </div>
+            {promo && (
+              <div className="p-4 border border-[#B5965A]/40 bg-gradient-to-r from-[#B5965A]/5 to-transparent">
+                <div className="flex items-start gap-3">
+                  <span className="text-xs font-bold px-2.5 py-1 text-white rounded bg-[#B5965A]">
+                    {promo.badge}
+                  </span>
+                  <div className="flex-1 min-w-0 space-y-1.5">
+                    <div className="font-medium text-[#1A1A18]">
+                      {promo.text || "Promozione attiva"}
                     </div>
+                    {promo.endDate && (
+                      <div className="text-[11px] text-[#888580]">
+                        {promo.startDate
+                          ? `Valida dal ${itDate(promo.startDate)} al ${itDate(promo.endDate)}`
+                          : `Valida fino al ${itDate(promo.endDate)}`}
+                      </div>
+                    )}
+                    {promo.endDate && <PromoCountdown endDate={promo.endDate} className="text-xs" />}
                   </div>
-                ))}
-                <Link
-                  to="/showroom/offerte"
-                  className="inline-flex text-xs font-medium text-[#B5965A] hover:text-[#9A7F48] transition-colors"
-                >
-                  Vedi tutte le offerte attive →
-                </Link>
+                </div>
               </div>
             )}
 
@@ -254,7 +222,9 @@ export default function ShowroomDetail() {
                 onClick={() => setInfoOpen(true)}
                 className="w-full py-3.5 bg-[#B5965A] text-white font-medium text-sm hover:bg-[#9A7F48] transition-colors tracking-wide flex items-center justify-center gap-2"
               >
-                📨 Richiedi informazioni per questo prodotto
+                {promo
+                  ? "🏷️ Approfitta dell'offerta"
+                  : "📨 Richiedi informazioni per questo prodotto"}
               </button>
               <Link
                 to="/preventivo"

@@ -10,7 +10,6 @@ import {
   createProduct,
   deleteProduct,
   updateProduct,
-  useOffers,
   useProducts,
   computeEffectivePrice,
   getProducts,
@@ -19,7 +18,6 @@ import type { Product } from "../../../types/showroom"
 
 export default function ProductsList() {
   const all = useProducts()
-  const offers = useOffers()
   const [filters, setFilters] = useState<ProductFilterState>(defaultPF)
   const [editing, setEditing] = useState<Product | null>(null)
   const [creating, setCreating] = useState(false)
@@ -73,12 +71,12 @@ export default function ProductsList() {
       if (filters.offerStatus === "active" && !p.active) return false
       if (filters.offerStatus === "inactive" && p.active) return false
       if (filters.offerStatus === "in_offer") {
-        const eff = computeEffectivePrice(p, offers)
+        const eff = computeEffectivePrice(p)
         if (eff.savings <= 0) return false
       }
       return true
     }) : []
-  }, [all, offers, filters])
+  }, [all, filters])
 
   const onSave = async (
     data: Omit<Product, "id" | "createdAt" | "updatedAt" | "slug"> & { slug?: string },
@@ -158,7 +156,6 @@ export default function ProductsList() {
 
       <ProductTable
         products={matching}
-        offers={offers}
         onEdit={(p) => setEditing(p)}
         onDelete={onDelete}
         onToggle={onToggle}

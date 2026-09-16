@@ -16,6 +16,13 @@ const ProductSchema = new Schema({
   images: [{ type: String }],
   sku: { type: String },
   active: { type: Boolean, default: true },
+  // Promozione in scheda prodotto: tutti i campi sono opzionali.
+  promoActive: { type: Boolean, default: false },
+  promoDiscountType: { type: String, enum: ['percent', 'amount', null], default: null },
+  promoDiscountValue: { type: Number, default: null, min: 0 },
+  promoStartDate: { type: String, default: null },
+  promoEndDate: { type: String, default: null },
+  promoText: { type: String, default: null },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });

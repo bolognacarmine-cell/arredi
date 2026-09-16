@@ -63,23 +63,12 @@ export interface ProductDocument {
   images: string[]
   sku: string
   active: boolean
-  createdAt: Date
-  updatedAt: Date
-}
-
-export interface OfferDocument {
-  id: string
-  title: string
-  description: string
-  activitySector: string
-  furnitureType: string
-  furnitureTypeOther?: string
-  discountType: "percent" | "fixed"
-  discountValue: number
-  productIds: string[]
-  startDate: string
-  endDate: string
-  active: boolean
+  promoActive?: boolean
+  promoDiscountType?: "percent" | "amount" | null
+  promoDiscountValue?: number | null
+  promoStartDate?: string | null
+  promoEndDate?: string | null
+  promoText?: string | null
   createdAt: Date
   updatedAt: Date
 }

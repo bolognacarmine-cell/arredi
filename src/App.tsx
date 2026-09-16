@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
@@ -26,12 +26,10 @@ import AdminSettings from "./pages/admin/AdminSettings";
 import {
   ShowroomIndexRedirect,
   ProductsList as ShowroomProducts,
-  OffersList as ShowroomOffers,
 } from "./routes/adminShowroomRoutes";
 import {
   PublicShowroomList,
   PublicShowroomDetail,
-  PublicShowroomOffers,
 } from "./routes/publicShowroomRoutes";
 import { AdminAuthProvider } from "./hooks/useAdminAuth";
 
@@ -49,7 +47,7 @@ export default function App() {
           <Route path="/progetti" element={<Projects />} />
           <Route path="/progetti/:id" element={<ProjectDetail />} />
           <Route path="/showroom" element={<PublicShowroomList />} />
-          <Route path="/showroom/offerte" element={<PublicShowroomOffers />} />
+          <Route path="/showroom/offerte" element={<Navigate to="/showroom" replace />} />
           <Route path="/showroom/:slug" element={<PublicShowroomDetail />} />
           <Route path="/preventivo" element={<Quote />} />
           <Route path="/chi-siamo" element={<About />} />
@@ -73,7 +71,6 @@ export default function App() {
             <Route path="showroom">
               <Route index element={<ShowroomIndexRedirect />} />
               <Route path="products" element={<ShowroomProducts />} />
-              <Route path="offers" element={<ShowroomOffers />} />
             </Route>
           </Route>
         </Routes>

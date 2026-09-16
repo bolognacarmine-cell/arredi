@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState, type ChangeEvent, type DragEvent } from "react"
 import CategorySelect from "../../../components/admin/showroom/CategorySelect"
 import FurnitureTypeSelect from "../../../components/admin/showroom/FurnitureTypeSelect"
-import type { Product } from "../../../types/showroom"
+import type { Product, PromoDiscountType } from "../../../types/showroom"
 import type { ActivitySector } from "../../../constants/showroomSectors"
 import { FURNITURE_BY_SECTOR } from "../../../constants/showroomSectors"
 import { useProducts, slugify } from "../../../services/showroomApi"
@@ -27,9 +27,14 @@ type FS = {
   furnitureType: string
   furnitureTypeOther: string
   basePrice: string
-  discountPct: string
   images: string[]
   active: boolean
+  promoActive: boolean
+  promoDiscountType: PromoDiscountType
+  promoDiscountValue: string
+  promoStartDate: string
+  promoEndDate: string
+  promoText: string
 }
 const empty: FS = {
   name: "",
@@ -39,9 +44,14 @@ const empty: FS = {
   furnitureType: "Banconi reception",
   furnitureTypeOther: "",
   basePrice: "",
-  discountPct: "",
   images: [],
   active: true,
+  promoActive: true,
+  promoDiscountType: "percent",
+  promoDiscountValue: "",
+  promoStartDate: "",
+  promoEndDate: "",
+  promoText: "",
 }
 
 const fallbackFurniture = (sector: ActivitySector): string => {
@@ -67,9 +77,20 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
         furnitureType: initial.furnitureType,
         furnitureTypeOther: initial.furnitureTypeOther ?? "",
         basePrice: String(initial.basePrice),
-        discountPct: initial.discountPct ? String(initial.discountPct) : "",
         images: [...initial.images],
         active: initial.active,
+        promoActive: initial.promoActive !== false,
+        promoDiscountType: initial.promoDiscountType === "amount" ? "amount" : "percent",
+        // Prodotti creati prima della promozione in scheda: lo sconto storico
+        // diventa il valore iniziale della promozione.
+        promoDiscountValue: initial.promoDiscountValue
+          ? String(initial.promoDiscountValue)
+          : initial.discountPct
+            ? String(initial.discountPct)
+            : "",
+        promoStartDate: initial.promoStartDate ?? "",
+        promoEndDate: initial.promoEndDate ?? "",
+        promoText: initial.promoText ?? "",
       })
     } else setForm(empty)
     setErrors({})
@@ -90,10 +111,13 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
 
   const discountedPreview = useMemo(() => {
     const b = Number(form.basePrice)
-    const d = Number(form.discountPct)
-    if (!b || !d || d < 0 || d > 100) return null
-    return Math.round(b * (1 - d / 100) * 100) / 100
-  }, [form.basePrice, form.discountPct])
+    const d = Number(form.promoDiscountValue)
+    if (!b || !d || d <= 0) return null
+    const raw =
+      form.promoDiscountType === "percent" ? b * (1 - Math.min(100, d) / 100) : b - d
+    if (raw >= b) return null
+    return Math.max(0, Math.round(raw * 100) / 100)
+  }, [form.basePrice, form.promoDiscountValue, form.promoDiscountType])
 
   const validate = (): Record<string, string> => {
     const e: Record<string, string> = {}
@@ -107,10 +131,20 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
       e.furnitureType = 'Specifica la tipologia "Altro"'
     const b = Number(form.basePrice)
     if (!form.basePrice || isNaN(b) || b <= 0) e.basePrice = "Prezzo base > 0"
-    if (form.discountPct) {
-      const d = Number(form.discountPct)
-      if (isNaN(d) || d < 0 || d > 100) e.discountPct = "Sconto % tra 0 e 100"
+    if (form.promoDiscountValue) {
+      const d = Number(form.promoDiscountValue)
+      if (isNaN(d) || d <= 0) e.promoDiscountValue = "Sconto maggiore di 0"
+      else if (form.promoDiscountType === "percent" && d > 100)
+        e.promoDiscountValue = "Sconto % tra 0 e 100"
+      else if (form.promoDiscountType === "amount" && d >= Number(form.basePrice))
+        e.promoDiscountValue = "Lo sconto deve essere minore del prezzo base"
     }
+    if (
+      form.promoStartDate &&
+      form.promoEndDate &&
+      form.promoEndDate < form.promoStartDate
+    )
+      e.promoEndDate = "La data fine deve seguire la data inizio"
     if (form.images.length === 0) e.images = "Aggiungi almeno un'immagine"
     if (uploading > 0) e.images = "Attendi il completamento dell'upload delle immagini"
     return e
@@ -121,6 +155,7 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
     const errs = validate()
     setErrors(errs)
     if (Object.keys(errs).length > 0) return
+    const hasPromo = Number(form.promoDiscountValue) > 0
     const data: Omit<Product, "id" | "createdAt" | "updatedAt" | "slug"> & { slug?: string } = {
       name: form.name.trim(),
       description: form.description.trim(),
@@ -131,7 +166,16 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
       furnitureTypeOther:
         form.furnitureType === "Altro" ? form.furnitureTypeOther.trim() : undefined,
       basePrice: Number(form.basePrice),
-      discountPct: form.discountPct ? Number(form.discountPct) : null,
+      // La promozione in scheda sostituisce lo sconto storico del prodotto.
+      discountPct: null,
+      // null (e non undefined) per azzerare davvero i campi rimossi: JSON.stringify
+      // scarta undefined e il server manterrebbe i vecchi valori.
+      promoActive: hasPromo ? form.promoActive : false,
+      promoDiscountType: hasPromo ? form.promoDiscountType : null,
+      promoDiscountValue: hasPromo ? Number(form.promoDiscountValue) : null,
+      promoStartDate: hasPromo && form.promoStartDate ? form.promoStartDate : null,
+      promoEndDate: hasPromo && form.promoEndDate ? form.promoEndDate : null,
+      promoText: hasPromo && form.promoText.trim() ? form.promoText.trim() : null,
       images: form.images,
       sku: slugify(form.name).toUpperCase().slice(0, 10) + "-" + Date.now().toString().slice(-4),
       active: form.active,
@@ -278,44 +322,124 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">Prezzo base (€) *</label>
-              <input
-                type="number"
-                min={0}
-                step="0.01"
-                value={form.basePrice}
-                onChange={(e) => set("basePrice", e.target.value)}
-                className={inCls(errors.basePrice)}
-              />
-              {errors.basePrice && <p className="text-xs text-red-600 mt-1">{errors.basePrice}</p>}
+          <div>
+            <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">Prezzo base (€) *</label>
+            <input
+              type="number"
+              min={0}
+              step="0.01"
+              value={form.basePrice}
+              onChange={(e) => set("basePrice", e.target.value)}
+              className={inCls(errors.basePrice) + " md:max-w-xs"}
+            />
+            {errors.basePrice && <p className="text-xs text-red-600 mt-1">{errors.basePrice}</p>}
+          </div>
+
+          <fieldset className="border border-[#DDD9D0] bg-[#FAFAF7] p-4 space-y-4">
+            <legend className="px-2 text-xs uppercase tracking-wide text-[#888580]">
+              Promozione (opzionale)
+            </legend>
+            <p className="text-xs text-[#888580]">
+              Lascia lo sconto vuoto per un prodotto senza promozione: in vetrina non
+              compaiono badge né prezzo barrato.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">Tipo sconto</label>
+                <select
+                  value={form.promoDiscountType}
+                  onChange={(e) => set("promoDiscountType", e.target.value as PromoDiscountType)}
+                  className={inCls()}
+                >
+                  <option value="percent">Percentuale (%)</option>
+                  <option value="amount">Importo (€)</option>
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">
+                  Sconto {form.promoDiscountType === "percent" ? "(%)" : "(€)"}
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  step={form.promoDiscountType === "percent" ? 1 : 0.01}
+                  value={form.promoDiscountValue}
+                  onChange={(e) => set("promoDiscountValue", e.target.value)}
+                  className={inCls(errors.promoDiscountValue)}
+                />
+                {errors.promoDiscountValue && (
+                  <p className="text-xs text-red-600 mt-1">{errors.promoDiscountValue}</p>
+                )}
+              </div>
+              <div>
+                <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">
+                  Prezzo scontato (calcolato)
+                </label>
+                <div className="px-3 py-2.5 border border-[#EAE7E0] bg-white text-sm">
+                  {discountedPreview !== null ? (
+                    <span className="font-semibold text-[#1B4332]">€ {discountedPreview.toLocaleString("it-IT")}</span>
+                  ) : (
+                    <span className="text-[#888580]">—</span>
+                  )}
+                </div>
+              </div>
             </div>
-            <div>
-              <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">Sconto %</label>
-              <input
-                type="number"
-                min={0}
-                max={100}
-                value={form.discountPct}
-                onChange={(e) => set("discountPct", e.target.value)}
-                className={inCls(errors.discountPct)}
-              />
-              {errors.discountPct && <p className="text-xs text-red-600 mt-1">{errors.discountPct}</p>}
-            </div>
-            <div>
-              <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">
-                Prezzo scontato (calcolato)
-              </label>
-              <div className="px-3 py-2.5 border border-[#EAE7E0] bg-[#FAFAF7] text-sm">
-                {discountedPreview !== null ? (
-                  <span className="font-semibold text-[#1B4332]">€ {discountedPreview.toLocaleString("it-IT")}</span>
-                ) : (
-                  <span className="text-[#888580]">—</span>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">
+                  Data inizio (opzionale)
+                </label>
+                <input
+                  type="date"
+                  value={form.promoStartDate}
+                  onChange={(e) => set("promoStartDate", e.target.value)}
+                  className={inCls()}
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">
+                  Data fine (opzionale)
+                </label>
+                <input
+                  type="date"
+                  value={form.promoEndDate}
+                  onChange={(e) => set("promoEndDate", e.target.value)}
+                  className={inCls(errors.promoEndDate)}
+                />
+                {errors.promoEndDate && (
+                  <p className="text-xs text-red-600 mt-1">{errors.promoEndDate}</p>
                 )}
               </div>
             </div>
-          </div>
+
+            <div>
+              <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">
+                Testo promozionale (opzionale)
+              </label>
+              <input
+                value={form.promoText}
+                onChange={(e) => set("promoText", e.target.value)}
+                maxLength={60}
+                placeholder="Es. Solo questo mese"
+                className={inCls()}
+              />
+            </div>
+
+            <div className="flex items-center gap-3">
+              <input
+                id="pf-promo-active"
+                type="checkbox"
+                checked={form.promoActive}
+                onChange={(e) => set("promoActive", e.target.checked)}
+                className="w-4 h-4 accent-[#B5965A]"
+              />
+              <label htmlFor="pf-promo-active" className="text-sm font-medium text-[#4A4A46]">
+                {form.promoActive ? "🏷️ Promozione attiva" : "⏸ Promozione sospesa"}
+              </label>
+            </div>
+          </fieldset>
 
           <div className="flex items-center gap-3">
             <input
