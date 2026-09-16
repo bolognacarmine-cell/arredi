@@ -7,11 +7,15 @@ import { useInViewOnce } from "../hooks/useInViewOnce"
 import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion"
 
 // Configurable delay constants (in milliseconds)
-const HERO_TEXT_INITIAL_DELAY = 450 // dopo l'avvio del video
-const HERO_RIGHT_TEXT_DELAY = 200 // 200ms after left text starts
+// Il video resta "pulito", senza scritte sopra, per questo tempo dall'avvio.
+const HERO_TEXT_INITIAL_DELAY = 1500
 // Se il video non parte (autoplay bloccato, errore, connessione lenta) i testi
 // devono comparire lo stesso.
-const HERO_TEXT_FALLBACK_DELAY = 1200
+const HERO_TEXT_FALLBACK_DELAY = 2000
+// Entrata sfalsata: titolo -> sottotitolo -> CTA -> trust row.
+const HERO_SUBTITLE_DELAY = 220
+const HERO_CTA_DELAY = 420
+const HERO_TRUST_DELAY = 620
 
 export default function Hero() {
   // Above-the-fold: consideriamo l’hero “in view” subito per non dipendere da IO.
@@ -52,16 +56,12 @@ export default function Hero() {
 
   // Delay text appearance after video is ready
   useEffect(() => {
-    if (reducedMotion) {
-      setShowText(true)
-      return
-    }
     const timer = setTimeout(
       () => setShowText(true),
       videoReady ? HERO_TEXT_INITIAL_DELAY : HERO_TEXT_FALLBACK_DELAY,
     )
     return () => clearTimeout(timer)
-  }, [videoReady, reducedMotion])
+  }, [videoReady])
 
   return (
     <section
@@ -141,8 +141,8 @@ export default function Hero() {
           <div className="lg:col-span-7 max-w-full lg:max-w-none">
             {/* Left text section - reveals from left to right */}
             <div
-              className={`overflow-hidden ${showText ? 'reveal-left' : 'opacity-0'}`}
-              style={{ animationDelay: '0ms', animationFillMode: 'forwards' }}
+              className={showText ? "hero-enter" : "opacity-0"}
+              style={{ animationDelay: "0ms" }}
             >
               {/* Trust badge */}
               <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 lg:gap-4 mb-3 sm:mb-4 md:mb-5 lg:mb-7">
@@ -166,10 +166,10 @@ export default function Hero() {
               <div className="w-16 sm:w-20 md:w-24 h-1 bg-[#E69138] mt-3 sm:mt-4 md:mt-5 mb-4 sm:mb-5 md:mb-6" />
             </div>
 
-            {/* Right text section - reveals from right to left */}
+            {/* Sottotitolo */}
             <div
-              className={`overflow-hidden ${showText ? 'reveal-right' : 'opacity-0'}`}
-              style={{ animationDelay: `${HERO_RIGHT_TEXT_DELAY}ms`, animationFillMode: 'forwards' }}
+              className={showText ? "hero-enter" : "opacity-0"}
+              style={{ animationDelay: `${HERO_SUBTITLE_DELAY}ms` }}
             >
               <p className="text-white/75 text-[11px] sm:text-[13px] md:text-base lg:text-lg leading-[1.6] sm:leading-[1.65] md:leading-relaxed max-w-xl">
                 Trasformiamo spazi commerciali in ambienti che comunicano fiducia:
@@ -177,7 +177,13 @@ export default function Hero() {
                 Tempi certi, materiali certificati, finiture impeccabili.
               </p>
 
-              {/* CTA */}
+            </div>
+
+            {/* CTA */}
+            <div
+              className={showText ? "hero-enter" : "opacity-0"}
+              style={{ animationDelay: `${HERO_CTA_DELAY}ms` }}
+            >
               <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 md:gap-4 mt-4 sm:mt-5 md:mt-6 lg:mt-8">
                 <Link
                   to="/preventivo"
@@ -218,7 +224,13 @@ export default function Hero() {
                 Risposta entro 24h lavorative. Nessun impegno.
               </p>
 
-              {/* Trust row */}
+            </div>
+
+            {/* Trust row */}
+            <div
+              className={showText ? "hero-enter" : "opacity-0"}
+              style={{ animationDelay: `${HERO_TRUST_DELAY}ms` }}
+            >
               <div className="flex flex-wrap items-center gap-x-2 sm:gap-x-3 md:gap-x-5 lg:gap-x-7 gap-y-1.5 sm:gap-y-2 md:gap-y-2.5 lg:gap-y-3 mt-3 sm:mt-4 md:mt-6 lg:mt-8">
                 {[
                   ["25+ anni", "esperienza reale"],
@@ -241,17 +253,17 @@ export default function Hero() {
           <div className="lg:col-span-5 hidden lg:block">
             <div
               className={`relative ${showText ? "float-up" : "opacity-0"}`}
-              style={{ animationDelay: "400ms", animationFillMode: "forwards" }}
+              style={{ animationDelay: `${HERO_CTA_DELAY}ms`, animationFillMode: "forwards" }}
             >
               {/* Frame geometrico */}
               <div
                 className={`absolute -top-6 -right-6 w-64 h-64 border border-[#E69138]/25 hidden lg:block ${showText ? "geometric-appear" : "opacity-0"}`}
-                style={{ animationDelay: "500ms", animationFillMode: "forwards" }}
+                style={{ animationDelay: `${HERO_TRUST_DELAY}ms`, animationFillMode: "forwards" }}
                 aria-hidden="true"
               />
               <div
                 className={`absolute top-8 right-10 w-44 h-44 border border-[#E69138]/15 hidden lg:block ${showText ? "geometric-appear" : "opacity-0"}`}
-                style={{ animationDelay: "600ms", animationFillMode: "forwards" }}
+                style={{ animationDelay: `${HERO_TRUST_DELAY + 100}ms`, animationFillMode: "forwards" }}
                 aria-hidden="true"
               />
 

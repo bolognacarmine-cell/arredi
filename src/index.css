@@ -434,6 +434,29 @@ p, span, div {
   animation: reveal-right-to-left 800ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* Entrata dei contenuti hero: fade-in + leggero slide-up */
+@keyframes hero-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-enter {
+  animation: hero-enter 750ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-enter {
+    animation: none;
+    opacity: 1;
+  }
+}
+
 /* Experimental hero animations */
 @keyframes experimental-reveal-right-to-left {
   0% {
