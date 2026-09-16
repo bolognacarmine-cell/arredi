@@ -9,8 +9,6 @@ const links = [
 
   { label: "Progetti", to: "/progetti" },
 
-  { label: "Showroom", to: "/showroom" },
-
   { label: "Blog", to: "/blog" },
 
   { label: "Chi siamo", to: "/chi-siamo" },
