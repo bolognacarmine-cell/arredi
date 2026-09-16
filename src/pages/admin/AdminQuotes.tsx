@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useQuotes, type QuoteRecord } from "../../quoteStore"
 import * as quotesApi from "../../api/quotesApi"
 import { useAdminAuth } from "../../hooks/useAdminAuth"
@@ -20,9 +20,32 @@ export default function AdminQuotes() {
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
   const [isUpdating, setIsUpdating] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [expandedMessage, setExpandedMessage] = useState(false)
+  const detailPanelRef = useRef<HTMLDivElement>(null)
 
   const filtered =
     filter === "all" ? quotes : (Array.isArray(quotes) ? quotes.filter((q) => q.stato === filter) : [])
+
+  // Handle keyboard navigation
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && selectedQuote) {
+        setSelectedQuote(null)
+        setExpandedMessage(false)
+      }
+    }
+
+    window.addEventListener("keydown", handleEscape)
+    return () => window.removeEventListener("keydown", handleEscape)
+  }, [selectedQuote])
+
+  // Focus management when panel opens
+  useEffect(() => {
+    if (selectedQuote && detailPanelRef.current) {
+      detailPanelRef.current.focus()
+    }
+  }, [selectedQuote])
 
   const handleStatusChange = async (quoteId: string, newStatus: QuoteRecord["stato"]) => {
     setIsUpdating(quoteId)
@@ -87,223 +110,401 @@ export default function AdminQuotes() {
     link.click()
   }
 
+  const handlePrint = () => {
+    if (selectedQuote) {
+      window.print()
+    }
+  }
+
+  const formatFieldValue = (value: any): string => {
+    if (value === null || value === undefined || value === "") {
+      return "—"
+    }
+    if (typeof value === "boolean") {
+      return value ? "Sì" : "No"
+    }
+    if (Array.isArray(value)) {
+      return value.join(", ")
+    }
+    if (typeof value === "object") {
+      return JSON.stringify(value)
+    }
+    return String(value)
+  }
+
+  const isMessageLong = (message: string) => {
+    return message.length > 200
+  }
+
+  // Loading state
+  useEffect(() => {
+    const loadQuotes = async () => {
+      setLoading(true)
+      try {
+        await refreshQuotes()
+      } catch (err) {
+        console.error("Error loading quotes:", err)
+        setError("Impossibile caricare i preventivi. Riprova.")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadQuotes()
+  }, [])
+
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-3xl font-light text-[#1A1A18]">
-            Preventivi & Lead
-          </h1>
-          <p className="text-[#888580] text-sm mt-0.5">
-            {quotes.length} richieste totali
-          </p>
-        </div>
-        <button
-          onClick={handleExportCSV}
-          className="border border-[#DDD9D0] px-5 py-2.5 text-sm font-medium text-[#4A4A46] transition-colors hover:border-[#1B4332] hover:text-[#1B4332]"
-        >
-          Export CSV
-        </button>
-      </div>
-
-      {error && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
-      )}
-
-      {/* Filter tabs */}
-      <div className="flex gap-1 mb-5">
-        {([
-          ["all", "Tutti"],
-          ...statuses.map((s) => [s, s ? s.charAt(0).toUpperCase() + s.slice(1) : s]),
-        ] as const).map(([k, l]) => (
+    <div className="min-h-screen bg-[#F7F5F0]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="font-display text-3xl font-light text-[#1A1A18]">
+              Preventivi & Lead
+            </h1>
+            <p className="text-[#888580] text-sm mt-0.5">
+              {loading ? "Caricamento..." : `${quotes.length} richieste totali`}
+            </p>
+          </div>
           <button
-            key={k}
-            onClick={() => setFilter(k)}
-            className={`px-4 py-2 text-sm font-medium transition-all ${
-              filter === k
-                ? "bg-[#1B4332] text-white"
-                : "bg-white border border-[#DDD9D0] text-[#4A4A46] hover:border-[#1B4332]"
-            }`}
+            onClick={handleExportCSV}
+            className="border border-[#DDD9D0] bg-white px-5 py-2.5 text-sm font-medium text-[#4A4A46] transition-colors hover:border-[#1B4332] hover:text-[#1B4332] shadow-sm"
           >
-            {l}
+            Export CSV
           </button>
-        ))}
-      </div>
-
-      <div
-        className={`grid gap-5 ${selectedQuote ? "lg:grid-cols-[1fr_360px]" : ""}`}
-      >
-        {/* Table */}
-        <div className="bg-white border border-[#DDD9D0] overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-[#F7F5F0] text-[#888580] text-xs uppercase tracking-wide border-b border-[#DDD9D0]">
-                <th className="text-left px-5 py-3">Contatto</th>
-                <th className="text-left px-5 py-3 hidden sm:table-cell">
-                  Settore
-                </th>
-                <th className="text-left px-5 py-3 hidden md:table-cell">
-                  Data
-                </th>
-                <th className="text-left px-5 py-3">Stato</th>
-                <th className="text-left px-5 py-3">Azioni</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((q) => (
-                <tr
-                  key={q.id}
-                  onClick={() => setSelectedQuote(q)}
-                  className={`border-t border-[#EAE7E0] cursor-pointer transition-colors ${
-                    selectedQuote?.id === q.id
-                      ? "bg-[#EAE7E0]"
-                      : "hover:bg-[#F7F5F0]"
-                  }`}
-                >
-                  <td className="px-5 py-3">
-                    <div className="font-medium text-[#1A1A18]">
-                      {q.nome} {q.cognome}
-                    </div>
-                    <div className="text-[#888580] text-xs">{q.azienda}</div>
-                  </td>
-                  <td className="px-5 py-3 hidden sm:table-cell text-[#4A4A46] text-xs">
-                    {q.settore}
-                  </td>
-                  <td className="px-5 py-3 hidden md:table-cell text-[#888580] text-xs">
-                    {q.data}
-                  </td>
-                  <td className="px-5 py-3">
-                    <span
-                      className={`text-xs px-2.5 py-1 font-medium rounded-full ${statusColor[q.stato]}`}
-                    >
-                      {q.stato}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setSelectedQuote(q)
-                        }}
-                        className="text-xs text-[#1B4332] hover:underline"
-                      >
-                        Dettaglio
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleDeleteQuote(q.id)
-                        }}
-                        disabled={isDeleting === q.id}
-                        className="text-xs text-red-600 hover:text-red-800 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {isDeleting === q.id ? "Eliminazione..." : "Elimina"}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </div>
 
-        {/* Detail panel */}
-        {selectedQuote && (
-          <div className="bg-white border border-[#DDD9D0] p-6 h-fit">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="font-display text-lg font-light text-[#1A1A18]">
-                {selectedQuote.nome} {selectedQuote.cognome}
-              </h2>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleDeleteQuote(selectedQuote.id)}
-                  disabled={isDeleting === selectedQuote.id}
-                  className="text-xs text-red-600 hover:text-red-800 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isDeleting === selectedQuote.id ? "Eliminazione..." : "Elimina"}
-                </button>
-                <button
-                  onClick={() => setSelectedQuote(null)}
-                  className="text-[#888580] text-xs hover:text-[#1A1A18]"
-                >
-                  ✕
-                </button>
+        {error && (
+          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
+            {error}
+          </div>
+        )}
+
+        {/* Filter tabs */}
+        <div className="flex gap-1 mb-6 overflow-x-auto pb-2">
+          {([
+            ["all", "Tutti"],
+            ...statuses.map((s) => [s, s ? s.charAt(0).toUpperCase() + s.slice(1) : s]),
+          ] as const).map(([k, l]) => (
+            <button
+              key={k}
+              onClick={() => setFilter(k)}
+              className={`px-4 py-2 text-sm font-medium transition-all whitespace-nowrap ${
+                filter === k
+                  ? "bg-[#1B4332] text-white shadow-sm"
+                  : "bg-white border border-[#DDD9D0] text-[#4A4A46] hover:border-[#1B4332]"
+              }`}
+              aria-pressed={filter === k}
+            >
+              {l}
+            </button>
+          ))}
+        </div>
+
+        {/* Loading state */}
+        {loading && (
+          <div className="bg-white border border-[#DDD9D0] rounded-lg p-8 text-center">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#1B4332]"></div>
+            <p className="mt-4 text-[#888580] text-sm">Caricamento preventivi...</p>
+          </div>
+        )}
+
+        {/* Empty state */}
+        {!loading && filtered.length === 0 && (
+          <div className="bg-white border border-[#DDD9D0] rounded-lg p-8 text-center">
+            <p className="text-[#888580] text-sm">
+              {filter === "all" ? "Nessun preventivo presente" : `Nessun preventivo con stato "${filter}"`}
+            </p>
+          </div>
+        )}
+
+        {/* Content grid */}
+        {!loading && filtered.length > 0 && (
+          <div
+            className={`grid gap-6 ${selectedQuote ? "lg:grid-cols-[1fr_400px]" : ""}`}
+          >
+            {/* Table */}
+            <div className="bg-white border border-[#DDD9D0] rounded-lg overflow-hidden shadow-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-[#F7F5F0] text-[#888580] text-xs uppercase tracking-wide border-b border-[#DDD9D0]">
+                      <th className="text-left px-5 py-3 font-medium">Contatto</th>
+                      <th className="text-left px-5 py-3 hidden sm:table-cell font-medium">
+                        Settore
+                      </th>
+                      <th className="text-left px-5 py-3 hidden md:table-cell font-medium">
+                        Data
+                      </th>
+                      <th className="text-left px-5 py-3 font-medium">Stato</th>
+                      <th className="text-left px-5 py-3 font-medium">Azioni</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map((q) => (
+                      <tr
+                        key={q.id}
+                        onClick={() => setSelectedQuote(q)}
+                        className={`border-t border-[#EAE7E0] cursor-pointer transition-colors ${
+                          selectedQuote?.id === q.id
+                            ? "bg-[#EAE7E0]"
+                            : "hover:bg-[#F7F5F0]"
+                        }`}
+                        tabIndex={0}
+                        role="button"
+                        onKeyPress={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault()
+                            setSelectedQuote(q)
+                          }
+                        }}
+                      >
+                        <td className="px-5 py-3">
+                          <div className="font-medium text-[#1A1A18]">
+                            {q.nome} {q.cognome}
+                          </div>
+                          <div className="text-[#888580] text-xs">{q.azienda || "—"}</div>
+                        </td>
+                        <td className="px-5 py-3 hidden sm:table-cell text-[#4A4A46] text-xs">
+                          {q.settore || "—"}
+                        </td>
+                        <td className="px-5 py-3 hidden md:table-cell text-[#888580] text-xs">
+                          {q.data}
+                        </td>
+                        <td className="px-5 py-3">
+                          <span
+                            className={`text-xs px-2.5 py-1 font-medium rounded-full ${statusColor[q.stato]}`}
+                          >
+                            {q.stato}
+                          </span>
+                        </td>
+                        <td className="px-5 py-3">
+                          <div className="flex gap-2">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setSelectedQuote(q)
+                              }}
+                              className="text-xs text-[#1B4332] hover:underline focus:outline-none focus:ring-2 focus:ring-[#1B4332] focus:ring-offset-1 rounded"
+                            >
+                              Dettaglio
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleDeleteQuote(q.id)
+                              }}
+                              disabled={isDeleting === q.id}
+                              className="text-xs text-red-600 hover:text-red-800 hover:underline disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 rounded"
+                            >
+                              {isDeleting === q.id ? "Eliminazione..." : "Elimina"}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
 
-            <dl className="space-y-3 text-sm mb-5">
-              {[
-                ["Azienda", selectedQuote.azienda || "—"],
-                ["Settore", selectedQuote.settore],
-                ["Email", selectedQuote.email],
-                ["Telefono", selectedQuote.telefono],
-                ["Data richiesta", selectedQuote.data],
-                [
-                  "Metratura",
-                  selectedQuote.metratura ? `${selectedQuote.metratura} m²` : "—",
-                ],
-                ["Arredi richiesti", selectedQuote.arredo || "—"],
-              ].map(([l, v]) => (
-                <div
-                  key={l as string}
-                  className="border-b border-[#EAE7E0] pb-2.5 last:border-0"
-                >
-                  <dt className="text-[#888580] text-xs uppercase tracking-wide mb-0.5">
-                    {l}
-                  </dt>
-                  <dd className="text-[#1A1A18] font-medium">{v}</dd>
+            {/* Detail panel */}
+            {selectedQuote && (
+              <div
+                ref={detailPanelRef}
+                className="bg-white border border-[#DDD9D0] rounded-lg shadow-sm p-6 h-fit lg:sticky lg:top-8"
+                tabIndex={-1}
+                role="dialog"
+                aria-labelledby="quote-detail-title"
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h2
+                    id="quote-detail-title"
+                    className="font-display text-xl font-light text-[#1A1A18]"
+                  >
+                    {selectedQuote.nome} {selectedQuote.cognome}
+                  </h2>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handlePrint}
+                      className="text-[#888580] text-xs hover:text-[#1B4332] font-medium focus:outline-none focus:ring-2 focus:ring-[#1B4332] focus:ring-offset-1 rounded px-2 py-1"
+                      title="Stampa preventivo"
+                    >
+                      🖨️
+                    </button>
+                    <button
+                      onClick={() => handleDeleteQuote(selectedQuote.id)}
+                      disabled={isDeleting === selectedQuote.id}
+                      className="text-xs text-red-600 hover:text-red-800 font-medium disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 rounded px-2 py-1"
+                    >
+                      {isDeleting === selectedQuote.id ? "Eliminazione..." : "Elimina"}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSelectedQuote(null)
+                        setExpandedMessage(false)
+                      }}
+                      className="text-[#888580] text-xs hover:text-[#1A1A18] font-medium focus:outline-none focus:ring-2 focus:ring-[#1B4332] focus:ring-offset-1 rounded px-2 py-1"
+                      aria-label="Chiudi dettagli"
+                    >
+                      ✕
+                    </button>
+                  </div>
                 </div>
-              ))}
-            </dl>
 
-            {selectedQuote.messaggio && (
-              <div className="bg-[#F7F5F0] p-4 mb-5 text-sm text-[#4A4A46] leading-relaxed">
-                "{selectedQuote.messaggio}"
+                {/* Two-column layout for details */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div className="space-y-3">
+                    {[
+                      ["Azienda", selectedQuote.azienda],
+                      ["Settore", selectedQuote.settore],
+                      ["Email", selectedQuote.email],
+                      ["Telefono", selectedQuote.telefono],
+                    ].map(([label, value]) => (
+                      <div
+                        key={label}
+                        className="border-b border-[#EAE7E0] pb-2 last:border-0"
+                      >
+                        <dt className="text-[#888580] text-xs uppercase tracking-wide mb-0.5">
+                          {label}
+                        </dt>
+                        <dd className="text-[#1A1A18] font-medium text-sm whitespace-pre-wrap break-words" style={{ overflowWrap: "anywhere" }}>
+                          {formatFieldValue(value)}
+                        </dd>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="space-y-3">
+                    {[
+                      ["Data richiesta", selectedQuote.data],
+                      [
+                        "Metratura",
+                        selectedQuote.metratura ? `${selectedQuote.metratura} m²` : null,
+                      ],
+                      ["Arredi richiesti", selectedQuote.arredo],
+                      ["Stato", selectedQuote.stato],
+                    ].map(([label, value]) => (
+                      <div
+                        key={label}
+                        className="border-b border-[#EAE7E0] pb-2 last:border-0"
+                      >
+                        <dt className="text-[#888580] text-xs uppercase tracking-wide mb-0.5">
+                          {label}
+                        </dt>
+                        <dd className="text-[#1A1A18] font-medium text-sm whitespace-pre-wrap break-words" style={{ overflowWrap: "anywhere" }}>
+                          {formatFieldValue(value)}
+                        </dd>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Message section with expand/collapse */}
+                {selectedQuote.messaggio && (
+                  <div className="bg-[#F7F5F0] p-4 mb-6 rounded-lg">
+                    <dt className="text-[#888580] text-xs uppercase tracking-wide mb-2">
+                      Messaggio
+                    </dt>
+                    <div className="relative">
+                      <dd
+                        className={`text-sm text-[#4A4A46] leading-relaxed whitespace-pre-wrap break-words ${
+                          !expandedMessage && isMessageLong(selectedQuote.messaggio) ? "max-h-24 overflow-hidden" : ""
+                        }`}
+                        style={{ overflowWrap: "anywhere" }}
+                      >
+                        {selectedQuote.messaggio}
+                      </dd>
+                      {!expandedMessage && isMessageLong(selectedQuote.messaggio) && (
+                        <div className="absolute bottom-0 left-0 right-0 h-8 pointer-events-none" style={{ background: "linear-gradient(to top, #F7F5F0, transparent)" }} />
+                      )}
+                    </div>
+                    {isMessageLong(selectedQuote.messaggio) && (
+                      <button
+                        onClick={() => setExpandedMessage(!expandedMessage)}
+                        className="mt-2 text-xs text-[#1B4332] hover:underline focus:outline-none focus:ring-2 focus:ring-[#1B4332] focus:ring-offset-1 rounded"
+                      >
+                        {expandedMessage ? "Mostra meno" : "Mostra tutto"}
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* Internal notes */}
+                {selectedQuote.note && (
+                  <div className="bg-blue-50 p-4 mb-6 rounded-lg border border-blue-100">
+                    <dt className="text-[#888580] text-xs uppercase tracking-wide mb-2">
+                      Note interne
+                    </dt>
+                    <dd className="text-sm text-[#4A4A46] leading-relaxed whitespace-pre-wrap break-words" style={{ overflowWrap: "anywhere" }}>
+                      {selectedQuote.note}
+                    </dd>
+                  </div>
+                )}
+
+                {/* Status change */}
+                <div className="mb-6">
+                  <label className="block text-xs text-[#888580] uppercase tracking-wide mb-2">
+                    Cambia stato
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {statuses.map((s) => (
+                      <button
+                        key={s}
+                        onClick={() => handleStatusChange(selectedQuote.id, s)}
+                        disabled={isUpdating === selectedQuote.id}
+                        className={`px-3 py-1.5 text-xs font-medium border transition-colors focus:outline-none focus:ring-2 focus:ring-[#1B4332] focus:ring-offset-1 rounded ${
+                          selectedQuote.stato === s
+                            ? "border-[#1B4332] bg-[#1B4332] text-white"
+                            : "border-[#DDD9D0] text-[#4A4A46] hover:border-[#1B4332]"
+                        } disabled:opacity-50 disabled:cursor-not-allowed`}
+                      >
+                        {isUpdating === selectedQuote.id ? "Aggiornamento..." : s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Add note */}
+                <div>
+                  <label htmlFor="internal-note" className="block text-xs text-[#888580] uppercase tracking-wide mb-2">
+                    Aggiungi nota interna
+                  </label>
+                  <textarea
+                    id="internal-note"
+                    rows={3}
+                    value={nota}
+                    onChange={(e) => setNota(e.target.value)}
+                    placeholder="Aggiungi una nota..."
+                    className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:outline-none focus:border-[#1B4332] focus:ring-2 focus:ring-[#1B4332] focus:ring-offset-1 rounded resize-none"
+                  />
+                  <button
+                    onClick={() => {
+                      // Here you would implement the note saving logic
+                      console.log("Saving note:", nota)
+                      setNota("")
+                    }}
+                    className="mt-2 bg-[#1B4332] text-white text-xs font-medium px-4 py-2 hover:bg-[#143326] transition-colors focus:outline-none focus:ring-2 focus:ring-[#1B4332] focus:ring-offset-1 rounded"
+                  >
+                    Salva nota
+                  </button>
+                </div>
               </div>
             )}
-
-            <div className="mb-4">
-              <label className="block text-xs text-[#888580] uppercase tracking-wide mb-1.5">
-                Cambia stato
-              </label>
-              <div className="flex gap-2">
-                {statuses.map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => handleStatusChange(selectedQuote.id, s)}
-                    className={`px-3 py-1.5 text-xs font-medium border transition-colors ${
-                      selectedQuote.stato === s
-                        ? "border-[#1B4332] bg-[#1B4332] text-white"
-                        : "border-[#DDD9D0] text-[#4A4A46] hover:border-[#1B4332]"
-                    }`}
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs text-[#888580] uppercase tracking-wide mb-1.5">
-                Note interne
-              </label>
-              <textarea
-                rows={3}
-                value={nota}
-                onChange={(e) => setNota(e.target.value)}
-                placeholder="Aggiungi una nota..."
-                className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:outline-none focus:border-[#1B4332] resize-none"
-              />
-              <button className="mt-2 bg-[#1B4332] text-white text-xs font-medium px-4 py-2 hover:bg-[#143326] transition-colors">
-                Salva nota
-              </button>
-            </div>
           </div>
         )}
       </div>
+
+      {/* Print styles */}
+      <style jsx global>{`
+        @media print {
+          body {
+            background: white;
+          }
+          .no-print {
+            display: none !important;
+          }
+        }
+      `}</style>
     </div>
   )
 }
