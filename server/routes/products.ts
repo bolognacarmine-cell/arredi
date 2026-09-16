@@ -1,8 +1,17 @@
 import { Router, Request, Response } from 'express';
+import mongoose from 'mongoose';
 import { Product } from '../models/Product.js';
 import { requireAdmin } from '../middleware/requireAdmin.js';
 
 const router = Router();
+
+// Gli id applicativi (es. "p8xtyb21tj") non sono ObjectId: includerli nel ramo
+// _id farebbe fallire la query con un CastError.
+const byId = (id: string) =>
+  mongoose.isValidObjectId(id) ? { $or: [{ _id: id }, { id }] } : { id };
+
+const errMessage = (error: unknown) =>
+  error instanceof Error ? error.message : 'Unknown error';
 
 // GET all products
 router.get('/', async (req: Request, res: Response) => {
@@ -43,13 +52,14 @@ router.get('/slug/:slug', async (req: Request, res: Response) => {
 router.get('/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const product = await Product.findOne({ $or: [{ _id: id }, { id }] });
+    const product = await Product.findOne(byId(id));
     if (!product) {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
     res.json({ success: true, data: product });
   } catch (error) {
-    res.status(400).json({ success: false, message: 'Failed to fetch product' });
+    console.error('Error fetching product:', error);
+    res.status(400).json({ success: false, message: 'Failed to fetch product', error: errMessage(error) });
   }
 });
 
@@ -74,9 +84,10 @@ router.post('/', requireAdmin, async (req: Request, res: Response) => {
 router.put('/:id', requireAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const { _id, id: _ignoredId, createdAt, ...update } = req.body;
     const product = await Product.findOneAndUpdate(
-      { $or: [{ _id: id }, { id }] },
-      req.body,
+      byId(id),
+      { ...update, updatedAt: new Date() },
       { new: true, runValidators: true }
     );
     if (!product) {
@@ -85,7 +96,8 @@ router.put('/:id', requireAdmin, async (req: Request, res: Response) => {
       res.json({ success: true, data: product });
     }
   } catch (error) {
-    res.status(400).json({ success: false, message: 'Failed to update product' });
+    console.error('Error updating product:', error);
+    res.status(400).json({ success: false, message: 'Failed to update product', error: errMessage(error) });
   }
 });
 
@@ -93,14 +105,15 @@ router.put('/:id', requireAdmin, async (req: Request, res: Response) => {
 router.delete('/:id', requireAdmin, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const product = await Product.findOneAndDelete({ $or: [{ _id: id }, { id }] });
+    const product = await Product.findOneAndDelete(byId(id));
     if (!product) {
       res.status(404).json({ success: false, message: 'Product not found' });
     } else {
       res.json({ success: true, message: 'Product deleted' });
     }
   } catch (error) {
-    res.status(400).json({ success: false, message: 'Failed to delete product' });
+    console.error('Error deleting product:', error);
+    res.status(400).json({ success: false, message: 'Failed to delete product', error: errMessage(error) });
   }
 });
 

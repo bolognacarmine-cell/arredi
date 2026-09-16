@@ -131,7 +131,7 @@ export async function createProduct(data: Omit<Product, "_id" | "createdAt" | "u
     const result = await readJson(response)
 
     if (!response.ok) {
-      throw new Error(result.message || "Failed to create product")
+      throw new Error([result.message, result.error].filter(Boolean).join(": ") || "Failed to create product")
     }
 
     if (result.success && result.data) {
@@ -167,7 +167,7 @@ export async function updateProduct(id: string, data: Partial<Product>): Promise
     const result = await readJson(response)
 
     if (!response.ok) {
-      throw new Error(result.message || "Failed to update product")
+      throw new Error([result.message, result.error].filter(Boolean).join(": ") || "Failed to update product")
     }
 
     if (result.success && result.data) {
