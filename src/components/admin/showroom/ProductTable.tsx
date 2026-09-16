@@ -141,7 +141,7 @@ export default function ProductTable({
                       <div className="min-w-0">
                         <div className="font-medium truncate">{p.name}</div>
                         <div className="text-xs text-[#888580] truncate">
-                          SKU <span className="font-mono">{p.sku}</span>
+                          SKU <span className="font-mono">{p.sku || p.id}</span>
                         </div>
                       </div>
                     </div>

@@ -327,7 +327,7 @@ export default function OfferForm({ initial, onCancel, onSave, busy }: Props) {
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium truncate">{p.name}</div>
                         <div className="text-xs text-[#888580] truncate">
-                          <span className="font-mono">{p.sku}</span>
+                          <span className="font-mono">{p.sku || p.id}</span>
                         </div>
                       </div>
                       <div className="text-xs tabular-nums">€ {p.basePrice.toLocaleString("it-IT")}</div>

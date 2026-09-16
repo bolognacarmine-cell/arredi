@@ -242,7 +242,7 @@ export default function ShowroomDetail() {
                 ) : null}
               </div>
               <div className="text-right text-xs text-[#888580]">
-                <div>Codice: <span className="font-mono text-[#4A4A46]">{p.sku}</span></div>
+                <div>Codice: <span className="font-mono text-[#4A4A46]">{p.sku || p.id}</span></div>
               </div>
             </div>
 
@@ -339,7 +339,7 @@ export default function ShowroomDetail() {
               <div className="p-3 bg-[#F7F5F0] border border-[#EAE7E0] text-xs text-[#4A4A46]">
                 Stai richiedendo info per:{" "}
                 <span className="font-medium text-[#1A1A18]">{p.name}</span>{" "}
-                <span className="font-mono text-[#888580]">({p.sku})</span>
+                <span className="font-mono text-[#888580]">({p.sku || p.id})</span>
               </div>
               {[
                 { k: "nome", l: "Nome e cognome *", t: "text" },

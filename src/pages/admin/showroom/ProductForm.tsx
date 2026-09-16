@@ -5,7 +5,7 @@ import FurnitureTypeSelect from "../../../components/admin/showroom/FurnitureTyp
 import type { Product } from "../../../types/showroom"
 import type { ActivitySector } from "../../../constants/showroomSectors"
 import { FURNITURE_BY_SECTOR } from "../../../constants/showroomSectors"
-import { useProducts } from "../../../services/showroomApi"
+import { useProducts, slugify } from "../../../services/showroomApi"
 
 interface Props {
   initial?: Product
@@ -27,7 +27,6 @@ type FS = {
   basePrice: string
   discountPct: string
   images: string[]
-  sku: string
   active: boolean
 }
 const empty: FS = {
@@ -40,7 +39,6 @@ const empty: FS = {
   basePrice: "",
   discountPct: "",
   images: [],
-  sku: "",
   active: true,
 }
 
@@ -67,7 +65,6 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
         basePrice: String(initial.basePrice),
         discountPct: initial.discountPct ? String(initial.discountPct) : "",
         images: [...initial.images],
-        sku: initial.sku,
         active: initial.active,
       })
     } else setForm(empty)
@@ -110,9 +107,6 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
       const d = Number(form.discountPct)
       if (isNaN(d) || d < 0 || d > 100) e.discountPct = "Sconto % tra 0 e 100"
     }
-    if (!form.sku.trim()) e.sku = "SKU obbligatorio"
-    else if (all.some((p) => p.id !== initial?.id && p.sku === form.sku.trim()))
-      e.sku = "SKU già in uso"
     if (form.images.length === 0) e.images = "Aggiungi almeno un'immagine"
     return e
   }
@@ -134,7 +128,7 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
       basePrice: Number(form.basePrice),
       discountPct: form.discountPct ? Number(form.discountPct) : null,
       images: form.images,
-      sku: form.sku.trim(),
+      sku: slugify(form.name).toUpperCase().slice(0, 10) + "-" + Date.now().toString().slice(-4),
       active: form.active,
     }
     await onSave(data, initial?.id)
@@ -204,21 +198,10 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">Nome prodotto *</label>
-              <input value={form.name} onChange={(e) => set("name", e.target.value)} className={inCls(errors.name)} />
-              {errors.name && <p className="text-xs text-red-600 mt-1">{errors.name}</p>}
-            </div>
-            <div>
-              <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">SKU *</label>
-              <input
-                value={form.sku}
-                onChange={(e) => set("sku", e.target.value)}
-                className={inCls(errors.sku) + " font-mono"}
-              />
-              {errors.sku && <p className="text-xs text-red-600 mt-1">{errors.sku}</p>}
-            </div>
+          <div>
+            <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">Nome prodotto *</label>
+            <input value={form.name} onChange={(e) => set("name", e.target.value)} className={inCls(errors.name)} />
+            {errors.name && <p className="text-xs text-red-600 mt-1">{errors.name}</p>}
           </div>
 
           <div>

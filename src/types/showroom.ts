@@ -19,7 +19,7 @@ export interface Product {
   basePrice: number
   discountPct: number | null
   images: string[]
-  sku: string
+  sku?: string
   active: boolean
   createdAt: number
   updatedAt: number

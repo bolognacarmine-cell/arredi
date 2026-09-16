@@ -56,11 +56,17 @@ router.get('/:id', async (req: Request, res: Response) => {
 // POST create product
 router.post('/', requireAdmin, async (req: Request, res: Response) => {
   try {
-    const product = new Product(req.body);
+    const productData = {
+      ...req.body,
+      id: req.body.id || 'p' + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-3),
+      slug: req.body.slug || req.body.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + Date.now().toString(36).slice(-3),
+    };
+    const product = new Product(productData);
     await product.save();
     res.status(201).json({ success: true, data: product.toObject() });
   } catch (error) {
-    res.status(400).json({ success: false, message: 'Failed to create product' });
+    console.error('Error creating product:', error);
+    res.status(400).json({ success: false, message: 'Failed to create product', error: error instanceof Error ? error.message : 'Unknown error' });
   }
 });
 

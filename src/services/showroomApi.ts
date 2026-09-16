@@ -313,7 +313,7 @@ function mkP(
   basePrice: number,
   discountPct: number | null,
   images: string[],
-  sku: string,
+  sku?: string,
   furnitureTypeOther?: string,
   activitySectorOther?: string,
 ): Product {
