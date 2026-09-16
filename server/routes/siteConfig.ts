@@ -176,27 +176,48 @@ router.post('/smtp', requireAdmin, async (req: Request, res: Response) => {
       quoteNotificationEmail
     } = req.body;
 
-    // Validate required fields
-    if (!smtpHost || !smtpPort || !smtpUsername || !smtpPassword || !smtpFrom || !smtpFromName) {
+    // Validate required fields with specific error messages
+    const missingFields: string[] = [];
+    
+    if (!smtpHost || typeof smtpHost !== 'string' || smtpHost.trim() === '') {
+      missingFields.push('smtpHost');
+    }
+    if (!smtpPort || smtpPort === '' || smtpPort === 0) {
+      missingFields.push('smtpPort');
+    }
+    if (!smtpUsername || typeof smtpUsername !== 'string' || smtpUsername.trim() === '') {
+      missingFields.push('smtpUsername');
+    }
+    if (!smtpPassword || typeof smtpPassword !== 'string' || smtpPassword.trim() === '') {
+      missingFields.push('smtpPassword');
+    }
+    if (!smtpFrom || typeof smtpFrom !== 'string' || smtpFrom.trim() === '') {
+      missingFields.push('smtpFrom');
+    }
+    if (!smtpFromName || typeof smtpFromName !== 'string' || smtpFromName.trim() === '') {
+      missingFields.push('smtpFromName');
+    }
+
+    if (missingFields.length > 0) {
       return res.status(400).json({ 
-        error: 'Missing required SMTP configuration fields' 
+        error: `Missing required SMTP configuration fields: ${missingFields.join(', ')}` 
       });
     }
 
     // Update or create each configuration
     const smtpConfigs = [
-      { key: 'smtpHost', value: smtpHost, description: 'SMTP server host', isSensitive: false },
-      { key: 'smtpPort', value: String(smtpPort), description: 'SMTP server port', isSensitive: false },
-      { key: 'smtpUsername', value: smtpUsername, description: 'SMTP username', isSensitive: true },
-      { key: 'smtpPassword', value: smtpPassword, description: 'SMTP password', isSensitive: true },
-      { key: 'smtpFrom', value: smtpFrom, description: 'From email address', isSensitive: false },
-      { key: 'smtpFromName', value: smtpFromName, description: 'From name', isSensitive: false },
+      { key: 'smtpHost', value: smtpHost.trim(), description: 'SMTP server host', isSensitive: false },
+      { key: 'smtpPort', value: String(smtpPort).trim(), description: 'SMTP server port', isSensitive: false },
+      { key: 'smtpUsername', value: smtpUsername.trim(), description: 'SMTP username', isSensitive: true },
+      { key: 'smtpPassword', value: smtpPassword.trim(), description: 'SMTP password', isSensitive: true },
+      { key: 'smtpFrom', value: smtpFrom.trim(), description: 'From email address', isSensitive: false },
+      { key: 'smtpFromName', value: smtpFromName.trim(), description: 'From name', isSensitive: false },
     ];
 
-    if (quoteNotificationEmail) {
+    if (quoteNotificationEmail && typeof quoteNotificationEmail === 'string' && quoteNotificationEmail.trim() !== '') {
       smtpConfigs.push({ 
         key: 'quoteNotificationEmail', 
-        value: quoteNotificationEmail, 
+        value: quoteNotificationEmail.trim(), 
         description: 'Email for quote notifications', 
         isSensitive: false 
       });

@@ -185,6 +185,26 @@ function EmailSettingsTab() {
     setLoading(true)
     setError('')
     
+    // Frontend validation before sending to backend
+    const requiredFields: { key: keyof typeof smtpConfig; label: string }[] = [
+      { key: 'smtpHost', label: 'Host SMTP' },
+      { key: 'smtpPort', label: 'Porta' },
+      { key: 'smtpUsername', label: 'Username' },
+      { key: 'smtpPassword', label: 'Password' },
+      { key: 'smtpFrom', label: 'Email mittente' },
+      { key: 'smtpFromName', label: 'Nome mittente' },
+    ]
+
+    const missingFields = requiredFields
+      .filter(field => !smtpConfig[field.key] || smtpConfig[field.key].trim() === '')
+      .map(field => field.label)
+
+    if (missingFields.length > 0) {
+      setError(`Compila i campi obbligatori: ${missingFields.join(', ')}`)
+      setLoading(false)
+      return
+    }
+    
     try {
       const response = await fetch('/api/site-config/smtp', {
         method: 'POST',
@@ -195,8 +215,8 @@ function EmailSettingsTab() {
       })
 
       if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(errorText || 'Failed to save SMTP configuration')
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to save SMTP configuration')
       }
 
       setSaved(true)
@@ -352,7 +372,7 @@ function EmailSettingsTab() {
           </button>
         </div>
         {error && (
-          <div className="text-sm text-red-600">
+          <div className="text-sm text-red-600 border border-red-200 bg-red-50 p-3 rounded">
             {error}
           </div>
         )}

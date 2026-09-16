@@ -283,8 +283,23 @@ Email notifications require SMTP configuration to be set up in the admin panel u
 - `smtpFrom` - From email address for sent emails
 - `smtpFromName` - From name for sent emails (e.g., "Farcom Arredi")
 
+**Important:** All required fields must be non-empty strings. The system validates that each required field is present and not just whitespace before saving.
+
 **Optional Configuration Fields:**
 - `quoteNotificationEmail` - Email address for owner notifications (defaults to farcomsrl@hotmail.com if not set)
+
+**Configuration Process:**
+1. Navigate to Admin Panel → Settings → Email tab
+2. Fill in all required SMTP fields (Host, Port, Username, Password, From email, From name)
+3. Optionally configure quote notification email
+4. Click "Salva configurazione SMTP"
+5. Test configuration with "Invia email di test" button
+
+**Error Handling:**
+- Frontend validates required fields before sending to backend
+- Backend provides specific error messages indicating which fields are missing
+- Password field is write-only - never loaded from server for security
+- Empty or whitespace-only values are rejected
 
 ### Email Notification Behavior
 When a quote is submitted via the public form:
