@@ -166,6 +166,8 @@ export default function Quote() {
           // If upload fails due to Cloudinary not configured, fallback to regular quote
           if (uploadError.message && uploadError.message.includes('Servizio di upload non configurato')) {
             console.warn('Cloudinary not configured, submitting quote without attachments')
+            // Show warning to user that images weren't uploaded
+            setError("Il servizio di upload immagini non è configurato. Il preventivo è stato inviato senza allegati.")
             await quotesApi.createQuote({
               id: "",
               nome: form.nome,

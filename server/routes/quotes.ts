@@ -23,6 +23,25 @@ if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && proce
   });
 }
 
+// Debug endpoint to check Cloudinary configuration status (admin only)
+router.get('/debug/cloudinary-status', requireAdmin, (req: Request, res: Response) => {
+  const isConfigured = !!(
+    process.env.CLOUDINARY_CLOUD_NAME &&
+    process.env.CLOUDINARY_API_KEY &&
+    process.env.CLOUDINARY_API_SECRET
+  );
+
+  res.json({
+    cloudinaryConfigured: isConfigured,
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME ? 'configured' : 'missing',
+    apiKey: process.env.CLOUDINARY_API_KEY ? 'configured' : 'missing',
+    apiSecret: process.env.CLOUDINARY_API_SECRET ? 'configured' : 'missing',
+    note: isConfigured
+      ? 'Cloudinary is configured - image upload should work'
+      : 'Cloudinary is NOT configured - images will not be uploaded. Add CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET to environment variables.'
+  });
+});
+
 // Configure Multer for memory storage
 const upload = multer({
   storage: multer.memoryStorage(),
