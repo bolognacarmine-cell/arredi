@@ -4,6 +4,7 @@ import {
   getSocialLinks,
   useSiteSettings,
 } from "../siteConfig"
+import SEOHead from "../components/SEOHead"
 
 export default function Contacts() {
   useEffect(() => {
@@ -31,6 +32,119 @@ export default function Contacts() {
 
   return (
     <div className="bg-[#F7F5F0] min-h-screen pt-24">
+      <SEOHead
+        title="Contatti - Farcom Srl | Showroom Macerata Campania"
+        description="Contatta Farcom Srl: showroom arredamento a Macerata Campania, Via P. Vertaldi 27. Telefono +39 0823 694427, WhatsApp +39 329 4576079. Arredamento su misura in tutta Italia."
+        canonical="https://arredi.onrender.com/contatti"
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "LocalBusiness",
+          "name": "Farcom Srl",
+          "description": "Showroom arredamento a Macerata Campania. Arredi su misura per barberie, uffici, negozi e attività professionali con servizio in tutta Italia.",
+          "url": "https://arredi.onrender.com/",
+          "telephone": "+39 0823 694427",
+          "email": "farcomsrl@hotmail.com",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Via P. Vertaldi, 27",
+            "addressLocality": "Macerata Campania",
+            "addressRegion": "CE",
+            "postalCode": "81050",
+            "addressCountry": "IT"
+          },
+          "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": 41.055439,
+            "longitude": 14.2848
+          },
+          "openingHoursSpecification": [
+            {
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+              "opens": "09:00",
+              "closes": "13:00"
+            },
+            {
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+              "opens": "15:00",
+              "closes": "19:00"
+            },
+            {
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": "Saturday",
+              "opens": "09:00",
+              "closes": "13:00"
+            }
+          ],
+          "areaServed": [
+            {
+              "@type": "City",
+              "name": "Macerata Campania"
+            },
+            {
+              "@type": "City",
+              "name": "Caserta"
+            },
+            {
+              "@type": "AdministrativeArea",
+              "name": "Campania"
+            },
+            {
+              "@type": "Country",
+              "name": "Italia"
+            }
+          ],
+          "sameAs": [
+            "https://www.instagram.com/farcom_arredi/",
+            "https://www.facebook.com/p/Farcom-arredi-100054867935352/"
+          ]
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Dove si trova lo showroom Farcom?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Il nostro showroom si trova a Macerata Campania, in Via P. Vertaldi 27. Siamo facilmente raggiungibili da Caserta e provincia."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Farcom lavora solo in Campania o anche in altre regioni?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Farcom Srl ha sede a Macerata Campania ma offre servizio di arredamento e progettazione interni in tutta Italia. Operiamo a livello nazionale con la stessa qualità artigianale."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Posso visitare il showroom senza appuntamento?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Ti consigliamo di contattarci prima per fissare un appuntamento e assicurarti che un nostro consulente sia disponibile per darti tutta l'attenzione necessaria."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Quali sono gli orari di apertura?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Siamo aperti dal lunedì al venerdì: 9:00-13:00 / 15:00-19:00. Sabato: 9:00-13:00. Domenica chiusi."
+                }
+              }
+            ]
+          })
+        }}
+      />
+      />
       <div className="max-w-7xl mx-auto px-6 lg:px-10 py-16">
         <div className="mb-12">
           <span className="text-[#888580] text-xs tracking-widest uppercase font-semibold">
@@ -190,6 +304,44 @@ export default function Contacts() {
             )}
           </div>
         </div>
+
+        {/* FAQ Section */}
+        <section className="mt-20 pt-16 border-t border-[#DDD9D0]">
+          <div className="max-w-3xl mx-auto">
+            <h2 className="font-display text-3xl font-light text-[#1A1A18] mb-8 text-center">
+              Domande frequenti
+            </h2>
+            <div className="space-y-6">
+              {[
+                {
+                  q: "Dove si trova lo showroom Farcom?",
+                  a: "Il nostro showroom si trova a Macerata Campania, in Via P. Vertaldi 27. Siamo facilmente raggiungibili da Caserta e provincia."
+                },
+                {
+                  q: "Farcom lavora solo in Campania o anche in altre regioni?",
+                  a: "Farcom Srl ha sede a Macerata Campania ma offre servizio di arredamento e progettazione interni in tutta Italia. Operiamo a livello nazionale con la stessa qualità artigianale."
+                },
+                {
+                  q: "Posso visitare il showroom senza appuntamento?",
+                  a: "Ti consigliamo di contattarci prima per fissare un appuntamento e assicurarti che un nostro consulente sia disponibile per darti tutta l'attenzione necessaria."
+                },
+                {
+                  q: "Quali sono gli orari di apertura?",
+                  a: "Siamo aperti dal lunedì al venerdì: 9:00-13:00 / 15:00-19:00. Sabato: 9:00-13:00. Domenica chiusi."
+                }
+              ].map((faq, i) => (
+                <div key={i} className="bg-white border border-[#DDD9D0] p-6">
+                  <h3 className="font-display text-lg font-medium text-[#1A1A18] mb-2">
+                    {faq.q}
+                  </h3>
+                  <p className="text-[#4A4A46] text-sm leading-relaxed">
+                    {faq.a}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   )

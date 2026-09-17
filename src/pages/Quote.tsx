@@ -3,6 +3,7 @@ import { useSearchParams, Link } from "react-router-dom"
 import { SECTORS } from "../data"
 import * as quotesApi from "../api/quotesApi"
 import Alert from "../components/Alert"
+import SEOHead from "../components/SEOHead"
 
 export default function Quote() {
   useEffect(() => {
@@ -333,17 +334,67 @@ export default function Quote() {
 
   return (
     <div className="bg-[var(--background)] min-h-screen pt-24">
+      <SEOHead
+        title="Preventivo Arredamento Gratuito - Farcom Srl Macerata Campania e Italia"
+        description="Richiedi un preventivo gratuito per arredamento su misura a Macerata Campania, Caserta e in tutta Italia. Sopralluogo gratuito e consulenza senza impegno. Arredatore di interni esperti."
+        canonical="https://arredi.onrender.com/preventivo"
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Come richiedere un preventivo per arredamento?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Compila il modulo di richiesta preventivo sul nostro sito. Ti ricontatteremo entro 24 ore lavorative per discutere il tuo progetto e fissare un sopralluogo gratuito se necessario."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Il preventivo per arredamento è gratuito?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Sì, il preventivo e il sopralluogo sono completamente gratuiti e senza impegno. Inviaci la richiesta tramite il modulo e riceverai un'offerta personalizzata."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Farcom lavora solo in Campania o anche in altre regioni?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Farcom Srl ha sede a Macerata Campania ma offre servizio di arredamento e progettazione interni in tutta Italia. Operiamo a livello nazionale con la stessa qualità artigianale."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Quanto tempo ci vuole per ricevere il preventivo?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Dopo la richiesta, ti ricontatteremo entro 24 ore lavorative. Per progetti complessi, i tempi possono variare in base alla necessità di sopralluogo e raccolta informazioni dettagliate."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Cosa serve per richiedere un preventivo?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Compila il modulo con i tuoi dati di contatto, descrivi il progetto, indica la metratura approssimativa e il tipo di arredi richiesti. Puoi anche allegare immagini o documenti PDF del progetto per aiutarci a comprendere meglio le tue esigenze."
+              }
+            }
+          ]
+        }}
+      />
       <div className="max-w-4xl mx-auto px-6 lg:px-10 py-16">
         <div className="mb-12">
           <span className="text-[var(--muted-foreground)] text-xs tracking-widest uppercase font-semibold">
             Sopralluogo gratuito
           </span>
           <h1 className="font-display text-5xl font-light text-[var(--foreground)] mt-2 mb-4">
-            Richiedi un preventivo
+            Preventivo Arredamento Gratuito
           </h1>
           <p className="text-[var(--muted-foreground)] max-w-lg leading-relaxed">
-            Compila il modulo e ti ricontatteremo entro 24 ore. Il sopralluogo e
-            la prima consulenza sono sempre gratuiti e senza impegno.
+            Richiedi un preventivo gratuito per arredamento su misura a Macerata Campania, Caserta e in tutta Italia. Il sopralluogo e la prima consulenza sono sempre gratuiti e senza impegno.
           </p>
         </div>
 
@@ -607,6 +658,39 @@ export default function Quote() {
             {isSubmitting ? "Invio in corso..." : "Invia richiesta"}
           </button>
         </form>
+
+        {/* FAQ Section */}
+        <div className="mt-16">
+          <h2 className="font-display text-2xl font-light text-[var(--foreground)] mb-8">
+            Domande frequenti sul preventivo arredamento
+          </h2>
+          <div className="space-y-6">
+            <div className="border border-[var(--border)] bg-white p-6 rounded-lg">
+              <h3 className="font-semibold text-[var(--foreground)] mb-2">Come richiedere un preventivo per arredamento?</h3>
+              <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">
+                Compila il modulo di richiesta preventivo sul nostro sito. Ti ricontatteremo entro 24 ore lavorative per discutere il tuo progetto e fissare un sopralluogo gratuito se necessario.
+              </p>
+            </div>
+            <div className="border border-[var(--border)] bg-white p-6 rounded-lg">
+              <h3 className="font-semibold text-[var(--foreground)] mb-2">Il preventivo per arredamento è gratuito?</h3>
+              <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">
+                Sì, il preventivo e il sopralluogo sono completamente gratuiti e senza impegno. Inviaci la richiesta tramite il modulo e riceverai un'offerta personalizzata.
+              </p>
+            </div>
+            <div className="border border-[var(--border)] bg-white p-6 rounded-lg">
+              <h3 className="font-semibold text-[var(--foreground)] mb-2">Farcom lavora solo in Campania o anche in altre regioni?</h3>
+              <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">
+                Farcom Srl ha sede a Macerata Campania ma offre servizio di arredamento e progettazione interni in tutta Italia. Operiamo a livello nazionale con la stessa qualità artigianale.
+              </p>
+            </div>
+            <div className="border border-[var(--border)] bg-white p-6 rounded-lg">
+              <h3 className="font-semibold text-[var(--foreground)] mb-2">Quanto tempo ci vuole per ricevere il preventivo?</h3>
+              <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">
+                Dopo la richiesta, ti ricontatteremo entro 24 ore lavorative. Per progetti complessi, i tempi possono variare in base alla necessità di sopralluogo e raccolta informazioni dettagliate.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )

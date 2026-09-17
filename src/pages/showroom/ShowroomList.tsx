@@ -5,6 +5,7 @@ import ProductFilters, {
   defaultPublicFilters,
   type PublicFilterState,
 } from "../../components/showroom/ProductFilters"
+import SEOHead from "../../components/SEOHead"
 import {
   computeEffectivePrice,
   getProducts,
@@ -42,6 +43,62 @@ export default function ShowroomList() {
 
   return (
     <main className="pt-24 pb-24 bg-[var(--background)] min-h-screen">
+      <SEOHead
+        title="Showroom Arredamento Campania - Arredi Professionali Farcom Srl"
+        description="Showroom arredamento Campania: arredi professionali su misura per barberie, parrucchieri, uffici, scuole. Visita il nostro showroom a Macerata Campania o richiedi un preventivo in tutta Italia."
+        canonical="https://arredi.onrender.com/showroom"
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "Store",
+          "name": "Farcom Srl Showroom",
+          "description": "Showroom arredamento Campania con arredi professionali su misura per barberie, parrucchieri, uffici, scuole e attività speciali.",
+          "url": "https://arredi.onrender.com/showroom",
+          "telephone": "+39 0823 694427",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Via P. Vertaldi, 27",
+            "addressLocality": "Macerata Campania",
+            "addressRegion": "CE",
+            "postalCode": "81050",
+            "addressCountry": "IT"
+          },
+          "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": 41.10,
+            "longitude": 14.25
+          },
+          "openingHoursSpecification": [
+            {
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+              "opens": "09:00",
+              "closes": "13:00"
+            },
+            {
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+              "opens": "15:00",
+              "closes": "19:00"
+            },
+            {
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": "Saturday"],
+              "opens": "09:00",
+              "closes": "13:00"
+            }
+          ],
+          "areaServed": [
+            {
+              "@type": "AdministrativeArea",
+              "name": "Campania"
+            },
+            {
+              "@type": "Country",
+              "name": "Italia"
+            }
+          ]
+        }}
+      />
       <section className="max-w-7xl mx-auto px-6 md:px-8 lg:px-16">
         <div className="mb-12">
           <div className="inline-flex items-center gap-3 px-4 py-1.5 mb-5 border border-[var(--accent)]/30 bg-white">
@@ -51,11 +108,10 @@ export default function ShowroomList() {
             </span>
           </div>
           <h1 className="font-display text-4xl md:text-5xl font-light text-[var(--foreground)] leading-tight max-w-3xl">
-            Showroom arredi professionali
+            Showroom Arredamento Campania
           </h1>
           <p className="mt-5 text-base md:text-lg text-[var(--foreground)] max-w-2xl leading-relaxed">
-            Una selezione curata di arredi realizzati su misura per barberie, parrucchieri,
-            uffici, scuole e attività speciali. Qualità artigianale e design italiano.
+            Showroom arredamento Campania a Macerata Campania: arredi professionali su misura per barberie, parrucchieri, uffici, scuole e attività speciali. Qualità artigianale Made in Italy con servizio in tutta Italia.
           </p>
           {products.some((p) => computeEffectivePrice(p).savings > 0) && (
             <button

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { getPosts, getSectors, type Post, type BlogSector } from "../api/blogApi"
+import SEOHead from "../components/SEOHead"
 
 export default function Blog() {
   useEffect(() => {
@@ -56,12 +57,32 @@ export default function Blog() {
 
   return (
     <div className="min-h-screen bg-[var(--background)]">
+      <SEOHead
+        title="Blog Arredamento e Progettazione Interni - Farcom Srl"
+        description="Blog Farcom Srl: idee, guide e consigli per arredare spazi professionali a Macerata Campania e in tutta Italia. Tendenze arredamento, progettazione interni e design italiano."
+        canonical="https://arredi.onrender.com/blog"
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "Blog",
+          "name": "Blog Farcom Srl - Arredamento e Progettazione Interni",
+          "description": "Blog dedicato all'arredamento e progettazione interni con articoli su tendenze, consigli e guide per spazi professionali e residenziali.",
+          "url": "https://arredi.onrender.com/blog",
+          "publisher": {
+            "@type": "Organization",
+            "name": "Farcom Srl",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://arredi.onrender.com/logo.png"
+            }
+          }
+        }}
+      />
       {/* Header */}
       <div className="bg-[var(--foreground)] text-white py-16">
         <div className="max-w-7xl mx-auto px-6">
-          <h1 className="text-4xl md:text-5xl font-display font-medium mb-4">Blog</h1>
+          <h1 className="text-4xl md:text-5xl font-display font-medium mb-4">Blog Arredamento e Progettazione Interni</h1>
           <p className="text-lg text-white/70 max-w-2xl">
-            Idee, guide e consigli per arredare spazi professionali con stile e funzionalità
+            Idee, guide e consigli per arredare spazi professionali a Macerata Campania, Caserta e in tutta Italia. Tendenze arredamento, progettazione interni e design italiano.
           </p>
         </div>
       </div>

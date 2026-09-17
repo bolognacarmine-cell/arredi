@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
@@ -35,11 +36,12 @@ import { AdminAuthProvider } from "./hooks/useAdminAuth";
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <AdminAuthProvider>
-        <ScrollToTop />
-        <Navbar />
-        <Routes>
+    <HelmetProvider>
+      <BrowserRouter>
+        <AdminAuthProvider>
+          <ScrollToTop />
+          <Navbar />
+          <Routes>
           {/* PUBLIC */}
           <Route path="/" element={<Home />} />
           <Route path="/settori" element={<SettoriList />} />
@@ -78,5 +80,6 @@ export default function App() {
         <CookieBanner />
       </AdminAuthProvider>
     </BrowserRouter>
+    </HelmetProvider>
   )
 }

@@ -1,5 +1,6 @@
 import { useEffect } from "react"
 import { Link } from "react-router-dom"
+import SEOHead from "../components/SEOHead"
 
 export default function About() {
   useEffect(() => {
@@ -20,6 +21,39 @@ export default function About() {
 
   return (
     <div className="bg-[#F7F5F0] min-h-screen pt-24">
+      <SEOHead
+        title="Chi Siamo - Farcom Srl | Arredamento Macerata Campania dal 2003"
+        description="Farcom Srl: dal 2003 arredamento e progettazione interni a Macerata Campania e in tutta Italia. Specializzati in arredi per barberie, uffici, negozi e attività professionali. Qualità artigianale Made in Italy."
+        canonical="https://arredi.onrender.com/chi-siamo"
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          "name": "Farcom Srl",
+          "legalName": "Farcom S.r.l.",
+          "description": "Azienda di arredamento e progettazione interni a Macerata Campania, attiva dal 2003. Specializzata in arredi per barberie, uffici, negozi, scuole e attività professionali con servizio in tutta Italia.",
+          "url": "https://arredi.onrender.com/",
+          "foundingDate": "2003",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Via P. Vertaldi, 27",
+            "addressLocality": "Macerata Campania",
+            "addressRegion": "CE",
+            "postalCode": "81050",
+            "addressCountry": "IT"
+          },
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "telephone": "+39 0823 694427",
+            "contactType": "customer service",
+            "areaServed": "IT",
+            "availableLanguage": "Italian"
+          },
+          "sameAs": [
+            "https://www.instagram.com/farcom_arredi/",
+            "https://www.facebook.com/p/Farcom-arredi-100054867935352/"
+          ]
+        }}
+      />
       {/* Header */}
       <section className="max-w-7xl mx-auto px-6 lg:px-10 pt-12 pb-20">
         <div className="grid lg:grid-cols-2 gap-16 items-start">
@@ -34,10 +68,11 @@ export default function About() {
             </h1>
             <p className="text-[#4A4A46] leading-relaxed mb-6 text-base">
               Farcom S.r.l. è un punto di riferimento nel settore degli arredi
-              per attività commerciali e professionali. Specializzati in
-              soluzioni per barbieri, uffici, negozi, scuole, bar e centri
-              estetici, continuiamo a crescere adattandoci alle nuove esigenze
-              del mercato con proposte sempre più evolute.
+              per attività commerciali e professionali. Dal 2003 operiamo a
+              Macerata Campania e in tutta Italia, specializzandoci in soluzioni
+              per barbieri, uffici, negozi, scuole, bar e centri estetici.
+              Continuiamo a crescere adattandoci alle nuove esigenze del mercato
+              con proposte sempre più evolute.
             </p>
             <p className="text-[#4A4A46] leading-relaxed mb-6 text-base">
               Investiamo in innovazione e design collaborando con professionisti
@@ -45,18 +80,20 @@ export default function About() {
               nella consegna e la qualità dei materiali sono i pilastri della
               nostra offerta: ogni progetto nasce per creare ambienti
               funzionali e accoglienti che rispondano alle esigenze specifiche
-              dei nostri clienti.
+              dei nostri clienti in Campania e in tutta Italia.
             </p>
             <p className="text-[#4A4A46] leading-relaxed text-base">
               Ci distinguiamo per l'attenzione al cliente: offriamo consulenze
               personalizzate e un servizio di assistenza post-vendita completo,
-              perché per noi ogni spazio ha la sua storia da raccontare.
+              perché per noi ogni spazio ha la sua storia da raccontare. Visita
+              il nostro showroom a Macerata Campania o richiedi un preventivo
+              per il tuo progetto ovunque in Italia.
             </p>
           </div>
           <div className="relative">
             <img
               src="https://images.unsplash.com/photo-1547609434-b732edfee020?w=700&h=800&fit=crop&auto=format"
-              alt="Il nostro laboratorio"
+              alt="Laboratorio artigianale Farcom Srl - Produzione arredi su misura Macerata Campania"
               className="w-full object-cover"
             />
             <div className="absolute -bottom-6 -left-6 bg-[#1B4332] text-white p-6 hidden lg:block">

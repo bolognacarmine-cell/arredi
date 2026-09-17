@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { useParams, Link } from "react-router-dom"
 import { getPostBySlug, getPosts, type Post } from "../api/blogApi"
+import SEOHead from "../components/SEOHead"
 
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>()
@@ -28,16 +29,7 @@ export default function BlogPost() {
     loadPost()
   }, [slug])
 
-  useEffect(() => {
-    if (post) {
-      // Update document title and meta description
-      document.title = post.seoTitle || post.title
-      const metaDescription = document.querySelector('meta[name="description"]')
-      if (metaDescription) {
-        metaDescription.setAttribute('content', post.seoDescription || post.excerpt)
-      }
-    }
-  }, [post])
+
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('it-IT', {
@@ -60,8 +52,20 @@ export default function BlogPost() {
         "@type": "Person",
         "name": post.author.name,
       },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Farcom Srl",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://arredi.onrender.com/logo.png"
+        }
+      },
       "datePublished": post.publishedAt,
       "dateModified": post.updatedAt,
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": `https://arredi.onrender.com/blog/${post.slug}`
+      }
     }
   }
 
@@ -89,9 +93,12 @@ export default function BlogPost() {
   return (
     <>
       {post && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(getSchemaOrgData()) }}
+        <SEOHead
+          title={post.seoTitle || post.title}
+          description={post.seoDescription || post.excerpt}
+          canonical={`https://arredi.onrender.com/blog/${post.slug}`}
+          ogImage={post.coverImage}
+          schema={getSchemaOrgData()}
         />
       )}
       
@@ -146,7 +153,7 @@ export default function BlogPost() {
           <div className="max-w-4xl mx-auto px-6 py-8">
             <img
               src={post.coverImage}
-              alt={post.title}
+              alt={`${post.title} - Articolo blog arredamento e progettazione interni Farcom`}
               className="w-full rounded-lg"
             />
           </div>
@@ -213,7 +220,7 @@ export default function BlogPost() {
                     <div className="aspect-[16/10] overflow-hidden">
                       <img
                         src={relatedPost.coverImage}
-                        alt={relatedPost.title}
+                        alt={`${relatedPost.title} - Articolo blog arredamento Farcom`}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>

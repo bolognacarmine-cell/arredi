@@ -13,6 +13,7 @@ import {
 } from "../../types/showroom"
 import ImageCarousel from "../../components/ImageCarousel"
 import PromoCountdown from "../../components/showroom/PromoCountdown"
+import SEOHead from "../../components/SEOHead"
 
 const eur = (n: number) =>
   n.toLocaleString("it-IT", {
@@ -27,6 +28,59 @@ const itDate = (d: string) =>
     month: "long",
     year: "numeric",
   })
+
+// Generate Product schema
+const getProductSchema = (product: Product, effectivePrice: ReturnType<typeof computeEffectivePrice>) => {
+  const finalPrice = effectivePrice?.finalPrice || product.basePrice
+  return {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": product.name,
+    "description": product.description,
+    "image": product.images,
+    "sku": product.sku || product.id,
+    "brand": {
+      "@type": "Brand",
+      "name": "Farcom"
+    },
+    "manufacturer": {
+      "@type": "Organization",
+      "name": "Farcom Srl"
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": finalPrice,
+      "priceCurrency": "EUR",
+      "availability": product.active ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      "url": `https://arredi.onrender.com/showroom/${product.slug}`,
+      "seller": {
+        "@type": "Organization",
+        "name": "Farcom Srl",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Via P. Vertaldi, 27",
+          "addressLocality": "Macerata Campania",
+          "addressRegion": "CE",
+          "postalCode": "81050",
+          "addressCountry": "IT"
+        }
+      }
+    },
+    "category": displaySector(product.activitySector, product.activitySectorOther),
+    "additionalProperty": [
+      {
+        "@type": "PropertyValue",
+        "name": "Settore",
+        "value": displaySector(product.activitySector, product.activitySectorOther)
+      },
+      {
+        "@type": "PropertyValue",
+        "name": "Tipologia",
+        "value": displayFurnitureType(product.furnitureType, product.furnitureTypeOther)
+      }
+    ]
+  }
+}
 
 export default function ShowroomDetail() {
   const { slug } = useParams<{ slug: string }>()
@@ -109,6 +163,12 @@ export default function ShowroomDetail() {
 
   return (
     <main className="pt-24 pb-24 bg-[var(--background)] min-h-screen">
+      <SEOHead
+        title={`${p.name} - Arredamento ${displaySector(p.activitySector, p.activitySectorOther)} | Farcom`}
+        description={`${p.description} Scopri questo arredo professionale ${displaySector(p.activitySector, p.activitySectorOther)} nel showroom Farcom a Macerata Campania. Qualità artigianale Made in Italy con servizio in tutta Italia.`}
+        canonical={`https://arredi.onrender.com/showroom/${p.slug}`}
+        schema={getProductSchema(p, eff)}
+      />
       <div className="max-w-7xl mx-auto px-6 md:px-8 lg:px-16">
         <nav className="mb-8 text-xs text-[var(--muted-foreground)] flex flex-wrap items-center gap-2">
           <Link to="/" className="hover:text-[var(--primary)]">Home</Link>
@@ -121,7 +181,7 @@ export default function ShowroomDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
           <ImageCarousel
             images={p.images}
-            alt={p.name}
+            alt={`${p.name} - Arredamento ${displaySector(p.activitySector, p.activitySectorOther)} Made in Italy`}
             maxHeightClass="max-h-[60vh]"
             overlay={
               eff?.badge ? (

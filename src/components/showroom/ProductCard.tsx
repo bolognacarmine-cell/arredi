@@ -31,7 +31,7 @@ export default function ProductCard({ product }: Props) {
         {product.images[0] ? (
           <img
             src={product.images[0]}
-            alt={product.name}
+            alt={`${product.name} - Arredamento ${sectorLabel} Made in Italy`}
             loading="lazy"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />

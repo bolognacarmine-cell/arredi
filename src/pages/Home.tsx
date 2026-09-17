@@ -9,6 +9,7 @@ import Hero from "../components/Hero"
 import ReviewsSection from "../components/ReviewsSection"
 import ProductCard from "../components/showroom/ProductCard"
 import Reveal from "../components/Reveal"
+import SEOHead from "../components/SEOHead"
 import { getProducts, type Product } from "../services/showroomApi"
 import { resolveImageUrl } from "../lib/cloudinary"
 
@@ -147,7 +148,7 @@ function SectorCard({ sector, index, reversedIndex, experimental }: {
               gravity: "auto",
             },
           )}
-          alt={sector.label}
+          alt={`${sector.label} - Arredamento professionale Macerata Campania`}
           className={`w-full h-full object-cover ${
             experimental ? 'sector-image' : 'group-hover:scale-110 transition-transform duration-700'
           }`}
@@ -300,6 +301,76 @@ export default function Home() {
 
   return (
     <div className="bg-[#FAFAFA]">
+      <SEOHead
+        title="Farcom Srl - Arredamento e Progettazione Interni a Macerata Campania e in tutta Italia"
+        description="Farcom Srl: arredamento su misura e progettazione interni a Macerata Campania, Caserta e in tutta Italia. Showroom arredi professionali, preventivi gratuiti e sopralluogo. Richiedi un preventivo!"
+        canonical="https://arredi.onrender.com/"
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "HomeAndConstructionBusiness",
+          "name": "Farcom Srl",
+          "description": "Azienda di arredamento e progettazione interni a Macerata Campania. Servizio in tutta Italia con showroom arredi professionali, preventivi gratuiti e sopralluogo.",
+          "url": "https://arredi.onrender.com/",
+          "telephone": "+39 0823 694427",
+          "email": "farcomsrl@hotmail.com",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Via P. Vertaldi, 27",
+            "addressLocality": "Macerata Campania",
+            "addressRegion": "CE",
+            "postalCode": "81050",
+            "addressCountry": "IT"
+          },
+          "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": 41.055439,
+            "longitude": 14.2848
+          },
+          "openingHoursSpecification": [
+            {
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+              "opens": "09:00",
+              "closes": "13:00"
+            },
+            {
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+              "opens": "15:00",
+              "closes": "19:00"
+            },
+            {
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": "Saturday",
+              "opens": "09:00",
+              "closes": "13:00"
+            }
+          ],
+          "areaServed": [
+            {
+              "@type": "City",
+              "name": "Macerata Campania"
+            },
+            {
+              "@type": "City",
+              "name": "Caserta"
+            },
+            {
+              "@type": "AdministrativeArea",
+              "name": "Campania"
+            },
+            {
+              "@type": "Country",
+              "name": "Italia"
+            }
+          ],
+          "priceRange": "€€€",
+          "sameAs": [
+            "https://www.instagram.com/farcom_arredi/",
+            "https://www.facebook.com/p/Farcom-arredi-100054867935352/"
+          ]
+        }}
+      />
       <CustomCursor />
       {/* HERO */}
       <section id="hero" data-bg="#1A1A2E">
@@ -327,9 +398,9 @@ export default function Home() {
                 animationDelay: "200ms",
               }}
             >
-              Ogni spazio ha la sua
+              Arredamento su misura a
               <br />
-              <span className="text-[#E69138]">storia da raccontare</span>
+              <span className="text-[#E69138]">Macerata Campania e in tutta Italia</span>
             </h2>
           </div>
           <p
@@ -460,7 +531,7 @@ export default function Home() {
                         gravity: "auto",
                       },
                     )}
-                    alt={p.title}
+                    alt={`${p.title} - Progetto arredamento ${p.location} Farcom Srl`}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />
                   <span className="absolute top-4 left-4 bg-[#E69138] text-[#1A1A2E] text-xs px-3 py-1 font-semibold">
