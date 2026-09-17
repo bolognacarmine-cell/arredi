@@ -220,22 +220,22 @@ export default function Quote() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-[#F7F5F0] flex items-center justify-center pt-20 px-6">
+      <div className="min-h-screen bg-[var(--background)] flex items-center justify-center pt-20 px-6">
         <div className="text-center max-w-lg">
-          <div className="w-16 h-16 bg-[#1B4332] flex items-center justify-center mx-auto mb-6">
+          <div className="w-16 h-16 bg-[var(--primary)] flex items-center justify-center mx-auto mb-6">
             <span className="text-white text-2xl">✓</span>
           </div>
-          <h1 className="font-display text-3xl font-light text-[#1A1A18] mb-4">
+          <h1 className="font-display text-3xl font-light text-[var(--foreground)] mb-4">
             Richiesta inviata con successo
           </h1>
-          <p className="text-[#888580] leading-relaxed mb-8">
+          <p className="text-[var(--muted-foreground)] leading-relaxed mb-8">
             Grazie per la tua richiesta. Il nostro team ti contatterà entro 24
             ore lavorative per discutere il tuo progetto e, se necessario,
             fissare un sopralluogo gratuito.
           </p>
           <Link
             to="/"
-            className="inline-flex items-center bg-[#1B4332] text-white text-sm font-medium px-6 py-3.5 hover:bg-[#143326] transition-colors"
+            className="inline-flex items-center bg-[var(--primary)] text-white text-sm font-medium px-6 py-3.5 hover:bg-[var(--foreground)] transition-colors"
           >
             Torna alla home
           </Link>
@@ -245,16 +245,16 @@ export default function Quote() {
   }
 
   return (
-    <div className="bg-[#F7F5F0] min-h-screen pt-24">
+    <div className="bg-[var(--background)] min-h-screen pt-24">
       <div className="max-w-4xl mx-auto px-6 lg:px-10 py-16">
         <div className="mb-12">
-          <span className="text-[#888580] text-xs tracking-widest uppercase font-semibold">
+          <span className="text-[var(--muted-foreground)] text-xs tracking-widest uppercase font-semibold">
             Sopralluogo gratuito
           </span>
-          <h1 className="font-display text-5xl font-light text-[#1A1A18] mt-2 mb-4">
+          <h1 className="font-display text-5xl font-light text-[var(--foreground)] mt-2 mb-4">
             Richiedi un preventivo
           </h1>
-          <p className="text-[#888580] max-w-lg leading-relaxed">
+          <p className="text-[var(--muted-foreground)] max-w-lg leading-relaxed">
             Compila il modulo e ti ricontatteremo entro 24 ore. Il sopralluogo e
             la prima consulenza sono sempre gratuiti e senza impegno.
           </p>
@@ -269,7 +269,7 @@ export default function Quote() {
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Personal */}
           <fieldset>
-            <legend className="font-display text-xl font-light text-[#1A1A18] mb-5 pb-3 border-b border-[#DDD9D0] w-full">
+            <legend className="font-display text-xl font-light text-[var(--foreground)] mb-5 pb-3 border-b border-[var(--border)] w-full">
               Dati di contatto
             </legend>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -284,7 +284,7 @@ export default function Quote() {
                   key={k as string}
                   className={k === "azienda" ? "sm:col-span-2" : ""}
                 >
-                  <label className="block text-xs text-[#888580] uppercase tracking-wide mb-1.5">
+                  <label className="block text-xs text-[var(--muted-foreground)] uppercase tracking-wide mb-1.5">
                     {label as string}
                   </label>
                   <input
@@ -292,7 +292,7 @@ export default function Quote() {
                     required={req as boolean}
                     value={form[(k as keyof typeof form)] as string}
                     onChange={(e) => set(k as string, e.target.value)}
-                    className="w-full border border-[#DDD9D0] bg-white px-4 py-3 text-sm text-[#1A1A18] focus:outline-none focus:border-[#1B4332] transition-colors"
+                    className="w-full border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)] transition-colors"
                   />
                 </div>
               ))}
@@ -301,19 +301,19 @@ export default function Quote() {
 
           {/* Project */}
           <fieldset>
-            <legend className="font-display text-xl font-light text-[#1A1A18] mb-5 pb-3 border-b border-[#DDD9D0] w-full">
+            <legend className="font-display text-xl font-light text-[var(--foreground)] mb-5 pb-3 border-b border-[var(--border)] w-full">
               Dettaglio progetto
             </legend>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
-                <label className="block text-xs text-[#888580] uppercase tracking-wide mb-1.5">
+                <label className="block text-xs text-[var(--muted-foreground)] uppercase tracking-wide mb-1.5">
                   Settore *
                 </label>
                 <select
                   required
                   value={form.settore}
                   onChange={(e) => set("settore", e.target.value)}
-                  className="w-full border border-[#DDD9D0] bg-white px-4 py-3 text-sm text-[#1A1A18] focus:outline-none focus:border-[#1B4332] transition-colors"
+                  className="w-full border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)] transition-colors"
                 >
                   <option value="">Seleziona settore</option>
                   {SECTORS.map((s) => (
@@ -324,7 +324,7 @@ export default function Quote() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-[#888580] uppercase tracking-wide mb-1.5">
+                <label className="block text-xs text-[var(--muted-foreground)] uppercase tracking-wide mb-1.5">
                   Metratura approssimativa (m²)
                 </label>
                 <input
@@ -332,12 +332,12 @@ export default function Quote() {
                   min="5"
                   value={form.metratura}
                   onChange={(e) => set("metratura", e.target.value)}
-                  className="w-full border border-[#DDD9D0] bg-white px-4 py-3 text-sm text-[#1A1A18] focus:outline-none focus:border-[#1B4332] transition-colors"
+                  className="w-full border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)] transition-colors"
                   placeholder="es. 40"
                 />
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-xs text-[#888580] uppercase tracking-wide mb-1.5">
+                <label className="block text-xs text-[var(--muted-foreground)] uppercase tracking-wide mb-1.5">
                   Tipo di arredi richiesti
                 </label>
                 <input
@@ -345,11 +345,11 @@ export default function Quote() {
                   value={form.arredo}
                   onChange={(e) => set("arredo", e.target.value)}
                   placeholder="es. banco reception, postazioni, specchiere…"
-                  className="w-full border border-[#DDD9D0] bg-white px-4 py-3 text-sm text-[#1A1A18] focus:outline-none focus:border-[#1B4332] transition-colors"
+                  className="w-full border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)] transition-colors"
                 />
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-xs text-[#888580] uppercase tracking-wide mb-1.5">
+                <label className="block text-xs text-[var(--muted-foreground)] uppercase tracking-wide mb-1.5">
                   Descrizione del progetto
                 </label>
                 <textarea
@@ -357,16 +357,16 @@ export default function Quote() {
                   value={form.messaggio}
                   onChange={(e) => set("messaggio", e.target.value)}
                   placeholder="Raccontaci la tua idea, le dimensioni dello spazio, i materiali preferiti, i tempi previsti…"
-                  className="w-full border border-[#DDD9D0] bg-white px-4 py-3 text-sm text-[#1A1A18] focus:outline-none focus:border-[#1B4332] transition-colors resize-none"
+                  className="w-full border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)] transition-colors resize-none"
                 />
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-xs text-[#888580] uppercase tracking-wide mb-1.5">
+                <label className="block text-xs text-[var(--muted-foreground)] uppercase tracking-wide mb-1.5">
                   Immagini del progetto (opzionale)
                 </label>
                 <div
-                  className={`border border-dashed bg-white p-6 text-center text-sm text-[#888580] transition-colors ${
-                    dragActive ? 'border-[#1B4332] bg-[#F7F5F0]' : 'border-[#DDD9D0]'
+                  className={`border border-dashed bg-white p-6 text-center text-sm text-[var(--muted-foreground)] transition-colors ${
+                    dragActive ? 'border-[var(--primary)] bg-[var(--background)]' : 'border-[var(--border)]'
                   }`}
                   onDragEnter={handleDrag}
                   onDragLeave={handleDrag}
@@ -375,7 +375,7 @@ export default function Quote() {
                 >
                   <span className="block text-2xl mb-2">📎</span>
                   <span>Trascina qui le immagini o </span>
-                  <label className="text-[#1B4332] underline cursor-pointer">
+                  <label className="text-[var(--primary)] underline cursor-pointer">
                     sfoglia
                     <input
                       type="file"
@@ -385,20 +385,20 @@ export default function Quote() {
                       onChange={handleFileSelect}
                     />
                   </label>
-                  <span className="block text-xs mt-1 text-[#888580]">
+                  <span className="block text-xs mt-1 text-[var(--muted-foreground)]">
                     JPG, PNG, WebP – max 8MB per immagine, max 6 immagini
                   </span>
                 </div>
 
                 {selectedFiles.length > 0 && (
                   <div className="mt-4">
-                    <div className="text-xs text-[#888580] mb-2">
+                    <div className="text-xs text-[var(--muted-foreground)] mb-2">
                       {selectedFiles.length} {selectedFiles.length === 1 ? 'immagine selezionata' : 'immagini selezionate'}
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                       {selectedFiles.map((file, index) => (
                         <div key={index} className="relative group">
-                          <div className="aspect-square bg-[#F7F5F0] rounded-lg overflow-hidden border border-[#DDD9D0]">
+                          <div className="aspect-square bg-[var(--background)] rounded-lg overflow-hidden border border-[var(--border)]">
                             <img
                               src={URL.createObjectURL(file)}
                               alt={file.name}
@@ -413,10 +413,10 @@ export default function Quote() {
                           >
                             ✕
                           </button>
-                          <div className="mt-1 text-xs text-[#888580] truncate" title={file.name}>
+                          <div className="mt-1 text-xs text-[var(--muted-foreground)] truncate" title={file.name}>
                             {file.name}
                           </div>
-                          <div className="text-xs text-[#888580]">
+                          <div className="text-xs text-[var(--muted-foreground)]">
                             {formatFileSize(file.size)}
                           </div>
                         </div>
@@ -441,11 +441,11 @@ export default function Quote() {
               required
               checked={form.privacy}
               onChange={(e) => set("privacy", e.target.checked)}
-              className="mt-0.5 w-4 h-4 accent-[#1B4332]"
+              className="mt-0.5 w-4 h-4 accent-[var(--primary)]"
             />
-            <label htmlFor="privacy" className="text-sm text-[#4A4A46]">
+            <label htmlFor="privacy" className="text-sm text-[var(--foreground)]">
               Ho letto e accetto la{" "}
-              <a href="/privacy" className="text-[#1B4332] underline">Privacy Policy</a>
+              <a href="/privacy" className="text-[var(--primary)] underline">Privacy Policy</a>
               {" "}e acconsento al trattamento dei dati personali per finalità commerciali. *
             </label>
           </div>
@@ -453,7 +453,7 @@ export default function Quote() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full sm:w-auto bg-[#1B4332] text-white text-sm font-semibold px-10 py-4 hover:bg-[#143326] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full sm:w-auto bg-[var(--primary)] text-white text-sm font-semibold px-10 py-4 hover:bg-[var(--foreground)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? "Invio in corso..." : "Invia richiesta"}
           </button>

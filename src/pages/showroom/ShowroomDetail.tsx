@@ -58,23 +58,23 @@ export default function ShowroomDetail() {
 
   if (product === undefined) {
     return (
-      <main className="pt-28 pb-24 bg-[#FAFAF7] min-h-screen">
+      <main className="pt-28 pb-24 bg-[var(--background)] min-h-screen">
         <div className="max-w-7xl mx-auto px-6 md:px-8 lg:px-16">
           <div className="animate-pulse space-y-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
               <div className="space-y-4">
-                <div className="aspect-[4/3] bg-[#EAE7E0]" />
+                <div className="aspect-[4/3] bg-[var(--muted)]" />
                 <div className="grid grid-cols-5 gap-3">
                   {Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="aspect-square bg-[#EAE7E0]" />
+                    <div key={i} className="aspect-square bg-[var(--muted)]" />
                   ))}
                 </div>
               </div>
               <div className="space-y-5">
-                <div className="h-4 bg-[#EAE7E0] w-1/4" />
-                <div className="h-12 bg-[#EAE7E0] w-3/4" />
-                <div className="h-28 bg-[#EAE7E0]" />
-                <div className="h-12 bg-[#EAE7E0] w-1/2" />
+                <div className="h-4 bg-[var(--muted)] w-1/4" />
+                <div className="h-12 bg-[var(--muted)] w-3/4" />
+                <div className="h-28 bg-[var(--muted)]" />
+                <div className="h-12 bg-[var(--muted)] w-1/2" />
               </div>
             </div>
           </div>
@@ -85,18 +85,18 @@ export default function ShowroomDetail() {
 
   if (!product) {
     return (
-      <main className="pt-28 pb-24 bg-[#FAFAF7] min-h-screen">
+      <main className="pt-28 pb-24 bg-[var(--background)] min-h-screen">
         <div className="max-w-3xl mx-auto px-6 md:px-8 lg:px-16 text-center py-24">
-          <div className="text-6xl mb-5 text-[#DDD9D0]">🔍</div>
-          <h1 className="font-display text-3xl font-light text-[#1A1A18] mb-3">
+          <div className="text-6xl mb-5 text-[var(--border)]">🔍</div>
+          <h1 className="font-display text-3xl font-light text-[var(--foreground)] mb-3">
             Prodotto non trovato
           </h1>
-          <p className="text-[#4A4A46] mb-8">
+          <p className="text-[var(--foreground)] mb-8">
             Il prodotto che stai cercando non è disponibile o è stato rimosso.
           </p>
           <Link
             to="/showroom"
-            className="inline-flex px-6 py-3 bg-[#1B4332] text-white text-sm font-medium hover:bg-[#143326] transition-colors"
+            className="inline-flex px-6 py-3 bg-[var(--primary)] text-white text-sm font-medium hover:bg-[var(--foreground)] transition-colors"
           >
             ← Torna allo Showroom
           </Link>
@@ -108,14 +108,14 @@ export default function ShowroomDetail() {
   const p = product
 
   return (
-    <main className="pt-24 pb-24 bg-[#FAFAF7] min-h-screen">
+    <main className="pt-24 pb-24 bg-[var(--background)] min-h-screen">
       <div className="max-w-7xl mx-auto px-6 md:px-8 lg:px-16">
-        <nav className="mb-8 text-xs text-[#888580] flex flex-wrap items-center gap-2">
-          <Link to="/" className="hover:text-[#1B4332]">Home</Link>
+        <nav className="mb-8 text-xs text-[var(--muted-foreground)] flex flex-wrap items-center gap-2">
+          <Link to="/" className="hover:text-[var(--primary)]">Home</Link>
           <span>/</span>
-          <Link to="/showroom" className="hover:text-[#1B4332]">Showroom</Link>
+          <Link to="/showroom" className="hover:text-[var(--primary)]">Showroom</Link>
           <span>/</span>
-          <span className="text-[#4A4A46] truncate">{p.name}</span>
+          <span className="text-[var(--foreground)] truncate">{p.name}</span>
         </nav>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
@@ -125,7 +125,7 @@ export default function ShowroomDetail() {
             maxHeightClass="max-h-[60vh]"
             overlay={
               eff?.badge ? (
-                <span className="px-4 py-1.5 rounded-full text-sm font-bold text-white shadow-lg tracking-wide bg-[#B5965A]">
+                <span className="px-4 py-1.5 rounded-full text-sm font-bold text-white shadow-lg tracking-wide bg-[var(--accent)]">
                   {eff.badge}
                 </span>
               ) : null
@@ -135,77 +135,77 @@ export default function ShowroomDetail() {
           <div className="space-y-7">
             <div className="space-y-4">
               <div className="flex items-center gap-2.5 flex-wrap">
-                <span className="inline-flex items-center gap-3 px-4 py-1.5 border border-[#B5965A]/30 bg-white">
-                  <span className="h-px w-6 bg-[#B5965A]" />
-                  <span className="text-[10px] uppercase tracking-[0.18em] font-medium text-[#B5965A]">
+                <span className="inline-flex items-center gap-3 px-4 py-1.5 border border-[var(--accent)]/30 bg-white">
+                  <span className="h-px w-6 bg-[var(--accent)]" />
+                  <span className="text-[10px] uppercase tracking-[0.18em] font-medium text-[var(--accent)]">
                     {displaySector(p.activitySector, p.activitySectorOther)}
                   </span>
                 </span>
-                <span className="text-xs text-[#888580] px-2.5 py-1 bg-[#EAE7E0]">
+                <span className="text-xs text-[var(--muted-foreground)] px-2.5 py-1 bg-[var(--muted)]">
                   {displayFurnitureType(p.furnitureType, p.furnitureTypeOther)}
                 </span>
               </div>
 
-              <h1 className="font-display text-3xl md:text-4xl font-light text-[#1A1A18] leading-tight">
+              <h1 className="font-display text-3xl md:text-4xl font-light text-[var(--foreground)] leading-tight">
                 {p.name}
               </h1>
 
-              <p className="text-[#4A4A46] leading-relaxed text-base md:text-lg">
+              <p className="text-[var(--foreground)] leading-relaxed text-base md:text-lg">
                 {p.description}
               </p>
             </div>
 
-            <div className="py-6 border-y border-[#DDD9D0] flex flex-wrap items-end justify-between gap-5">
+            <div className="py-6 border-y border-[var(--border)] flex flex-wrap items-end justify-between gap-5">
               <div>
-                <div className="text-xs uppercase tracking-wider text-[#888580] mb-1.5">Prezzo</div>
+                <div className="text-xs uppercase tracking-wider text-[var(--muted-foreground)] mb-1.5">Prezzo</div>
                 {eff && eff.savings > 0 ? (
                   <div className="flex items-end gap-3">
-                    <span className="text-sm line-through text-[#888580]">
+                    <span className="text-sm line-through text-[var(--muted-foreground)]">
                       {eur(p.basePrice)}
                     </span>
-                    <span className="font-display text-3xl font-semibold text-[#1B4332]">
+                    <span className="font-display text-3xl font-semibold text-[var(--primary)]">
                       {eur(eff.finalPrice)}
                     </span>
                   </div>
                 ) : (
-                  <span className="font-display text-3xl font-semibold text-[#1A1A18]">
+                  <span className="font-display text-3xl font-semibold text-[var(--foreground)]">
                     {eur(p.basePrice)}
                   </span>
                 )}
                 {eff?.savings ? (
-                  <div className="text-xs text-[#B5965A] mt-1 font-medium">
+                  <div className="text-xs text-[var(--accent)] mt-1 font-medium">
                     Risparmi {eur(eff.savings)}
                   </div>
                 ) : null}
               </div>
-              <div className="text-right text-xs text-[#888580]">
-                <div>Codice: <span className="font-mono text-[#4A4A46]">{p.sku || p.id}</span></div>
+              <div className="text-right text-xs text-[var(--muted-foreground)]">
+                <div>Codice: <span className="font-mono text-[var(--foreground)]">{p.sku || p.id}</span></div>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3 text-sm">
-              <div className="p-4 border border-[#DDD9D0] bg-white">
-                <div className="text-[10px] uppercase tracking-wider text-[#888580] mb-1.5">Settore</div>
-                <div className="font-medium text-[#1A1A18]">{displaySector(p.activitySector, p.activitySectorOther)}</div>
+              <div className="p-4 border border-[var(--border)] bg-white">
+                <div className="text-[10px] uppercase tracking-wider text-[var(--muted-foreground)] mb-1.5">Settore</div>
+                <div className="font-medium text-[var(--foreground)]">{displaySector(p.activitySector, p.activitySectorOther)}</div>
               </div>
-              <div className="p-4 border border-[#DDD9D0] bg-white">
-                <div className="text-[10px] uppercase tracking-wider text-[#888580] mb-1.5">Tipologia</div>
-                <div className="font-medium text-[#1A1A18]">{displayFurnitureType(p.furnitureType, p.furnitureTypeOther)}</div>
+              <div className="p-4 border border-[var(--border)] bg-white">
+                <div className="text-[10px] uppercase tracking-wider text-[var(--muted-foreground)] mb-1.5">Tipologia</div>
+                <div className="font-medium text-[var(--foreground)]">{displayFurnitureType(p.furnitureType, p.furnitureTypeOther)}</div>
               </div>
             </div>
 
             {promo && (
-              <div className="p-4 border border-[#B5965A]/40 bg-gradient-to-r from-[#B5965A]/5 to-transparent">
+              <div className="p-4 border border-[var(--accent)]/40 bg-gradient-to-r from-[var(--accent)]/5 to-transparent">
                 <div className="flex items-start gap-3">
-                  <span className="text-xs font-bold px-2.5 py-1 text-white rounded bg-[#B5965A]">
+                  <span className="text-xs font-bold px-2.5 py-1 text-white rounded bg-[var(--accent)]">
                     {promo.badge}
                   </span>
                   <div className="flex-1 min-w-0 space-y-1.5">
-                    <div className="font-medium text-[#1A1A18]">
+                    <div className="font-medium text-[var(--foreground)]">
                       {promo.text || "Promozione attiva"}
                     </div>
                     {promo.endDate && (
-                      <div className="text-[11px] text-[#888580]">
+                      <div className="text-[11px] text-[var(--muted-foreground)]">
                         {promo.startDate
                           ? `Valida dal ${itDate(promo.startDate)} al ${itDate(promo.endDate)}`
                           : `Valida fino al ${itDate(promo.endDate)}`}
@@ -220,7 +220,7 @@ export default function ShowroomDetail() {
             <div className="space-y-3 pt-2">
               <button
                 onClick={() => setInfoOpen(true)}
-                className="w-full py-3.5 bg-[#B5965A] text-white font-medium text-sm hover:bg-[#9A7F48] transition-colors tracking-wide flex items-center justify-center gap-2"
+                className="w-full py-3.5 bg-[var(--accent)] text-white font-medium text-sm hover:bg-[var(--foreground)] transition-colors tracking-wide flex items-center justify-center gap-2"
               >
                 {promo
                   ? "🏷️ Approfitta dell'offerta"
@@ -228,7 +228,7 @@ export default function ShowroomDetail() {
               </button>
               <Link
                 to="/preventivo"
-                className="w-full block text-center py-3.5 border-2 border-[#1B4332] text-[#1B4332] font-medium text-sm hover:bg-[#1B4332] hover:text-white transition-colors tracking-wide"
+                className="w-full block text-center py-3.5 border-2 border-[var(--primary)] text-[var(--primary)] font-medium text-sm hover:bg-[var(--primary)] hover:text-white transition-colors tracking-wide"
               >
                 🛠 Richiedi un preventivo completo
               </Link>
@@ -252,25 +252,25 @@ export default function ShowroomDetail() {
               setInfoOpen(false)
               setInfoForm({ nome: "", email: "", telefono: "", messaggio: "" })
             }}
-            className="bg-white w-full max-w-lg border border-[#DDD9D0] shadow-2xl flex flex-col animate-slide-up"
+            className="bg-white w-full max-w-lg border border-[var(--border)] shadow-2xl flex flex-col animate-slide-up"
           >
-            <div className="px-6 py-4 border-b border-[#EAE7E0] flex items-center justify-between">
-              <h3 className="font-display text-xl font-medium text-[#1A1A18]">
+            <div className="px-6 py-4 border-b border-[var(--muted)] flex items-center justify-between">
+              <h3 className="font-display text-xl font-medium text-[var(--foreground)]">
                 Richiesta informazioni
               </h3>
               <button
                 type="button"
                 onClick={() => setInfoOpen(false)}
-                className="text-sm text-[#888580] hover:text-[#1A1A18]"
+                className="text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
               >
                 ✕
               </button>
             </div>
             <div className="px-6 py-5 space-y-4">
-              <div className="p-3 bg-[#F7F5F0] border border-[#EAE7E0] text-xs text-[#4A4A46]">
+              <div className="p-3 bg-[var(--background)] border border-[var(--muted)] text-xs text-[var(--foreground)]">
                 Stai richiedendo info per:{" "}
-                <span className="font-medium text-[#1A1A18]">{p.name}</span>{" "}
-                <span className="font-mono text-[#888580]">({p.sku || p.id})</span>
+                <span className="font-medium text-[var(--foreground)]">{p.name}</span>{" "}
+                <span className="font-mono text-[var(--muted-foreground)]">({p.sku || p.id})</span>
               </div>
               {[
                 { k: "nome", l: "Nome e cognome *", t: "text" },
@@ -278,7 +278,7 @@ export default function ShowroomDetail() {
                 { k: "telefono", l: "Telefono", t: "tel" },
               ].map((f) => (
                 <div key={f.k}>
-                  <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">
+                  <label className="mb-1 block text-xs uppercase tracking-wide text-[var(--muted-foreground)]">
                     {f.l}
                   </label>
                   <input
@@ -288,12 +288,12 @@ export default function ShowroomDetail() {
                     onChange={(e) =>
                       setInfoForm((s) => ({ ...s, [f.k]: e.target.value }))
                     }
-                    className="w-full border border-[#DDD9D0] bg-[#FAFAF7] px-3 py-2.5 text-sm focus:border-[#1B4332] focus:outline-none"
+                    className="w-full border border-[var(--border)] bg-[var(--background)] px-3 py-2.5 text-sm focus:border-[var(--primary)] focus:outline-none"
                   />
                 </div>
               ))}
               <div>
-                <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">
+                <label className="mb-1 block text-xs uppercase tracking-wide text-[var(--muted-foreground)]">
                   Messaggio
                 </label>
                 <textarea
@@ -301,21 +301,21 @@ export default function ShowroomDetail() {
                   value={infoForm.messaggio}
                   onChange={(e) => setInfoForm((s) => ({ ...s, messaggio: e.target.value }))}
                   placeholder="Note, quantità, personalizzazioni…"
-                  className="w-full border border-[#DDD9D0] bg-[#FAFAF7] px-3 py-2.5 text-sm focus:border-[#1B4332] focus:outline-none resize-none"
+                  className="w-full border border-[var(--border)] bg-[var(--background)] px-3 py-2.5 text-sm focus:border-[var(--primary)] focus:outline-none resize-none"
                 />
               </div>
             </div>
-            <div className="px-6 py-4 border-t border-[#EAE7E0] flex justify-end gap-3">
+            <div className="px-6 py-4 border-t border-[var(--muted)] flex justify-end gap-3">
               <button
                 type="button"
                 onClick={() => setInfoOpen(false)}
-                className="px-5 py-2.5 text-sm border border-[#DDD9D0] hover:bg-[#F7F5F0]"
+                className="px-5 py-2.5 text-sm border border-[var(--border)] hover:bg-[var(--background)]"
               >
                 Annulla
               </button>
               <button
                 type="submit"
-                className="px-5 py-2.5 text-sm bg-[#1B4332] text-white font-medium hover:bg-[#143326]"
+                className="px-5 py-2.5 text-sm bg-[var(--primary)] text-white font-medium hover:bg-[var(--foreground)]"
               >
                 Invia richiesta
               </button>

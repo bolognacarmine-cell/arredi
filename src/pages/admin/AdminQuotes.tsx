@@ -168,21 +168,21 @@ export default function AdminQuotes() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-[#F7F5F0]">
+    <div className="min-h-screen bg-[var(--background)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="font-display text-3xl font-light text-[#1A1A18]">
+            <h1 className="font-display text-3xl font-light text-[var(--foreground)]">
               Preventivi & Lead
             </h1>
-            <p className="text-[#888580] text-sm mt-0.5">
+            <p className="text-[var(--muted-foreground)] text-sm mt-0.5">
               {loading ? "Caricamento..." : `${quotes.length} richieste totali`}
             </p>
           </div>
           <button
             onClick={handleExportCSV}
-            className="border border-[#DDD9D0] bg-white px-5 py-2.5 text-sm font-medium text-[#4A4A46] transition-colors hover:border-[#1B4332] hover:text-[#1B4332] shadow-sm"
+            className="border border-[var(--border)] bg-white px-5 py-2.5 text-sm font-medium text-[var(--foreground)] transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)] shadow-sm"
           >
             Export CSV
           </button>
@@ -205,8 +205,8 @@ export default function AdminQuotes() {
               onClick={() => setFilter(k)}
               className={`px-4 py-2 text-sm font-medium transition-all whitespace-nowrap ${
                 filter === k
-                  ? "bg-[#1B4332] text-white shadow-sm"
-                  : "bg-white border border-[#DDD9D0] text-[#4A4A46] hover:border-[#1B4332]"
+                  ? "bg-[var(--primary)] text-white shadow-sm"
+                  : "bg-white border border-[var(--border)] text-[var(--foreground)] hover:border-[var(--primary)]"
               }`}
               aria-pressed={filter === k}
             >
@@ -217,16 +217,16 @@ export default function AdminQuotes() {
 
         {/* Loading state */}
         {loading && (
-          <div className="bg-white border border-[#DDD9D0] rounded-lg p-8 text-center">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#1B4332]"></div>
-            <p className="mt-4 text-[#888580] text-sm">Caricamento preventivi...</p>
+          <div className="bg-white border border-[var(--border)] rounded-lg p-8 text-center">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--primary)]"></div>
+            <p className="mt-4 text-[var(--muted-foreground)] text-sm">Caricamento preventivi...</p>
           </div>
         )}
 
         {/* Empty state */}
         {!loading && filtered.length === 0 && (
-          <div className="bg-white border border-[#DDD9D0] rounded-lg p-8 text-center">
-            <p className="text-[#888580] text-sm">
+          <div className="bg-white border border-[var(--border)] rounded-lg p-8 text-center">
+            <p className="text-[var(--muted-foreground)] text-sm">
               {filter === "all" ? "Nessun preventivo presente" : `Nessun preventivo con stato "${filter}"`}
             </p>
           </div>
@@ -238,11 +238,11 @@ export default function AdminQuotes() {
             className={`grid gap-6 ${selectedQuote ? "lg:grid-cols-[1fr_400px]" : ""}`}
           >
             {/* Table */}
-            <div className="bg-white border border-[#DDD9D0] rounded-lg overflow-hidden shadow-sm">
+            <div className="bg-white border border-[var(--border)] rounded-lg overflow-hidden shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-[#F7F5F0] text-[#888580] text-xs uppercase tracking-wide border-b border-[#DDD9D0]">
+                    <tr className="bg-[var(--background)] text-[var(--muted-foreground)] text-xs uppercase tracking-wide border-b border-[var(--border)]">
                       <th className="text-left px-5 py-3 font-medium">Contatto</th>
                       <th className="text-left px-5 py-3 hidden sm:table-cell font-medium">
                         Settore
@@ -259,10 +259,10 @@ export default function AdminQuotes() {
                       <tr
                         key={q.id}
                         onClick={() => setSelectedQuote(q)}
-                        className={`border-t border-[#EAE7E0] cursor-pointer transition-colors ${
+                        className={`border-t border-[var(--muted)] cursor-pointer transition-colors ${
                           selectedQuote?.id === q.id
                             ? "bg-[#EAE7E0]"
-                            : "hover:bg-[#F7F5F0]"
+                            : "hover:bg-[var(--background)]"
                         }`}
                         tabIndex={0}
                         role="button"
@@ -274,15 +274,15 @@ export default function AdminQuotes() {
                         }}
                       >
                         <td className="px-5 py-3">
-                          <div className="font-medium text-[#1A1A18]">
+                          <div className="font-medium text-[var(--foreground)]">
                             {q.nome} {q.cognome}
                           </div>
-                          <div className="text-[#888580] text-xs">{q.azienda || "—"}</div>
+                          <div className="text-[var(--muted-foreground)] text-xs">{q.azienda || "—"}</div>
                         </td>
-                        <td className="px-5 py-3 hidden sm:table-cell text-[#4A4A46] text-xs">
+                        <td className="px-5 py-3 hidden sm:table-cell text-[var(--foreground)] text-xs">
                           {q.settore || "—"}
                         </td>
-                        <td className="px-5 py-3 hidden md:table-cell text-[#888580] text-xs">
+                        <td className="px-5 py-3 hidden md:table-cell text-[var(--muted-foreground)] text-xs">
                           {q.data}
                         </td>
                         <td className="px-5 py-3">
@@ -299,7 +299,7 @@ export default function AdminQuotes() {
                                 e.stopPropagation()
                                 setSelectedQuote(q)
                               }}
-                              className="text-xs text-[#1B4332] hover:underline focus:outline-none focus:ring-2 focus:ring-[#1B4332] focus:ring-offset-1 rounded"
+                              className="text-xs text-[var(--primary)] hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-1 rounded"
                             >
                               Dettaglio
                             </button>
@@ -326,7 +326,7 @@ export default function AdminQuotes() {
             {selectedQuote && (
               <div
                 ref={detailPanelRef}
-                className="bg-white border border-[#DDD9D0] rounded-lg shadow-sm p-6 h-fit lg:sticky lg:top-8"
+                className="bg-white border border-[var(--border)] rounded-lg shadow-sm p-6 h-fit lg:sticky lg:top-8"
                 tabIndex={-1}
                 role="dialog"
                 aria-labelledby="quote-detail-title"
@@ -334,14 +334,14 @@ export default function AdminQuotes() {
                 <div className="flex items-center justify-between mb-6">
                   <h2
                     id="quote-detail-title"
-                    className="font-display text-xl font-light text-[#1A1A18]"
+                    className="font-display text-xl font-light text-[var(--foreground)]"
                   >
                     {selectedQuote.nome} {selectedQuote.cognome}
                   </h2>
                   <div className="flex gap-2">
                     <button
                       onClick={handlePrint}
-                      className="text-[#888580] text-xs hover:text-[#1B4332] font-medium focus:outline-none focus:ring-2 focus:ring-[#1B4332] focus:ring-offset-1 rounded px-2 py-1"
+                      className="text-[var(--muted-foreground)] text-xs hover:text-[var(--primary)] font-medium focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-1 rounded px-2 py-1"
                       title="Stampa preventivo"
                     >
                       🖨️
@@ -358,7 +358,7 @@ export default function AdminQuotes() {
                         setSelectedQuote(null)
                         setExpandedMessage(false)
                       }}
-                      className="text-[#888580] text-xs hover:text-[#1A1A18] font-medium focus:outline-none focus:ring-2 focus:ring-[#1B4332] focus:ring-offset-1 rounded px-2 py-1"
+                      className="text-[var(--muted-foreground)] text-xs hover:text-[var(--foreground)] font-medium focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-1 rounded px-2 py-1"
                       aria-label="Chiudi dettagli"
                     >
                       ✕
@@ -377,12 +377,12 @@ export default function AdminQuotes() {
                     ].map(([label, value]) => (
                       <div
                         key={label}
-                        className="border-b border-[#EAE7E0] pb-2 last:border-0"
+                        className="border-b border-[var(--muted)] pb-2 last:border-0"
                       >
-                        <dt className="text-[#888580] text-xs uppercase tracking-wide mb-0.5">
+                        <dt className="text-[var(--muted-foreground)] text-xs uppercase tracking-wide mb-0.5">
                           {label}
                         </dt>
-                        <dd className="text-[#1A1A18] font-medium text-sm whitespace-pre-wrap break-words" style={{ overflowWrap: "anywhere" }}>
+                        <dd className="text-[var(--foreground)] font-medium text-sm whitespace-pre-wrap break-words" style={{ overflowWrap: "anywhere" }}>
                           {formatFieldValue(value)}
                         </dd>
                       </div>
@@ -400,12 +400,12 @@ export default function AdminQuotes() {
                     ].map(([label, value]) => (
                       <div
                         key={label}
-                        className="border-b border-[#EAE7E0] pb-2 last:border-0"
+                        className="border-b border-[var(--muted)] pb-2 last:border-0"
                       >
-                        <dt className="text-[#888580] text-xs uppercase tracking-wide mb-0.5">
+                        <dt className="text-[var(--muted-foreground)] text-xs uppercase tracking-wide mb-0.5">
                           {label}
                         </dt>
-                        <dd className="text-[#1A1A18] font-medium text-sm whitespace-pre-wrap break-words" style={{ overflowWrap: "anywhere" }}>
+                        <dd className="text-[var(--foreground)] font-medium text-sm whitespace-pre-wrap break-words" style={{ overflowWrap: "anywhere" }}>
                           {formatFieldValue(value)}
                         </dd>
                       </div>
@@ -415,13 +415,13 @@ export default function AdminQuotes() {
 
                 {/* Message section with expand/collapse */}
                 {selectedQuote.messaggio && (
-                  <div className="bg-[#F7F5F0] p-4 mb-6 rounded-lg">
-                    <dt className="text-[#888580] text-xs uppercase tracking-wide mb-2">
+                  <div className="bg-[var(--background)] p-4 mb-6 rounded-lg">
+                    <dt className="text-[var(--muted-foreground)] text-xs uppercase tracking-wide mb-2">
                       Messaggio
                     </dt>
                     <div className="relative">
                       <dd
-                        className={`text-sm text-[#4A4A46] leading-relaxed whitespace-pre-wrap break-words ${
+                        className={`text-sm text-[var(--foreground)] leading-relaxed whitespace-pre-wrap break-words ${
                           !expandedMessage && isMessageLong(selectedQuote.messaggio) ? "max-h-24 overflow-hidden" : ""
                         }`}
                         style={{ overflowWrap: "anywhere" }}
@@ -435,7 +435,7 @@ export default function AdminQuotes() {
                     {isMessageLong(selectedQuote.messaggio) && (
                       <button
                         onClick={() => setExpandedMessage(!expandedMessage)}
-                        className="mt-2 text-xs text-[#1B4332] hover:underline focus:outline-none focus:ring-2 focus:ring-[#1B4332] focus:ring-offset-1 rounded"
+                        className="mt-2 text-xs text-[var(--primary)] hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-1 rounded"
                       >
                         {expandedMessage ? "Mostra meno" : "Mostra tutto"}
                       </button>
@@ -446,10 +446,10 @@ export default function AdminQuotes() {
                 {/* Internal notes */}
                 {selectedQuote.note && (
                   <div className="bg-blue-50 p-4 mb-6 rounded-lg border border-blue-100">
-                    <dt className="text-[#888580] text-xs uppercase tracking-wide mb-2">
+                    <dt className="text-[var(--muted-foreground)] text-xs uppercase tracking-wide mb-2">
                       Note interne
                     </dt>
-                    <dd className="text-sm text-[#4A4A46] leading-relaxed whitespace-pre-wrap break-words" style={{ overflowWrap: "anywhere" }}>
+                    <dd className="text-sm text-[var(--foreground)] leading-relaxed whitespace-pre-wrap break-words" style={{ overflowWrap: "anywhere" }}>
                       {selectedQuote.note}
                     </dd>
                   </div>
@@ -458,7 +458,7 @@ export default function AdminQuotes() {
                 {/* Attachments */}
                 {selectedQuote.attachments && selectedQuote.attachments.length > 0 && (
                   <div className="mb-6">
-                    <dt className="text-[#888580] text-xs uppercase tracking-wide mb-3">
+                    <dt className="text-[var(--muted-foreground)] text-xs uppercase tracking-wide mb-3">
                       Allegati del cliente
                     </dt>
                     <div className="quote-attachments-grid">
@@ -478,10 +478,10 @@ export default function AdminQuotes() {
                               />
                             </div>
                             <div className="mt-2">
-                              <div className="text-xs text-[#1A1A18] font-medium truncate" title={attachment.originalName || `Allegato ${index + 1}`}>
+                              <div className="text-xs text-[var(--foreground)] font-medium truncate" title={attachment.originalName || `Allegato ${index + 1}`}>
                                 {attachment.originalName || `Allegato ${index + 1}`}
                               </div>
-                              <div className="text-xs text-[#888580]">
+                              <div className="text-xs text-[var(--muted-foreground)]">
                                 {formatFileSize(attachment.bytes)}
                               </div>
                             </div>
@@ -493,7 +493,7 @@ export default function AdminQuotes() {
                               title="Apri in nuova scheda"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <svg className="w-4 h-4 text-[#1B4332]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <svg className="w-4 h-4 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                               </svg>
                             </a>
@@ -507,10 +507,10 @@ export default function AdminQuotes() {
                 {/* No attachments message */}
                 {(!selectedQuote.attachments || selectedQuote.attachments.length === 0) && (
                   <div className="mb-6">
-                    <dt className="text-[#888580] text-xs uppercase tracking-wide mb-3">
+                    <dt className="text-[var(--muted-foreground)] text-xs uppercase tracking-wide mb-3">
                       Allegati del cliente
                     </dt>
-                    <div className="text-sm text-[#888580] italic">
+                    <div className="text-sm text-[var(--muted-foreground)] italic">
                       Nessun allegato
                     </div>
                   </div>
@@ -518,7 +518,7 @@ export default function AdminQuotes() {
 
                 {/* Status change */}
                 <div className="mb-6">
-                  <label className="block text-xs text-[#888580] uppercase tracking-wide mb-2">
+                  <label className="block text-xs text-[var(--muted-foreground)] uppercase tracking-wide mb-2">
                     Cambia stato
                   </label>
                   <div className="flex flex-wrap gap-2">
@@ -527,10 +527,10 @@ export default function AdminQuotes() {
                         key={s}
                         onClick={() => handleStatusChange(selectedQuote.id, s)}
                         disabled={isUpdating === selectedQuote.id}
-                        className={`px-3 py-1.5 text-xs font-medium border transition-colors focus:outline-none focus:ring-2 focus:ring-[#1B4332] focus:ring-offset-1 rounded ${
+                        className={`px-3 py-1.5 text-xs font-medium border transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-1 rounded ${
                           selectedQuote.stato === s
-                            ? "border-[#1B4332] bg-[#1B4332] text-white"
-                            : "border-[#DDD9D0] text-[#4A4A46] hover:border-[#1B4332]"
+                            ? "border-[var(--primary)] bg-[var(--primary)] text-white"
+                            : "border-[var(--border)] text-[var(--foreground)] hover:border-[var(--primary)]"
                         } disabled:opacity-50 disabled:cursor-not-allowed`}
                       >
                         {isUpdating === selectedQuote.id ? "Aggiornamento..." : s}
@@ -541,7 +541,7 @@ export default function AdminQuotes() {
 
                 {/* Add note */}
                 <div>
-                  <label htmlFor="internal-note" className="block text-xs text-[#888580] uppercase tracking-wide mb-2">
+                  <label htmlFor="internal-note" className="block text-xs text-[var(--muted-foreground)] uppercase tracking-wide mb-2">
                     Aggiungi nota interna
                   </label>
                   <textarea
@@ -550,7 +550,7 @@ export default function AdminQuotes() {
                     value={nota}
                     onChange={(e) => setNota(e.target.value)}
                     placeholder="Aggiungi una nota..."
-                    className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:outline-none focus:border-[#1B4332] focus:ring-2 focus:ring-[#1B4332] focus:ring-offset-1 rounded resize-none"
+                    className="w-full border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-1 rounded resize-none"
                   />
                   <button
                     onClick={() => {
@@ -558,7 +558,7 @@ export default function AdminQuotes() {
                       console.log("Saving note:", nota)
                       setNota("")
                     }}
-                    className="mt-2 bg-[#1B4332] text-white text-xs font-medium px-4 py-2 hover:bg-[#143326] transition-colors focus:outline-none focus:ring-2 focus:ring-[#1B4332] focus:ring-offset-1 rounded"
+                    className="mt-2 bg-[var(--primary)] text-white text-xs font-medium px-4 py-2 hover:bg-[#143326] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-1 rounded"
                   >
                     Salva nota
                   </button>

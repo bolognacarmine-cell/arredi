@@ -55,9 +55,9 @@ export default function Blog() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F0EDE6]">
+    <div className="min-h-screen bg-[var(--background)]">
       {/* Header */}
-      <div className="bg-[#1A1A18] text-white py-16">
+      <div className="bg-[var(--foreground)] text-white py-16">
         <div className="max-w-7xl mx-auto px-6">
           <h1 className="text-4xl md:text-5xl font-display font-medium mb-4">Blog</h1>
           <p className="text-lg text-white/70 max-w-2xl">
@@ -73,8 +73,8 @@ export default function Blog() {
             onClick={() => setSelectedSector(null)}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
               selectedSector === null
-                ? "bg-[#B5965A] text-white"
-                : "bg-white text-[#1A1A18] hover:bg-[#B5965A] hover:text-white"
+                ? "bg-[var(--accent)] text-white"
+                : "bg-white text-[var(--foreground)] hover:bg-[var(--accent)] hover:text-white"
             }`}
           >
             Tutti gli articoli
@@ -85,8 +85,8 @@ export default function Blog() {
               onClick={() => setSelectedSector(sector.slug)}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                 selectedSector === sector.slug
-                  ? "bg-[#B5965A] text-white"
-                  : "bg-white text-[#1A1A18] hover:bg-[#B5965A] hover:text-white"
+                  ? "bg-[var(--accent)] text-white"
+                  : "bg-white text-[var(--foreground)] hover:bg-[var(--accent)] hover:text-white"
               }`}
             >
               {sector.title}
@@ -110,7 +110,7 @@ export default function Blog() {
           </div>
         ) : posts.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-[#888580] text-lg">Nessun articolo disponibile</p>
+            <p className="text-[var(--muted-foreground)] text-lg">Nessun articolo disponibile</p>
           </div>
         ) : (
           <>
@@ -133,17 +133,17 @@ export default function Blog() {
                   )}
                   <div className="p-6">
                     <div className="flex items-center gap-2 mb-3">
-                      <span className="text-xs font-medium text-[#B5965A] uppercase tracking-wide">
+                      <span className="text-xs font-medium text-[var(--accent)] uppercase tracking-wide">
                         {sectors.find(s => s.slug === post.sectorSlug)?.title || post.sectorSlug}
                       </span>
-                      <span className="text-xs text-[#888580]">•</span>
-                      <span className="text-xs text-[#888580]">{formatDate(post.publishedAt)}</span>
+                      <span className="text-xs text-[var(--muted-foreground)]">•</span>
+                      <span className="text-xs text-[var(--muted-foreground)]">{formatDate(post.publishedAt)}</span>
                     </div>
-                    <h3 className="text-xl font-display font-medium text-[#1A1A18] mb-3 line-clamp-2 group-hover:text-[#B5965A] transition-colors">
+                    <h3 className="text-xl font-display font-medium text-[var(--foreground)] mb-3 line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
                       {post.title}
                     </h3>
-                    <p className="text-[#888580] text-sm line-clamp-2 mb-4">{post.excerpt}</p>
-                    <span className="text-sm font-medium text-[#B5965A] group-hover:underline">
+                    <p className="text-[var(--muted-foreground)] text-sm line-clamp-2 mb-4">{post.excerpt}</p>
+                    <span className="text-sm font-medium text-[var(--accent)] group-hover:underline">
                       Leggi articolo →
                     </span>
                   </div>
@@ -157,7 +157,7 @@ export default function Blog() {
                 <button
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
-                  className="px-4 py-2 bg-white rounded-lg text-[#1A1A18] hover:bg-[#B5965A] hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="px-4 py-2 bg-white rounded-lg text-[var(--foreground)] hover:bg-[var(--accent)] hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   Precedente
                 </button>
@@ -167,8 +167,8 @@ export default function Blog() {
                     onClick={() => setCurrentPage(i + 1)}
                     className={`px-4 py-2 rounded-lg transition-colors ${
                       currentPage === i + 1
-                        ? "bg-[#B5965A] text-white"
-                        : "bg-white text-[#1A1A18] hover:bg-[#B5965A] hover:text-white"
+                        ? "bg-[var(--accent)] text-white"
+                        : "bg-white text-[var(--foreground)] hover:bg-[var(--accent)] hover:text-white"
                     }`}
                   >
                     {i + 1}
@@ -177,7 +177,7 @@ export default function Blog() {
                 <button
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
-                  className="px-4 py-2 bg-white rounded-lg text-[#1A1A18] hover:bg-[#B5965A] hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="px-4 py-2 bg-white rounded-lg text-[var(--foreground)] hover:bg-[var(--accent)] hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   Successiva
                 </button>

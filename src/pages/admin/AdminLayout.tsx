@@ -92,7 +92,7 @@ export default function AdminLayout() {
 
   return (
     <RequireAdmin>
-      <div className="min-h-screen bg-[#F0EDE6] w-full relative overflow-x-hidden">
+      <div className="min-h-screen bg-[var(--background)] w-full relative overflow-x-hidden">
       {/* BACKDROP (click outside to close) */}
       <div
         aria-hidden="true"
@@ -116,7 +116,7 @@ export default function AdminLayout() {
         } transition-opacity duration-200 ease-out`}
       >
         <span
-          className="bg-[#1A1A18] text-white w-10 h-12 rounded-r-xl shadow-xl border border-white/10 flex items-center justify-center text-lg hover:bg-[#2c2c28] active:bg-[#3a3a35] transition-colors touch-min-48"
+          className="bg-[var(--foreground)] text-white w-10 h-12 rounded-r-xl shadow-xl border border-white/10 flex items-center justify-center text-lg hover:bg-[var(--foreground)] active:bg-[var(--foreground)] transition-colors touch-min-48"
           aria-hidden="true"
         >
           ☰
@@ -130,7 +130,7 @@ export default function AdminLayout() {
         role="navigation"
         aria-label="Menu amministrazione"
         aria-hidden={!sideOpen}
-        className={`fixed top-0 left-0 h-screen z-49 bg-[#1A1A18] flex flex-col shadow-2xl ease-out ${
+        className={`fixed top-0 left-0 h-screen z-49 bg-[var(--foreground)] flex flex-col shadow-2xl ease-out ${
           isMobile ? "w-64" : "w-56"
         } transition-[transform,opacity,visibility] duration-200`}
         style={{
@@ -142,7 +142,7 @@ export default function AdminLayout() {
       >
         <div className="h-14 flex items-center justify-between px-4 border-b border-white/10 flex-shrink-0">
           <div className="flex items-center gap-3 min-w-0">
-            <span className="w-5 h-5 bg-[#B5965A] rounded-sm flex-shrink-0" />
+            <span className="w-5 h-5 bg-[var(--accent)] rounded-sm flex-shrink-0" />
             <span className="font-display text-sm font-medium text-white truncate">
               Farcom
             </span>
@@ -170,7 +170,7 @@ export default function AdminLayout() {
                 onClick={closeSidebar}
                 className={`flex items-center gap-3 px-3 py-2.5 text-sm transition-colors rounded ${
                   active
-                    ? "bg-[#1B4332] text-white"
+                    ? "bg-[var(--primary)] text-white"
                     : "text-white/50 hover:text-white hover:bg-white/5"
                 }`}
                 aria-current={active ? "page" : undefined}
@@ -197,26 +197,26 @@ export default function AdminLayout() {
       {/* MAIN CONTENT — larghezza 100% sempre, nessun offset */}
       <div className="w-full min-h-screen flex flex-col min-w-0">
         {/* Header */}
-        <header className="h-14 bg-white border-b border-[#DDD9D0] flex items-center justify-between px-4 sm:px-6 sticky top-0 z-30 flex-shrink-0">
+        <header className="h-14 bg-white border-b border-[var(--border)] flex items-center justify-between px-4 sm:px-6 sticky top-0 z-30 flex-shrink-0">
           <button
             type="button"
             onClick={toggleSidebar}
             aria-label={sideOpen ? "Chiudi menu di navigazione" : "Apri menu di navigazione"}
             aria-expanded={sideOpen}
             aria-controls={SIDEBAR_ID}
-            className="text-[#888580] hover:text-[#1A1A18] transition-colors touch-min-44 flex items-center justify-center w-9 h-9 rounded hover:bg-[#F7F5F0]"
+            className="text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors touch-min-44 flex items-center justify-center w-9 h-9 rounded hover:bg-[var(--background)]"
           >
             <span aria-hidden="true">{sideOpen ? "✕" : "☰"}</span>
           </button>
           <div className="flex items-center gap-4">
-            <span className="text-xs text-[#888580]">{user?.name || 'Admin'}</span>
-            <div className="w-8 h-8 bg-[#1B4332] rounded-full flex items-center justify-center text-white text-xs font-medium">
+            <span className="text-xs text-[var(--muted-foreground)]">{user?.name || 'Admin'}</span>
+            <div className="w-8 h-8 bg-[var(--primary)] rounded-full flex items-center justify-center text-white text-xs font-medium">
               {user?.name?.charAt(0) || 'A'}
             </div>
             <button
               type="button"
               onClick={logout}
-              className="text-xs text-[#888580] hover:text-[#1A1A18] transition-colors"
+              className="text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
               title="Logout"
             >
               Logout
