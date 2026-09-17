@@ -54,7 +54,7 @@ router.post('/', upload.array('attachments', 6), async (req: Request, res: Respo
   }
 
   try {
-    const files = req.files as Express.Multer.File[];
+    const files = req.files as Express.Multer.File[] | undefined;
     const uploadedAttachments: any[] = [];
 
     // Handle file uploads if present
