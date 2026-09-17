@@ -36,16 +36,23 @@ const upload = multer({
 router.get('/', async (req: Request, res: Response) => {
   // Security: Ensure only GET method is accepted
   if (req.method !== 'GET') {
-    return res.status(405).json({ 
-      success: false, 
-      message: 'Method not allowed' 
+    return res.status(405).json({
+      success: false,
+      message: 'Method not allowed'
     });
   }
-  
+
   try {
     const quotes = await Quote.find().sort({ createdAt: -1 });
+    console.log('[Quotes] Fetched quotes:', quotes.length);
+    quotes.forEach((quote: any) => {
+      if (quote.attachments && quote.attachments.length > 0) {
+        console.log(`[Quotes] Quote ${quote._id} has ${quote.attachments.length} attachments`);
+      }
+    });
     res.json({ success: true, data: quotes });
   } catch (error) {
+    console.error('[Quotes] Error fetching quotes:', error);
     res.status(500).json({ success: false, message: 'Failed to fetch quotes' });
   }
 });

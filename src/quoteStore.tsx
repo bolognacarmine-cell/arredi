@@ -93,23 +93,27 @@ export function useQuotes() {
     async function loadQuotesFromApi() {
       try {
         const apiQuotes = await quotesApi.getQuotes()
+        console.log('[QuoteStore] Loaded quotes from API:', apiQuotes.length)
         // Convert API quotes to local format
-        const convertedQuotes: QuoteRecord[] = apiQuotes.map((q) => ({
-          id: q._id || q.id,
-          nome: q.nome,
-          cognome: q.cognome,
-          azienda: q.azienda,
-          settore: q.settore,
-          email: q.email,
-          telefono: q.telefono,
-          data: q.data,
-          stato: q.stato,
-          metratura: q.metratura,
-          arredo: q.arredo,
-          messaggio: q.messaggio,
-          note: q.note,
-          attachments: q.attachments,
-        }))
+        const convertedQuotes: QuoteRecord[] = apiQuotes.map((q) => {
+          console.log('[QuoteStore] Processing quote:', q._id || q.id, 'attachments:', q.attachments?.length || 0)
+          return {
+            id: q._id || q.id,
+            nome: q.nome,
+            cognome: q.cognome,
+            azienda: q.azienda,
+            settore: q.settore,
+            email: q.email,
+            telefono: q.telefono,
+            data: q.data,
+            stato: q.stato,
+            metratura: q.metratura,
+            arredo: q.arredo,
+            messaggio: q.messaggio,
+            note: q.note,
+            attachments: q.attachments,
+          }
+        })
         setQuotes(convertedQuotes.length > 0 ? convertedQuotes : [])
       } catch (err) {
         console.error("Error loading quotes from API:", err)
@@ -124,22 +128,26 @@ export function useQuotes() {
   const refreshQuotes = async () => {
     try {
       const apiQuotes = await quotesApi.getQuotes()
-      const convertedQuotes: QuoteRecord[] = apiQuotes.map((q) => ({
-        id: q._id || q.id,
-        nome: q.nome,
-        cognome: q.cognome,
-        azienda: q.azienda,
-        settore: q.settore,
-        email: q.email,
-        telefono: q.telefono,
-        data: q.data,
-        stato: q.stato,
-        metratura: q.metratura,
-        arredo: q.arredo,
-        messaggio: q.messaggio,
-        note: q.note,
-        attachments: q.attachments,
-      }))
+      console.log('[QuoteStore] Refreshed quotes from API:', apiQuotes.length)
+      const convertedQuotes: QuoteRecord[] = apiQuotes.map((q) => {
+        console.log('[QuoteStore] Refreshing quote:', q._id || q.id, 'attachments:', q.attachments?.length || 0)
+        return {
+          id: q._id || q.id,
+          nome: q.nome,
+          cognome: q.cognome,
+          azienda: q.azienda,
+          settore: q.settore,
+          email: q.email,
+          telefono: q.telefono,
+          data: q.data,
+          stato: q.stato,
+          metratura: q.metratura,
+          arredo: q.arredo,
+          messaggio: q.messaggio,
+          note: q.note,
+          attachments: q.attachments,
+        }
+      })
       setQuotes(convertedQuotes.length > 0 ? convertedQuotes : [])
     } catch (err) {
       console.error("Error refreshing quotes from API:", err)

@@ -462,40 +462,44 @@ export default function AdminQuotes() {
                       Allegati del cliente
                     </dt>
                     <div className="quote-attachments-grid">
-                      {selectedQuote.attachments.map((attachment: QuoteAttachment, index: number) => (
-                        <div key={index} className="relative group">
-                          <div className="quote-attachment-preview cursor-pointer" onClick={() => setModalImage(attachment.secureUrl || attachment.url)}>
-                            <img
-                              src={attachment.secureUrl || attachment.url}
-                              alt={attachment.originalName || `Allegato ${index + 1}`}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).style.display = 'none'
-                              }}
-                            />
-                          </div>
-                          <div className="mt-2">
-                            <div className="text-xs text-[#1A1A18] font-medium truncate" title={attachment.originalName || `Allegato ${index + 1}`}>
-                              {attachment.originalName || `Allegato ${index + 1}`}
+                      {selectedQuote.attachments.map((attachment: QuoteAttachment, index: number) => {
+                        console.log('[AdminQuotes] Rendering attachment:', index, attachment)
+                        return (
+                          <div key={index} className="relative group">
+                            <div className="quote-attachment-preview cursor-pointer" onClick={() => setModalImage(attachment.secureUrl || attachment.url)}>
+                              <img
+                                src={attachment.secureUrl || attachment.url}
+                                alt={attachment.originalName || `Allegato ${index + 1}`}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  console.error('[AdminQuotes] Image load error:', attachment.secureUrl || attachment.url)
+                                  (e.target as HTMLImageElement).style.display = 'none'
+                                }}
+                              />
                             </div>
-                            <div className="text-xs text-[#888580]">
-                              {formatFileSize(attachment.bytes)}
+                            <div className="mt-2">
+                              <div className="text-xs text-[#1A1A18] font-medium truncate" title={attachment.originalName || `Allegato ${index + 1}`}>
+                                {attachment.originalName || `Allegato ${index + 1}`}
+                              </div>
+                              <div className="text-xs text-[#888580]">
+                                {formatFileSize(attachment.bytes)}
+                              </div>
                             </div>
+                            <a
+                              href={attachment.secureUrl || attachment.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="absolute top-2 right-2 w-8 h-8 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+                              title="Apri in nuova scheda"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <svg className="w-4 h-4 text-[#1B4332]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                              </svg>
+                            </a>
                           </div>
-                          <a
-                            href={attachment.secureUrl || attachment.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="absolute top-2 right-2 w-8 h-8 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
-                            title="Apri in nuova scheda"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <svg className="w-4 h-4 text-[#1B4332]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                            </svg>
-                          </a>
-                        </div>
-                      ))}
+                        )
+                      })}
                     </div>
                   </div>
                 )}
