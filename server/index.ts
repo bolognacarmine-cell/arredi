@@ -84,10 +84,10 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     "default-src 'self'; " +
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; " +
     "style-src 'self' 'unsafe-inline' https:; " +
-    "img-src 'self' data: https:; " +
+    "img-src 'self' data: blob: https:; " +
     "connect-src 'self' https:; " +
     "font-src 'self' data: https:; " +
-    "media-src 'self' data: https:; " +
+    "media-src 'self' data: blob: https:; " +
     "frame-src 'self' https:; " +
     "frame-ancestors 'self'; " +
     "object-src 'none'; " +
