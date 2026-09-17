@@ -12,6 +12,20 @@ export interface QuoteAttachment {
   height?: number
 }
 
+export interface QuoteNote {
+  text: string
+  author?: string
+  timestamp: string
+}
+
+export interface QuoteStatusHistory {
+  previousStatus: string
+  newStatus: string
+  timestamp: string
+  changedBy?: string
+  note?: string
+}
+
 export interface Quote {
   _id: string
   id: string
@@ -27,6 +41,8 @@ export interface Quote {
   arredo: string
   messaggio: string
   note?: string
+  notes?: QuoteNote[]
+  statusHistory?: QuoteStatusHistory[]
   attachments?: QuoteAttachment[]
   createdAt: string
   updatedAt: string
@@ -203,6 +219,36 @@ export async function updateQuoteStatus(id: string, stato: "nuovo" | "contattato
     throw new Error(result.message || "Failed to update quote status")
   } catch (error) {
     console.error("Error updating quote status:", error)
+    throw error
+  }
+}
+
+export async function addQuoteNote(id: string, text: string): Promise<Quote> {
+  try {
+    const response = await fetch(getApiUrl(`/api/quotes/${id}/notes`), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      credentials: 'include',
+      body: JSON.stringify({ text }),
+    })
+
+    const result = await response.json()
+
+    if (result.success && result.data) {
+      return result.data
+    }
+
+    // Fallback for legacy direct object responses
+    if (result._id) {
+      return result
+    }
+
+    throw new Error(result.message || "Failed to add quote note")
+  } catch (error) {
+    console.error("Error adding quote note:", error)
     throw error
   }
 }

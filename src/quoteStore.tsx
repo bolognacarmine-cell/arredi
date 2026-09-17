@@ -12,6 +12,20 @@ export type QuoteAttachment = {
   height?: number
 }
 
+export type QuoteNote = {
+  text: string
+  author?: string
+  timestamp: string
+}
+
+export type QuoteStatusHistory = {
+  previousStatus: string
+  newStatus: string
+  timestamp: string
+  changedBy?: string
+  note?: string
+}
+
 export type QuoteRecord = {
   id: string
   nome: string
@@ -26,6 +40,8 @@ export type QuoteRecord = {
   arredo: string
   messaggio: string
   note?: string
+  notes?: QuoteNote[]
+  statusHistory?: QuoteStatusHistory[]
   attachments?: QuoteAttachment[]
 }
 
@@ -111,6 +127,8 @@ export function useQuotes() {
             arredo: q.arredo,
             messaggio: q.messaggio,
             note: q.note,
+            notes: q.notes,
+            statusHistory: q.statusHistory,
             attachments: q.attachments,
           }
         })
@@ -145,6 +163,8 @@ export function useQuotes() {
           arredo: q.arredo,
           messaggio: q.messaggio,
           note: q.note,
+          notes: q.notes,
+          statusHistory: q.statusHistory,
           attachments: q.attachments,
         }
       })

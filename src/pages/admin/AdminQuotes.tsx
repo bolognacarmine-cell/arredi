@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react"
 import { useQuotes, type QuoteRecord, type QuoteAttachment } from "../../quoteStore"
 import * as quotesApi from "../../api/quotesApi"
 import { useAdminAuth } from "../../hooks/useAdminAuth"
+import StatusHistoryTimeline from "../../components/admin/StatusHistoryTimeline"
+import InternalNotesList from "../../components/admin/InternalNotesList"
 
 const statusColor: Record<QuoteRecord["stato"], string> = {
   nuovo: "bg-blue-100 text-blue-700",
@@ -16,9 +18,9 @@ export default function AdminQuotes() {
   const { checkAuth } = useAdminAuth()
   const [filter, setFilter] = useState<QuoteRecord["stato"] | "all">("all")
   const [selectedQuote, setSelectedQuote] = useState<QuoteRecord | null>(null)
-  const [nota, setNota] = useState("")
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
   const [isUpdating, setIsUpdating] = useState<string | null>(null)
+  const [isAddingNote, setIsAddingNote] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [expandedMessage, setExpandedMessage] = useState(false)
@@ -63,6 +65,22 @@ export default function AdminQuotes() {
       setError("Impossibile aggiornare lo stato. Riprova.")
     } finally {
       setIsUpdating(null)
+    }
+  }
+
+  const handleAddNote = async (text: string) => {
+    if (!selectedQuote) return
+
+    setIsAddingNote(true)
+    setError(null)
+    try {
+      await quotesApi.addQuoteNote(selectedQuote.id, text)
+      await refreshQuotes()
+    } catch (err) {
+      console.error("Error adding note:", err)
+      setError("Impossibile aggiungere la nota. Riprova.")
+    } finally {
+      setIsAddingNote(false)
     }
   }
 
@@ -443,17 +461,7 @@ export default function AdminQuotes() {
                   </div>
                 )}
 
-                {/* Internal notes */}
-                {selectedQuote.note && (
-                  <div className="bg-blue-50 p-4 mb-6 rounded-lg border border-blue-100">
-                    <dt className="text-[var(--muted-foreground)] text-xs uppercase tracking-wide mb-2">
-                      Note interne
-                    </dt>
-                    <dd className="text-sm text-[var(--foreground)] leading-relaxed whitespace-pre-wrap break-words" style={{ overflowWrap: "anywhere" }}>
-                      {selectedQuote.note}
-                    </dd>
-                  </div>
-                )}
+
 
                 {/* Attachments */}
                 {selectedQuote.attachments && selectedQuote.attachments.length > 0 && (
@@ -516,6 +524,18 @@ export default function AdminQuotes() {
                   </div>
                 )}
 
+                {/* Status history timeline */}
+                <StatusHistoryTimeline 
+                  statusHistory={selectedQuote.statusHistory || []} 
+                />
+
+                {/* Internal notes */}
+                <InternalNotesList
+                  notes={selectedQuote.notes || []}
+                  onAddNote={handleAddNote}
+                  isAdding={isAddingNote}
+                />
+
                 {/* Status change */}
                 <div className="mb-6">
                   <label className="block text-xs text-[var(--muted-foreground)] uppercase tracking-wide mb-2">
@@ -537,31 +557,6 @@ export default function AdminQuotes() {
                       </button>
                     ))}
                   </div>
-                </div>
-
-                {/* Add note */}
-                <div>
-                  <label htmlFor="internal-note" className="block text-xs text-[var(--muted-foreground)] uppercase tracking-wide mb-2">
-                    Aggiungi nota interna
-                  </label>
-                  <textarea
-                    id="internal-note"
-                    rows={3}
-                    value={nota}
-                    onChange={(e) => setNota(e.target.value)}
-                    placeholder="Aggiungi una nota..."
-                    className="w-full border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-1 rounded resize-none"
-                  />
-                  <button
-                    onClick={() => {
-                      // Here you would implement the note saving logic
-                      console.log("Saving note:", nota)
-                      setNota("")
-                    }}
-                    className="mt-2 bg-[var(--primary)] text-white text-xs font-medium px-4 py-2 hover:bg-[#143326] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-1 rounded"
-                  >
-                    Salva nota
-                  </button>
                 </div>
               </div>
             )}

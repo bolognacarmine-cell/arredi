@@ -444,13 +444,32 @@ router.put('/:id', requireAdmin, async (req: Request, res: Response) => {
   
   try {
     const { id } = req.params;
-    const quote = await Quote.findByIdAndUpdate(id, req.body, { new: true });
-    if (!quote) {
-      res.status(404).json({ success: false, message: 'Quote not found' });
-    } else {
-      res.json({ success: true, data: quote });
+    
+    // Get existing quote to preserve tracking fields
+    const existingQuote = await Quote.findById(id);
+    if (!existingQuote) {
+      return res.status(404).json({ success: false, message: 'Quote not found' });
     }
+
+    // Protect tracking fields from accidental overwrite
+    // Only allow explicit updates if they are provided in the request
+    const updateData = { ...req.body };
+    
+    // Preserve statusHistory and notes unless explicitly provided
+    if (!updateData.statusHistory) {
+      updateData.statusHistory = existingQuote.statusHistory;
+    }
+    if (!updateData.notes) {
+      updateData.notes = existingQuote.notes;
+    }
+    
+    // Preserve updatedAt timestamp
+    updateData.updatedAt = new Date();
+
+    const quote = await Quote.findByIdAndUpdate(id, updateData, { new: true });
+    res.json({ success: true, data: quote });
   } catch (error) {
+    console.error('[Quotes] Error updating quote:', error);
     res.status(400).json({ success: false, message: 'Failed to update quote' });
   }
 });
@@ -459,33 +478,102 @@ router.put('/:id', requireAdmin, async (req: Request, res: Response) => {
 router.patch('/:id/status', requireAdmin, async (req: Request, res: Response) => {
   // Security: Ensure only PATCH method is accepted
   if (req.method !== 'PATCH') {
-    return res.status(405).json({ 
-      success: false, 
-      message: 'Method not allowed' 
+    return res.status(405).json({
+      success: false,
+      message: 'Method not allowed'
     });
   }
-  
+
   try {
     const { id } = req.params;
-    const { stato } = req.body;
+    const { stato, note } = req.body;
 
     if (!stato || !['nuovo', 'contattato', 'chiuso'].includes(stato)) {
       return res.status(400).json({ success: false, message: 'Invalid status' });
     }
 
-    const quote = await Quote.findByIdAndUpdate(
-      id,
-      { stato, updatedAt: new Date() },
-      { new: true }
-    );
-
+    const quote = await Quote.findById(id);
     if (!quote) {
-      res.status(404).json({ success: false, message: 'Quote not found' });
-    } else {
-      res.json({ success: true, data: quote });
+      return res.status(404).json({ success: false, message: 'Quote not found' });
     }
+
+    const previousStatus = quote.stato;
+    const changedBy = req.session?.userId || 'system';
+
+    // Add status history entry
+    const statusHistoryEntry = {
+      previousStatus,
+      newStatus: stato,
+      timestamp: new Date(),
+      changedBy,
+      note: note || undefined,
+    };
+
+    quote.statusHistory.push(statusHistoryEntry);
+    quote.stato = stato;
+    quote.updatedAt = new Date();
+
+    await quote.save();
+
+    res.json({ success: true, data: quote });
   } catch (error) {
+    console.error('[Quotes] Error updating quote status:', error);
     res.status(400).json({ success: false, message: 'Failed to update quote status' });
+  }
+});
+
+// POST add note to quote
+router.post('/:id/notes', requireAdmin, async (req: Request, res: Response) => {
+  // Security: Ensure only POST method is accepted
+  if (req.method !== 'POST') {
+    return res.status(405).json({
+      success: false,
+      message: 'Method not allowed'
+    });
+  }
+
+  try {
+    const { id } = req.params;
+    const { text } = req.body;
+
+    // Validate note text
+    if (!text || typeof text !== 'string' || !text.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Note text is required and cannot be empty'
+      });
+    }
+
+    if (text.length > 2000) {
+      return res.status(400).json({
+        success: false,
+        message: 'Note text too long (max 2000 characters)'
+      });
+    }
+
+    const quote = await Quote.findById(id);
+    if (!quote) {
+      return res.status(404).json({ success: false, message: 'Quote not found' });
+    }
+
+    const author = req.session?.userId || 'system';
+
+    // Add new note to notes array
+    const newNote = {
+      text: text.trim(),
+      author,
+      timestamp: new Date(),
+    };
+
+    quote.notes.push(newNote);
+    quote.updatedAt = new Date();
+
+    await quote.save();
+
+    res.json({ success: true, data: quote });
+  } catch (error) {
+    console.error('[Quotes] Error adding note to quote:', error);
+    res.status(400).json({ success: false, message: 'Failed to add note to quote' });
   }
 });
 
