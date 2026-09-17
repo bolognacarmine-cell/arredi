@@ -68,13 +68,13 @@ router.post('/', upload.array('attachments', 6), async (req: Request, res: Respo
     if (files && files.length > 0) {
       // Validate Cloudinary configuration
       if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
-        return res.status(500).json({
-          success: false,
-          message: 'Servizio di upload non configurato. Contatta l\'amministratore.'
-        });
-      }
+        console.warn('[Quotes] Cloudinary not configured, skipping file upload but allowing quote submission');
+        // Skip file upload but allow quote submission without attachments
+        // This makes the system more robust - users can still submit quotes even if upload isn't configured
+      } else {
+        // Cloudinary is configured, proceed with upload
 
-      // Validate file count
+        // Validate file count
       if (files.length > 6) {
         return res.status(400).json({
           success: false,
@@ -152,6 +152,7 @@ router.post('/', upload.array('attachments', 6), async (req: Request, res: Respo
             message: 'Errore durante il caricamento delle immagini. Riprova.'
           });
         }
+      }
       }
     }
 

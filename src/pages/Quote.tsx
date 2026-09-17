@@ -160,7 +160,33 @@ export default function Quote() {
           formData.append('attachments', file)
         })
 
-        await quotesApi.createQuoteWithAttachments(formData)
+        try {
+          await quotesApi.createQuoteWithAttachments(formData)
+        } catch (uploadError: any) {
+          // If upload fails due to Cloudinary not configured, fallback to regular quote
+          if (uploadError.message && uploadError.message.includes('Servizio di upload non configurato')) {
+            console.warn('Cloudinary not configured, submitting quote without attachments')
+            await quotesApi.createQuote({
+              id: "",
+              nome: form.nome,
+              cognome: form.cognome,
+              azienda: form.azienda,
+              settore: form.settore,
+              email: form.email,
+              telefono: form.telefono,
+              data: today,
+              stato: "nuovo",
+              metratura: form.metratura,
+              arredo: form.arredo,
+              messaggio: form.messaggio,
+              note: "",
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            })
+          } else {
+            throw uploadError
+          }
+        }
       } else {
         await quotesApi.createQuote({
           id: "",
