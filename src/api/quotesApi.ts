@@ -1,6 +1,17 @@
 // Use relative paths for same-origin, absolute when VITE_API_BASE_URL is set for cross-origin
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ""
 
+export interface QuoteAttachment {
+  url: string
+  secureUrl?: string
+  publicId?: string
+  originalName?: string
+  mimeType?: string
+  bytes?: number
+  width?: number
+  height?: number
+}
+
 export interface Quote {
   _id: string
   id: string
@@ -16,6 +27,7 @@ export interface Quote {
   arredo: string
   messaggio: string
   note?: string
+  attachments?: QuoteAttachment[]
   createdAt: string
   updatedAt: string
 }
@@ -102,6 +114,35 @@ export async function createQuote(data: Omit<Quote, "_id" | "createdAt" | "updat
     throw new Error(result.message || "Failed to create quote")
   } catch (error) {
     console.error("Error creating quote:", error)
+    throw error
+  }
+}
+
+export async function createQuoteWithAttachments(formData: FormData): Promise<Quote> {
+  try {
+    const response = await fetch(getApiUrl('/api/quotes'), {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+      },
+      credentials: 'include',
+      body: formData,
+    })
+
+    const result = await response.json()
+
+    if (result.success && result.data) {
+      return result.data
+    }
+
+    // Fallback for legacy direct object responses
+    if (result._id) {
+      return result
+    }
+
+    throw new Error(result.message || "Failed to create quote with attachments")
+  } catch (error) {
+    console.error("Error creating quote with attachments:", error)
     throw error
   }
 }

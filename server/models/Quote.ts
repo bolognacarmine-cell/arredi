@@ -2,6 +2,17 @@ import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
 
+const QuoteAttachmentSchema = new Schema({
+  url: { type: String, required: true },
+  secureUrl: { type: String },
+  publicId: { type: String },
+  originalName: { type: String },
+  mimeType: { type: String },
+  bytes: { type: Number },
+  width: { type: Number },
+  height: { type: Number },
+});
+
 const QuoteSchema = new Schema({
   nome: { type: String, required: true },
   cognome: { type: String, required: true },
@@ -15,6 +26,7 @@ const QuoteSchema = new Schema({
   arredo: { type: String, default: '' },
   messaggio: { type: String, default: '' },
   note: { type: String, default: '' },
+  attachments: { type: [QuoteAttachmentSchema], default: [] },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });

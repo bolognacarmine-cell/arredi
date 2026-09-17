@@ -1,6 +1,17 @@
 import { useEffect, useState } from "react"
 import * as quotesApi from "./api/quotesApi"
 
+export type QuoteAttachment = {
+  url: string
+  secureUrl?: string
+  publicId?: string
+  originalName?: string
+  mimeType?: string
+  bytes?: number
+  width?: number
+  height?: number
+}
+
 export type QuoteRecord = {
   id: string
   nome: string
@@ -15,6 +26,7 @@ export type QuoteRecord = {
   arredo: string
   messaggio: string
   note?: string
+  attachments?: QuoteAttachment[]
 }
 
 const QUOTES_STORAGE_KEY = "farcom-quotes"
@@ -96,6 +108,7 @@ export function useQuotes() {
           arredo: q.arredo,
           messaggio: q.messaggio,
           note: q.note,
+          attachments: q.attachments,
         }))
         setQuotes(convertedQuotes.length > 0 ? convertedQuotes : [])
       } catch (err) {
@@ -125,6 +138,7 @@ export function useQuotes() {
         arredo: q.arredo,
         messaggio: q.messaggio,
         note: q.note,
+        attachments: q.attachments,
       }))
       setQuotes(convertedQuotes.length > 0 ? convertedQuotes : [])
     } catch (err) {

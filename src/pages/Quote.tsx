@@ -25,6 +25,9 @@ export default function Quote() {
   const [submitted, setSubmitted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+  const [dragActive, setDragActive] = useState(false)
+  const [fileError, setFileError] = useState<string | null>(null)
   const [form, setForm] = useState({
     nome: "",
     cognome: "",
@@ -41,6 +44,93 @@ export default function Quote() {
   const set = (k: string, v: string | boolean) =>
     setForm((f) => ({ ...f, [k]: v }))
 
+  const validateFile = (file: File): string | null => {
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+    const maxSize = 8 * 1024 * 1024 // 8MB
+
+    if (!allowedTypes.includes(file.type)) {
+      return 'Formato non supportato. Usa JPEG, PNG o WebP.'
+    }
+
+    if (file.size > maxSize) {
+      return 'File troppo grande. Massimo 8MB per immagine.'
+    }
+
+    if (file.size === 0) {
+      return 'File vuoto o corrotto.'
+    }
+
+    return null
+  }
+
+  const handleFiles = (files: FileList | null) => {
+    if (!files) return
+
+    setFileError(null)
+    const newFiles: File[] = []
+    const errors: string[] = []
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]
+      const error = validateFile(file)
+
+      if (error) {
+        errors.push(`${file.name}: ${error}`)
+      } else {
+        newFiles.push(file)
+      }
+    }
+
+    if (errors.length > 0) {
+      setFileError(errors.join('; '))
+    }
+
+    if (newFiles.length > 0) {
+      setSelectedFiles((prev) => {
+        const total = prev.length + newFiles.length
+        if (total > 6) {
+          setFileError('Massimo 6 immagini per preventivo.')
+          return [...prev, ...newFiles.slice(0, 6 - prev.length)]
+        }
+        return [...prev, ...newFiles]
+      })
+    }
+  }
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setDragActive(true)
+    } else if (e.type === 'dragleave') {
+      setDragActive(false)
+    }
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragActive(false)
+    handleFiles(e.dataTransfer.files)
+  }
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleFiles(e.target.files)
+  }
+
+  const removeFile = (index: number) => {
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index))
+    setFileError(null)
+  }
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes'
+    const k = 1024
+    const sizes = ['Bytes', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
@@ -48,23 +138,49 @@ export default function Quote() {
 
     try {
       const today = new Date().toLocaleDateString("it-IT")
-      await quotesApi.createQuote({
-        id: "",
-        nome: form.nome,
-        cognome: form.cognome,
-        azienda: form.azienda,
-        settore: form.settore,
-        email: form.email,
-        telefono: form.telefono,
-        data: today,
-        stato: "nuovo",
-        metratura: form.metratura,
-        arredo: form.arredo,
-        messaggio: form.messaggio,
-        note: "",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      })
+
+      if (selectedFiles.length > 0) {
+        const formData = new FormData()
+        formData.append('nome', form.nome)
+        formData.append('cognome', form.cognome)
+        formData.append('azienda', form.azienda)
+        formData.append('settore', form.settore)
+        formData.append('email', form.email)
+        formData.append('telefono', form.telefono)
+        formData.append('data', today)
+        formData.append('stato', 'nuovo')
+        formData.append('metratura', form.metratura)
+        formData.append('arredo', form.arredo)
+        formData.append('messaggio', form.messaggio)
+        formData.append('note', '')
+        formData.append('createdAt', new Date().toISOString())
+        formData.append('updatedAt', new Date().toISOString())
+
+        selectedFiles.forEach((file) => {
+          formData.append('attachments', file)
+        })
+
+        await quotesApi.createQuoteWithAttachments(formData)
+      } else {
+        await quotesApi.createQuote({
+          id: "",
+          nome: form.nome,
+          cognome: form.cognome,
+          azienda: form.azienda,
+          settore: form.settore,
+          email: form.email,
+          telefono: form.telefono,
+          data: today,
+          stato: "nuovo",
+          metratura: form.metratura,
+          arredo: form.arredo,
+          messaggio: form.messaggio,
+          note: "",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        })
+      }
+
       setSubmitted(true)
     } catch (err) {
       console.error("Error submitting quote:", err)
@@ -218,24 +334,74 @@ export default function Quote() {
               </div>
               <div className="sm:col-span-2">
                 <label className="block text-xs text-[#888580] uppercase tracking-wide mb-1.5">
-                  Allega planimetria / foto (opzionale)
+                  Immagini del progetto (opzionale)
                 </label>
-                <div className="border border-dashed border-[#DDD9D0] bg-white p-6 text-center text-sm text-[#888580]">
+                <div
+                  className={`border border-dashed bg-white p-6 text-center text-sm text-[#888580] transition-colors ${
+                    dragActive ? 'border-[#1B4332] bg-[#F7F5F0]' : 'border-[#DDD9D0]'
+                  }`}
+                  onDragEnter={handleDrag}
+                  onDragLeave={handleDrag}
+                  onDragOver={handleDrag}
+                  onDrop={handleDrop}
+                >
                   <span className="block text-2xl mb-2">📎</span>
-                  <span>Trascina qui i file o </span>
+                  <span>Trascina qui le immagini o </span>
                   <label className="text-[#1B4332] underline cursor-pointer">
                     sfoglia
                     <input
                       type="file"
                       multiple
                       className="hidden"
-                      accept="image/*,.pdf"
+                      accept="image/jpeg,image/jpg,image/png,image/webp"
+                      onChange={handleFileSelect}
                     />
                   </label>
                   <span className="block text-xs mt-1 text-[#888580]">
-                    JPG, PNG, PDF – max 10MB
+                    JPG, PNG, WebP – max 8MB per immagine, max 6 immagini
                   </span>
                 </div>
+
+                {selectedFiles.length > 0 && (
+                  <div className="mt-4">
+                    <div className="text-xs text-[#888580] mb-2">
+                      {selectedFiles.length} {selectedFiles.length === 1 ? 'immagine selezionata' : 'immagini selezionate'}
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {selectedFiles.map((file, index) => (
+                        <div key={index} className="relative group">
+                          <div className="aspect-square bg-[#F7F5F0] rounded-lg overflow-hidden border border-[#DDD9D0]">
+                            <img
+                              src={URL.createObjectURL(file)}
+                              alt={file.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeFile(index)}
+                            className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
+                            aria-label="Rimuovi immagine"
+                          >
+                            ✕
+                          </button>
+                          <div className="mt-1 text-xs text-[#888580] truncate" title={file.name}>
+                            {file.name}
+                          </div>
+                          <div className="text-xs text-[#888580]">
+                            {formatFileSize(file.size)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {fileError && (
+                  <div className="mt-2 text-xs text-red-600">
+                    {fileError}
+                  </div>
+                )}
               </div>
             </div>
           </fieldset>

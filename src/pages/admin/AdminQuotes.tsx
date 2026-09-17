@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react"
-import { useQuotes, type QuoteRecord } from "../../quoteStore"
+import { useQuotes, type QuoteRecord, type QuoteAttachment } from "../../quoteStore"
 import * as quotesApi from "../../api/quotesApi"
 import { useAdminAuth } from "../../hooks/useAdminAuth"
 
@@ -22,6 +22,7 @@ export default function AdminQuotes() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [expandedMessage, setExpandedMessage] = useState(false)
+  const [modalImage, setModalImage] = useState<string | null>(null)
   const detailPanelRef = useRef<HTMLDivElement>(null)
 
   const filtered =
@@ -30,15 +31,19 @@ export default function AdminQuotes() {
   // Handle keyboard navigation
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && selectedQuote) {
-        setSelectedQuote(null)
-        setExpandedMessage(false)
+      if (e.key === "Escape") {
+        if (modalImage) {
+          setModalImage(null)
+        } else if (selectedQuote) {
+          setSelectedQuote(null)
+          setExpandedMessage(false)
+        }
       }
     }
 
     window.addEventListener("keydown", handleEscape)
     return () => window.removeEventListener("keydown", handleEscape)
-  }, [selectedQuote])
+  }, [selectedQuote, modalImage])
 
   // Focus management when panel opens
   useEffect(() => {
@@ -130,6 +135,15 @@ export default function AdminQuotes() {
       return JSON.stringify(value)
     }
     return String(value)
+  }
+
+  const formatFileSize = (bytes?: number): string => {
+    if (!bytes) return "—"
+    if (bytes === 0) return "0 Bytes"
+    const k = 1024
+    const sizes = ["Bytes", "KB", "MB", "GB"]
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + " " + sizes[i]
   }
 
   const isMessageLong = (message: string) => {
@@ -441,6 +455,63 @@ export default function AdminQuotes() {
                   </div>
                 )}
 
+                {/* Attachments */}
+                {selectedQuote.attachments && selectedQuote.attachments.length > 0 && (
+                  <div className="mb-6">
+                    <dt className="text-[#888580] text-xs uppercase tracking-wide mb-3">
+                      Allegati del cliente
+                    </dt>
+                    <div className="quote-attachments-grid">
+                      {selectedQuote.attachments.map((attachment: QuoteAttachment, index: number) => (
+                        <div key={index} className="relative group">
+                          <div className="quote-attachment-preview cursor-pointer" onClick={() => setModalImage(attachment.secureUrl || attachment.url)}>
+                            <img
+                              src={attachment.secureUrl || attachment.url}
+                              alt={attachment.originalName || `Allegato ${index + 1}`}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = 'none'
+                              }}
+                            />
+                          </div>
+                          <div className="mt-2">
+                            <div className="text-xs text-[#1A1A18] font-medium truncate" title={attachment.originalName || `Allegato ${index + 1}`}>
+                              {attachment.originalName || `Allegato ${index + 1}`}
+                            </div>
+                            <div className="text-xs text-[#888580]">
+                              {formatFileSize(attachment.bytes)}
+                            </div>
+                          </div>
+                          <a
+                            href={attachment.secureUrl || attachment.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="absolute top-2 right-2 w-8 h-8 bg-white/90 hover:bg-white rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+                            title="Apri in nuova scheda"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <svg className="w-4 h-4 text-[#1B4332]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* No attachments message */}
+                {(!selectedQuote.attachments || selectedQuote.attachments.length === 0) && (
+                  <div className="mb-6">
+                    <dt className="text-[#888580] text-xs uppercase tracking-wide mb-3">
+                      Allegati del cliente
+                    </dt>
+                    <div className="text-sm text-[#888580] italic">
+                      Nessun allegato
+                    </div>
+                  </div>
+                )}
+
                 {/* Status change */}
                 <div className="mb-6">
                   <label className="block text-xs text-[#888580] uppercase tracking-wide mb-2">
@@ -492,10 +563,36 @@ export default function AdminQuotes() {
             )}
           </div>
         )}
+
+        {/* Image modal */}
+        {modalImage && (
+          <div
+            className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+            onClick={() => setModalImage(null)}
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="relative max-w-4xl max-h-full">
+              <img
+                src={modalImage}
+                alt="Anteprima immagine"
+                className="max-w-full max-h-[90vh] object-contain"
+                onClick={(e) => e.stopPropagation()}
+              />
+              <button
+                onClick={() => setModalImage(null)}
+                className="absolute -top-4 -right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg hover:bg-gray-100 transition-colors"
+                aria-label="Chiudi anteprima"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Print styles */}
-      <style jsx global>{`
+      <style>{`
         @media print {
           body {
             background: white;
@@ -503,6 +600,29 @@ export default function AdminQuotes() {
           .no-print {
             display: none !important;
           }
+        }
+
+        .quote-attachments-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+          gap: 12px;
+          min-width: 0;
+          width: 100%;
+        }
+
+        .quote-attachment-preview {
+          width: 100%;
+          aspect-ratio: 4 / 3;
+          overflow: hidden;
+          border-radius: 14px;
+          border: 1px solid #DDD9D0;
+        }
+
+        .quote-attachment-preview img {
+          display: block;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
         }
       `}</style>
     </div>
