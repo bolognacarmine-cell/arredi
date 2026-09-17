@@ -12,6 +12,15 @@ export interface QuoteAttachment {
   height?: number
 }
 
+export interface QuoteDocument {
+  url: string
+  secureUrl?: string
+  publicId?: string
+  originalName?: string
+  mimeType?: string
+  bytes?: number
+}
+
 export interface QuoteNote {
   text: string
   author?: string
@@ -44,6 +53,7 @@ export interface Quote {
   notes?: QuoteNote[]
   statusHistory?: QuoteStatusHistory[]
   attachments?: QuoteAttachment[]
+  documents?: QuoteDocument[]
   createdAt: string
   updatedAt: string
 }

@@ -29,6 +29,9 @@ export default function Quote() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const [dragActive, setDragActive] = useState(false)
   const [fileError, setFileError] = useState<string | null>(null)
+  const [selectedDocuments, setSelectedDocuments] = useState<File[]>([])
+  const [documentDragActive, setDocumentDragActive] = useState(false)
+  const [documentError, setDocumentError] = useState<string | null>(null)
   const [form, setForm] = useState({
     nome: "",
     cognome: "",
@@ -55,6 +58,25 @@ export default function Quote() {
 
     if (file.size > maxSize) {
       return 'File troppo grande. Massimo 8MB per immagine.'
+    }
+
+    if (file.size === 0) {
+      return 'File vuoto o corrotto.'
+    }
+
+    return null
+  }
+
+  const validateDocument = (file: File): string | null => {
+    const allowedTypes = ['application/pdf']
+    const maxSize = 8 * 1024 * 1024 // 8MB
+
+    if (!allowedTypes.includes(file.type)) {
+      return 'Formato non supportato. Usa solo PDF.'
+    }
+
+    if (file.size > maxSize) {
+      return 'File troppo grande. Massimo 8MB per documento.'
     }
 
     if (file.size === 0) {
@@ -124,6 +146,66 @@ export default function Quote() {
     setFileError(null)
   }
 
+  const handleDocuments = (files: FileList | null) => {
+    if (!files) return
+
+    setDocumentError(null)
+    const newDocuments: File[] = []
+    const errors: string[] = []
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]
+      const error = validateDocument(file)
+
+      if (error) {
+        errors.push(`${file.name}: ${error}`)
+      } else {
+        newDocuments.push(file)
+      }
+    }
+
+    if (errors.length > 0) {
+      setDocumentError(errors.join('; '))
+    }
+
+    if (newDocuments.length > 0) {
+      setSelectedDocuments((prev) => {
+        const total = prev.length + newDocuments.length
+        if (total > 3) {
+          setDocumentError('Massimo 3 documenti per preventivo.')
+          return [...prev, ...newDocuments.slice(0, 3 - prev.length)]
+        }
+        return [...prev, ...newDocuments]
+      })
+    }
+  }
+
+  const handleDocumentDrag = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setDocumentDragActive(true)
+    } else if (e.type === 'dragleave') {
+      setDocumentDragActive(false)
+    }
+  }
+
+  const handleDocumentDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDocumentDragActive(false)
+    handleDocuments(e.dataTransfer.files)
+  }
+
+  const handleDocumentSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleDocuments(e.target.files)
+  }
+
+  const removeDocument = (index: number) => {
+    setSelectedDocuments((prev) => prev.filter((_, i) => i !== index))
+    setDocumentError(null)
+  }
+
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes'
     const k = 1024
@@ -140,7 +222,7 @@ export default function Quote() {
     try {
       const today = new Date().toLocaleDateString("it-IT")
 
-      if (selectedFiles.length > 0) {
+      if (selectedFiles.length > 0 || selectedDocuments.length > 0) {
         const formData = new FormData()
         formData.append('nome', form.nome)
         formData.append('cognome', form.cognome)
@@ -159,6 +241,10 @@ export default function Quote() {
 
         selectedFiles.forEach((file) => {
           formData.append('attachments', file)
+        })
+
+        selectedDocuments.forEach((doc) => {
+          formData.append('documents', doc)
         })
 
         try {
@@ -426,6 +512,72 @@ export default function Quote() {
 
                 {fileError && (
                   <Alert type="warning" className="mt-2">{fileError}</Alert>
+                )}
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="block text-xs text-[var(--muted-foreground)] uppercase tracking-wide mb-1.5">
+                  Documenti del progetto (opzionale)
+                </label>
+                <div
+                  className={`border border-dashed bg-white p-6 text-center text-sm text-[var(--muted-foreground)] transition-colors ${
+                    documentDragActive ? 'border-[var(--primary)] bg-[var(--background)]' : 'border-[var(--border)]'
+                  }`}
+                  onDragEnter={handleDocumentDrag}
+                  onDragLeave={handleDocumentDrag}
+                  onDragOver={handleDocumentDrag}
+                  onDrop={handleDocumentDrop}
+                >
+                  <span className="block text-2xl mb-2">📄</span>
+                  <span>Trascina qui i documenti o </span>
+                  <label className="text-[var(--primary)] underline cursor-pointer">
+                    sfoglia
+                    <input
+                      type="file"
+                      multiple
+                      className="hidden"
+                      accept="application/pdf"
+                      onChange={handleDocumentSelect}
+                    />
+                  </label>
+                  <span className="block text-xs mt-1 text-[var(--muted-foreground)]">
+                    PDF – max 8MB per documento, max 3 documenti
+                  </span>
+                </div>
+
+                {selectedDocuments.length > 0 && (
+                  <div className="mt-4">
+                    <div className="text-xs text-[var(--muted-foreground)] mb-2">
+                      {selectedDocuments.length} {selectedDocuments.length === 1 ? 'documento selezionato' : 'documenti selezionati'}
+                    </div>
+                    <div className="space-y-2">
+                      {selectedDocuments.map((file, index) => (
+                        <div key={index} className="relative group flex items-center gap-3 bg-[var(--background)] p-3 rounded-lg border border-[var(--border)]">
+                          <div className="text-2xl">📄</div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs text-[var(--foreground)] font-medium truncate" title={file.name}>
+                              {file.name}
+                            </div>
+                            <div className="text-xs text-[var(--muted-foreground)]">
+                              {formatFileSize(file.size)}
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeDocument(index)}
+                            className="w-6 h-6 bg-red-500 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
+                            aria-label="Rimuovi documento"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {documentError && (
+                  <Alert type="warning" className="mt-2">{documentError}</Alert>
                 )}
               </div>
             </div>

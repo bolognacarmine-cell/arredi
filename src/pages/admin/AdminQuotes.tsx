@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react"
-import { useQuotes, type QuoteRecord, type QuoteAttachment } from "../../quoteStore"
+import { useQuotes, type QuoteRecord, type QuoteAttachment, type QuoteDocument } from "../../quoteStore"
 import * as quotesApi from "../../api/quotesApi"
 import { useAdminAuth } from "../../hooks/useAdminAuth"
 import StatusHistoryTimeline from "../../components/admin/StatusHistoryTimeline"
@@ -520,6 +520,50 @@ export default function AdminQuotes() {
                     </dt>
                     <div className="text-sm text-[var(--muted-foreground)] italic">
                       Nessun allegato
+                    </div>
+                  </div>
+                )}
+
+                {/* Documents */}
+                {selectedQuote.documents && selectedQuote.documents.length > 0 && (
+                  <div className="mb-6">
+                    <dt className="text-[var(--muted-foreground)] text-xs uppercase tracking-wide mb-3">
+                      Documenti del cliente
+                    </dt>
+                    <div className="space-y-2">
+                      {selectedQuote.documents.map((doc: any, index: number) => (
+                        <div key={index} className="flex items-center gap-3 bg-[var(--background)] p-3 rounded-lg border border-[var(--border)]">
+                          <div className="text-2xl">📄</div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs text-[var(--foreground)] font-medium truncate" title={doc.originalName || `Documento ${index + 1}`}>
+                              {doc.originalName || `Documento ${index + 1}`}
+                            </div>
+                            <div className="text-xs text-[var(--muted-foreground)]">
+                              {formatFileSize(doc.bytes)}
+                            </div>
+                          </div>
+                          <a
+                            href={doc.secureUrl || doc.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-[var(--primary)] hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-1 rounded"
+                          >
+                            Apri PDF
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* No documents message */}
+                {(!selectedQuote.documents || selectedQuote.documents.length === 0) && (
+                  <div className="mb-6">
+                    <dt className="text-[var(--muted-foreground)] text-xs uppercase tracking-wide mb-3">
+                      Documenti del cliente
+                    </dt>
+                    <div className="text-sm text-[var(--muted-foreground)] italic">
+                      Nessun documento
                     </div>
                   </div>
                 )}

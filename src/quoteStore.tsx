@@ -12,6 +12,15 @@ export type QuoteAttachment = {
   height?: number
 }
 
+export type QuoteDocument = {
+  url: string
+  secureUrl?: string
+  publicId?: string
+  originalName?: string
+  mimeType?: string
+  bytes?: number
+}
+
 export type QuoteNote = {
   text: string
   author?: string
@@ -43,6 +52,7 @@ export type QuoteRecord = {
   notes?: QuoteNote[]
   statusHistory?: QuoteStatusHistory[]
   attachments?: QuoteAttachment[]
+  documents?: QuoteDocument[]
 }
 
 const QUOTES_STORAGE_KEY = "farcom-quotes"
@@ -112,7 +122,7 @@ export function useQuotes() {
         console.log('[QuoteStore] Loaded quotes from API:', apiQuotes.length)
         // Convert API quotes to local format
         const convertedQuotes: QuoteRecord[] = apiQuotes.map((q) => {
-          console.log('[QuoteStore] Processing quote:', q._id || q.id, 'attachments:', q.attachments?.length || 0)
+          console.log('[QuoteStore] Processing quote:', q._id || q.id, 'attachments:', q.attachments?.length || 0, 'documents:', q.documents?.length || 0)
           return {
             id: q._id || q.id,
             nome: q.nome,
@@ -130,6 +140,7 @@ export function useQuotes() {
             notes: q.notes,
             statusHistory: q.statusHistory,
             attachments: q.attachments,
+            documents: q.documents,
           }
         })
         setQuotes(convertedQuotes.length > 0 ? convertedQuotes : [])
@@ -148,7 +159,7 @@ export function useQuotes() {
       const apiQuotes = await quotesApi.getQuotes()
       console.log('[QuoteStore] Refreshed quotes from API:', apiQuotes.length)
       const convertedQuotes: QuoteRecord[] = apiQuotes.map((q) => {
-        console.log('[QuoteStore] Refreshing quote:', q._id || q.id, 'attachments:', q.attachments?.length || 0)
+        console.log('[QuoteStore] Refreshing quote:', q._id || q.id, 'attachments:', q.attachments?.length || 0, 'documents:', q.documents?.length || 0)
         return {
           id: q._id || q.id,
           nome: q.nome,
@@ -166,6 +177,7 @@ export function useQuotes() {
           notes: q.notes,
           statusHistory: q.statusHistory,
           attachments: q.attachments,
+          documents: q.documents,
         }
       })
       setQuotes(convertedQuotes.length > 0 ? convertedQuotes : [])

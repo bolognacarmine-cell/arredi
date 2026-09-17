@@ -13,6 +13,15 @@ const QuoteAttachmentSchema = new Schema({
   height: { type: Number },
 });
 
+const QuoteDocumentSchema = new Schema({
+  url: { type: String, required: true },
+  secureUrl: { type: String },
+  publicId: { type: String },
+  originalName: { type: String },
+  mimeType: { type: String },
+  bytes: { type: Number },
+});
+
 const QuoteNoteSchema = new Schema({
   text: { type: String, required: true },
   author: { type: String, default: 'system' },
@@ -42,7 +51,8 @@ const QuoteSchema = new Schema({
   note: { type: String, default: '' }, // Mantenuto per compatibilità backward
   notes: { type: [QuoteNoteSchema], default: [] }, // Nuovo array di note
   statusHistory: { type: [QuoteStatusHistorySchema], default: [] }, // Nuovo storico stati
-  attachments: { type: [QuoteAttachmentSchema], default: [] },
+  attachments: { type: [QuoteAttachmentSchema], default: [] }, // Immagini
+  documents: { type: [QuoteDocumentSchema], default: [] }, // Documenti PDF
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });

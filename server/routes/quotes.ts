@@ -47,7 +47,7 @@ const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
     fileSize: 8 * 1024 * 1024, // 8MB per file
-    files: 6, // Max 6 files
+    files: 9, // Max 9 files (6 images + 3 documents)
   },
 });
 
@@ -77,7 +77,10 @@ router.get('/', async (req: Request, res: Response) => {
 });
 
 // POST create quote (public endpoint for form submissions)
-router.post('/', upload.array('attachments', 6), async (req: Request, res: Response) => {
+router.post('/', upload.fields([
+  { name: 'attachments', maxCount: 6 },
+  { name: 'documents', maxCount: 3 }
+]), async (req: Request, res: Response) => {
   // Security: Ensure only POST method is accepted
   if (req.method !== 'POST') {
     return res.status(405).json({
@@ -87,97 +90,180 @@ router.post('/', upload.array('attachments', 6), async (req: Request, res: Respo
   }
 
   try {
-    const files = req.files as Express.Multer.File[] | undefined;
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
+    const imageFiles = files?.attachments || [];
+    const documentFiles = files?.documents || [];
+    
     const uploadedAttachments: any[] = [];
+    const uploadedDocuments: any[] = [];
 
-    // Handle file uploads if present
-    if (files && files.length > 0) {
-      // Validate Cloudinary configuration
-      if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
-        console.warn('[Quotes] Cloudinary not configured, skipping file upload but allowing quote submission');
-        // Skip file upload but allow quote submission without attachments
-        // This makes the system more robust - users can still submit quotes even if upload isn't configured
-      } else {
-        // Cloudinary is configured, proceed with upload
+    // Validate Cloudinary configuration
+    const cloudinaryConfigured = !!(
+      process.env.CLOUDINARY_CLOUD_NAME &&
+      process.env.CLOUDINARY_API_KEY &&
+      process.env.CLOUDINARY_API_SECRET
+    );
 
-        // Validate file count
-        if (files.length > 6) {
+    if (!cloudinaryConfigured) {
+      console.warn('[Quotes] Cloudinary not configured, skipping file upload but allowing quote submission');
+    }
+
+    // Handle image uploads
+    if (imageFiles.length > 0 && cloudinaryConfigured) {
+      // Validate image count
+      if (imageFiles.length > 6) {
+        return res.status(400).json({
+          success: false,
+          message: 'Massimo 6 immagini per preventivo.'
+        });
+      }
+
+      // Validate each image
+      const allowedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      for (const file of imageFiles) {
+        if (!allowedImageTypes.includes(file.mimetype)) {
           return res.status(400).json({
             success: false,
-            message: 'Massimo 6 immagini per preventivo.'
+            message: `Formato non supportato: ${file.originalname}. Usa JPEG, PNG o WebP.`
           });
         }
 
-        // Validate each file
-        const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-        for (const file of files) {
-          if (!allowedMimeTypes.includes(file.mimetype)) {
-            return res.status(400).json({
-              success: false,
-              message: `Formato non supportato: ${file.originalname}. Usa JPEG, PNG o WebP.`
-            });
-          }
-
-          if (file.size > 8 * 1024 * 1024) {
-            return res.status(400).json({
-              success: false,
-              message: `File troppo grande: ${file.originalname}. Massimo 8MB per immagine.`
-            });
-          }
-
-          if (file.size === 0) {
-            return res.status(400).json({
-              success: false,
-              message: `File vuoto o corrotto: ${file.originalname}.`
-            });
-          }
+        if (file.size > 8 * 1024 * 1024) {
+          return res.status(400).json({
+            success: false,
+            message: `File troppo grande: ${file.originalname}. Massimo 8MB per immagine.`
+          });
         }
 
-        // Upload files to Cloudinary
-        for (const file of files) {
-          try {
-            const uploadResult = await cloudinary.uploader.upload(
-              `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
-              {
-                folder: 'farcom-arredi/quotes',
-                resource_type: 'image',
-                allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-                transformation: [
-                  { quality: 'auto:good' },
-                  { fetch_format: 'auto' }
-                ]
-              }
-            );
+        if (file.size === 0) {
+          return res.status(400).json({
+            success: false,
+            message: `File vuoto o corrotto: ${file.originalname}.`
+          });
+        }
+      }
 
-            uploadedAttachments.push({
-              url: uploadResult.secure_url,
-              secureUrl: uploadResult.secure_url,
-              publicId: uploadResult.public_id,
-              originalName: file.originalname,
-              mimeType: file.mimetype,
-              bytes: file.size,
-              width: uploadResult.width,
-              height: uploadResult.height,
-            });
-          } catch (uploadError) {
-            console.error('[Cloudinary] Upload error for file:', file.originalname, uploadError);
-
-            // Clean up already uploaded files on error
-            for (const attachment of uploadedAttachments) {
-              try {
-                if (attachment.publicId) {
-                  await cloudinary.uploader.destroy(attachment.publicId);
-                }
-              } catch (cleanupError) {
-                console.error('[Cloudinary] Cleanup error:', cleanupError);
-              }
+      // Upload images to Cloudinary
+      for (const file of imageFiles) {
+        try {
+          const uploadResult = await cloudinary.uploader.upload(
+            `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
+            {
+              folder: 'farcom-arredi/quotes',
+              resource_type: 'image',
+              allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+              transformation: [
+                { quality: 'auto:good' },
+                { fetch_format: 'auto' }
+              ]
             }
+          );
 
-            return res.status(500).json({
-              success: false,
-              message: 'Errore durante il caricamento delle immagini. Riprova.'
-            });
+          uploadedAttachments.push({
+            url: uploadResult.secure_url,
+            secureUrl: uploadResult.secure_url,
+            publicId: uploadResult.public_id,
+            originalName: file.originalname,
+            mimeType: file.mimetype,
+            bytes: file.size,
+            width: uploadResult.width,
+            height: uploadResult.height,
+          });
+        } catch (uploadError) {
+          console.error('[Cloudinary] Upload error for image:', file.originalname, uploadError);
+
+          // Clean up already uploaded files on error
+          for (const attachment of uploadedAttachments) {
+            try {
+              if (attachment.publicId) {
+                await cloudinary.uploader.destroy(attachment.publicId);
+              }
+            } catch (cleanupError) {
+              console.error('[Cloudinary] Cleanup error:', cleanupError);
+            }
           }
+
+          return res.status(500).json({
+            success: false,
+            message: 'Errore durante il caricamento delle immagini. Riprova.'
+          });
+        }
+      }
+    }
+
+    // Handle document uploads (PDF)
+    if (documentFiles.length > 0 && cloudinaryConfigured) {
+      // Validate document count
+      if (documentFiles.length > 3) {
+        return res.status(400).json({
+          success: false,
+          message: 'Massimo 3 documenti per preventivo.'
+        });
+      }
+
+      // Validate each document
+      const allowedDocumentTypes = ['application/pdf'];
+      for (const file of documentFiles) {
+        if (!allowedDocumentTypes.includes(file.mimetype)) {
+          return res.status(400).json({
+            success: false,
+            message: `Formato non supportato: ${file.originalname}. Usa solo PDF.`
+          });
+        }
+
+        if (file.size > 8 * 1024 * 1024) {
+          return res.status(400).json({
+            success: false,
+            message: `File troppo grande: ${file.originalname}. Massimo 8MB per documento.`
+          });
+        }
+
+        if (file.size === 0) {
+          return res.status(400).json({
+            success: false,
+            message: `File vuoto o corrotto: ${file.originalname}.`
+          });
+        }
+      }
+
+      // Upload documents to Cloudinary
+      for (const file of documentFiles) {
+        try {
+          const uploadResult = await cloudinary.uploader.upload(
+            `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
+            {
+              folder: 'farcom-arredi/quotes/documents',
+              resource_type: 'auto', // Auto-detect for PDF
+              allowed_formats: ['pdf'],
+            }
+          );
+
+          uploadedDocuments.push({
+            url: uploadResult.secure_url,
+            secureUrl: uploadResult.secure_url,
+            publicId: uploadResult.public_id,
+            originalName: file.originalname,
+            mimeType: file.mimetype,
+            bytes: file.size,
+          });
+        } catch (uploadError) {
+          console.error('[Cloudinary] Upload error for document:', file.originalname, uploadError);
+
+          // Clean up already uploaded files on error
+          for (const doc of uploadedDocuments) {
+            try {
+              if (doc.publicId) {
+                await cloudinary.uploader.destroy(doc.publicId);
+              }
+            } catch (cleanupError) {
+              console.error('[Cloudinary] Cleanup error:', cleanupError);
+            }
+          }
+
+          return res.status(500).json({
+            success: false,
+            message: 'Errore durante il caricamento dei documenti. Riprova.'
+          });
         }
       }
     }
@@ -197,6 +283,7 @@ router.post('/', upload.array('attachments', 6), async (req: Request, res: Respo
       messaggio: req.body.messaggio || '',
       note: req.body.note || '',
       attachments: uploadedAttachments,
+      documents: uploadedDocuments,
       createdAt: req.body.createdAt || new Date().toISOString(),
       updatedAt: req.body.updatedAt || new Date().toISOString(),
     };
@@ -209,6 +296,15 @@ router.post('/', upload.array('attachments', 6), async (req: Request, res: Respo
         try {
           if (attachment.publicId) {
             await cloudinary.uploader.destroy(attachment.publicId);
+          }
+        } catch (cleanupError) {
+          console.error('[Cloudinary] Cleanup error:', cleanupError);
+        }
+      }
+      for (const doc of uploadedDocuments) {
+        try {
+          if (doc.publicId) {
+            await cloudinary.uploader.destroy(doc.publicId);
           }
         } catch (cleanupError) {
           console.error('[Cloudinary] Cleanup error:', cleanupError);
@@ -227,6 +323,15 @@ router.post('/', upload.array('attachments', 6), async (req: Request, res: Respo
         try {
           if (attachment.publicId) {
             await cloudinary.uploader.destroy(attachment.publicId);
+          }
+        } catch (cleanupError) {
+          console.error('[Cloudinary] Cleanup error:', cleanupError);
+        }
+      }
+      for (const doc of uploadedDocuments) {
+        try {
+          if (doc.publicId) {
+            await cloudinary.uploader.destroy(doc.publicId);
           }
         } catch (cleanupError) {
           console.error('[Cloudinary] Cleanup error:', cleanupError);
@@ -251,6 +356,15 @@ router.post('/', upload.array('attachments', 6), async (req: Request, res: Respo
           console.error('[Cloudinary] Cleanup error:', cleanupError);
         }
       }
+      for (const doc of uploadedDocuments) {
+        try {
+          if (doc.publicId) {
+            await cloudinary.uploader.destroy(doc.publicId);
+          }
+        } catch (cleanupError) {
+          console.error('[Cloudinary] Cleanup error:', cleanupError);
+        }
+      }
 
       return res.status(400).json({
         success: false,
@@ -264,6 +378,15 @@ router.post('/', upload.array('attachments', 6), async (req: Request, res: Respo
         try {
           if (attachment.publicId) {
             await cloudinary.uploader.destroy(attachment.publicId);
+          }
+        } catch (cleanupError) {
+          console.error('[Cloudinary] Cleanup error:', cleanupError);
+        }
+      }
+      for (const doc of uploadedDocuments) {
+        try {
+          if (doc.publicId) {
+            await cloudinary.uploader.destroy(doc.publicId);
           }
         } catch (cleanupError) {
           console.error('[Cloudinary] Cleanup error:', cleanupError);
@@ -288,6 +411,15 @@ router.post('/', upload.array('attachments', 6), async (req: Request, res: Respo
           console.error('[Cloudinary] Cleanup error:', cleanupError);
         }
       }
+      for (const doc of uploadedDocuments) {
+        try {
+          if (doc.publicId) {
+            await cloudinary.uploader.destroy(doc.publicId);
+          }
+        } catch (cleanupError) {
+          console.error('[Cloudinary] Cleanup error:', cleanupError);
+        }
+      }
 
       return res.status(400).json({
         success: false,
@@ -301,6 +433,15 @@ router.post('/', upload.array('attachments', 6), async (req: Request, res: Respo
         try {
           if (attachment.publicId) {
             await cloudinary.uploader.destroy(attachment.publicId);
+          }
+        } catch (cleanupError) {
+          console.error('[Cloudinary] Cleanup error:', cleanupError);
+        }
+      }
+      for (const doc of uploadedDocuments) {
+        try {
+          if (doc.publicId) {
+            await cloudinary.uploader.destroy(doc.publicId);
           }
         } catch (cleanupError) {
           console.error('[Cloudinary] Cleanup error:', cleanupError);
@@ -325,6 +466,15 @@ router.post('/', upload.array('attachments', 6), async (req: Request, res: Respo
           console.error('[Cloudinary] Cleanup error:', cleanupError);
         }
       }
+      for (const doc of uploadedDocuments) {
+        try {
+          if (doc.publicId) {
+            await cloudinary.uploader.destroy(doc.publicId);
+          }
+        } catch (cleanupError) {
+          console.error('[Cloudinary] Cleanup error:', cleanupError);
+        }
+      }
 
       return res.status(400).json({
         success: false,
@@ -339,6 +489,15 @@ router.post('/', upload.array('attachments', 6), async (req: Request, res: Respo
         try {
           if (attachment.publicId) {
             await cloudinary.uploader.destroy(attachment.publicId);
+          }
+        } catch (cleanupError) {
+          console.error('[Cloudinary] Cleanup error:', cleanupError);
+        }
+      }
+      for (const doc of uploadedDocuments) {
+        try {
+          if (doc.publicId) {
+            await cloudinary.uploader.destroy(doc.publicId);
           }
         } catch (cleanupError) {
           console.error('[Cloudinary] Cleanup error:', cleanupError);
