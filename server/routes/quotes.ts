@@ -75,84 +75,84 @@ router.post('/', upload.array('attachments', 6), async (req: Request, res: Respo
         // Cloudinary is configured, proceed with upload
 
         // Validate file count
-      if (files.length > 6) {
-        return res.status(400).json({
-          success: false,
-          message: 'Massimo 6 immagini per preventivo.'
-        });
-      }
-
-      // Validate each file
-      const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-      for (const file of files) {
-        if (!allowedMimeTypes.includes(file.mimetype)) {
+        if (files.length > 6) {
           return res.status(400).json({
             success: false,
-            message: `Formato non supportato: ${file.originalname}. Usa JPEG, PNG o WebP.`
+            message: 'Massimo 6 immagini per preventivo.'
           });
         }
 
-        if (file.size > 8 * 1024 * 1024) {
-          return res.status(400).json({
-            success: false,
-            message: `File troppo grande: ${file.originalname}. Massimo 8MB per immagine.`
-          });
-        }
-
-        if (file.size === 0) {
-          return res.status(400).json({
-            success: false,
-            message: `File vuoto o corrotto: ${file.originalname}.`
-          });
-        }
-      }
-
-      // Upload files to Cloudinary
-      for (const file of files) {
-        try {
-          const uploadResult = await cloudinary.uploader.upload(
-            `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
-            {
-              folder: 'farcom-arredi/quotes',
-              resource_type: 'image',
-              allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-              transformation: [
-                { quality: 'auto:good' },
-                { fetch_format: 'auto' }
-              ]
-            }
-          );
-
-          uploadedAttachments.push({
-            url: uploadResult.secure_url,
-            secureUrl: uploadResult.secure_url,
-            publicId: uploadResult.public_id,
-            originalName: file.originalname,
-            mimeType: file.mimetype,
-            bytes: file.size,
-            width: uploadResult.width,
-            height: uploadResult.height,
-          });
-        } catch (uploadError) {
-          console.error('[Cloudinary] Upload error for file:', file.originalname, uploadError);
-
-          // Clean up already uploaded files on error
-          for (const attachment of uploadedAttachments) {
-            try {
-              if (attachment.publicId) {
-                await cloudinary.uploader.destroy(attachment.publicId);
-              }
-            } catch (cleanupError) {
-              console.error('[Cloudinary] Cleanup error:', cleanupError);
-            }
+        // Validate each file
+        const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        for (const file of files) {
+          if (!allowedMimeTypes.includes(file.mimetype)) {
+            return res.status(400).json({
+              success: false,
+              message: `Formato non supportato: ${file.originalname}. Usa JPEG, PNG o WebP.`
+            });
           }
 
-          return res.status(500).json({
-            success: false,
-            message: 'Errore durante il caricamento delle immagini. Riprova.'
-          });
+          if (file.size > 8 * 1024 * 1024) {
+            return res.status(400).json({
+              success: false,
+              message: `File troppo grande: ${file.originalname}. Massimo 8MB per immagine.`
+            });
+          }
+
+          if (file.size === 0) {
+            return res.status(400).json({
+              success: false,
+              message: `File vuoto o corrotto: ${file.originalname}.`
+            });
+          }
         }
-      }
+
+        // Upload files to Cloudinary
+        for (const file of files) {
+          try {
+            const uploadResult = await cloudinary.uploader.upload(
+              `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
+              {
+                folder: 'farcom-arredi/quotes',
+                resource_type: 'image',
+                allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+                transformation: [
+                  { quality: 'auto:good' },
+                  { fetch_format: 'auto' }
+                ]
+              }
+            );
+
+            uploadedAttachments.push({
+              url: uploadResult.secure_url,
+              secureUrl: uploadResult.secure_url,
+              publicId: uploadResult.public_id,
+              originalName: file.originalname,
+              mimeType: file.mimetype,
+              bytes: file.size,
+              width: uploadResult.width,
+              height: uploadResult.height,
+            });
+          } catch (uploadError) {
+            console.error('[Cloudinary] Upload error for file:', file.originalname, uploadError);
+
+            // Clean up already uploaded files on error
+            for (const attachment of uploadedAttachments) {
+              try {
+                if (attachment.publicId) {
+                  await cloudinary.uploader.destroy(attachment.publicId);
+                }
+              } catch (cleanupError) {
+                console.error('[Cloudinary] Cleanup error:', cleanupError);
+              }
+            }
+
+            return res.status(500).json({
+              success: false,
+              message: 'Errore durante il caricamento delle immagini. Riprova.'
+            });
+          }
+        }
       }
     }
 
