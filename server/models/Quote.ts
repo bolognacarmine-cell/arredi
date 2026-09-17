@@ -51,11 +51,11 @@ const QuoteSchema = new Schema({
 QuoteSchema.pre('save', function(next) {
   // Se esiste note (stringa) ma notes è vuoto, migrare
   if (this.note && this.note.trim() && (!this.notes || this.notes.length === 0)) {
-    this.notes = [{
+    this.notes.push({
       text: this.note,
       author: 'system',
       timestamp: this.createdAt || this.updatedAt || new Date(),
-    }];
+    });
     // Opzionale: rimuovere campo note dopo migrazione
     // this.note = '';
   }
