@@ -65,7 +65,7 @@ export default function Navbar() {
       style={{ paddingTop: "env(safe-area-inset-top)" }}
     >
       <nav className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 flex items-center justify-between h-12 sm:h-14 md:h-16 lg:h-20">
-        <Link to="/" className="flex items-center overflow-visible">
+        <Link to="/" className="flex items-center overflow-visible focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 rounded">
           <img
             src="/logo-farcom.png"
             alt="Farcom Società Cooperativa"
@@ -78,7 +78,7 @@ export default function Navbar() {
             <li key={l.to}>
               <Link
                 to={l.to}
-                className={`text-base font-semibold transition-all duration-300 relative group ${
+                className={`text-base font-semibold transition-all duration-300 relative group focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 rounded ${
                   location.pathname === l.to
                     ? "text-[#1A1A2E]"
                     : "text-[#6B7280] hover:text-[#1A1A2E]"
@@ -98,13 +98,13 @@ export default function Navbar() {
         <Link
           to="/preventivo"
           translate="no"
-          className="hidden lg:inline-flex items-center gap-2 bg-[#E69138] text-[#1A1A2E] text-sm font-semibold px-5 py-2.5 hover:bg-[#D67F28] hover:scale-105 hover:shadow-lg hover:shadow-[#E69138]/30 transition-all duration-300 ease-out"
+          className="hidden lg:inline-flex items-center gap-2 bg-[#E69138] text-[#1A1A2E] text-sm font-semibold px-5 py-2.5 hover:bg-[#D67F28] hover:scale-105 hover:shadow-lg hover:shadow-[#E69138]/30 transition-all duration-300 ease-out focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 rounded"
         >
           Richiedi preventivo
         </Link>
 
         <button
-          className={`lg:hidden w-10 sm:w-12 h-10 sm:h-12 -mr-1 sm:-mr-2 flex flex-col items-center justify-center gap-[8px] touch-manipulation ${open ? 'open' : ''}`}
+          className={`lg:hidden w-10 sm:w-12 h-10 sm:h-12 -mr-1 sm:-mr-2 flex flex-col items-center justify-center gap-[8px] touch-manipulation focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 rounded ${open ? 'open' : ''}`}
           onClick={() => setOpen(!open)}
           aria-label={open ? "Chiudi menu" : "Apri menu"}
           aria-expanded={open}
@@ -122,7 +122,7 @@ export default function Navbar() {
               key={l.to}
               to={l.to}
               onClick={() => setOpen(false)}
-              className="flex items-center h-10 sm:h-12 px-2 text-sm sm:text-base font-semibold text-[#1A1A2E] hover:text-[#E69138] hover:bg-[#1A1A2E]/4 rounded-md transition-colors"
+              className="flex items-center h-10 sm:h-12 px-2 text-sm sm:text-base font-semibold text-[#1A1A2E] hover:text-[#E69138] hover:bg-[#1A1A2E]/4 rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2"
             >
               {l.label}
             </Link>
@@ -131,7 +131,7 @@ export default function Navbar() {
             to="/preventivo"
             translate="no"
             onClick={() => setOpen(false)}
-            className="inline-flex items-center justify-center bg-[#E69138] text-[#1A1A2E] text-xs sm:text-sm font-semibold px-4 sm:px-5 h-10 sm:h-12 mt-2 sm:mt-3 hover:bg-[#D67F28] hover:shadow-lg hover:shadow-[#E69138]/30 transition-all duration-300 ease-out"
+            className="inline-flex items-center justify-center bg-[#E69138] text-[#1A1A2E] text-xs sm:text-sm font-semibold px-4 sm:px-5 h-10 sm:h-12 mt-2 sm:mt-3 hover:bg-[#D67F28] hover:shadow-lg hover:shadow-[#E69138]/30 transition-all duration-300 ease-out focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 rounded"
           >
             Richiedi preventivo
           </Link>

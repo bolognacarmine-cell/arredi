@@ -36,8 +36,18 @@ export default function ProductCard({ product }: Props) {
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-[var(--border)] text-4xl">
-            🖼️
+          <div className="w-full h-full flex items-center justify-center text-[var(--border)]">
+            <svg
+              className="w-16 h-16"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth="1.5"
+            >
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <path d="M21 15l-5-5L5 21" />
+            </svg>
           </div>
         )}
         {eff.badge && (

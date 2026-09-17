@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { useSearchParams, Link } from "react-router-dom"
 import { SECTORS } from "../data"
 import * as quotesApi from "../api/quotesApi"
+import Alert from "../components/Alert"
 
 export default function Quote() {
   useEffect(() => {
@@ -222,7 +223,7 @@ export default function Quote() {
     return (
       <div className="min-h-screen bg-[var(--background)] flex items-center justify-center pt-20 px-6">
         <div className="text-center max-w-lg">
-          <div className="w-16 h-16 bg-[var(--primary)] flex items-center justify-center mx-auto mb-6">
+          <div className="w-16 h-16 bg-[var(--primary)] flex items-center justify-center mx-auto mb-6 rounded-full">
             <span className="text-white text-2xl">✓</span>
           </div>
           <h1 className="font-display text-3xl font-light text-[var(--foreground)] mb-4">
@@ -235,7 +236,7 @@ export default function Quote() {
           </p>
           <Link
             to="/"
-            className="inline-flex items-center bg-[var(--primary)] text-white text-sm font-medium px-6 py-3.5 hover:bg-[var(--foreground)] transition-colors"
+            className="inline-flex items-center bg-[var(--primary)] text-white text-sm font-medium px-6 py-3.5 hover:bg-[var(--foreground)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2"
           >
             Torna alla home
           </Link>
@@ -261,9 +262,7 @@ export default function Quote() {
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-            {error}
-          </div>
+          <Alert type="error">{error}</Alert>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-8">
@@ -292,7 +291,7 @@ export default function Quote() {
                     required={req as boolean}
                     value={form[(k as keyof typeof form)] as string}
                     onChange={(e) => set(k as string, e.target.value)}
-                    className="w-full border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)] transition-colors"
+                    className="w-full border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)] focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 transition-colors"
                   />
                 </div>
               ))}
@@ -313,7 +312,7 @@ export default function Quote() {
                   required
                   value={form.settore}
                   onChange={(e) => set("settore", e.target.value)}
-                  className="w-full border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)] transition-colors"
+                  className="w-full border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)] focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 transition-colors"
                 >
                   <option value="">Seleziona settore</option>
                   {SECTORS.map((s) => (
@@ -332,7 +331,7 @@ export default function Quote() {
                   min="5"
                   value={form.metratura}
                   onChange={(e) => set("metratura", e.target.value)}
-                  className="w-full border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)] transition-colors"
+                  className="w-full border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)] focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 transition-colors"
                   placeholder="es. 40"
                 />
               </div>
@@ -345,7 +344,7 @@ export default function Quote() {
                   value={form.arredo}
                   onChange={(e) => set("arredo", e.target.value)}
                   placeholder="es. banco reception, postazioni, specchiere…"
-                  className="w-full border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)] transition-colors"
+                  className="w-full border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)] focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 transition-colors"
                 />
               </div>
               <div className="sm:col-span-2">
@@ -357,7 +356,7 @@ export default function Quote() {
                   value={form.messaggio}
                   onChange={(e) => set("messaggio", e.target.value)}
                   placeholder="Raccontaci la tua idea, le dimensioni dello spazio, i materiali preferiti, i tempi previsti…"
-                  className="w-full border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)] transition-colors resize-none"
+                  className="w-full border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)] focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 transition-colors resize-none"
                 />
               </div>
               <div className="sm:col-span-2">
@@ -426,9 +425,7 @@ export default function Quote() {
                 )}
 
                 {fileError && (
-                  <div className="mt-2 text-xs text-red-600">
-                    {fileError}
-                  </div>
+                  <Alert type="warning" className="mt-2">{fileError}</Alert>
                 )}
               </div>
             </div>
@@ -441,7 +438,7 @@ export default function Quote() {
               required
               checked={form.privacy}
               onChange={(e) => set("privacy", e.target.checked)}
-              className="mt-0.5 w-4 h-4 accent-[var(--primary)]"
+              className="mt-0.5 w-4 h-4 accent-[var(--primary)] focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2"
             />
             <label htmlFor="privacy" className="text-sm text-[var(--foreground)]">
               Ho letto e accetto la{" "}
@@ -453,7 +450,7 @@ export default function Quote() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full sm:w-auto bg-[var(--primary)] text-white text-sm font-semibold px-10 py-4 hover:bg-[var(--foreground)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full sm:w-auto bg-[var(--primary)] text-white text-sm font-semibold px-10 py-4 hover:bg-[var(--foreground)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2"
           >
             {isSubmitting ? "Invio in corso..." : "Invia richiesta"}
           </button>
