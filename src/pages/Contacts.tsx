@@ -144,7 +144,6 @@ export default function Contacts() {
           })
         }}
       />
-      />
       <div className="max-w-7xl mx-auto px-6 lg:px-10 py-16">
         <div className="mb-12">
           <span className="text-[#888580] text-xs tracking-widest uppercase font-semibold">
