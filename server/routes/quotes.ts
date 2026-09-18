@@ -1,7 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { Quote } from '../models/Quote.js';
 import { requireAdmin } from '../middleware/requireAdmin.js';
-import { sendQuoteNotification } from '../utils/email.js';
 import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
 
@@ -559,30 +558,10 @@ router.post('/', upload.fields([
     const quote = new Quote(quoteData);
     await quote.save();
 
-    // Email notifications: Send quote notification emails in background
-    // This is non-blocking - quote is saved regardless of email success/failure
-    // Email sending failures are logged but don't affect the user experience
-    sendQuoteNotification({
-      nome: quoteData.nome,
-      cognome: quoteData.cognome,
-      azienda: quoteData.azienda,
-      settore: quoteData.settore,
-      email: quoteData.email,
-      telefono: quoteData.telefono,
-      data: quoteData.data,
-      metratura: quoteData.metratura,
-      arredo: quoteData.arredo,
-      messaggio: quoteData.messaggio,
-      note: quoteData.note
-    }).then(emailResults => {
-      if (emailResults.detailedEmailSent || emailResults.notificationEmailSent) {
-        console.log('[Quotes] Quote notification emails sent successfully');
-      } else {
-        console.warn('[Quotes] Failed to send quote notification emails - SMTP configuration may be incomplete');
-      }
-    }).catch(emailError => {
-      console.error('[Quotes] Error sending quote notification emails:', emailError);
-    });
+    // Email notifications DISABLED - Only WhatsApp quick-reply is active
+    // The sendQuoteNotification function call has been removed as per user request
+    // Quote is saved successfully and WhatsApp link remains available in admin
+    console.log('[Quotes] Quote saved successfully - Email notifications disabled, WhatsApp only');
 
     res.status(201).json({ success: true, data: quote });
   } catch (error) {
