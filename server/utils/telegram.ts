@@ -14,7 +14,7 @@
 export async function sendTelegramMessage(text: string): Promise<{ success: boolean; error?: string }> {
   try {
     // Use environment variables if available, otherwise use hardcoded values for testing
-    const botToken = process.env.TELEGRAM_BOT_TOKEN || '8762458733:AAFiYJOjvtArqTNOa94XDObJQtQJezCkF4o';
+    const botToken = process.env.TELEGRAM_BOT_TOKEN || '8762458733:AAFiYJ0jvtArqTNOa94XDObJQtQJezCkF40';
     const chatId = process.env.TELEGRAM_CHAT_ID || '8836121310';
 
     if (!botToken || !chatId) {
