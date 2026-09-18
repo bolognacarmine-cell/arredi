@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { Quote } from '../models/Quote.js';
 import { requireAdmin } from '../middleware/requireAdmin.js';
+import { sendQuoteTelegramNotification } from '../utils/telegram.js';
 import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
 
@@ -557,6 +558,32 @@ router.post('/', upload.fields([
 
     const quote = new Quote(quoteData);
     await quote.save();
+
+    // Telegram notification: Send automatic notification to Telegram
+    // This is non-blocking - quote is saved regardless of Telegram success/failure
+    // Telegram sending failures are logged but don't affect the user experience
+    sendQuoteTelegramNotification({
+      nome: quoteData.nome,
+      cognome: quoteData.cognome,
+      azienda: quoteData.azienda,
+      settore: quoteData.settore,
+      email: quoteData.email,
+      telefono: quoteData.telefono,
+      data: quoteData.data,
+      metratura: quoteData.metratura,
+      arredo: quoteData.arredo,
+      messaggio: quoteData.messaggio,
+      note: quoteData.note,
+      id: quote._id?.toString()
+    }).then(telegramResult => {
+      if (telegramResult.success) {
+        console.log('[Quotes] Telegram notification sent successfully');
+      } else {
+        console.warn('[Quotes] Failed to send Telegram notification:', telegramResult.error);
+      }
+    }).catch(telegramError => {
+      console.error('[Quotes] Error sending Telegram notification:', telegramError);
+    });
 
     // Email notifications DISABLED - Only WhatsApp quick-reply is active
     // The sendQuoteNotification function call has been removed as per user request
