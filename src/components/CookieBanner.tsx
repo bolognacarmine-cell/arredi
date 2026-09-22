@@ -26,8 +26,9 @@ export default function CookieBanner() {
   const [showBanner, setShowBanner] = useState(false);
 
   useEffect(() => {
-    const hasAccepted = localStorage.getItem('cookie_consent_accepted');
-    if (!hasAccepted) {
+    const hasConsent = localStorage.getItem('cookie_consent_accepted');
+    // Mostra il banner solo se l'utente non ha ancora fatto una scelta
+    if (hasConsent === null) {
       const timer = setTimeout(() => setShowBanner(true), 1000);
       return () => clearTimeout(timer);
     }
@@ -35,6 +36,11 @@ export default function CookieBanner() {
 
   const handleAccept = () => {
     acceptCookies();
+    setShowBanner(false);
+  };
+
+  const handleReject = () => {
+    rejectCookies();
     setShowBanner(false);
   };
 
@@ -70,22 +76,48 @@ export default function CookieBanner() {
           Cookie Policy
         </a>
       </p>
-      <button
-        onClick={handleAccept}
-        style={{
-          backgroundColor: '#4fc3f7',
-          color: '#0f172a',
-          border: 'none',
-          padding: '11px 32px',
-          borderRadius: 10,
-          fontSize: 14,
-          fontWeight: 600,
-          cursor: 'pointer',
-          boxShadow: '0 4px 14px rgba(79, 195, 247, 0.35)',
-        }}
-      >
-        Accetta
-      </button>
+      <div style={{ display: 'flex', gap: 12, width: '100%', justifyContent: 'center' }}>
+        <button
+          onClick={handleReject}
+          style={{
+            backgroundColor: 'transparent',
+            color: '#cbd5e1',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            padding: '11px 24px',
+            borderRadius: 10,
+            fontSize: 14,
+            fontWeight: 500,
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.backgroundColor = 'transparent';
+            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+          }}
+        >
+          Rifiuta
+        </button>
+        <button
+          onClick={handleAccept}
+          style={{
+            backgroundColor: '#4fc3f7',
+            color: '#0f172a',
+            border: 'none',
+            padding: '11px 32px',
+            borderRadius: 10,
+            fontSize: 14,
+            fontWeight: 600,
+            cursor: 'pointer',
+            boxShadow: '0 4px 14px rgba(79, 195, 247, 0.35)',
+          }}
+        >
+          Accetta
+        </button>
+      </div>
     </div>
   );
 }
