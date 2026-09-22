@@ -116,7 +116,7 @@ function toProjectRecord(
     id: uniqueId,
     title: form.titolo.trim(),
     sector: selectedSector?.label ?? "Settore da definire",
-    sectorId: form.settore,
+    sectorId: form.settore || selectedSector?.id || "generico", // Ensure sectorId is always provided
     location: form.citta.trim(),
     year: Number(form.anno) || new Date().getFullYear(),
     client: form.cliente.trim() || undefined,

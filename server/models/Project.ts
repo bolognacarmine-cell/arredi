@@ -6,7 +6,7 @@ const ProjectSchema = new Schema({
   id: { type: String, required: true, unique: true },
   title: { type: String, required: true },
   sector: { type: String, required: true },
-  sectorId: { type: String, required: true },
+  sectorId: { type: String }, // Made optional to handle new projects without sector selection
   location: { type: String, required: true },
   year: { type: Number, required: true },
   client: { type: String },
