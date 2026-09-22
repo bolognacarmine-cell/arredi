@@ -263,6 +263,9 @@ ${quoteData.note || 'Nessuna nota'}
 Questo preventivo è stato inviato tramite il form del sito web Farcom Arredi.
 `;
 
+  // Generate WhatsApp link if phone number is available
+  const whatsappLink = quoteData.telefono ? `https://wa.me/${quoteData.telefono.replace(/[\s\-\(\)]/g, '')}?text=${encodeURIComponent(`Ciao ${quoteData.nome}, sono Farcom Srl. Ho ricevuto il tuo preventivo per ${quoteData.arredo || 'i tuoi arredi'}. Possiamo sentirci per approfondire. Fammi sapere quando sei disponibile.`)}` : null;
+
   const detailedHtml = `
 <h2>Nuovo preventivo ricevuto dal sito web</h2>
 
@@ -287,6 +290,8 @@ Questo preventivo è stato inviato tramite il form del sito web Farcom Arredi.
 <p>${quoteData.messaggio || 'Nessun messaggio'}</p>
 
 ${quoteData.note ? `<h3>NOTE</h3><p>${quoteData.note}</p>` : ''}
+
+${whatsappLink ? `<p><a href="${whatsappLink}" style="background-color: #25D366; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 10px;">💬 Rispondi su WhatsApp</a></p>` : ''}
 
 <hr>
 <p><em>Questo preventivo è stato inviato tramite il form del sito web Farcom Arredi.</em></p>

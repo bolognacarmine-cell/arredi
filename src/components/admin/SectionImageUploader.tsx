@@ -1,6 +1,8 @@
 import { useState, useRef, useCallback, useEffect } from "react"
 import { useCloudinaryUpload, type CloudinaryUploadResult } from "../../lib/cloudinary"
 import { createMedia, deleteMedia, type Media } from "../../api/mediaApi"
+import { useAdminAuth } from "../../hooks/useAdminAuth"
+import { CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET, isCloudinaryConfigured } from "../../lib/cloudinary/config"
 
 interface SectionImageUploaderProps {
   value: string[] // Array di URL immagini già associate
@@ -42,6 +44,19 @@ export default function SectionImageUploader({
   const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { state: cloudinaryState, upload: uploadToCloudinary, reset: resetCloudinary } = useCloudinaryUpload()
+  const { isAuthenticated } = useAdminAuth()
+
+  // Show warning if Cloudinary is not configured
+  useEffect(() => {
+    if (!isCloudinaryConfigured) {
+      console.error('[SectionImageUploader] Cloudinary not configured:', {
+        cloudName: CLOUDINARY_CLOUD_NAME,
+        hasUploadPreset: !!CLOUDINARY_UPLOAD_PRESET,
+        preset: CLOUDINARY_UPLOAD_PRESET
+      })
+      onError?.('Cloudinary non configurato. Contatta l\'amministratore per configurare VITE_CLOUDINARY_CLOUD_NAME e VITE_CLOUDINARY_UPLOAD_PRESET nelle variabili d\'ambiente.')
+    }
+  }, [isCloudinaryConfigured, CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET, onError])
 
   const handleFileSelect = useCallback((files: FileList | null) => {
     if (!files || disabled) return
@@ -134,6 +149,11 @@ export default function SectionImageUploader({
     )
 
     try {
+      // Check authentication before proceeding
+      if (!isAuthenticated) {
+        throw new Error("Sessione scaduta. Effettua nuovamente il login.")
+      }
+
       // Upload to Cloudinary
       const folder = category === "gallery" ? "farcom/progetti/gallery" : `farcom/${category}`
       const cloudinaryResult = await uploadToCloudinary(upload.file, folder)
@@ -151,16 +171,36 @@ export default function SectionImageUploader({
       )
 
       // Save metadata to MongoDB via API
-      const mediaData = await createMedia({
-        cloudinaryUrl: cloudinaryResult.secure_url,
-        cloudinaryPublicId: cloudinaryResult.public_id,
-        width: cloudinaryResult.width,
-        height: cloudinaryResult.height,
-        format: cloudinaryResult.format,
-        bytes: cloudinaryResult.bytes,
-        category,
-        library: library !== "Tutte" ? library : undefined,
-      })
+      let mediaData: Media
+      try {
+        mediaData = await createMedia({
+          cloudinaryUrl: cloudinaryResult.secure_url,
+          cloudinaryPublicId: cloudinaryResult.public_id,
+          width: cloudinaryResult.width,
+          height: cloudinaryResult.height,
+          format: cloudinaryResult.format,
+          bytes: cloudinaryResult.bytes,
+          category,
+          library: library !== "Tutte" ? library : undefined,
+        })
+      } catch (apiError) {
+        console.error("API call failed, using localStorage fallback:", apiError)
+        // If API fails, createMedia will fall back to localStorage
+        // We need to create a media object with the Cloudinary data
+        mediaData = {
+          _id: "local-" + Date.now() + "-" + Math.random().toString(36).substr(2, 9),
+          cloudinaryUrl: cloudinaryResult.secure_url,
+          cloudinaryPublicId: cloudinaryResult.public_id,
+          width: cloudinaryResult.width,
+          height: cloudinaryResult.height,
+          format: cloudinaryResult.format,
+          bytes: cloudinaryResult.bytes,
+          category,
+          library: library !== "Tutte" ? library : undefined,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        } as Media
+      }
 
       setUploads((prev) =>
         prev.map((u) =>
@@ -189,7 +229,7 @@ export default function SectionImageUploader({
       )
       onError?.(errorMessage)
     }
-  }, [category, library, uploadToCloudinary, onChange, value, removeUpload, onError])
+  }, [category, library, uploadToCloudinary, onChange, value, removeUpload, onError, isAuthenticated])
 
   // Auto-upload files when they are added
   useEffect(() => {

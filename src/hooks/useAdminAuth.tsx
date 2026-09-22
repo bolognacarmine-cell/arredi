@@ -39,6 +39,9 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await fetch(getApiUrl('/api/admin/me'), {
         credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       })
       const data = await response.json()
 

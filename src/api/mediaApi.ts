@@ -163,6 +163,11 @@ export async function createMedia(data: CreateMediaData): Promise<Media> {
         body: JSON.stringify(data),
       })
 
+      if (!response.ok) {
+        console.error(`createMedia API failed with status ${response.status}:`, response.statusText)
+        throw new Error(`API request failed: ${response.status} ${response.statusText}`)
+      }
+
       const result = await response.json()
 
       // Il backend ritorna direttamente l'oggetto media, non { success, data }

@@ -139,6 +139,23 @@ export default function AdminQuotes() {
     }
   }
 
+  const generateWhatsAppLink = (quote: QuoteRecord): string | null => {
+    if (!quote.telefono || quote.telefono.trim() === '') {
+      return null
+    }
+
+    // Clean phone number for WhatsApp (remove spaces, dashes, etc.)
+    const cleanPhone = quote.telefono.replace(/[\s\-\(\)]/g, '')
+    
+    // Generate message
+    const message = `Ciao ${quote.nome}, sono Farcom Srl. Ho ricevuto il tuo preventivo per ${quote.arredo || 'i tuoi arredi'}. Possiamo sentirci per approfondire. Fammi sapere quando sei disponibile.`
+    
+    // Encode message for URL
+    const encodedMessage = encodeURIComponent(message)
+    
+    return `https://wa.me/${cleanPhone}?text=${encodedMessage}`
+  }
+
   const formatFieldValue = (value: any): string => {
     if (value === null || value === undefined || value === "") {
       return "—"
@@ -357,6 +374,18 @@ export default function AdminQuotes() {
                     {selectedQuote.nome} {selectedQuote.cognome}
                   </h2>
                   <div className="flex gap-2">
+                    {generateWhatsAppLink(selectedQuote) && (
+                      <a
+                        href={generateWhatsAppLink(selectedQuote)!}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs bg-green-500 hover:bg-green-600 text-white font-medium px-3 py-1 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 flex items-center gap-1"
+                        title="Rispondi su WhatsApp"
+                      >
+                        <span>💬</span>
+                        <span>WhatsApp</span>
+                      </a>
+                    )}
                     <button
                       onClick={handlePrint}
                       className="text-[var(--muted-foreground)] text-xs hover:text-[var(--primary)] font-medium focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-1 rounded px-2 py-1"

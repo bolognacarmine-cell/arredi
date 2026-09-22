@@ -319,10 +319,48 @@ The application is deployed on Render with the following configuration:
 
 - **Frontend + Backend**: Single service serving both
 - **Database**: MongoDB Atlas
-- **Session Store**: MemoryStore (for single instance)
+- **Session Store**: MongoStore (MongoDB-based session storage for persistence across restarts)
 - **SSL/TLS**: Enabled by Render
 
 For production with multiple instances, consider using Redis for session storage.
+
+## Image Upload and Authentication
+
+### Admin Image Upload Flow
+
+The admin panel uses a two-step image upload process:
+
+1. **Client-side Cloudinary Upload**: Images are uploaded directly to Cloudinary from the frontend using the `useCloudinaryUpload` hook. This doesn't require authentication as it uses unsigned upload presets.
+
+2. **Server-side Metadata Storage**: After successful Cloudinary upload, the image metadata is saved to MongoDB via the `/api/media` endpoint, which requires admin authentication.
+
+### Authentication Requirements
+
+- **Session Management**: Admin authentication uses server-side sessions stored in MongoDB via MongoStore
+- **Cookie Configuration**: Sessions use HttpOnly, Secure cookies in production with `sameSite: 'lax'`
+- **Credentials**: All API calls must include `credentials: 'include'` to send session cookies
+- **Session Duration**: Sessions expire after 24 hours of inactivity
+
+### Troubleshooting Image Upload Issues
+
+If image uploads fail with "Upload Cloudinary fallito" or 401 errors:
+
+1. **Check Authentication Status**: Ensure the admin is properly logged in before attempting uploads
+2. **Verify Session Cookie**: Check browser dev tools to ensure the `farcom.sid` cookie is being sent with API requests
+3. **Session Persistence**: Sessions are stored in MongoDB, so they persist across server restarts
+4. **Fallback Mechanism**: If the API call fails, the system falls back to localStorage for metadata storage
+5. **Cloudinary Configuration**: Ensure `VITE_CLOUDINARY_CLOUD_NAME` and `VITE_CLOUDINARY_UPLOAD_PRESET` are set in frontend environment
+6. **Production Environment Variables**: On Render, these must be set in the Environment Variables section:
+   - `VITE_CLOUDINARY_CLOUD_NAME=qz1f1z6t`
+   - `VITE_CLOUDINARY_UPLOAD_PRESET=farcom-uploads`
+7. **Console Logging**: Check browser console for detailed Cloudinary upload debugging information
+
+### Security Considerations
+
+- Cloudinary uploads use unsigned presets configured in the Cloudinary dashboard
+- Admin API endpoints are protected by the `requireAdmin` middleware
+- Session cookies are HttpOnly to prevent XSS attacks
+- In production, cookies are set with `Secure` flag for HTTPS-only transmission
 
 ## Support
 

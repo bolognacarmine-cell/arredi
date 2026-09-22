@@ -48,9 +48,17 @@ FRONTEND_ORIGIN=https://arredi.onrender.com
 # Frontend Configuration
 VITE_API_BASE_URL=  # Empty for same-origin
 
-# Cloudinary (existing)
-VITE_CLOUDINARY_CLOUD_NAME=your_cloud_name
-VITE_CLOUDINARY_UPLOAD_PRESET=your_upload_preset
+# Cloudinary (CRITICAL for image uploads)
+VITE_CLOUDINARY_CLOUD_NAME=qz1f1z6t
+VITE_CLOUDINARY_UPLOAD_PRESET=farcom-uploads
+
+# Session Secret (CRITICAL for admin authentication)
+SESSION_SECRET=your_secure_random_session_secret_here
+
+# Admin Credentials
+ADMIN_EMAIL=admin@farcom.local
+ADMIN_PASSWORD=Farcom2026
+ADMIN_NAME=Admin Farcom
 ```
 
 ## 🔄 Flusso di Richieste
@@ -126,3 +134,17 @@ npm start
 ### Se ci sono errori CORS:
 - Verifica FRONTEND_ORIGIN environment variable
 - In produzione con same-origin, CORS non dovrebbe essere un problema
+
+### Se il caricamento immagini fallisce ("Upload Cloudinary fallito"):
+- **CRITICAL**: Verifica che le seguenti variabili d'ambiente siano impostate su Render:
+  - `VITE_CLOUDINARY_CLOUD_NAME=qz1f1z6t`
+  - `VITE_CLOUDINARY_UPLOAD_PRESET=farcom-uploads`
+- Controlla la console del browser per errori di configurazione Cloudinary
+- Verifica che l'upload preset "farcom-uploads" sia configurato nel dashboard Cloudinary
+- Controlla i log per errori di rete durante l'upload
+
+### Se l'autenticazione admin non funziona (401 errors):
+- Verifica che `SESSION_SECRET` sia impostato su Render
+- Controlla che le credenziali admin siano corrette
+- Verifica che MongoDB sia accessibile per lo storage delle sessioni
+- Controlla i log per errori di sessione

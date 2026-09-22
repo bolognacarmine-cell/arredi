@@ -31,13 +31,22 @@ export function useCloudinaryUpload() {
 
   const upload = useCallback(
     async (file: File | Blob, folder?: string): Promise<CloudinaryUploadResult | null> => {
+      console.log('[Cloudinary Upload] Starting upload...', {
+        isCloudinaryConfigured,
+        cloudName: CLOUDINARY_CLOUD_NAME,
+        hasUploadPreset: !!CLOUDINARY_UPLOAD_PRESET,
+        preset: CLOUDINARY_UPLOAD_PRESET?.substring(0, 10) + '...'
+      })
+
       if (!isCloudinaryConfigured) {
-        const msg = "Cloudinary non configurato. Imposta VITE_CLOUDINARY_CLOUD_NAME in .env"
+        const msg = "Cloudinary non configurato. Contatta l'amministratore per configurare VITE_CLOUDINARY_CLOUD_NAME"
+        console.error('[Cloudinary Upload] Configuration error:', msg)
         setState({ status: "error", progress: 0, error: msg })
         return null
       }
       if (!CLOUDINARY_UPLOAD_PRESET) {
-        const msg = "Upload preset mancante. Imposta VITE_CLOUDINARY_UPLOAD_PRESET in .env"
+        const msg = "Upload preset mancante. Contatta l'amministratore per configurare VITE_CLOUDINARY_UPLOAD_PRESET"
+        console.error('[Cloudinary Upload] Upload preset error:', msg)
         setState({ status: "error", progress: 0, error: msg })
         return null
       }
@@ -69,20 +78,35 @@ export function useCloudinaryUpload() {
           }
 
           xhr.onload = () => {
+            console.log('[Cloudinary Upload] Response:', {
+              status: xhr.status,
+              statusText: xhr.statusText,
+              responseText: xhr.responseText?.substring(0, 200)
+            })
+
             if (xhr.status >= 200 && xhr.status < 300) {
               try {
                 const data = JSON.parse(xhr.responseText)
+                console.log('[Cloudinary Upload] Success:', data.public_id)
                 resolve(data)
               } catch (e) {
+                console.error('[Cloudinary Upload] Parse error:', e)
                 reject(new Error("Risposta Cloudinary non valida"))
               }
             } else {
+              console.error('[Cloudinary Upload] Upload failed:', xhr.status, xhr.responseText)
               reject(new Error(`Upload fallito (status ${xhr.status}): ${xhr.responseText}`))
             }
           }
 
-          xhr.onerror = () => reject(new Error("Errore di rete durante l'upload Cloudinary"))
-          xhr.onabort = () => reject(new Error("Upload annullato"))
+          xhr.onerror = () => {
+            console.error('[Cloudinary Upload] Network error')
+            reject(new Error("Errore di rete durante l'upload Cloudinary"))
+          }
+          xhr.onabort = () => {
+            console.error('[Cloudinary Upload] Upload aborted')
+            reject(new Error("Upload annullato"))
+          }
 
           xhr.send(formData)
         })
@@ -91,6 +115,7 @@ export function useCloudinaryUpload() {
         return result
       } catch (err) {
         const error = err instanceof Error ? err.message : "Errore upload sconosciuto"
+        console.error('[Cloudinary Upload] Error:', error)
         setState({ status: "error", progress: 0, error })
         return null
       }
