@@ -13,9 +13,8 @@
  */
 export async function sendTelegramMessage(text: string): Promise<{ success: boolean; error?: string }> {
   try {
-    // Use environment variables if available, otherwise use hardcoded values for testing
-    const botToken = process.env.TELEGRAM_BOT_TOKEN || '8762458733:AAFiYJ0jvtArqTNOa94XDObJQtQJezCkF4o';
-    const chatId = process.env.TELEGRAM_CHAT_ID || '8836121310';
+    const botToken = process.env.TELEGRAM_BOT_TOKEN;
+    const chatId = process.env.TELEGRAM_CHAT_ID;
 
     if (!botToken || !chatId) {
       console.warn('[Telegram] Cannot send message - TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID not configured');
