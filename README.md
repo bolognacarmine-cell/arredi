@@ -102,15 +102,6 @@ npm run seed:admin
 
 Questo crea l'utente admin usando le credenziali configurate in `.server.env`.
 
-**⚠️ Password Requirements:** La password admin deve rispettare i seguenti requisiti di sicurezza:
-- Minimo 8 caratteri
-- Almeno una lettera maiuscola
-- Almeno una lettera minuscola
-- Almeno un numero
-- Almeno un carattere speciale (!@#$%^&*())
-
-Esempio valido: `Farcom2026!`
-
 ## 🏗️ Struttura del Progetto
 
 ```

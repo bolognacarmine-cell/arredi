@@ -6,56 +6,13 @@ export default function AdminLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAdminAuth();
 
-  const validatePassword = (pwd: string): { isValid: boolean; message: string } => {
-    if (pwd.length < 8) {
-      return { isValid: false, message: 'La password deve avere almeno 8 caratteri' };
-    }
-    if (pwd.length > 128) {
-      return { isValid: false, message: 'La password è troppo lunga (max 128 caratteri)' };
-    }
-    if (!/[A-Z]/.test(pwd)) {
-      return { isValid: false, message: 'Deve contenere almeno una lettera maiuscola' };
-    }
-    if (!/[a-z]/.test(pwd)) {
-      return { isValid: false, message: 'Deve contenere almeno una lettera minuscola' };
-    }
-    if (!/[0-9]/.test(pwd)) {
-      return { isValid: false, message: 'Deve contenere almeno un numero' };
-    }
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(pwd)) {
-      return { isValid: false, message: 'Deve contenere almeno un carattere speciale (!@#$%^&*())' };
-    }
-    return { isValid: true, message: '' };
-  };
-
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setPassword(value);
-    if (value) {
-      const validation = validatePassword(value);
-      setPasswordError(validation.message);
-    } else {
-      setPasswordError('');
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setPasswordError('');
-
-    // Validate password before sending to backend
-    const passwordValidation = validatePassword(password);
-    if (!passwordValidation.isValid) {
-      setPasswordError(passwordValidation.message);
-      return;
-    }
-
     setIsLoading(true);
 
     try {
@@ -123,24 +80,11 @@ export default function AdminLogin() {
                 id="password"
                 type="password"
                 value={password}
-                onChange={handlePasswordChange}
+                onChange={(e) => setPassword(e.target.value)}
                 required
-                className={`w-full px-4 py-2.5 border rounded focus:outline-none focus:ring-2 ${
-                  passwordError
-                    ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
-                    : 'border-[#DDD9D0] focus:ring-[#1B4332] focus:border-transparent'
-                }`}
+                className="w-full px-4 py-2.5 border border-[#DDD9D0] rounded focus:outline-none focus:ring-2 focus:ring-[#1B4332] focus:border-transparent"
                 placeholder="••••••••"
               />
-              {passwordError && (
-                <p className="mt-1.5 text-xs text-red-600">{passwordError}</p>
-              )}
-              {!passwordError && password.length > 0 && (
-                <p className="mt-1.5 text-xs text-green-600">✓ Password valida</p>
-              )}
-              <p className="mt-2 text-xs text-[#4A4A46]">
-                Requisiti: min 8 caratteri, maiuscola, minuscola, numero, carattere speciale
-              </p>
             </div>
 
             <button

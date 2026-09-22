@@ -53,31 +53,18 @@ router.post('/login', loginRateLimiter as any, async (req: Request, res: Respons
       });
     }
     
-    // Password validation (min 8 characters, complexity requirements)
-    if (password.length < 8) {
+    // Password length validation (min 6, max 128 for security and practicality)
+    if (password.length < 6) {
       return res.status(400).json({
         success: false,
-        message: 'Password must be at least 8 characters'
+        message: 'Password must be at least 6 characters'
       });
     }
 
-    // Password complexity validation
-    const hasUpperCase = /[A-Z]/.test(password);
-    const hasLowerCase = /[a-z]/.test(password);
-    const hasNumber = /[0-9]/.test(password);
-    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-
-    if (!hasUpperCase || !hasLowerCase || !hasNumber || !hasSpecial) {
-      return res.status(400).json({
-        success: false,
-        message: 'Password must contain uppercase, lowercase, number, and special character'
-      });
-    }
-    
     if (password.length > 128) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Password too long' 
+      return res.status(400).json({
+        success: false,
+        message: 'Password too long'
       });
     }
 
@@ -242,7 +229,7 @@ router.get('/me', async (req: Request, res: Response) => {
 
 /**
  * POST /api/admin/reset-admin-password
- * Reset admin password by providing the reset code configured in environment variable
+ * Reset admin password by providing the reset code "buongiorno"
  * Security: Only POST method allowed for security best practices
  */
 router.post('/reset-admin-password', async (req: Request, res: Response) => {
@@ -264,16 +251,8 @@ router.post('/reset-admin-password', async (req: Request, res: Response) => {
       });
     }
 
-    // Validate reset code - must match environment variable
-    const adminResetCode = process.env.ADMIN_RESET_CODE;
-    if (!adminResetCode) {
-      return res.status(500).json({
-        success: false,
-        message: 'ADMIN_RESET_CODE environment variable not configured'
-      });
-    }
-
-    if (!resetCode || resetCode !== adminResetCode) {
+    // Validate reset code
+    if (!resetCode || resetCode !== 'buongiorno') {
       return res.status(403).json({
         success: false,
         message: 'Invalid reset code'
@@ -297,15 +276,8 @@ router.post('/reset-admin-password', async (req: Request, res: Response) => {
       });
     }
 
-    // Reset password to environment variable value - no default for security
-    const resetPassword = process.env.ADMIN_RESET_PASSWORD;
-    if (!resetPassword) {
-      return res.status(500).json({
-        success: false,
-        message: 'ADMIN_RESET_PASSWORD environment variable not configured'
-      });
-    }
-
+    // Reset password to environment variable value or default
+    const resetPassword = process.env.ADMIN_RESET_PASSWORD || 'Farcom2026';
     user.password = resetPassword;
     await user.save();
 
