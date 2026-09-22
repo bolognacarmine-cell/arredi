@@ -122,8 +122,6 @@ SESSION_SECRET=              # Session encryption secret
 - Session-based authentication con MongoDB store
 - HttpOnly, Secure cookies in produzione
 - SameSite: lax per CSRF protection
-- Client-side password validation with real-time feedback
-- Password requirements: min 8 chars, uppercase, lowercase, number, special character
 
 ## 🚀 Deployment
 
@@ -234,8 +232,6 @@ Per problemi tecnici:
 - ✅ Database indexes per performance
 - ✅ Log management per production
 - ✅ Documentazione centralizzata
-- ✅ Validazione password robusta (8+ caratteri, complessità)
-- ✅ Validazione client-side con feedback visivo
 - ✅ Lazy loading immagini per performance
 - ✅ Immagine Open Graph configurata
 
