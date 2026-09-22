@@ -64,12 +64,14 @@ router.get('/', async (req: Request, res: Response) => {
 
   try {
     const quotes = await Quote.find().sort({ createdAt: -1 });
-    console.log('[Quotes] Fetched quotes:', quotes.length);
-    quotes.forEach((quote: any) => {
-      if (quote.attachments && quote.attachments.length > 0) {
-        console.log(`[Quotes] Quote ${quote._id} has ${quote.attachments.length} attachments`);
-      }
-    });
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Quotes] Fetched quotes:', quotes.length);
+      quotes.forEach((quote: any) => {
+        if (quote.attachments && quote.attachments.length > 0) {
+          console.log(`[Quotes] Quote ${quote._id} has ${quote.attachments.length} attachments`);
+        }
+      });
+    }
     res.json({ success: true, data: quotes });
   } catch (error) {
     console.error('[Quotes] Error fetching quotes:', error);
@@ -578,10 +580,12 @@ router.post('/', quoteRateLimiter as any, upload.fields([
       note: quoteData.note,
       id: quote._id?.toString()
     }).then(telegramResult => {
-      if (telegramResult.success) {
-        console.log('[Quotes] Telegram notification sent successfully');
-      } else {
-        console.warn('[Quotes] Failed to send Telegram notification:', telegramResult.error);
+      if (process.env.NODE_ENV === 'development') {
+        if (telegramResult.success) {
+          console.log('[Quotes] Telegram notification sent successfully');
+        } else {
+          console.warn('[Quotes] Failed to send Telegram notification:', telegramResult.error);
+        }
       }
     }).catch(telegramError => {
       console.error('[Quotes] Error sending Telegram notification:', telegramError);
@@ -590,7 +594,9 @@ router.post('/', quoteRateLimiter as any, upload.fields([
     // Email notifications DISABLED - Only WhatsApp quick-reply is active
     // The sendQuoteNotification function call has been removed as per user request
     // Quote is saved successfully and WhatsApp link remains available in admin
-    console.log('[Quotes] Quote saved successfully - Email notifications disabled, WhatsApp only');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Quotes] Quote saved successfully - Email notifications disabled, WhatsApp only');
+    }
 
     res.status(201).json({ success: true, data: quote });
   } catch (error) {

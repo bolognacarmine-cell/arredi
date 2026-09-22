@@ -279,13 +279,41 @@ Il progetto include test E2E con Playwright. Per eseguire i test:
 pnpm test
 ```
 
+## 🔍 Health Check
+
+Per verificare lo stato del server e della connessione database:
+
+```bash
+curl http://localhost:3002/health
+```
+
+Risposta esempio:
+```json
+{
+  "status": "ok",
+  "timestamp": "2026-09-22T10:30:00.000Z",
+  "uptime": 3600,
+  "environment": "development",
+  "database": "connected",
+  "memory": {
+    "used": 45,
+    "total": 128
+  }
+}
+```
+
+In produzione, usa: `https://arredi.onrender.com/health`
+
 ## 📚 Documentazione Aggiuntiva
+
+Per una documentazione completa e centralizzata, consulta **[DOCUMENTATION.md](DOCUMENTATION.md)** che include:
 
 - `SECURITY.md` - Dettagli sicurezza e hardening
 - `BACKEND.md` - Documentazione API backend
 - `ADMIN_AUTHENTICATION.md` - Sistema autenticazione admin
 - `RENDER-SETUP.md` - Istruzioni deploy specifiche Render
-- `CLIENT_GUIDE.md` - Guida per il cliente (da creare)
+- `CLIENT_GUIDE.md` - Guida per il cliente sul pannello admin
+- Altri documenti tecnici e note
 
 ## 🐛 Troubleshooting
 

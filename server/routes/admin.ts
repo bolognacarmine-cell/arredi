@@ -169,19 +169,25 @@ router.get('/me', async (req: Request, res: Response) => {
   try {
     // Security: Ensure only GET method is accepted
     if (req.method !== 'GET') {
-      return res.status(405).json({ 
-        success: false, 
-        message: 'Method not allowed' 
+      return res.status(405).json({
+        success: false,
+        message: 'Method not allowed'
       });
     }
-    console.log('[AUTH CHECK] Method:', req.method, 'URL:', req.url);
-    console.log('[AUTH CHECK] Session object exists:', !!req.session);
-    console.log('[AUTH CHECK] User ID in session:', req.session?.userId ? 'present' : 'missing');
-    console.log('[AUTH CHECK] User role in session:', req.session?.userRole || 'missing');
-    console.log('[AUTH CHECK] Response status:', req.session?.userId ? '200' : '401');
+
+    // Only log in development for debugging
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[AUTH CHECK] Method:', req.method, 'URL:', req.url);
+      console.log('[AUTH CHECK] Session object exists:', !!req.session);
+      console.log('[AUTH CHECK] User ID in session:', req.session?.userId ? 'present' : 'missing');
+      console.log('[AUTH CHECK] User role in session:', req.session?.userRole || 'missing');
+      console.log('[AUTH CHECK] Response status:', req.session?.userId ? '200' : '401');
+    }
 
     if (!req.session || !req.session.userId) {
-      console.log('[AUTH CHECK] Returning 401 - No valid session');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[AUTH CHECK] Returning 401 - No valid session');
+      }
       return res.status(401).json({
         success: false,
         message: 'Not authenticated'
@@ -191,14 +197,18 @@ router.get('/me', async (req: Request, res: Response) => {
     // Fetch user details from database to get email and name
     const user = await UserModel.findById(req.session.userId);
     if (!user) {
-      console.log('[AUTH CHECK] User not found in database');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[AUTH CHECK] User not found in database');
+      }
       return res.status(401).json({
         success: false,
         message: 'User not found'
       });
     }
 
-    console.log('[AUTH CHECK] Auth check successful');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[AUTH CHECK] Auth check successful');
+    }
     res.json({
       success: true,
       user: {
@@ -219,50 +229,58 @@ router.get('/me', async (req: Request, res: Response) => {
 
 /**
  * POST /api/admin/reset-admin-password
- * Reset admin password by providing the reset code "buongiorno"
+ * Reset admin password by providing the reset code configured in environment variable
  * Security: Only POST method allowed for security best practices
  */
 router.post('/reset-admin-password', async (req: Request, res: Response) => {
   try {
     // Security: Ensure only POST method is accepted
     if (req.method !== 'POST') {
-      return res.status(405).json({ 
-        success: false, 
-        message: 'Method not allowed' 
+      return res.status(405).json({
+        success: false,
+        message: 'Method not allowed'
       });
     }
     const { email, resetCode } = req.body;
 
     // Validate email
     if (!email) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Email is required' 
+      return res.status(400).json({
+        success: false,
+        message: 'Email is required'
       });
     }
 
-    // Validate reset code
-    if (!resetCode || resetCode !== 'buongiorno') {
-      return res.status(403).json({ 
-        success: false, 
-        message: 'Invalid reset code' 
+    // Validate reset code - must match environment variable
+    const adminResetCode = process.env.ADMIN_RESET_CODE;
+    if (!adminResetCode) {
+      return res.status(500).json({
+        success: false,
+        message: 'ADMIN_RESET_CODE environment variable not configured'
+      });
+    }
+
+    if (!resetCode || resetCode !== adminResetCode) {
+      return res.status(403).json({
+        success: false,
+        message: 'Invalid reset code'
       });
     }
 
     // Find user
     const user = await UserModel.findOne({ email: email.toLowerCase() });
     if (!user) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'User not found' 
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
       });
     }
 
     // Check if user is admin
     if (user.role !== 'admin') {
-      return res.status(403).json({ 
-        success: false, 
-        message: 'Only admin users can have their password reset' 
+      return res.status(403).json({
+        success: false,
+        message: 'Only admin users can have their password reset'
       });
     }
 
@@ -274,21 +292,23 @@ router.post('/reset-admin-password', async (req: Request, res: Response) => {
         message: 'ADMIN_RESET_PASSWORD environment variable not configured'
       });
     }
-    
+
     user.password = resetPassword;
     await user.save();
 
-    console.log(`🔄 Password reset for admin user: ${email}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔄 Password reset for admin user: ${email}`);
+    }
 
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       message: 'Password resettata con successo'
     });
   } catch (error) {
     console.error('❌ Error resetting admin password:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Internal server error' 
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
     });
   }
 });

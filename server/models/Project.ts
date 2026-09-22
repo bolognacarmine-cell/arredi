@@ -29,4 +29,11 @@ const ProjectSchema = new Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
+// Indexes for common queries
+ProjectSchema.index({ sector: 1 }); // For filtering by sector
+ProjectSchema.index({ sectorId: 1 }); // For filtering by sector ID
+ProjectSchema.index({ featured: 1 }); // For featured projects
+ProjectSchema.index({ status: 1 }); // For filtering by status
+ProjectSchema.index({ createdAt: -1 }); // For sorting by date
+
 export const Project = mongoose.models.Project || mongoose.model('Project', ProjectSchema);

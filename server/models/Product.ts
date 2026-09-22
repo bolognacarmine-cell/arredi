@@ -27,4 +27,11 @@ const ProductSchema = new Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
+// Indexes for common queries
+ProductSchema.index({ slug: 1 }); // For URL-based lookups
+ProductSchema.index({ activitySector: 1 }); // For filtering by sector
+ProductSchema.index({ furnitureType: 1 }); // For filtering by furniture type
+ProductSchema.index({ active: 1 }); // For showing only active products
+ProductSchema.index({ promoActive: 1 }); // For promotional products
+
 export const Product = mongoose.models.Product || mongoose.model('Product', ProductSchema);

@@ -13,6 +13,7 @@ import cors from 'cors';
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
 import cookieParser from 'cookie-parser';
+import mongoose from 'mongoose';
 import { connectDB } from './db.js';
 import { migrateOffersToProducts } from './migrateOffersToProducts.js';
 import mediaRoutes from './routes/media.js';
@@ -26,6 +27,39 @@ import { adminApiRateLimiter } from './middleware/rateLimiter.js';
 
 const app = express();
 const PORT = process.env.PORT || 3002;
+
+// Health check endpoint
+app.get('/health', async (req: Request, res: Response) => {
+  try {
+    // Check database connection
+    const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+    
+    const health = {
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      environment: process.env.NODE_ENV || 'development',
+      database: dbStatus,
+      memory: {
+        used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+        total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024),
+      },
+    };
+
+    if (dbStatus === 'disconnected') {
+      health.status = 'degraded';
+      return res.status(503).json(health);
+    }
+
+    res.json(health);
+  } catch (error) {
+    res.status(503).json({
+      status: 'error',
+      timestamp: new Date().toISOString(),
+      error: 'Health check failed'
+    });
+  }
+});
 
 // Trust proxy for Render and other reverse proxies
 app.set('trust proxy', 1);

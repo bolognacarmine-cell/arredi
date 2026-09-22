@@ -57,6 +57,12 @@ const QuoteSchema = new Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
+// Indexes for common queries
+QuoteSchema.index({ createdAt: -1 }); // For sorting by date
+QuoteSchema.index({ stato: 1 }); // For filtering by status
+QuoteSchema.index({ email: 1 }); // For searching by email
+QuoteSchema.index({ settore: 1 }); // For filtering by sector
+
 // Hook per migrare note vecchie (stringa) in notes array
 QuoteSchema.pre('save', function(next) {
   // Se esiste note (stringa) ma notes è vuoto, migrare

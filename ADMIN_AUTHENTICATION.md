@@ -123,13 +123,13 @@ Get current authenticated admin user info.
 
 ### POST /api/admin/reset-admin-password
 
-Reset admin password by providing the reset code "buongiorno".
+Reset admin password by providing the reset code configured in environment variable.
 
 **Request:**
 ```json
 {
   "email": "admin@farcom.local",
-  "resetCode": "buongiorno"
+  "resetCode": "your_reset_code_from_env"
 }
 ```
 
@@ -149,7 +149,7 @@ Reset admin password by providing the reset code "buongiorno".
 }
 ```
 
-**Note:** The reset code is "buongiorno" (fixed). The password will be reset to the value of `ADMIN_RESET_PASSWORD` environment variable or default to "Farcom2026".
+**Note:** The reset code must match the `ADMIN_RESET_CODE` environment variable. The password will be reset to the value of `ADMIN_RESET_PASSWORD` environment variable.
 
 ## Frontend Integration
 
@@ -242,15 +242,15 @@ All admin API calls are protected by the `requireAdmin` middleware.
 
 ## Password Reset
 
-To reset admin password, use the reset code "buongiorno":
+To reset admin password, use the reset code configured in `ADMIN_RESET_CODE` environment variable:
 
 ```bash
 curl -X POST https://arredi.onrender.com/api/admin/reset-admin-password \
   -H "Content-Type: application/json" \
-  -d '{"email": "admin@farcom.local", "resetCode": "buongiorno"}'
+  -d '{"email": "admin@farcom.local", "resetCode": "your_reset_code"}'
 ```
 
-The password will be reset to the value of `ADMIN_RESET_PASSWORD` environment variable or default to "Farcom2026".
+The password will be reset to the value of `ADMIN_RESET_PASSWORD` environment variable.
 
 **Note:** The admin email is fixed at `admin@farcom.local` and cannot be changed.
 

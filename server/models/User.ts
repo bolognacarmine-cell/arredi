@@ -39,6 +39,11 @@ const UserSchema = new Schema<IUser>(
   }
 );
 
+// Index for faster email lookups
+UserSchema.index({ email: 1 });
+// Index for role-based queries
+UserSchema.index({ role: 1 });
+
 // Hash password before saving
 UserSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
