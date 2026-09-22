@@ -34,6 +34,7 @@ The following environment variables must be configured in Render:
 For local development, create `server/server.env` with the same variables.
 
 Note: `ADMIN_RESET_PASSWORD` is optional. If not set, the reset password defaults to "Farcom2026".
+**Password Requirements**: Admin password must be at least 8 characters and contain uppercase, lowercase, number, and special character.
 
 ## File Structure
 

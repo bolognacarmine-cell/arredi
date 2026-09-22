@@ -13,6 +13,20 @@ Le tue credenziali di accesso sono state fornite durante la configurazione inizi
 
 **⚠️ IMPORTANTE**: Non condividere le tue credenziali con persone non autorizzate.
 
+### Requisiti Password
+
+Per motivi di sicurezza, la password deve rispettare i seguenti requisiti:
+
+- **Minimo 8 caratteri**
+- **Almeno una lettera maiuscola** (A-Z)
+- **Almeno una lettera minuscola** (a-z)
+- **Almeno un numero** (0-9)
+- **Almeno un carattere speciale** (!@#$%^&*())
+
+**Esempio di password valida:** `Farcom2026!`
+
+Il sistema mostra un feedback immediato mentre digiti la password, indicando se è valida o quali requisiti mancano.
+
 ## 📊 Dashboard
 
 La dashboard ti mostra una panoramica del sito:

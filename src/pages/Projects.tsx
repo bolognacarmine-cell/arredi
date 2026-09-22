@@ -87,6 +87,7 @@ export default function Projects() {
                 <img
                   src={(p.coverImages && p.coverImages.length > 0 ? p.coverImages[0] : p.image) || "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=900&fit=crop"}
                   alt={p.title}
+                  loading="lazy"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   onError={(e) => {
                     // Fallback if image fails to load
