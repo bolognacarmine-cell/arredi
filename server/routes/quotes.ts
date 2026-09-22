@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { Quote } from '../models/Quote.js';
 import { requireAdmin } from '../middleware/requireAdmin.js';
 import { sendQuoteTelegramNotification } from '../utils/telegram.js';
+import { quoteRateLimiter } from '../middleware/rateLimiter.js';
 import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
 
@@ -77,7 +78,8 @@ router.get('/', async (req: Request, res: Response) => {
 });
 
 // POST create quote (public endpoint for form submissions)
-router.post('/', upload.fields([
+// @ts-ignore - TypeScript version conflict between project and server folder
+router.post('/', quoteRateLimiter as any, upload.fields([
   { name: 'attachments', maxCount: 6 },
   { name: 'documents', maxCount: 3 }
 ]), async (req: Request, res: Response) => {

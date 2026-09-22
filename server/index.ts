@@ -22,6 +22,7 @@ import quoteRoutes from './routes/quotes.js';
 import siteConfigRoutes from './routes/siteConfig.js';
 import blogRoutes from './routes/blog.js';
 import adminRoutes from './routes/admin.js';
+import { adminApiRateLimiter } from './middleware/rateLimiter.js';
 
 const app = express();
 const PORT = process.env.PORT || 3002;
@@ -144,7 +145,8 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/quotes', quoteRoutes);
 app.use('/api/site-config', siteConfigRoutes);
 app.use('/api/blog', blogRoutes);
-app.use('/api/admin', adminRoutes);
+// @ts-ignore - TypeScript version conflict between project and server folder
+app.use('/api/admin', adminApiRateLimiter as any, adminRoutes);
 
 // Retrocompatibilità: endpoint Vite dev /__admin/projects in produzione
 // Esegue lo stesso salvataggio batch ma su MongoDB invece di src/data.ts

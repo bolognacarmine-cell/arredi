@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import UserModel from '../models/User.js';
+import { loginRateLimiter } from '../middleware/rateLimiter.js';
 
 const router = Router();
 
@@ -8,7 +9,8 @@ const router = Router();
  * Login admin user with email and password
  * Security: Only POST method allowed for security best practices
  */
-router.post('/login', async (req: Request, res: Response) => {
+// @ts-ignore - TypeScript version conflict between project and server folder
+router.post('/login', loginRateLimiter as any, async (req: Request, res: Response) => {
   try {
     // Security: Ensure only POST method is accepted
     if (req.method !== 'POST') {
