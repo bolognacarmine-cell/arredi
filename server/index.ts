@@ -184,17 +184,20 @@ app.use('/api/admin', adminApiRateLimiter as any, adminRoutes);
 
 // Retrocompatibilità: endpoint Vite dev /__admin/projects in produzione
 // Esegue lo stesso salvataggio batch ma su MongoDB invece di src/data.ts
-(async () => {
-  try {
-    const mod = await import('./routes/projects.js') as any;
-    const handler: any = mod?.handleBatchReplace;
-    if (typeof handler === 'function') {
-      app.post('/__admin/projects', handler);
+// NOTA: Questa route legacy è disabilitata in produzione - usa /api/projects/batch invece
+if (process.env.NODE_ENV !== 'production') {
+  (async () => {
+    try {
+      const mod = await import('./routes/projects.js') as any;
+      const handler: any = mod?.handleBatchReplace;
+      if (typeof handler === 'function') {
+        app.post('/__admin/projects', handler);
+      }
+    } catch (e) {
+      console.warn('Impossibile montare /__admin/projects alias:', e);
     }
-  } catch (e) {
-    console.warn('Impossibile montare /__admin/projects alias:', e);
-  }
-})();
+  })();
+}
 
 // Serve index.html for all other non-API routes (SPA fallback)
 // - DEVE essere dopo /api/* e gli static assets, altrimenti intercetta le chiamate API

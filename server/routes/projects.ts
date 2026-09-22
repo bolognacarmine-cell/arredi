@@ -222,11 +222,20 @@ router.delete('/:id', requireAdmin, async (req: Request, res: Response) => {
 // Stesso comportamento del plugin Vite projectsAdminApi() ma su MongoDB.
 // Richiede un array come body. Risponde come /__admin/projects (compatibilità client).
 async function handleBatchReplace(req: Request, res: Response) {
+  console.log('[Batch Replace] Starting batch replace operation');
   const db = dbReady();
-  if (!db.ok) return dbError(res, db.reason!);
+  if (!db.ok) {
+    console.error('[Batch Replace] Database not ready:', db.reason);
+    return dbError(res, db.reason!);
+  }
+
   try {
     const incoming = req.body;
+    console.log('[Batch Replace] Received payload type:', Array.isArray(incoming) ? 'array' : typeof incoming);
+    console.log('[Batch Replace] Payload length:', Array.isArray(incoming) ? incoming.length : 'N/A');
+
     if (!Array.isArray(incoming)) {
+      console.error('[Batch Replace] Invalid payload: not an array');
       return res.status(400).json({
         ok: false,
         error: { code: 'BAD_REQUEST', message: 'Payload progetti non valido: atteso un array.' },
@@ -237,9 +246,11 @@ async function handleBatchReplace(req: Request, res: Response) {
     let savedDocIds: string[] = [];
     try {
       await session.withTransaction(async () => {
+        console.log('[Batch Replace] Deleting all existing projects');
         await Project.deleteMany({}, { session });
         if (incoming.length === 0) {
           savedDocIds = [];
+          console.log('[Batch Replace] No projects to insert');
           return;
         }
         const clean = incoming.map((p: any) => {
@@ -249,14 +260,17 @@ async function handleBatchReplace(req: Request, res: Response) {
           if (!out.id && out._id) out.id = String(out._id);
           return out;
         });
+        console.log('[Batch Replace] Inserting', clean.length, 'projects');
         const inserted = await Project.insertMany(clean, { session, ordered: true });
         savedDocIds = inserted.map((d: any) => String(d._id));
+        console.log('[Batch Replace] Successfully inserted', savedDocIds.length, 'projects');
       });
     } finally {
       await session.endSession().catch(() => {});
     }
 
     const updated = await Project.find().sort(defaultSort).lean();
+    console.log('[Batch Replace] Operation completed successfully, total projects:', updated.length);
 
     res.json({
       ok: true,
@@ -268,6 +282,12 @@ async function handleBatchReplace(req: Request, res: Response) {
       data: updated.map(toProjectPayload),
     } as any);
   } catch (error: any) {
+    console.error('[Batch Replace] Error during batch replace:', error);
+    console.error('[Batch Replace] Error details:', {
+      message: error?.message,
+      stack: error?.stack,
+      name: error?.name
+    });
     res.status(500).json({
       ok: false,
       error: {

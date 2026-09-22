@@ -130,19 +130,27 @@ export async function deleteProject(id: string): Promise<void> {
 }
 
 export async function replaceAllProjects(projects: Project[]): Promise<{ ok: true; filePath: string; backupPath: string | null }> {
-  const endpoints = ["/__admin/projects", "/api/projects/batch", "/api/projects/replace-all"] as const
+  // In production, use only modern API endpoints
+  const endpoints = import.meta.env.MODE === 'production'
+    ? ["/api/projects/batch", "/api/projects/replace-all"] as const
+    : ["/__admin/projects", "/api/projects/batch", "/api/projects/replace-all"] as const
+
   let lastErr: unknown = null
 
   for (const url of endpoints) {
     try {
       const fullUrl = apiUrl(url)
+      console.log('[Projects API] Trying endpoint:', fullUrl, 'with', projects.length, 'projects')
       const response = await fetch(fullUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         credentials: 'include',
         body: JSON.stringify(projects),
       })
+      console.log('[Projects API] Response status:', response.status, 'for endpoint:', url)
+
       if (response.status === 404 || response.status === 405) {
+        console.log('[Projects API] Endpoint not available, trying next:', url)
         continue
       }
       if (!response.ok) {
@@ -151,20 +159,24 @@ export async function replaceAllProjects(projects: Project[]): Promise<{ ok: tru
           try { return JSON.parse(txt) } catch { return null }
         })()
         const msg = parsed?.error?.message || txt.slice(0, 160) || `HTTP ${response.status}`
+        console.error('[Projects API] Error for endpoint:', url, 'Error:', msg)
         lastErr = new Error(msg)
         if (response.status >= 500 && response.status !== 503) continue
         throw lastErr
       }
       const json = await response.json().catch(() => ({})) as any
+      console.log('[Projects API] Success with endpoint:', url)
       return {
         ok: true,
         filePath: json?.filePath || url,
         backupPath: json?.backupPath || null,
       }
     } catch (e) {
+      console.error('[Projects API] Exception for endpoint:', url, e)
       lastErr = e
     }
   }
 
+  console.error('[Projects API] All endpoints failed')
   throw lastErr instanceof Error ? lastErr : new Error("Nessun endpoint di salvataggio progetti disponibile.")
 }
