@@ -286,12 +286,6 @@ export default function ShowroomDetail() {
                   ? "🏷️ Approfitta dell'offerta"
                   : "📨 Richiedi informazioni per questo prodotto"}
               </button>
-              <Link
-                to="/preventivo"
-                className="w-full block text-center py-3.5 border-2 border-[var(--primary)] text-[var(--primary)] font-medium text-sm hover:bg-[var(--primary)] hover:text-white transition-colors tracking-wide"
-              >
-                🛠 Richiedi un preventivo completo
-              </Link>
             </div>
           </div>
         </div>
@@ -305,12 +299,22 @@ export default function ShowroomDetail() {
           <form
             onSubmit={(e) => {
               e.preventDefault()
-              alert(
-                "Grazie! Ti ricontatteremo al più presto per il prodotto: " +
-                  p.name,
-              )
-              setInfoOpen(false)
-              setInfoForm({ nome: "", email: "", telefono: "", messaggio: "" })
+              const telefonoPulito = infoForm.telefono.trim()
+              const telefonoMostrato = telefonoPulito || "Non indicato"
+              const message = `Richiesta informazioni prodotto dal sito Arredi
+
+Prodotto: ${p.name}
+Codice: ${p.sku || p.id}
+
+Nome: ${infoForm.nome}
+Email: ${infoForm.email}
+Telefono: ${telefonoMostrato}
+
+Messaggio:
+${infoForm.messaggio}`
+              const encodedMessage = encodeURIComponent(message)
+              const whatsappUrl = `https://wa.me/393294576079?text=${encodedMessage}`
+              window.open(whatsappUrl, "_blank", "noopener,noreferrer")
             }}
             className="bg-white w-full max-w-lg border border-[var(--border)] shadow-2xl flex flex-col animate-slide-up"
           >
@@ -377,8 +381,11 @@ export default function ShowroomDetail() {
                 type="submit"
                 className="px-5 py-2.5 text-sm bg-[var(--primary)] text-white font-medium hover:bg-[var(--foreground)]"
               >
-                Invia richiesta
+                Contattaci su WhatsApp
               </button>
+            </div>
+            <div className="px-6 pb-4 text-xs text-[var(--muted-foreground)]">
+              I dati inseriti saranno utilizzati esclusivamente per ricontattarti in merito alla tua richiesta. Consulta la nostra <a href="/privacy" className="text-[var(--primary)] underline">Informativa privacy</a>.
             </div>
           </form>
         </div>
