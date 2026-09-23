@@ -195,7 +195,7 @@ router.post('/', quoteRateLimiter as any, upload.fields([
       }
     }
 
-    // Handle document uploads (PDF)
+    // Handle document uploads (PDF, DWG, DXF)
     if (documentFiles.length > 0 && cloudinaryConfigured) {
       // Validate document count
       if (documentFiles.length > 3) {
@@ -205,13 +205,25 @@ router.post('/', quoteRateLimiter as any, upload.fields([
         });
       }
 
-      // Validate each document
-      const allowedDocumentTypes = ['application/pdf'];
+      // Validate each document by extension
+      const allowedExtensions = ['.pdf', '.dwg', '.dxf'];
+      const allowedMimeTypes = ['application/pdf'];
       for (const file of documentFiles) {
-        if (!allowedDocumentTypes.includes(file.mimetype)) {
+        const fileName = file.originalname.toLowerCase();
+        const hasValidExtension = allowedExtensions.some(ext => fileName.endsWith(ext));
+
+        if (!hasValidExtension) {
           return res.status(400).json({
             success: false,
-            message: `Formato non supportato: ${file.originalname}. Usa solo PDF.`
+            message: `Formato non supportato: ${file.originalname}. Usa solo PDF, DWG o DXF.`
+          });
+        }
+
+        // MIME type validation for PDF only (CAD files often have no or incorrect MIME type)
+        if (fileName.endsWith('.pdf') && !allowedMimeTypes.includes(file.mimetype)) {
+          return res.status(400).json({
+            success: false,
+            message: `Formato non supportato: ${file.originalname}. Usa solo PDF, DWG o DXF.`
           });
         }
 
@@ -233,14 +245,42 @@ router.post('/', quoteRateLimiter as any, upload.fields([
       // Upload documents to Cloudinary
       for (const file of documentFiles) {
         try {
-          const uploadResult = await cloudinary.uploader.upload(
-            `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
-            {
-              folder: 'farcom-arredi/quotes/documents',
-              resource_type: 'auto', // Auto-detect for PDF
-              allowed_formats: ['pdf'],
-            }
-          );
+          const fileName = file.originalname.toLowerCase();
+          const isPdf = fileName.endsWith('.pdf');
+          const isCad = fileName.endsWith('.dwg') || fileName.endsWith('.dxf');
+
+          let uploadResult;
+
+          if (isPdf) {
+            // PDF: use auto resource_type and pdf format
+            uploadResult = await cloudinary.uploader.upload(
+              `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
+              {
+                folder: 'farcom-arredi/quotes/documents',
+                resource_type: 'auto',
+                allowed_formats: ['pdf'],
+              }
+            );
+          } else if (isCad) {
+            // CAD files: use raw resource_type
+            uploadResult = await cloudinary.uploader.upload(
+              `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
+              {
+                folder: 'farcom-arredi/quotes/documents',
+                resource_type: 'raw',
+                public_id: `farcom-arredi/quotes/documents/${file.originalname}`,
+              }
+            );
+          } else {
+            // Fallback for other supported formats
+            uploadResult = await cloudinary.uploader.upload(
+              `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
+              {
+                folder: 'farcom-arredi/quotes/documents',
+                resource_type: 'auto',
+              }
+            );
+          }
 
           uploadedDocuments.push({
             url: uploadResult.secure_url,

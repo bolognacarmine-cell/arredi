@@ -70,10 +70,20 @@ export default function Quote() {
 
   const validateDocument = (file: File): string | null => {
     const allowedTypes = ['application/pdf']
+    const allowedExtensions = ['.pdf', '.dwg', '.dxf']
     const maxSize = 8 * 1024 * 1024 // 8MB
 
-    if (!allowedTypes.includes(file.type)) {
-      return 'Formato non supportato. Usa solo PDF.'
+    // Validate by extension first (more reliable than MIME type)
+    const fileName = file.name.toLowerCase()
+    const hasValidExtension = allowedExtensions.some(ext => fileName.endsWith(ext))
+
+    if (!hasValidExtension) {
+      return 'Formato non supportato. Usa solo PDF, DWG o DXF.'
+    }
+
+    // MIME type validation for PDF only (CAD files often have no or incorrect MIME type)
+    if (fileName.endsWith('.pdf') && !allowedTypes.includes(file.type)) {
+      return 'Formato non supportato. Usa solo PDF, DWG o DXF.'
     }
 
     if (file.size > maxSize) {
@@ -587,12 +597,12 @@ export default function Quote() {
                       type="file"
                       multiple
                       className="hidden"
-                      accept="application/pdf"
+                      accept=".pdf,.dwg,.dxf,application/pdf"
                       onChange={handleDocumentSelect}
                     />
                   </label>
                   <span className="block text-xs mt-1 text-[var(--muted-foreground)]">
-                    PDF – max 8MB per documento, max 3 documenti
+                    PDF, DWG, DXF – max 8MB per documento, max 3 documenti
                   </span>
                 </div>
 
