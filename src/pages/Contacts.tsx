@@ -23,7 +23,7 @@ export default function Contacts() {
     }, 300)
   }, [])
 
-  const [form, setForm] = useState({ nome: "", email: "", messaggio: "" })
+  const [form, setForm] = useState({ nome: "", email: "", telefono: "", messaggio: "" })
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }))
   const siteConfig = useSiteSettings()
   const contactInfoCards = getContactInfoCards(siteConfig)
@@ -248,10 +248,13 @@ export default function Contacts() {
             <form
               onSubmit={(e) => {
                 e.preventDefault()
+                const telefonoPulito = form.telefono.trim()
+                const telefonoMostrato = telefonoPulito || "Non indicato"
                 const message = `Nuovo contatto dal sito Arredi
 
 Nome: ${form.nome}
 Email: ${form.email}
+Telefono: ${telefonoMostrato}
 
 Messaggio:
 ${form.messaggio}`
@@ -280,6 +283,20 @@ ${form.messaggio}`
               ))}
               <div>
                 <label className="block text-xs text-[#888580] uppercase tracking-wide mb-1.5">
+                  Telefono (facoltativo)
+                </label>
+                <input
+                  type="tel"
+                  name="telefono"
+                  autoComplete="tel"
+                  maxLength={25}
+                  value={form.telefono}
+                  onChange={(e) => set("telefono", e.target.value)}
+                  className="w-full border border-[#DDD9D0] bg-white px-4 py-3 text-sm text-[#1A1A18] focus:outline-none focus:border-[#E69138] transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-[#888580] uppercase tracking-wide mb-1.5">
                   Messaggio *
                 </label>
                 <textarea
@@ -296,6 +313,9 @@ ${form.messaggio}`
               >
                 Contattaci su WhatsApp
               </button>
+              <p className="text-xs text-[#888580] mt-3">
+                I dati inseriti saranno utilizzati esclusivamente per ricontattarti in merito alla tua richiesta. Consulta la nostra <a href="/privacy" className="text-[#E69138] underline">Informativa privacy</a>.
+              </p>
             </form>
           </div>
         </div>
