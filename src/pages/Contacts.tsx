@@ -23,7 +23,6 @@ export default function Contacts() {
     }, 300)
   }, [])
 
-  const [sent, setSent] = useState(false)
   const [form, setForm] = useState({ nome: "", email: "", messaggio: "" })
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }))
   const siteConfig = useSiteSettings()
@@ -246,61 +245,58 @@ export default function Contacts() {
               Scrivici
             </h2>
 
-            {sent ? (
-              <div className="bg-[#E69138] text-white p-8">
-                <div className="text-2xl mb-3">✓</div>
-                <h3 className="font-display text-xl font-light mb-2">
-                  Messaggio inviato
-                </h3>
-                <p className="text-white/70 text-sm">
-                  Ti risponderemo entro un giorno lavorativo.
-                </p>
-              </div>
-            ) : (
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  setSent(true)
-                }}
-                className="space-y-5"
-              >
-                {[
-                  ["nome", "Nome e cognome *", "text"],
-                  ["email", "Email *", "email"],
-                ].map(([k, label, type]) => (
-                  <div key={k as string}>
-                    <label className="block text-xs text-[#888580] uppercase tracking-wide mb-1.5">
-                      {label}
-                    </label>
-                    <input
-                      type={type as string}
-                      required
-                      value={form[(k as keyof typeof form)]}
-                      onChange={(e) => set(k as string, e.target.value)}
-                      className="w-full border border-[#DDD9D0] bg-white px-4 py-3 text-sm text-[#1A1A18] focus:outline-none focus:border-[#E69138] transition-colors"
-                    />
-                  </div>
-                ))}
-                <div>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                const message = `Nuovo contatto dal sito Arredi
+
+Nome: ${form.nome}
+Email: ${form.email}
+
+Messaggio:
+${form.messaggio}`
+                const encodedMessage = encodeURIComponent(message)
+                const whatsappUrl = `https://wa.me/393294576079?text=${encodedMessage}`
+                window.open(whatsappUrl, "_blank", "noopener,noreferrer")
+              }}
+              className="space-y-5"
+            >
+              {[
+                ["nome", "Nome e cognome *", "text"],
+                ["email", "Email *", "email"],
+              ].map(([k, label, type]) => (
+                <div key={k as string}>
                   <label className="block text-xs text-[#888580] uppercase tracking-wide mb-1.5">
-                    Messaggio *
+                    {label}
                   </label>
-                  <textarea
-                    rows={6}
+                  <input
+                    type={type as string}
                     required
-                    value={form.messaggio}
-                    onChange={(e) => set("messaggio", e.target.value)}
-                    className="w-full border border-[#DDD9D0] bg-white px-4 py-3 text-sm text-[#1A1A18] focus:outline-none focus:border-[#E69138] transition-colors resize-none"
+                    value={form[(k as keyof typeof form)]}
+                    onChange={(e) => set(k as string, e.target.value)}
+                    className="w-full border border-[#DDD9D0] bg-white px-4 py-3 text-sm text-[#1A1A18] focus:outline-none focus:border-[#E69138] transition-colors"
                   />
                 </div>
-                <button
-                  type="submit"
-                  className="bg-[#E69138] text-white text-sm font-medium px-8 py-3.5 hover:bg-[#D67F28] transition-colors"
-                >
-                  Invia messaggio
-                </button>
-              </form>
-            )}
+              ))}
+              <div>
+                <label className="block text-xs text-[#888580] uppercase tracking-wide mb-1.5">
+                  Messaggio *
+                </label>
+                <textarea
+                  rows={6}
+                  required
+                  value={form.messaggio}
+                  onChange={(e) => set("messaggio", e.target.value)}
+                  className="w-full border border-[#DDD9D0] bg-white px-4 py-3 text-sm text-[#1A1A18] focus:outline-none focus:border-[#E69138] transition-colors resize-none"
+                />
+              </div>
+              <button
+                type="submit"
+                className="bg-[#E69138] text-white text-sm font-medium px-8 py-3.5 hover:bg-[#D67F28] transition-colors"
+              >
+                Contattaci su WhatsApp
+              </button>
+            </form>
           </div>
         </div>
 
