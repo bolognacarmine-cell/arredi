@@ -16,6 +16,11 @@ const eur = (n: number) =>
     maximumFractionDigits: 0,
   })
 
+const formatPrice = (n: number) => {
+  if (n === 0) return "Prezzo su richiesta"
+  return eur(n)
+}
+
 export default function ProductCard({ product }: Props) {
   const eff = computeEffectivePrice(product)
   const promo = activePromo(product)
@@ -62,6 +67,13 @@ export default function ProductCard({ product }: Props) {
             )}
           </div>
         )}
+        {product.isSold && (
+          <div className="absolute top-3 right-3">
+            <span className="px-3 py-1 rounded-full text-xs font-bold text-white shadow-md tracking-wide bg-red-600">
+              Venduto
+            </span>
+          </div>
+        )}
         {!product.active && (
           <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
             <span className="text-white text-xs uppercase tracking-widest font-semibold px-3 py-1 border border-white/40">
@@ -99,15 +111,15 @@ export default function ProductCard({ product }: Props) {
             {eff.savings > 0 ? (
               <div>
                 <div className="text-xs text-[var(--muted-foreground)] line-through">
-                  {eur(product.basePrice)}
+                  {formatPrice(product.basePrice)}
                 </div>
                 <div className="font-semibold text-[var(--primary)] text-lg leading-tight">
-                  {eur(eff.finalPrice)}
+                  {formatPrice(eff.finalPrice)}
                 </div>
               </div>
             ) : (
               <div className="font-semibold text-[var(--foreground)] text-lg">
-                {eur(product.basePrice)}
+                {formatPrice(product.basePrice)}
               </div>
             )}
           </div>

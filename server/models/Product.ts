@@ -11,11 +11,12 @@ const ProductSchema = new Schema({
   activitySectorOther: { type: String },
   furnitureType: { type: String, required: true },
   furnitureTypeOther: { type: String },
-  basePrice: { type: Number, required: true },
+  basePrice: { type: Number, required: true, min: 0 },
   discountPct: { type: Number, default: null },
   images: [{ type: String }],
   sku: { type: String },
   active: { type: Boolean, default: true },
+  isSold: { type: Boolean, default: false },
   // Promozione in scheda prodotto: tutti i campi sono opzionali.
   promoActive: { type: Boolean, default: false },
   promoDiscountType: { type: String, enum: ['percent', 'amount', null], default: null },

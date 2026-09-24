@@ -10,14 +10,14 @@ import {
   createProduct,
   deleteProduct,
   updateProduct,
-  useProducts,
+  useProductsAdmin,
   computeEffectivePrice,
-  getProducts,
 } from "../../../services/showroomApi"
+import * as productsApi from "../../../api/productsApi"
 import type { Product } from "../../../types/showroom"
 
 export default function ProductsList() {
-  const all = useProducts()
+  const all = useProductsAdmin()
   const [filters, setFilters] = useState<ProductFilterState>(defaultPF)
   const [editing, setEditing] = useState<Product | null>(null)
   const [creating, setCreating] = useState(false)
@@ -30,7 +30,7 @@ export default function ProductsList() {
   useEffect(() => {
     const refreshProducts = async () => {
       try {
-        const products = await getProducts()
+        const products = await productsApi.getProducts({ includeSold: true })
         if (Array.isArray(products)) {
           try {
             window.localStorage.setItem("farcom-showroom-products-v2", JSON.stringify(products))
@@ -129,6 +129,18 @@ export default function ProductsList() {
     }
   }
 
+  const onToggleSold = async (id: string, next: boolean) => {
+    setBusy(true)
+    try {
+      await updateProduct(id, { isSold: next })
+      setRefreshKey(prev => prev + 1)
+    } catch (error) {
+      showError(error, "Aggiornamento dello stato venduto non riuscito")
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
@@ -159,6 +171,7 @@ export default function ProductsList() {
         onEdit={(p) => setEditing(p)}
         onDelete={onDelete}
         onToggle={onToggle}
+        onToggleSold={onToggleSold}
       />
 
       {(creating || editing) && (

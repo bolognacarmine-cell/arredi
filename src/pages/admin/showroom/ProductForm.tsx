@@ -29,6 +29,7 @@ type FS = {
   basePrice: string
   images: string[]
   active: boolean
+  isSold: boolean
   promoActive: boolean
   promoDiscountType: PromoDiscountType
   promoDiscountValue: string
@@ -46,6 +47,7 @@ const empty: FS = {
   basePrice: "",
   images: [],
   active: true,
+  isSold: false,
   promoActive: true,
   promoDiscountType: "percent",
   promoDiscountValue: "",
@@ -79,6 +81,7 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
         basePrice: String(initial.basePrice),
         images: [...initial.images],
         active: initial.active,
+        isSold: initial.isSold ?? false,
         promoActive: initial.promoActive !== false,
         promoDiscountType: initial.promoDiscountType === "amount" ? "amount" : "percent",
         // Prodotti creati prima della promozione in scheda: lo sconto storico
@@ -130,7 +133,7 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
     if (form.furnitureType === "Altro" && !form.furnitureTypeOther.trim())
       e.furnitureType = 'Specifica la tipologia "Altro"'
     const b = Number(form.basePrice)
-    if (!form.basePrice || isNaN(b) || b <= 0) e.basePrice = "Prezzo base > 0"
+    if (form.basePrice === "" || isNaN(b) || b < 0) e.basePrice = "Prezzo base >= 0 (0 = Prezzo su richiesta)"
     if (form.promoDiscountValue) {
       const d = Number(form.promoDiscountValue)
       if (isNaN(d) || d <= 0) e.promoDiscountValue = "Sconto maggiore di 0"
@@ -179,6 +182,7 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
       images: form.images,
       sku: slugify(form.name).toUpperCase().slice(0, 10) + "-" + Date.now().toString().slice(-4),
       active: form.active,
+      isSold: form.isSold,
     }
     await onSave(data, initial?.id)
   }
@@ -451,6 +455,19 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
             />
             <label htmlFor="pf-active" className="text-sm font-medium text-[#4A4A46]">
               {form.active ? "✅ Prodotto attivo (visibile nel listino)" : "⏸ Inattivo"}
+            </label>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <input
+              id="pf-is-sold"
+              type="checkbox"
+              checked={form.isSold}
+              onChange={(e) => set("isSold", e.target.checked)}
+              className="w-4 h-4 accent-[#B5965A]"
+            />
+            <label htmlFor="pf-is-sold" className="text-sm font-medium text-[#4A4A46]">
+              {form.isSold ? "🏷️ Prodotto venduto" : "⏸ Disponibile"}
             </label>
           </div>
 

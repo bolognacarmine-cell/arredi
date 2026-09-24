@@ -15,6 +15,7 @@ interface Props {
   onEdit: (p: Product) => void
   onDelete: (p: Product) => void
   onToggle: (id: string, next: boolean) => void
+  onToggleSold: (id: string, next: boolean) => void
 }
 
 const eur = (n: number) =>
@@ -31,6 +32,7 @@ export default function ProductTable({
   onEdit,
   onDelete,
   onToggle,
+  onToggleSold,
 }: Props) {
   const [sortKey, setSortKey] = useState<SK>("createdAt")
   const [sortDir, setSortDir] = useState<SortDirection>("desc")
@@ -109,6 +111,9 @@ export default function ProductTable({
               <th className="px-4 py-3 text-center text-[11px] uppercase tracking-wide text-[#888580]">
                 Stato
               </th>
+              <th className="px-4 py-3 text-center text-[11px] uppercase tracking-wide text-[#888580]">
+                Venduto
+              </th>
               <th className="px-4 py-3 text-right text-[11px] uppercase tracking-wide text-[#888580]">
                 Azioni
               </th>
@@ -117,7 +122,7 @@ export default function ProductTable({
           <tbody>
             {paged.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-16 text-center">
+                <td colSpan={8} className="px-4 py-16 text-center">
                   <div className="text-4xl text-[#DDD9D0] mb-3">📦</div>
                   <p className="text-[#4A4A46]">Nessun prodotto trovato</p>
                 </td>
@@ -189,6 +194,23 @@ export default function ProductTable({
                       {p.active ? "Attivo" : "Inattivo"}
                     </button>
                   </td>
+                  <td className="px-4 py-3 text-center">
+                    <button
+                      onClick={() => onToggleSold(p.id, !p.isSold)}
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                        p.isSold
+                          ? "bg-red-100 text-red-700"
+                          : "bg-gray-100 text-gray-600"
+                      }`}
+                    >
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          p.isSold ? "bg-red-600" : "bg-gray-400"
+                        }`}
+                      />
+                      {p.isSold ? "Venduto" : "Disponibile"}
+                    </button>
+                  </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex justify-end gap-4 text-xs">
                       <button
@@ -252,19 +274,34 @@ export default function ProductTable({
                   </div>
                 </div>
                 <div className="flex justify-between items-center gap-3">
-                  <button
-                    onClick={() => onToggle(p.id, !p.active)}
-                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium ${
-                      p.active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"
-                    }`}
-                  >
-                    <span
-                      className={`w-1.5 h-1.5 rounded-full ${
-                        p.active ? "bg-green-600" : "bg-gray-400"
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => onToggle(p.id, !p.active)}
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium ${
+                        p.active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"
                       }`}
-                    />
-                    {p.active ? "Attivo" : "Inattivo"}
-                  </button>
+                    >
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          p.active ? "bg-green-600" : "bg-gray-400"
+                        }`}
+                      />
+                      {p.active ? "Attivo" : "Inattivo"}
+                    </button>
+                    <button
+                      onClick={() => onToggleSold(p.id, !p.isSold)}
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium ${
+                        p.isSold ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-600"
+                      }`}
+                    >
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          p.isSold ? "bg-red-600" : "bg-gray-400"
+                        }`}
+                      />
+                      {p.isSold ? "Venduto" : "Disp."}
+                    </button>
+                  </div>
                   <div className="flex gap-4 text-xs">
                     <button onClick={() => onEdit(p)} className="text-[#1B4332] font-medium">
                       Modifica

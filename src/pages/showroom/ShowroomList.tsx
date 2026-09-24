@@ -9,11 +9,13 @@ import SEOHead from "../../components/SEOHead"
 import {
   computeEffectivePrice,
   getProducts,
+  getShowroomConfig,
   type Product,
 } from "../../services/showroomApi"
 
 export default function ShowroomList() {
   const [products, setProducts] = useState<Product[]>([])
+  const [showSoldProducts, setShowSoldProducts] = useState(false)
   const [filters, setFilters] = useState<PublicFilterState>(defaultPublicFilters)
   const [loading, setLoading] = useState(true)
 
@@ -29,6 +31,17 @@ export default function ShowroomList() {
     }
   }, [])
 
+  useEffect(() => {
+    let alive = true
+    getShowroomConfig().then((config) => {
+      if (!alive) return
+      setShowSoldProducts(config.showSoldProducts)
+    })
+    return () => {
+      alive = false
+    }
+  }, [])
+
   const visible = useMemo(() => {
     const q = filters.q.trim().toLowerCase()
     return products.filter((p) => {
@@ -37,9 +50,10 @@ export default function ShowroomList() {
       if (filters.sector !== "all" && p.activitySector !== filters.sector) return false
       if (filters.furniture !== "all" && p.furnitureType !== filters.furniture) return false
       if (filters.onlyOffers && computeEffectivePrice(p).savings <= 0) return false
+      if (!showSoldProducts && p.isSold) return false
       return true
     })
-  }, [products, filters])
+  }, [products, filters, showSoldProducts])
 
   return (
     <main className="pt-24 pb-24 bg-[var(--background)] min-h-screen">

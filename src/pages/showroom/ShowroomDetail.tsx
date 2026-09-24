@@ -22,6 +22,11 @@ const eur = (n: number) =>
     maximumFractionDigits: 0,
   })
 
+const formatPrice = (n: number) => {
+  if (n === 0) return "Prezzo su richiesta"
+  return eur(n)
+}
+
 const itDate = (d: string) =>
   new Date(d + "T00:00:00").toLocaleDateString("it-IT", {
     day: "2-digit",
@@ -184,11 +189,18 @@ export default function ShowroomDetail() {
             alt={`${p.name} - Arredamento ${displaySector(p.activitySector, p.activitySectorOther)} Made in Italy`}
             maxHeightClass="max-h-[60vh]"
             overlay={
-              eff?.badge ? (
-                <span className="px-4 py-1.5 rounded-full text-sm font-bold text-white shadow-lg tracking-wide bg-[var(--accent)]">
-                  {eff.badge}
-                </span>
-              ) : null
+              <>
+                {eff?.badge ? (
+                  <span className="px-4 py-1.5 rounded-full text-sm font-bold text-white shadow-lg tracking-wide bg-[var(--accent)]">
+                    {eff.badge}
+                  </span>
+                ) : null}
+                {p.isSold && (
+                  <span className="px-4 py-1.5 rounded-full text-sm font-bold text-white shadow-lg tracking-wide bg-red-600">
+                    Venduto
+                  </span>
+                )}
+              </>
             }
           />
 
@@ -221,20 +233,20 @@ export default function ShowroomDetail() {
                 {eff && eff.savings > 0 ? (
                   <div className="flex items-end gap-3">
                     <span className="text-sm line-through text-[var(--muted-foreground)]">
-                      {eur(p.basePrice)}
+                      {formatPrice(p.basePrice)}
                     </span>
                     <span className="font-display text-3xl font-semibold text-[var(--primary)]">
-                      {eur(eff.finalPrice)}
+                      {formatPrice(eff.finalPrice)}
                     </span>
                   </div>
                 ) : (
                   <span className="font-display text-3xl font-semibold text-[var(--foreground)]">
-                    {eur(p.basePrice)}
+                    {formatPrice(p.basePrice)}
                   </span>
                 )}
                 {eff?.savings ? (
                   <div className="text-xs text-[var(--accent)] mt-1 font-medium">
-                    Risparmi {eur(eff.savings)}
+                    Risparmi {formatPrice(eff.savings)}
                   </div>
                 ) : null}
               </div>

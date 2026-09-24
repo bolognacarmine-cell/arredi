@@ -37,52 +37,21 @@ pnpm install
 Crea i file di configurazione environment:
 
 ```bash
-# Crea file per variabili frontend
-cp frontend.env.example .env
-
 # Crea file per variabili server
-cp server.env.example .server.env
-```
-
-#### Configurazione Frontend (.env)
-
-```bash
-# API Configuration
-VITE_API_BASE_URL=  # Lascia vuoto per same-origin in produzione
+cp .server.env.example .server.env
 ```
 
 #### Configurazione Server (.server.env)
 
 ```bash
 # MongoDB Connection (REQUIRED)
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/arredi?retryWrites=true&w=majority
+MONGODB_URI=replace-with-mongodb-connection-string
 
 # Server Configuration
 PORT=3002
-NODE_ENV=development
-
-# CORS Configuration
-FRONTEND_ORIGIN=http://localhost:8443
-
-# Cloudinary (REQUIRED per upload immagini)
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
-
-# Telegram Bot Configuration (opzionale - per notifiche preventivi)
-TELEGRAM_BOT_TOKEN=your_telegram_bot_token_here
-TELEGRAM_CHAT_ID=your_telegram_chat_id_here
-
-# Admin User Configuration
-ADMIN_EMAIL=admin@farcom.local
-ADMIN_PASSWORD=your_secure_admin_password_here
-ADMIN_NAME=Admin Farcom
-
-# Admin Reset Password (opzionale)
-ADMIN_RESET_PASSWORD=Farcom2026
 
 # Session Secret (REQUIRED)
-SESSION_SECRET=your_secure_random_session_secret_here
+SESSION_SECRET=replace-with-a-long-random-secret
 ```
 
 ### 4. Avvia in modalità sviluppo
@@ -92,15 +61,6 @@ pnpm run dev
 ```
 
 Questo avvia sia il frontend Vite (su http://localhost:8443) che il backend Express (su http://localhost:3002) contemporaneamente.
-
-### 5. Crea l'utente admin
-
-```bash
-cd server
-npm run seed:admin
-```
-
-Questo crea l'utente admin usando le credenziali configurate in `.server.env`.
 
 ## 🏗️ Struttura del Progetto
 
@@ -170,35 +130,7 @@ arredi/
 pnpm run dev              # Avvia frontend + backend in sviluppo
 pnpm run build            # Build frontend + backend
 pnpm start                # Avvia server in produzione
-
-# Server specifici
-cd server
-npm run dev               # Solo backend sviluppo
-npm run build             # Build backend TypeScript
-npm start                 # Avvia backend produzione
-npm run seed:admin        # Crea utente admin
 ```
-
-## 🔐 Autenticazione Admin
-
-### Accesso Pannello Admin
-
-1. Naviga a `http://localhost:8443/admin/login`
-2. Usa le credenziali configurate in `.server.env`:
-   - Email: `ADMIN_EMAIL` (default: admin@farcom.local)
-   - Password: `ADMIN_PASSWORD`
-
-### Reset Password Admin
-
-Se dimentichi la password, usa l'endpoint di reset:
-
-```bash
-curl -X POST http://localhost:3002/api/admin/reset-admin-password \
-  -H "Content-Type: application/json" \
-  -d '{"email": "admin@farcom.local", "resetCode": "buongiorno"}'
-```
-
-La password verrà resettata al valore di `ADMIN_RESET_PASSWORD`.
 
 ## 📦 Funzionalità Principali
 
@@ -212,13 +144,11 @@ La password verrà resettata al valore di `ADMIN_RESET_PASSWORD`.
 - **Pagine Legali**: Privacy, Cookie, Note legali
 
 ### Pannello Admin
-- **Dashboard**: Overview statistiche
 - **Gestione Progetti**: CRUD progetti con immagini
 - **Gestione Preventivi**: Visualizza e gestisci richieste
 - **Gestione Showroom**: CRUD prodotti arredamento
 - **Gestione Blog**: Creazione e modifica articoli
 - **Impostazioni**: Configurazione sito, email, SMTP
-- **Media Library**: Gestione immagini Cloudinary
 
 ## 🚢 Deploy su Render
 
@@ -245,15 +175,7 @@ Configura queste variabili nel pannello Render:
 ```bash
 MONGODB_URI=mongodb+srv://...
 SESSION_SECRET=your_secure_secret
-ADMIN_EMAIL=admin@farcom.local
-ADMIN_PASSWORD=your_secure_password
-ADMIN_NAME=Admin Farcom
-ADMIN_RESET_PASSWORD=Farcom2026
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
-TELEGRAM_BOT_TOKEN=your_bot_token (opzionale)
-TELEGRAM_CHAT_ID=your_chat_id (opzionale)
+PORT=3002
 NODE_ENV=production
 ```
 
@@ -263,21 +185,11 @@ Pusha su GitHub e Render farà automaticamente il deploy.
 
 ## 🔒 Sicurezza
 
-- **Autenticazione Admin**: Session-based con bcrypt password hashing
+- **Autenticazione Admin**: Session-based con password hashing
 - **CORS**: Configurato per same-origin in produzione
 - **Security Headers**: CSP, XSS protection, frame options
 - **Input Validation**: Validazione su tutti gli endpoint API
 - **Environment Variables**: Tutti i secrets in variabili d'ambiente
-
-Per dettagli completi sulla sicurezza, vedi `SECURITY.md`.
-
-## 🧪 Testing
-
-Il progetto include test E2E con Playwright. Per eseguire i test:
-
-```bash
-pnpm test
-```
 
 ## 🔍 Health Check
 
@@ -304,17 +216,6 @@ Risposta esempio:
 
 In produzione, usa: `https://arredi.onrender.com/health`
 
-## 📚 Documentazione Aggiuntiva
-
-Per una documentazione completa e centralizzata, consulta **[DOCUMENTATION.md](DOCUMENTATION.md)** che include:
-
-- `SECURITY.md` - Dettagli sicurezza e hardening
-- `BACKEND.md` - Documentazione API backend
-- `ADMIN_AUTHENTICATION.md` - Sistema autenticazione admin
-- `RENDER-SETUP.md` - Istruzioni deploy specifiche Render
-- `CLIENT_GUIDE.md` - Guida per il cliente sul pannello admin
-- Altri documenti tecnici e note
-
 ## 🐛 Troubleshooting
 
 ### MongoDB Connection Failed
@@ -322,14 +223,9 @@ Per una documentazione completa e centralizzata, consulta **[DOCUMENTATION.md](D
 - Controlla IP whitelist in MongoDB Atlas
 - Assicurati che l'utente database abbia permessi corretti
 
-### Cloudinary Upload Fails
-- Verifica che `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, e `CLOUDINARY_API_SECRET` siano configurati
-- Controlla che l'upload preset sia configurato come "Unsigned"
-
 ### Admin Login Fails
-- Verifica che l'utente admin esista nel database
-- Controlla che `SESSION_SECRET` sia configurato
-- Usa lo script `seed:admin` per ricreare l'utente admin
+- Verifica che `SESSION_SECRET` sia configurato
+- Controlla che l'utente admin esista nel database
 
 ## 📞 Supporto
 

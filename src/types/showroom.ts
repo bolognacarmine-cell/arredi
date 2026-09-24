@@ -22,6 +22,7 @@ export interface Product {
   images: string[]
   sku?: string
   active: boolean
+  isSold?: boolean
   createdAt: number
   updatedAt: number
   // Promozione: tutti i campi sono opzionali, un prodotto senza promozione

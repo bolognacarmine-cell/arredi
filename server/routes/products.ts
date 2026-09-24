@@ -1,9 +1,26 @@
 import { Router, Request, Response } from 'express';
 import mongoose from 'mongoose';
 import { Product } from '../models/Product.js';
+import { SiteConfig } from '../models/SiteConfig.js';
 import { requireAdmin } from '../middleware/requireAdmin.js';
 
 const router = Router();
+
+// Helper function to check if user is admin
+function isAdmin(req: Request): boolean {
+  return !!(req.session?.userId && req.session?.userRole === 'admin');
+}
+
+// Helper function to get showroom configuration
+async function getShowroomConfig(): Promise<boolean> {
+  try {
+    const config = await SiteConfig.findOne({ key: 'showroom_show_sold_products' });
+    return config ? config.value === 'true' : false;
+  } catch (error) {
+    // Default to false if config cannot be read
+    return false;
+  }
+}
 
 // Gli id applicativi (es. "p8xtyb21tj") non sono ObjectId: includerli nel ramo
 // _id farebbe fallire la query con un CastError.
@@ -23,7 +40,7 @@ router.get('/', async (req: Request, res: Response) => {
         message: 'Method not allowed' 
       });
     }
-    const { activitySector, active } = req.query;
+    const { activitySector, active, includeSold } = req.query;
     const filter: any = {};
 
     if (activitySector) {
@@ -32,6 +49,24 @@ router.get('/', async (req: Request, res: Response) => {
     if (active !== undefined) {
       const activeStr = String(active).toLowerCase();
       filter.active = activeStr === 'true' || activeStr === '1';
+    }
+
+    // Security: Handle sold products filter based on authentication and configuration
+    const userIsAdmin = isAdmin(req);
+    const showroomConfig = await getShowroomConfig();
+
+    // Only allow includeSold=true for authenticated admin users
+    // For public users, respect the showroom configuration
+    if (userIsAdmin && (includeSold === 'true' || includeSold === '1')) {
+      // Admin with includeSold=true: show all products including sold ones
+    } else if (userIsAdmin) {
+      // Admin without includeSold=true: show all products (admin default behavior)
+    } else if (showroomConfig) {
+      // Public user with showroom config enabled: show sold products with badge
+      // No filter needed - all products are shown
+    } else {
+      // Public user with showroom config disabled: filter out sold products
+      filter.isSold = { $ne: true };
     }
 
     const products = await Product.find(filter).sort({ createdAt: -1 });
@@ -52,7 +87,28 @@ router.get('/slug/:slug', async (req: Request, res: Response) => {
       });
     }
     const { slug } = req.params;
-    const product = await Product.findOne({ slug });
+    const { includeSold } = req.query;
+    const filter: any = { slug };
+
+    // Security: Handle sold products filter based on authentication and configuration
+    const userIsAdmin = isAdmin(req);
+    const showroomConfig = await getShowroomConfig();
+
+    // Only allow includeSold=true for authenticated admin users
+    // For public users, respect the showroom configuration
+    if (userIsAdmin && (includeSold === 'true' || includeSold === '1')) {
+      // Admin with includeSold=true: show sold products
+    } else if (userIsAdmin) {
+      // Admin without includeSold=true: show all products
+    } else if (showroomConfig) {
+      // Public user with showroom config enabled: show sold products with badge
+      // No filter needed
+    } else {
+      // Public user with showroom config disabled: filter out sold products
+      filter.isSold = { $ne: true };
+    }
+
+    const product = await Product.findOne(filter);
     if (!product) {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
@@ -66,7 +122,28 @@ router.get('/slug/:slug', async (req: Request, res: Response) => {
 router.get('/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const product = await Product.findOne(byId(id));
+    const { includeSold } = req.query;
+    const baseFilter = byId(id);
+
+    // Security: Handle sold products filter based on authentication and configuration
+    const userIsAdmin = isAdmin(req);
+    const showroomConfig = await getShowroomConfig();
+
+    // Only allow includeSold=true for authenticated admin users
+    // For public users, respect the showroom configuration
+    if (userIsAdmin && (includeSold === 'true' || includeSold === '1')) {
+      // Admin with includeSold=true: show sold products
+    } else if (userIsAdmin) {
+      // Admin without includeSold=true: show all products
+    } else if (showroomConfig) {
+      // Public user with showroom config enabled: show sold products with badge
+      // No filter needed
+    } else {
+      // Public user with showroom config disabled: filter out sold products
+      (baseFilter as any).isSold = { $ne: true };
+    }
+
+    const product = await Product.findOne(baseFilter);
     if (!product) {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }

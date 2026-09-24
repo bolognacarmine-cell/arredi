@@ -136,7 +136,7 @@ const generalFields = [
   type: string
 }>
 
-type SettingsTab = "generali" | "seo" | "email" | "sicurezza" | "backup" | "utenti"
+type SettingsTab = "generali" | "seo" | "email" | "showroom" | "sicurezza" | "backup" | "utenti"
 
 // Email Settings Tab Component
 function EmailSettingsTab() {
@@ -469,6 +469,102 @@ function EmailSettingsTab() {
   )
 }
 
+// Showroom Settings Tab Component
+function ShowroomSettingsTab() {
+  const [showSoldProducts, setShowSoldProducts] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [error, setError] = useState('')
+
+  // Load existing showroom configuration on mount
+  useEffect(() => {
+    async function loadShowroomConfig() {
+      try {
+        const response = await fetch('/api/site-config/showroom')
+        if (response.ok) {
+          const config = await response.json()
+          setShowSoldProducts(config.showSoldProducts || false)
+        }
+      } catch (err) {
+        console.error('Failed to load showroom configuration:', err)
+      }
+    }
+    loadShowroomConfig()
+  }, [])
+
+  const handleSaveShowroomConfig = async () => {
+    setLoading(true)
+    setError('')
+
+    try {
+      const response = await fetch('/api/site-config/showroom', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ showSoldProducts }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to save showroom configuration')
+      }
+
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2000)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save showroom configuration')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="max-w-4xl space-y-6">
+      <div className="border border-[#DDD9D0] bg-[#F7F5F0] p-4 text-sm text-[#4A4A46]">
+        Configurazione visibilità prodotti venduti nel frontend pubblico.
+        Quando disattivato, i prodotti contrassegnati come "Venduto" non vengono mostrati nel catalogo pubblico.
+      </div>
+      <div className="space-y-6 border border-[#DDD9D0] bg-white p-6">
+        <div>
+          <h2 className="font-display text-2xl font-light text-[#1A1A18]">
+            Configurazione Showroom
+          </h2>
+          <p className="mt-1 text-sm text-[#888580]">
+            Gestisci la visibilità dei prodotti venduti nel catalogo pubblico.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <input
+            id="show-sold-products"
+            type="checkbox"
+            checked={showSoldProducts}
+            onChange={(e) => setShowSoldProducts(e.target.checked)}
+            className="w-4 h-4 accent-[#1B4332]"
+          />
+          <label htmlFor="show-sold-products" className="text-sm font-medium text-[#4A4A46]">
+            {showSoldProducts ? "✅ Mostra prodotti venduti nel frontend" : "⏸ Nascondi prodotti venduti"}
+          </label>
+        </div>
+        <div className="flex gap-3 border-t border-[#EAE7E0] pt-4">
+          <button
+            onClick={handleSaveShowroomConfig}
+            disabled={loading}
+            className="bg-[#1B4332] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#143326] disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Salvataggio...' : saved ? '✓ Salvato' : 'Salva configurazione'}
+          </button>
+        </div>
+        {error && (
+          <div className="text-sm text-red-600 border border-red-200 bg-red-50 p-3 rounded">
+            {error}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function AdminSettings() {
   const [activeTab, setActiveTab] = useState<SettingsTab>("generali")
   const [form, setForm] = useState<SiteSettingsFormState>(() =>
@@ -545,19 +641,30 @@ export default function AdminSettings() {
       </div>
 
       <div className="mb-6 flex gap-1 border-b border-[#DDD9D0]">
-        {(["generali", "seo", "email", "sicurezza", "backup", "utenti"] as const).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`-mb-px border-b-2 px-5 py-2.5 text-sm font-medium transition-all ${
-              activeTab === tab
-                ? "border-[#1B4332] text-[#1B4332]"
-                : "border-transparent text-[#888580] hover:text-[#1A1A18]"
-            }`}
-          >
-            {tab ? tab.charAt(0).toUpperCase() + tab.slice(1) : ''}
-          </button>
-        ))}
+        {(["generali", "seo", "email", "showroom", "sicurezza", "backup", "utenti"] as const).map((tab) => {
+          const tabLabels: Record<string, string> = {
+            generali: "Generali",
+            seo: "SEO",
+            email: "Email",
+            showroom: "Showroom",
+            sicurezza: "Sicurezza",
+            backup: "Backup",
+            utenti: "Utenti"
+          }
+          return (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`-mb-px border-b-2 px-5 py-2.5 text-sm font-medium transition-all ${
+                activeTab === tab
+                  ? "border-[#1B4332] text-[#1B4332]"
+                  : "border-transparent text-[#888580] hover:text-[#1A1A18]"
+              }`}
+            >
+              {tabLabels[tab] || tab}
+            </button>
+          )
+        })}
       </div>
 
       {activeTab === "generali" && (
@@ -709,6 +816,10 @@ export default function AdminSettings() {
 
       {activeTab === "email" && (
         <EmailSettingsTab />
+      )}
+
+      {activeTab === "showroom" && (
+        <ShowroomSettingsTab />
       )}
 
       {activeTab === "sicurezza" && (
