@@ -30,6 +30,8 @@ export default defineConfig(({ mode }) => {
       sourcemap: emitSourcemaps ? "inline" : false,
 
       minify: !emitSourcemaps,
+
+      chunkSizeWarningLimit: 1000,
     },
 
     plugins: [
