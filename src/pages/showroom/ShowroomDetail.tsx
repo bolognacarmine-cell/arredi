@@ -195,9 +195,12 @@ export default function ShowroomDetail() {
                     {eff.badge}
                   </span>
                 ) : null}
-                {p.isSold && (
-                  <span className="px-4 py-1.5 rounded-full text-sm font-bold text-white shadow-lg tracking-wide bg-red-600">
-                    Venduto
+                {p.active && p.isSold && (
+                  <span
+                    className="px-4 py-2 rounded text-sm font-bold text-white shadow-lg tracking-widest bg-[#4a2c2a]"
+                    aria-label="Prodotto venduto"
+                  >
+                    VENDUTO
                   </span>
                 )}
               </>

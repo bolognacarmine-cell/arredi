@@ -67,18 +67,16 @@ export default function ProductCard({ product }: Props) {
             )}
           </div>
         )}
-        {product.isSold && (
-          <div className="absolute top-3 right-3">
-            <span className="px-3 py-1 rounded-full text-xs font-bold text-white shadow-md tracking-wide bg-red-600">
-              Venduto
-            </span>
-          </div>
-        )}
-        {!product.active && (
-          <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-            <span className="text-white text-xs uppercase tracking-widest font-semibold px-3 py-1 border border-white/40">
-              Non disponibile
-            </span>
+        {product.active && product.isSold && (
+          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+            <div className="absolute top-3 right-3">
+              <span
+                className="px-4 py-2 rounded text-sm font-bold text-white shadow-lg tracking-widest bg-[#4a2c2a]"
+                aria-label="Prodotto venduto"
+              >
+                VENDUTO
+              </span>
+            </div>
           </div>
         )}
       </div>

@@ -23,7 +23,7 @@ export default function ShowroomList() {
     let alive = true
     getProducts().then((p) => {
       if (!alive) return
-      setProducts(Array.isArray(p) ? p.filter((x) => x.active) : [])
+      setProducts(Array.isArray(p) ? p : [])
       setLoading(false)
     })
     return () => {
@@ -50,6 +50,7 @@ export default function ShowroomList() {
       if (filters.sector !== "all" && p.activitySector !== filters.sector) return false
       if (filters.furniture !== "all" && p.furnitureType !== filters.furniture) return false
       if (filters.onlyOffers && computeEffectivePrice(p).savings <= 0) return false
+      // Backend already handles active filter, only filter sold products based on showroom config
       if (!showSoldProducts && p.isSold) return false
       return true
     })

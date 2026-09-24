@@ -46,27 +46,29 @@ router.get('/', async (req: Request, res: Response) => {
     if (activitySector) {
       filter.activitySector = activitySector;
     }
-    if (active !== undefined) {
-      const activeStr = String(active).toLowerCase();
-      filter.active = activeStr === 'true' || activeStr === '1';
-    }
 
     // Security: Handle sold products filter based on authentication and configuration
     const userIsAdmin = isAdmin(req);
     const showroomConfig = await getShowroomConfig();
 
-    // Only allow includeSold=true for authenticated admin users
-    // For public users, respect the showroom configuration
-    if (userIsAdmin && (includeSold === 'true' || includeSold === '1')) {
-      // Admin with includeSold=true: show all products including sold ones
-    } else if (userIsAdmin) {
-      // Admin without includeSold=true: show all products (admin default behavior)
-    } else if (showroomConfig) {
-      // Public user with showroom config enabled: show sold products with badge
-      // No filter needed - all products are shown
+    // Public routes must always require active: true
+    // Admin routes can see all products regardless of active status
+    if (!userIsAdmin) {
+      filter.active = true;
+
+      // For public users, respect the showroom configuration for sold products
+      if (!showroomConfig) {
+        // Showroom config disabled: filter out sold products
+        filter.isSold = { $ne: true };
+      }
+      // If showroom config is enabled, sold products with active=true are shown
     } else {
-      // Public user with showroom config disabled: filter out sold products
-      filter.isSold = { $ne: true };
+      // Admin users: respect active query parameter if provided
+      if (active !== undefined) {
+        const activeStr = String(active).toLowerCase();
+        filter.active = activeStr === 'true' || activeStr === '1';
+      }
+      // Admin users can see all products by default (no active filter)
     }
 
     const products = await Product.find(filter).sort({ createdAt: -1 });
@@ -94,19 +96,19 @@ router.get('/slug/:slug', async (req: Request, res: Response) => {
     const userIsAdmin = isAdmin(req);
     const showroomConfig = await getShowroomConfig();
 
-    // Only allow includeSold=true for authenticated admin users
-    // For public users, respect the showroom configuration
-    if (userIsAdmin && (includeSold === 'true' || includeSold === '1')) {
-      // Admin with includeSold=true: show sold products
-    } else if (userIsAdmin) {
-      // Admin without includeSold=true: show all products
-    } else if (showroomConfig) {
-      // Public user with showroom config enabled: show sold products with badge
-      // No filter needed
-    } else {
-      // Public user with showroom config disabled: filter out sold products
-      filter.isSold = { $ne: true };
+    // Public routes must always require active: true
+    // Admin routes can see all products regardless of active status
+    if (!userIsAdmin) {
+      filter.active = true;
+
+      // For public users, respect the showroom configuration for sold products
+      if (!showroomConfig) {
+        // Showroom config disabled: filter out sold products
+        filter.isSold = { $ne: true };
+      }
+      // If showroom config is enabled, sold products with active=true are shown
     }
+    // Admin users can see all products regardless of active or sold status
 
     const product = await Product.findOne(filter);
     if (!product) {
@@ -129,19 +131,19 @@ router.get('/:id', async (req: Request, res: Response) => {
     const userIsAdmin = isAdmin(req);
     const showroomConfig = await getShowroomConfig();
 
-    // Only allow includeSold=true for authenticated admin users
-    // For public users, respect the showroom configuration
-    if (userIsAdmin && (includeSold === 'true' || includeSold === '1')) {
-      // Admin with includeSold=true: show sold products
-    } else if (userIsAdmin) {
-      // Admin without includeSold=true: show all products
-    } else if (showroomConfig) {
-      // Public user with showroom config enabled: show sold products with badge
-      // No filter needed
-    } else {
-      // Public user with showroom config disabled: filter out sold products
-      (baseFilter as any).isSold = { $ne: true };
+    // Public routes must always require active: true
+    // Admin routes can see all products regardless of active status
+    if (!userIsAdmin) {
+      (baseFilter as any).active = true;
+
+      // For public users, respect the showroom configuration for sold products
+      if (!showroomConfig) {
+        // Showroom config disabled: filter out sold products
+        (baseFilter as any).isSold = { $ne: true };
+      }
+      // If showroom config is enabled, sold products with active=true are shown
     }
+    // Admin users can see all products regardless of active or sold status
 
     const product = await Product.findOne(baseFilter);
     if (!product) {
