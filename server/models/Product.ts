@@ -28,7 +28,7 @@ const ProductSchema = new Schema({
 });
 
 // Indexes for common queries
-ProductSchema.index({ slug: 1 }); // For URL-based lookups
+// Note: slug already has unique: true which creates an index automatically
 ProductSchema.index({ activitySector: 1 }); // For filtering by sector
 ProductSchema.index({ furnitureType: 1 }); // For filtering by furniture type
 ProductSchema.index({ active: 1 }); // For showing only active products
