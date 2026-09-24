@@ -28,6 +28,12 @@ const sections = [
       "Per richieste commerciali, segnalazioni o chiarimenti sui contenuti pubblicati e possibile utilizzare i recapiti indicati nel sito.",
     ],
   },
+  {
+    title: "Dichiarazione sull'uso dell'intelligenza artificiale",
+    paragraphs: [
+      "Lo sviluppo tecnico e la produzione di alcuni contenuti del sito sono stati supportati da strumenti di intelligenza artificiale, con revisione e supervisione umana.",
+    ],
+  },
 ] as const
 
 export default function LegalNotesPage() {
