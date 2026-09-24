@@ -78,6 +78,31 @@ const WhatsAppIcon = () => (
   </svg>
 )
 
+// Componente popup hover desktop per numeri telefono
+const PhoneHoverMenu = ({ isOpen }: { isOpen: boolean }) => {
+  if (!isOpen) return null
+  return (
+    <div className="absolute bottom-full left-0 mb-2 w-48 bg-[#1A1A2E]/95 backdrop-blur-md border border-[#E69138]/30 rounded-lg shadow-xl shadow-[#E69138]/20 overflow-hidden">
+      <div className="p-3 space-y-2">
+        <a
+          href="tel:+390823694427"
+          className="flex items-center gap-2 px-3 py-2 text-sm text-white/90 hover:text-white hover:bg-[#E69138]/20 rounded-md transition-colors"
+        >
+          <PhoneIcon />
+          <span>+39 0823 694427</span>
+        </a>
+        <a
+          href="tel:+393924576079"
+          className="flex items-center gap-2 px-3 py-2 text-sm text-white/90 hover:text-white hover:bg-[#E69138]/20 rounded-md transition-colors"
+        >
+          <PhoneIcon />
+          <span>+39 392 4576079</span>
+        </a>
+      </div>
+    </div>
+  )
+}
+
 export default function Footer() {
   const location = useLocation()
   const siteConfig = useSiteSettings()
@@ -94,6 +119,9 @@ export default function Footer() {
     col1: null,
     col2: null,
   })
+
+  // Stato hover desktop per numeri telefono
+  const [phoneHoverOpen, setPhoneHoverOpen] = useState(false)
 
   const toggle = (col: "col1" | "col2", key: SectionKey) => {
     setOpen((prev) => ({ ...prev, [col]: prev[col] === key ? null : key }))
@@ -442,13 +470,21 @@ export default function Footer() {
                 {siteConfig.hoursExtra}
               </p>
               <div className="mt-4 sm:mt-5 grid grid-cols-2 gap-2 sm:gap-3 max-w-sm">
-                <a
-                  href={telHref}
-                  className="inline-flex items-center justify-center gap-1.5 sm:gap-2 min-h-[40px] sm:min-h-[44px] bg-[#E69138] px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-[#1A1A2E] hover:bg-[#f0a14b] hover:shadow-md hover:shadow-[#E69138]/25 transition-all rounded-md"
+                <div 
+                  className="relative"
+                  onMouseEnter={() => setPhoneHoverOpen(true)}
+                  onMouseLeave={() => setPhoneHoverOpen(false)}
                 >
-                  <PhoneIcon />
-                  Chiama ora
-                </a>
+                  <PhoneHoverMenu isOpen={phoneHoverOpen} />
+                  <button
+                    className="inline-flex items-center justify-center gap-1.5 sm:gap-2 min-h-[40px] sm:min-h-[44px] bg-[#E69138] px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-[#1A1A2E] hover:bg-[#f0a14b] hover:shadow-md hover:shadow-[#E69138]/25 transition-all rounded-md w-full"
+                    onFocusVisible={() => setPhoneHoverOpen(true)}
+                    onBlur={() => setPhoneHoverOpen(false)}
+                  >
+                    <PhoneIcon />
+                    Chiama ora
+                  </button>
+                </div>
                 <a
                   href={waHref}
                   target="_blank"
