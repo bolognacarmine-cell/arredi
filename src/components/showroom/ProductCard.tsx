@@ -68,14 +68,18 @@ export default function ProductCard({ product }: Props) {
           </div>
         )}
         {product.active && product.isSold && (
-          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-            <div className="absolute top-3 right-3">
-              <span
-                className="px-4 py-2 rounded text-sm font-bold text-white shadow-lg tracking-widest bg-[#4a2c2a]"
+          <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+            <div className="absolute top-4 right-4">
+              <div
+                className="px-4 py-2 sm:px-5 sm:py-3 rounded text-xs sm:text-sm font-bold text-white shadow-2xl tracking-widest border-2 border-white/20 transform rotate-[-2deg]"
                 aria-label="Prodotto venduto"
+                style={{
+                  backgroundColor: '#4a2c2a',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)'
+                }}
               >
                 VENDUTO
-              </span>
+              </div>
             </div>
           </div>
         )}

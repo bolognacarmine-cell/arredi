@@ -196,12 +196,16 @@ export default function ShowroomDetail() {
                   </span>
                 ) : null}
                 {p.active && p.isSold && (
-                  <span
-                    className="px-4 py-2 rounded text-sm font-bold text-white shadow-lg tracking-widest bg-[#4a2c2a]"
+                  <div
+                    className="px-4 py-2 sm:px-5 sm:py-3 rounded text-xs sm:text-sm font-bold text-white shadow-2xl tracking-widest border-2 border-white/20 transform rotate-[-2deg]"
                     aria-label="Prodotto venduto"
+                    style={{
+                      backgroundColor: '#4a2c2a',
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)'
+                    }}
                   >
                     VENDUTO
-                  </span>
+                  </div>
                 )}
               </>
             }
@@ -293,14 +297,20 @@ export default function ShowroomDetail() {
             )}
 
             <div className="space-y-3 pt-2">
-              <button
-                onClick={() => setInfoOpen(true)}
-                className="w-full py-3.5 bg-[var(--accent)] text-white font-medium text-sm hover:bg-[var(--foreground)] transition-colors tracking-wide flex items-center justify-center gap-2"
-              >
-                {promo
-                  ? "🏷️ Approfitta dell'offerta"
-                  : "📨 Richiedi informazioni per questo prodotto"}
-              </button>
+              {!p.isSold ? (
+                <button
+                  onClick={() => setInfoOpen(true)}
+                  className="w-full py-3.5 bg-[var(--accent)] text-white font-medium text-sm hover:bg-[var(--foreground)] transition-colors tracking-wide flex items-center justify-center gap-2"
+                >
+                  {promo
+                    ? "🏷️ Approfitta dell'offerta"
+                    : "📨 Richiedi informazioni per questo prodotto"}
+                </button>
+              ) : (
+                <div className="w-full py-3.5 bg-[var(--muted)] text-[var(--muted-foreground)] font-medium text-sm text-center tracking-wide flex items-center justify-center gap-2 border border-[var(--border)]">
+                  <span>⚪ Prodotto venduto</span>
+                </div>
+              )}
             </div>
           </div>
         </div>

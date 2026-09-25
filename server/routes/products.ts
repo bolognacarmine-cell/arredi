@@ -22,6 +22,25 @@ async function getShowroomConfig(): Promise<boolean> {
   }
 }
 
+// Helper function to apply public product filters
+// Public routes must always require active: true
+// show_sold_products config controls visibility of sold products for active products
+async function applyPublicFilters(filter: any, userIsAdmin: boolean): Promise<void> {
+  if (!userIsAdmin) {
+    // Public routes must always require active: true
+    filter.active = true;
+
+    // For public users, respect the showroom configuration for sold products
+    const showroomConfig = await getShowroomConfig();
+    if (!showroomConfig) {
+      // Showroom config disabled: filter out sold products
+      filter.isSold = { $ne: true };
+    }
+    // If showroom config is enabled, sold products with active=true are shown
+  }
+  // Admin users can see all products regardless of active or sold status
+}
+
 // Gli id applicativi (es. "p8xtyb21tj") non sono ObjectId: includerli nel ramo
 // _id farebbe fallire la query con un CastError.
 const byId = (id: string) =>
@@ -40,7 +59,7 @@ router.get('/', async (req: Request, res: Response) => {
         message: 'Method not allowed' 
       });
     }
-    const { activitySector, active, includeSold } = req.query;
+    const { activitySector, active } = req.query;
     const filter: any = {};
 
     if (activitySector) {
@@ -49,26 +68,14 @@ router.get('/', async (req: Request, res: Response) => {
 
     // Security: Handle sold products filter based on authentication and configuration
     const userIsAdmin = isAdmin(req);
-    const showroomConfig = await getShowroomConfig();
 
-    // Public routes must always require active: true
-    // Admin routes can see all products regardless of active status
-    if (!userIsAdmin) {
-      filter.active = true;
+    // Apply public filters for non-admin users
+    await applyPublicFilters(filter, userIsAdmin);
 
-      // For public users, respect the showroom configuration for sold products
-      if (!showroomConfig) {
-        // Showroom config disabled: filter out sold products
-        filter.isSold = { $ne: true };
-      }
-      // If showroom config is enabled, sold products with active=true are shown
-    } else {
-      // Admin users: respect active query parameter if provided
-      if (active !== undefined) {
-        const activeStr = String(active).toLowerCase();
-        filter.active = activeStr === 'true' || activeStr === '1';
-      }
-      // Admin users can see all products by default (no active filter)
+    // Admin users: respect active query parameter if provided
+    if (userIsAdmin && active !== undefined) {
+      const activeStr = String(active).toLowerCase();
+      filter.active = activeStr === 'true' || activeStr === '1';
     }
 
     const products = await Product.find(filter).sort({ createdAt: -1 });
@@ -89,26 +96,13 @@ router.get('/slug/:slug', async (req: Request, res: Response) => {
       });
     }
     const { slug } = req.params;
-    const { includeSold } = req.query;
     const filter: any = { slug };
 
     // Security: Handle sold products filter based on authentication and configuration
     const userIsAdmin = isAdmin(req);
-    const showroomConfig = await getShowroomConfig();
 
-    // Public routes must always require active: true
-    // Admin routes can see all products regardless of active status
-    if (!userIsAdmin) {
-      filter.active = true;
-
-      // For public users, respect the showroom configuration for sold products
-      if (!showroomConfig) {
-        // Showroom config disabled: filter out sold products
-        filter.isSold = { $ne: true };
-      }
-      // If showroom config is enabled, sold products with active=true are shown
-    }
-    // Admin users can see all products regardless of active or sold status
+    // Apply public filters for non-admin users
+    await applyPublicFilters(filter, userIsAdmin);
 
     const product = await Product.findOne(filter);
     if (!product) {
@@ -124,26 +118,13 @@ router.get('/slug/:slug', async (req: Request, res: Response) => {
 router.get('/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { includeSold } = req.query;
     const baseFilter = byId(id);
 
     // Security: Handle sold products filter based on authentication and configuration
     const userIsAdmin = isAdmin(req);
-    const showroomConfig = await getShowroomConfig();
 
-    // Public routes must always require active: true
-    // Admin routes can see all products regardless of active status
-    if (!userIsAdmin) {
-      (baseFilter as any).active = true;
-
-      // For public users, respect the showroom configuration for sold products
-      if (!showroomConfig) {
-        // Showroom config disabled: filter out sold products
-        (baseFilter as any).isSold = { $ne: true };
-      }
-      // If showroom config is enabled, sold products with active=true are shown
-    }
-    // Admin users can see all products regardless of active or sold status
+    // Apply public filters for non-admin users
+    await applyPublicFilters(baseFilter, userIsAdmin);
 
     const product = await Product.findOne(baseFilter);
     if (!product) {
