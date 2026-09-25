@@ -1,7 +1,6 @@
 import { Router, Request, Response } from 'express';
 import mongoose from 'mongoose';
 import { Product } from '../models/Product.js';
-import { SiteConfig } from '../models/SiteConfig.js';
 import { requireAdmin } from '../middleware/requireAdmin.js';
 
 const router = Router();
@@ -11,32 +10,16 @@ function isAdmin(req: Request): boolean {
   return !!(req.session?.userId && req.session?.userRole === 'admin');
 }
 
-// Helper function to get showroom configuration
-async function getShowroomConfig(): Promise<boolean> {
-  try {
-    const config = await SiteConfig.findOne({ key: 'showroom_show_sold_products' });
-    return config ? config.value === 'true' : false;
-  } catch (error) {
-    // Default to false if config cannot be read
-    return false;
-  }
-}
-
 // Helper function to apply public product filters
 // Public routes must always require active: true
-// show_sold_products config controls visibility of sold products for active products
-async function applyPublicFilters(filter: any, userIsAdmin: boolean): Promise<void> {
+// Sold products with active=true are shown with VENDUTO badge
+// Sold products with active=false are hidden regardless of isSold status
+function applyPublicFilters(filter: any, userIsAdmin: boolean): void {
   if (!userIsAdmin) {
     // Public routes must always require active: true
     filter.active = true;
-
-    // For public users, respect the showroom configuration for sold products
-    const showroomConfig = await getShowroomConfig();
-    if (!showroomConfig) {
-      // Showroom config disabled: filter out sold products
-      filter.isSold = { $ne: true };
-    }
-    // If showroom config is enabled, sold products with active=true are shown
+    // isSold does not affect visibility for public routes
+    // Sold status only controls badge display in frontend
   }
   // Admin users can see all products regardless of active or sold status
 }
@@ -66,11 +49,11 @@ router.get('/', async (req: Request, res: Response) => {
       filter.activitySector = activitySector;
     }
 
-    // Security: Handle sold products filter based on authentication and configuration
+    // Security: Handle sold products filter based on authentication
     const userIsAdmin = isAdmin(req);
 
     // Apply public filters for non-admin users
-    await applyPublicFilters(filter, userIsAdmin);
+    applyPublicFilters(filter, userIsAdmin);
 
     // Admin users: respect active query parameter if provided
     if (userIsAdmin && active !== undefined) {
@@ -98,11 +81,11 @@ router.get('/slug/:slug', async (req: Request, res: Response) => {
     const { slug } = req.params;
     const filter: any = { slug };
 
-    // Security: Handle sold products filter based on authentication and configuration
+    // Security: Handle sold products filter based on authentication
     const userIsAdmin = isAdmin(req);
 
     // Apply public filters for non-admin users
-    await applyPublicFilters(filter, userIsAdmin);
+    applyPublicFilters(filter, userIsAdmin);
 
     const product = await Product.findOne(filter);
     if (!product) {

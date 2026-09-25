@@ -276,9 +276,9 @@ function notifyShowroomUpdated() {
   } catch {}
 }
 
-export async function getProducts(includeSold: boolean = false): Promise<Product[]> {
+export async function getProducts(): Promise<Product[]> {
   try {
-    return await productsApi.getProducts({ includeSold })
+    return await productsApi.getProducts()
   } catch (error) {
     console.error("Error fetching products from API, falling back to localStorage:", error)
     return read<Product[]>(P_KEY, seedProducts)
@@ -435,26 +435,12 @@ function useRemoteList<T>(load: () => Promise<T[]>): T[] {
 }
 
 export function useProducts(): Product[] {
-  return useRemoteList(() => getProducts(false))
+  return useRemoteList(() => getProducts())
 }
 
-// Admin version that includes sold products
+// Admin version that includes all products (active and inactive)
 export function useProductsAdmin(): Product[] {
-  return useRemoteList(() => getProducts(true))
-}
-
-// Get showroom configuration (sold products visibility)
-export async function getShowroomConfig(): Promise<{ showSoldProducts: boolean }> {
-  try {
-    const response = await fetch('/api/site-config/showroom')
-    if (response.ok) {
-      return await response.json()
-    }
-    return { showSoldProducts: false }
-  } catch (error) {
-    console.error('Error fetching showroom configuration:', error)
-    return { showSoldProducts: false }
-  }
+  return useRemoteList(() => productsApi.getProducts({}))
 }
 
 export { SECTORS, furnitureTypesFor }

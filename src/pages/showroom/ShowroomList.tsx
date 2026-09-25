@@ -9,13 +9,11 @@ import SEOHead from "../../components/SEOHead"
 import {
   computeEffectivePrice,
   getProducts,
-  getShowroomConfig,
   type Product,
 } from "../../services/showroomApi"
 
 export default function ShowroomList() {
   const [products, setProducts] = useState<Product[]>([])
-  const [showSoldProducts, setShowSoldProducts] = useState(false)
   const [filters, setFilters] = useState<PublicFilterState>(defaultPublicFilters)
   const [loading, setLoading] = useState(true)
 
@@ -31,17 +29,6 @@ export default function ShowroomList() {
     }
   }, [])
 
-  useEffect(() => {
-    let alive = true
-    getShowroomConfig().then((config) => {
-      if (!alive) return
-      setShowSoldProducts(config.showSoldProducts)
-    })
-    return () => {
-      alive = false
-    }
-  }, [])
-
   const visible = useMemo(() => {
     const q = filters.q.trim().toLowerCase()
     return products.filter((p) => {
@@ -50,11 +37,11 @@ export default function ShowroomList() {
       if (filters.sector !== "all" && p.activitySector !== filters.sector) return false
       if (filters.furniture !== "all" && p.furnitureType !== filters.furniture) return false
       if (filters.onlyOffers && computeEffectivePrice(p).savings <= 0) return false
-      // Backend already handles active filter, only filter sold products based on showroom config
-      if (!showSoldProducts && p.isSold) return false
+      // Backend already handles active filter
+      // Sold products with active=true are shown with VENDUTO badge
       return true
     })
-  }, [products, filters, showSoldProducts])
+  }, [products, filters])
 
   return (
     <main className="pt-24 pb-24 bg-[var(--background)] min-h-screen">

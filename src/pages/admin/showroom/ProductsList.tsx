@@ -30,7 +30,7 @@ export default function ProductsList() {
   useEffect(() => {
     const refreshProducts = async () => {
       try {
-        const products = await productsApi.getProducts({ includeSold: true })
+        const products = await productsApi.getProducts({})
         if (Array.isArray(products)) {
           try {
             window.localStorage.setItem("farcom-showroom-products-v2", JSON.stringify(products))

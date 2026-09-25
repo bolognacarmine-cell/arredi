@@ -48,13 +48,12 @@ export interface Product {
   promoText?: string | null
 }
 
-export async function getProducts(filters?: { activitySector?: string; active?: boolean; includeSold?: boolean }): Promise<Product[]> {
+export async function getProducts(filters?: { activitySector?: string; active?: boolean }): Promise<Product[]> {
   try {
     const baseUrl = getApiUrl('/api/products')
     const url = new URL(baseUrl, window.location.origin)
     if (filters?.activitySector) url.searchParams.append("activitySector", filters.activitySector)
     if (filters?.active !== undefined) url.searchParams.append("active", filters.active.toString())
-    if (filters?.includeSold) url.searchParams.append("includeSold", "true")
 
     const response = await fetch(url.toString(), {
       credentials: 'include',
