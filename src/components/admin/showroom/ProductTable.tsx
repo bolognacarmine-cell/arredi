@@ -109,10 +109,10 @@ export default function ProductTable({
                 Badge
               </th>
               <th className="px-4 py-3 text-center text-[11px] uppercase tracking-wide text-[#888580]">
-                Stato
+                Disponibilità
               </th>
               <th className="px-4 py-3 text-center text-[11px] uppercase tracking-wide text-[#888580]">
-                Venduto
+                Venduto nel frontend
               </th>
               <th className="px-4 py-3 text-right text-[11px] uppercase tracking-wide text-[#888580]">
                 Azioni
@@ -191,7 +191,7 @@ export default function ProductTable({
                           p.active ? "bg-green-600" : "bg-gray-400"
                         }`}
                       />
-                      {p.active ? "Attivo" : "Inattivo"}
+                      {p.active ? "Disponibile" : "Non disp."}
                     </button>
                   </td>
                   <td className="px-4 py-3 text-center">
@@ -208,7 +208,7 @@ export default function ProductTable({
                           p.isSold ? "bg-red-600" : "bg-gray-400"
                         }`}
                       />
-                      {p.isSold ? "Venduto" : "Disponibile"}
+                      {p.isSold ? "Venduto" : "Non venduto"}
                     </button>
                   </td>
                   <td className="px-4 py-3 text-right">
@@ -286,7 +286,7 @@ export default function ProductTable({
                           p.active ? "bg-green-600" : "bg-gray-400"
                         }`}
                       />
-                      {p.active ? "Attivo" : "Inattivo"}
+                      {p.active ? "Disponibile" : "Non disp."}
                     </button>
                     <button
                       onClick={() => onToggleSold(p.id, !p.isSold)}
@@ -299,7 +299,7 @@ export default function ProductTable({
                           p.isSold ? "bg-red-600" : "bg-gray-400"
                         }`}
                       />
-                      {p.isSold ? "Venduto" : "Disp."}
+                      {p.isSold ? "Venduto" : "Non venduto"}
                     </button>
                   </div>
                   <div className="flex gap-4 text-xs">

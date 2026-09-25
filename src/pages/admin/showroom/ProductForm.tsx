@@ -344,7 +344,7 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
               Promozione (opzionale)
             </legend>
             <p className="text-xs text-[#888580]">
-              Lascia lo sconto vuoto per un prodotto senza promozione: in vetrina non
+              Lascia lo sconto vuoto per un prodotto senza promozione: nel frontend non
               compaiono badge né prezzo barrato.
             </p>
 
@@ -454,7 +454,7 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
               className="w-4 h-4 accent-[#1B4332]"
             />
             <label htmlFor="pf-active" className="text-sm font-medium text-[#4A4A46]">
-              {form.active ? "✅ Prodotto attivo (visibile nel listino)" : "⏸ Inattivo"}
+              {form.active ? "✅ Disponibile nel frontend" : "⏸ Non disponibile"}
             </label>
           </div>
 
@@ -467,7 +467,7 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
               className="w-4 h-4 accent-[#B5965A]"
             />
             <label htmlFor="pf-is-sold" className="text-sm font-medium text-[#4A4A46]">
-              {form.isSold ? "🏷️ Prodotto venduto" : "⏸ Disponibile"}
+              {form.isSold ? "🏷️ Venduto — mostra nel frontend" : "⏸ Non venduto"}
             </label>
           </div>
 
