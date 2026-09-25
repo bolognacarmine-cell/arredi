@@ -67,7 +67,7 @@ export default function ProductCard({ product }: Props) {
             )}
           </div>
         )}
-        {product.isSold && (
+        {product.isSold && product.showSoldInFrontend && (
           <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
             <div className="absolute top-4 right-4">
               <div

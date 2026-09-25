@@ -243,7 +243,6 @@ function mkP(
     discountPct,
     images,
     sku,
-    active: true,
     createdAt: now - Math.floor(Math.random() * 120) * DAY,
     updatedAt: now - Math.floor(Math.random() * 15) * DAY,
   }
@@ -438,7 +437,7 @@ export function useProducts(): Product[] {
   return useRemoteList(() => getProducts())
 }
 
-// Admin version that includes all products (active and inactive)
+// Admin version that includes all products (including sold and hidden)
 export function useProductsAdmin(): Product[] {
   return useRemoteList(() => productsApi.getProducts({}))
 }

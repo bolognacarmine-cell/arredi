@@ -68,8 +68,9 @@ export default function ProductsList() {
         return false
       if (filters.activity !== "all" && p.activityCategory !== filters.activity) return false
       if (filters.furniture !== "all" && p.furnitureType !== filters.furniture) return false
-      if (filters.offerStatus === "active" && !p.active) return false
-      if (filters.offerStatus === "inactive" && p.active) return false
+      if (filters.offerStatus === "available" && p.isSold) return false
+      if (filters.offerStatus === "sold_visible" && (!p.isSold || !p.showSoldInFrontend)) return false
+      if (filters.offerStatus === "sold_hidden" && (!p.isSold || p.showSoldInFrontend)) return false
       if (filters.offerStatus === "in_offer") {
         const eff = computeEffectivePrice(p)
         if (eff.savings <= 0) return false
@@ -117,22 +118,10 @@ export default function ProductsList() {
     }
   }
 
-  const onToggle = async (id: string, next: boolean) => {
+  const onToggleSoldShow = async (id: string, isSold: boolean, showSoldInFrontend: boolean) => {
     setBusy(true)
     try {
-      await updateProduct(id, { active: next })
-      setRefreshKey(prev => prev + 1)
-    } catch (error) {
-      showError(error, "Aggiornamento dello stato non riuscito")
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  const onToggleSold = async (id: string, next: boolean) => {
-    setBusy(true)
-    try {
-      await updateProduct(id, { isSold: next })
+      await updateProduct(id, { isSold, showSoldInFrontend })
       setRefreshKey(prev => prev + 1)
     } catch (error) {
       showError(error, "Aggiornamento dello stato venduto non riuscito")
@@ -170,8 +159,7 @@ export default function ProductsList() {
         products={matching}
         onEdit={(p) => setEditing(p)}
         onDelete={onDelete}
-        onToggle={onToggle}
-        onToggleSold={onToggleSold}
+        onToggleSoldShow={onToggleSoldShow}
       />
 
       {(creating || editing) && (

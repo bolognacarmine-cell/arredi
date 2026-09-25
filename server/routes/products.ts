@@ -11,17 +11,18 @@ function isAdmin(req: Request): boolean {
 }
 
 // Helper function to apply public product filters
-// Public routes must always require active: true
-// Sold products with active=true are shown with VENDUTO badge
-// Sold products with active=false are hidden regardless of isSold status
+// Sold products with showSoldInFrontend=true are shown with VENDUTO badge
+// Sold products with showSoldInFrontend=false are hidden from public routes
+// active field is no longer used for visibility control
 function applyPublicFilters(filter: any, userIsAdmin: boolean): void {
   if (!userIsAdmin) {
-    // Public routes must always require active: true
-    filter.active = true;
-    // isSold does not affect visibility for public routes
-    // Sold status only controls badge display in frontend
+    // Hide sold products unless showSoldInFrontend is true
+    filter.$or = [
+      { isSold: { $ne: true } }, // Not sold
+      { isSold: true, showSoldInFrontend: true } // Sold but should be shown
+    ];
   }
-  // Admin users can see all products regardless of active or sold status
+  // Admin users can see all products regardless of sold status
 }
 
 // Gli id applicativi (es. "p8xtyb21tj") non sono ObjectId: includerli nel ramo
@@ -42,7 +43,7 @@ router.get('/', async (req: Request, res: Response) => {
         message: 'Method not allowed' 
       });
     }
-    const { activitySector, active } = req.query;
+    const { activitySector } = req.query;
     const filter: any = {};
 
     if (activitySector) {
@@ -54,12 +55,6 @@ router.get('/', async (req: Request, res: Response) => {
 
     // Apply public filters for non-admin users
     applyPublicFilters(filter, userIsAdmin);
-
-    // Admin users: respect active query parameter if provided
-    if (userIsAdmin && active !== undefined) {
-      const activeStr = String(active).toLowerCase();
-      filter.active = activeStr === 'true' || activeStr === '1';
-    }
 
     const products = await Product.find(filter).sort({ createdAt: -1 });
     res.json({ success: true, data: products });

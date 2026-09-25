@@ -37,8 +37,7 @@ export default function ShowroomList() {
       if (filters.sector !== "all" && p.activitySector !== filters.sector) return false
       if (filters.furniture !== "all" && p.furnitureType !== filters.furniture) return false
       if (filters.onlyOffers && computeEffectivePrice(p).savings <= 0) return false
-      // Backend already handles active filter
-      // Sold products with active=true are shown with VENDUTO badge
+      // Backend already handles sold products filter - sold hidden products are not returned
       return true
     })
   }, [products, filters])

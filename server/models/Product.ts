@@ -15,8 +15,8 @@ const ProductSchema = new Schema({
   discountPct: { type: Number, default: null },
   images: [{ type: String }],
   sku: { type: String },
-  active: { type: Boolean, default: true },
   isSold: { type: Boolean, default: false },
+  showSoldInFrontend: { type: Boolean, default: true },
   // Promozione in scheda prodotto: tutti i campi sono opzionali.
   promoActive: { type: Boolean, default: false },
   promoDiscountType: { type: String, enum: ['percent', 'amount', null], default: null },
@@ -32,7 +32,7 @@ const ProductSchema = new Schema({
 // Note: slug already has unique: true which creates an index automatically
 ProductSchema.index({ activitySector: 1 }); // For filtering by sector
 ProductSchema.index({ furnitureType: 1 }); // For filtering by furniture type
-ProductSchema.index({ active: 1 }); // For showing only active products
+ProductSchema.index({ isSold: 1 }); // For filtering sold products
 ProductSchema.index({ promoActive: 1 }); // For promotional products
 
 export const Product = mongoose.models.Product || mongoose.model('Product', ProductSchema);

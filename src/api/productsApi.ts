@@ -36,8 +36,8 @@ export interface Product {
   discountPct: number | null
   images: string[]
   sku?: string
-  active: boolean
   isSold?: boolean
+  showSoldInFrontend?: boolean
   createdAt: string
   updatedAt: string
   promoActive?: boolean
@@ -48,12 +48,11 @@ export interface Product {
   promoText?: string | null
 }
 
-export async function getProducts(filters?: { activitySector?: string; active?: boolean }): Promise<Product[]> {
+export async function getProducts(filters?: { activitySector?: string }): Promise<Product[]> {
   try {
     const baseUrl = getApiUrl('/api/products')
     const url = new URL(baseUrl, window.location.origin)
     if (filters?.activitySector) url.searchParams.append("activitySector", filters.activitySector)
-    if (filters?.active !== undefined) url.searchParams.append("active", filters.active.toString())
 
     const response = await fetch(url.toString(), {
       credentials: 'include',

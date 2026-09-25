@@ -252,7 +252,7 @@ export default function Home() {
       .then((list) => {
         if (!alive) return
         setShowroomProducts(
-          Array.isArray(list) ? list.filter((p) => p.active).slice(0, 3) : [],
+          Array.isArray(list) ? list.filter((p) => !p.isSold || (p.isSold && p.showSoldInFrontend)).slice(0, 3) : [],
         )
       })
       .catch(() => setShowroomProducts([]))

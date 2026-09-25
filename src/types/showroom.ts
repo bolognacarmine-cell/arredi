@@ -21,8 +21,8 @@ export interface Product {
   discountPct: number | null
   images: string[]
   sku?: string
-  active: boolean
   isSold?: boolean
+  showSoldInFrontend?: boolean
   createdAt: number
   updatedAt: number
   // Promozione: tutti i campi sono opzionali, un prodotto senza promozione

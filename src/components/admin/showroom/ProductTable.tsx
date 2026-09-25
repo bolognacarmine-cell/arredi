@@ -14,8 +14,7 @@ interface Props {
   products: Product[]
   onEdit: (p: Product) => void
   onDelete: (p: Product) => void
-  onToggle: (id: string, next: boolean) => void
-  onToggleSold: (id: string, next: boolean) => void
+  onToggleSoldShow: (id: string, isSold: boolean, showSoldInFrontend: boolean) => void
 }
 
 const eur = (n: number) =>
@@ -31,8 +30,7 @@ export default function ProductTable({
   products,
   onEdit,
   onDelete,
-  onToggle,
-  onToggleSold,
+  onToggleSoldShow,
 }: Props) {
   const [sortKey, setSortKey] = useState<SK>("createdAt")
   const [sortDir, setSortDir] = useState<SortDirection>("desc")
@@ -109,10 +107,7 @@ export default function ProductTable({
                 Badge
               </th>
               <th className="px-4 py-3 text-center text-[11px] uppercase tracking-wide text-[#888580]">
-                Disponibilità
-              </th>
-              <th className="px-4 py-3 text-center text-[11px] uppercase tracking-wide text-[#888580]">
-                Venduto nel frontend
+                Stato
               </th>
               <th className="px-4 py-3 text-right text-[11px] uppercase tracking-wide text-[#888580]">
                 Azioni
@@ -122,7 +117,7 @@ export default function ProductTable({
           <tbody>
             {paged.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-4 py-16 text-center">
+                <td colSpan={7} className="px-4 py-16 text-center">
                   <div className="text-4xl text-[#DDD9D0] mb-3">📦</div>
                   <p className="text-[#4A4A46]">Nessun prodotto trovato</p>
                 </td>
@@ -178,38 +173,22 @@ export default function ProductTable({
                     )}
                   </td>
                   <td className="px-4 py-3 text-center">
-                    <button
-                      onClick={() => onToggle(p.id, !p.active)}
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-                        p.active
-                          ? "bg-green-100 text-green-700"
-                          : "bg-gray-100 text-gray-600"
-                      }`}
-                    >
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full ${
-                          p.active ? "bg-green-600" : "bg-gray-400"
-                        }`}
-                      />
-                      {p.active ? "Disponibile" : "Non disp."}
-                    </button>
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <button
-                      onClick={() => onToggleSold(p.id, !p.isSold)}
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-                        p.isSold
-                          ? "bg-red-100 text-red-700"
-                          : "bg-gray-100 text-gray-600"
-                      }`}
-                    >
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full ${
-                          p.isSold ? "bg-red-600" : "bg-gray-400"
-                        }`}
-                      />
-                      {p.isSold ? "Venduto" : "Non venduto"}
-                    </button>
+                    {!p.isSold ? (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-600" />
+                        Disponibile
+                      </span>
+                    ) : p.showSoldInFrontend ? (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-600" />
+                        Venduto visibile
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                        <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
+                        Venduto nascosto
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex justify-end gap-4 text-xs">
@@ -275,32 +254,22 @@ export default function ProductTable({
                 </div>
                 <div className="flex justify-between items-center gap-3">
                   <div className="flex gap-2">
-                    <button
-                      onClick={() => onToggle(p.id, !p.active)}
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium ${
-                        p.active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"
-                      }`}
-                    >
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full ${
-                          p.active ? "bg-green-600" : "bg-gray-400"
-                        }`}
-                      />
-                      {p.active ? "Disponibile" : "Non disp."}
-                    </button>
-                    <button
-                      onClick={() => onToggleSold(p.id, !p.isSold)}
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium ${
-                        p.isSold ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-600"
-                      }`}
-                    >
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full ${
-                          p.isSold ? "bg-red-600" : "bg-gray-400"
-                        }`}
-                      />
-                      {p.isSold ? "Venduto" : "Non venduto"}
-                    </button>
+                    {!p.isSold ? (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-green-100 text-green-700">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-600" />
+                        Disponibile
+                      </span>
+                    ) : p.showSoldInFrontend ? (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-red-100 text-red-700">
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-600" />
+                        Venduto visibile
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">
+                        <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
+                        Venduto nascosto
+                      </span>
+                    )}
                   </div>
                   <div className="flex gap-4 text-xs">
                     <button onClick={() => onEdit(p)} className="text-[#1B4332] font-medium">

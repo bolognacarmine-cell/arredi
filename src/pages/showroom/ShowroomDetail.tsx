@@ -56,7 +56,7 @@ const getProductSchema = (product: Product, effectivePrice: ReturnType<typeof co
       "@type": "Offer",
       "price": finalPrice,
       "priceCurrency": "EUR",
-      "availability": product.active ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      "availability": !product.isSold ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
       "url": `https://arredi.onrender.com/showroom/${product.slug}`,
       "seller": {
         "@type": "Organization",
@@ -195,7 +195,7 @@ export default function ShowroomDetail() {
                     {eff.badge}
                   </span>
                 ) : null}
-                {p.isSold && (
+                {p.isSold && p.showSoldInFrontend && (
                   <div
                     className="px-4 py-2 sm:px-5 sm:py-3 rounded text-xs sm:text-sm font-bold text-white shadow-2xl tracking-widest border-2 border-white/20 transform rotate-[-2deg]"
                     aria-label="Prodotto venduto"

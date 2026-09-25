@@ -28,8 +28,8 @@ type FS = {
   furnitureTypeOther: string
   basePrice: string
   images: string[]
-  active: boolean
   isSold: boolean
+  showSoldInFrontend: boolean
   promoActive: boolean
   promoDiscountType: PromoDiscountType
   promoDiscountValue: string
@@ -46,8 +46,8 @@ const empty: FS = {
   furnitureTypeOther: "",
   basePrice: "",
   images: [],
-  active: true,
   isSold: false,
+  showSoldInFrontend: true,
   promoActive: true,
   promoDiscountType: "percent",
   promoDiscountValue: "",
@@ -80,8 +80,8 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
         furnitureTypeOther: initial.furnitureTypeOther ?? "",
         basePrice: String(initial.basePrice),
         images: [...initial.images],
-        active: initial.active,
         isSold: initial.isSold ?? false,
+        showSoldInFrontend: initial.showSoldInFrontend ?? true,
         promoActive: initial.promoActive !== false,
         promoDiscountType: initial.promoDiscountType === "amount" ? "amount" : "percent",
         // Prodotti creati prima della promozione in scheda: lo sconto storico
@@ -181,8 +181,8 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
       promoText: hasPromo && form.promoText.trim() ? form.promoText.trim() : null,
       images: form.images,
       sku: slugify(form.name).toUpperCase().slice(0, 10) + "-" + Date.now().toString().slice(-4),
-      active: form.active,
       isSold: form.isSold,
+      showSoldInFrontend: form.showSoldInFrontend,
     }
     await onSave(data, initial?.id)
   }
@@ -445,30 +445,48 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
             </div>
           </fieldset>
 
-          <div className="flex items-center gap-3">
-            <input
-              id="pf-active"
-              type="checkbox"
-              checked={form.active}
-              onChange={(e) => set("active", e.target.checked)}
-              className="w-4 h-4 accent-[#1B4332]"
-            />
-            <label htmlFor="pf-active" className="text-sm font-medium text-[#4A4A46]">
-              {form.active ? "✅ Disponibile nel frontend" : "⏸ Non disponibile"}
-            </label>
-          </div>
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <input
+                id="pf-sold-show"
+                type="checkbox"
+                checked={form.isSold && form.showSoldInFrontend}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    set("isSold", true)
+                    set("showSoldInFrontend", true)
+                  } else {
+                    set("isSold", false)
+                    set("showSoldInFrontend", false)
+                  }
+                }}
+                className="w-4 h-4 accent-[#B5965A]"
+              />
+              <label htmlFor="pf-sold-show" className="text-sm font-medium text-[#4A4A46]">
+                {form.isSold && form.showSoldInFrontend ? "🏷️ Venduto — mostra nel frontend" : "⏸ Non venduto"}
+              </label>
+            </div>
 
-          <div className="flex items-center gap-3">
-            <input
-              id="pf-is-sold"
-              type="checkbox"
-              checked={form.isSold}
-              onChange={(e) => set("isSold", e.target.checked)}
-              className="w-4 h-4 accent-[#B5965A]"
-            />
-            <label htmlFor="pf-is-sold" className="text-sm font-medium text-[#4A4A46]">
-              {form.isSold ? "🏷️ Venduto — mostra nel frontend" : "⏸ Non venduto"}
-            </label>
+            <div className="flex items-center gap-3">
+              <input
+                id="pf-sold-hide"
+                type="checkbox"
+                checked={form.isSold && !form.showSoldInFrontend}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    set("isSold", true)
+                    set("showSoldInFrontend", false)
+                  } else {
+                    set("isSold", false)
+                    set("showSoldInFrontend", false)
+                  }
+                }}
+                className="w-4 h-4 accent-[#B5965A]"
+              />
+              <label htmlFor="pf-sold-hide" className="text-sm font-medium text-[#4A4A46]">
+                {form.isSold && !form.showSoldInFrontend ? "🏷️ Venduto — non mostrare nel frontend" : "⏸ Non venduto"}
+              </label>
+            </div>
           </div>
 
           <div>

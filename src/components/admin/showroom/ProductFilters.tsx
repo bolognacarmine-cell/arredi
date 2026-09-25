@@ -5,7 +5,7 @@ export type ProductFilterState = {
   q: string
   sector: ActivitySector | "all"
   furniture: string
-  offerStatus: "all" | "in_offer" | "active" | "inactive"
+  offerStatus: "all" | "in_offer" | "available" | "sold_visible" | "sold_hidden"
 }
 export const defaultPF: ProductFilterState = {
   q: "",
@@ -81,8 +81,9 @@ export default function ProductFilters({
         >
           <option value="all">Tutti stati</option>
           <option value="in_offer">In offerta</option>
-          <option value="active">Attivi</option>
-          <option value="inactive">Inattivi</option>
+          <option value="available">Disponibili</option>
+          <option value="sold_visible">Venduti visibili</option>
+          <option value="sold_hidden">Venduti nascosti</option>
         </select>
       </div>
       <div>
