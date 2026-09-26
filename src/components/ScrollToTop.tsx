@@ -5,21 +5,28 @@ export default function ScrollToTop() {
   const { pathname, hash } = useLocation()
 
   useEffect(() => {
-    // Double requestAnimationFrame to ensure scroll happens after complete DOM update
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (hash) {
-          // scrollIntoView rispetta scroll-margin-top, quindi il titolo della
-          // sezione non finisce sotto l'header fisso.
-          const target = document.getElementById(hash.slice(1))
-          if (target) {
-            target.scrollIntoView({ block: "start" })
-            return
-          }
+    // Più aggressivo per garantire lo scroll all'inizio
+    const scrollToTop = () => {
+      window.scrollTo(0, 0)
+      document.documentElement.scrollTop = 0
+      document.body.scrollTop = 0
+    }
+
+    // Timeout multipli per assicurarsi che lo scroll avvenga dopo che tutto è caricato
+    scrollToTop()
+    setTimeout(scrollToTop, 0)
+    setTimeout(scrollToTop, 100)
+    setTimeout(scrollToTop, 300)
+
+    if (hash) {
+      // Per hash, scrolla all'elemento specifico dopo un breve delay
+      setTimeout(() => {
+        const target = document.getElementById(hash.slice(1))
+        if (target) {
+          target.scrollIntoView({ block: "start" })
         }
-        window.scrollTo(0, 0)
-      })
-    })
+      }, 300)
+    }
   }, [pathname, hash])
 
   return null
