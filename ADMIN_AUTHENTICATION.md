@@ -10,7 +10,6 @@ This document describes the secure admin authentication system implemented for t
 - **Session Management**: express-session with HttpOnly, Secure cookies in production
 - **Environment Variables**: All secrets and credentials stored in environment variables
 - **Role-Based Access**: Admin-only access to protected routes
-- **Password Reset**: Secure endpoint for admin password reset
 
 ## Environment Variables
 
@@ -22,7 +21,6 @@ The following environment variables must be configured in Render:
 |----------|-------------|---------|
 | `MONGODB_URI` | MongoDB Atlas connection string | `mongodb+srv://...` |
 | `SESSION_SECRET` | Secret for session encryption | Random 32+ character string |
-| `ADMIN_RESET_PASSWORD` | Default password for reset (optional) | `Farcom2026` |
 | `ADMIN_EMAIL` | Admin user email (fixed) | `admin@farcom.local` |
 | `ADMIN_PASSWORD` | Admin user password | `Farcom2026` |
 | `ADMIN_NAME` | Admin user display name | `Admin Farcom` |
@@ -32,8 +30,6 @@ The following environment variables must be configured in Render:
 ### Local Development Variables
 
 For local development, create `server/server.env` with the same variables.
-
-Note: `ADMIN_RESET_PASSWORD` is optional. If not set, the reset password defaults to "Farcom2026".
 
 ## File Structure
 
@@ -121,36 +117,6 @@ Get current authenticated admin user info.
 }
 ```
 
-### POST /api/admin/reset-admin-password
-
-Reset admin password by providing the reset code configured in environment variable.
-
-**Request:**
-```json
-{
-  "email": "admin@farcom.local",
-  "resetCode": "your_reset_code_from_env"
-}
-```
-
-**Response (Success):**
-```json
-{
-  "success": true,
-  "message": "Password resettata con successo"
-}
-```
-
-**Response (Invalid Code):**
-```json
-{
-  "success": false,
-  "message": "Invalid reset code"
-}
-```
-
-**Note:** The reset code must match the `ADMIN_RESET_CODE` environment variable. The password will be reset to the value of `ADMIN_RESET_PASSWORD` environment variable.
-
 ## Frontend Integration
 
 ### Login Page
@@ -202,8 +168,6 @@ All admin API calls are protected by the `requireAdmin` middleware.
    ```env
    MONGODB_URI=mongodb+srv://...
    SESSION_SECRET=your_local_secret
-   ADMIN_RESET_SECRET=your_local_reset_secret
-   ADMIN_RESET_PASSWORD=buongiorno
    ADMIN_EMAIL=admin@farcom.local
    ADMIN_PASSWORD=Farcom2026
    ADMIN_NAME=Admin Farcom
@@ -240,19 +204,14 @@ All admin API calls are protected by the `requireAdmin` middleware.
 1. Ensure `VITE_API_BASE_URL` points to correct domain
 2. In production, should be same domain (e.g., `https://arredi.onrender.com`)
 
-## Password Reset
+## Password Management
 
-To reset admin password, use the reset code configured in `ADMIN_RESET_CODE` environment variable:
+**Nota: Endpoint pubblico di reset password amministratore RIMOSSO per sicurezza.**
 
-```bash
-curl -X POST https://arredi.onrender.com/api/admin/reset-admin-password \
-  -H "Content-Type: application/json" \
-  -d '{"email": "admin@farcom.local", "resetCode": "your_reset_code"}'
-```
-
-The password will be reset to the value of `ADMIN_RESET_PASSWORD` environment variable.
-
-**Note:** The admin email is fixed at `admin@farcom.local` and cannot be changed.
+Se serve ripristinare la password admin:
+1. Usare lo script seed one-shot: `cd server && npm run seed:admin` (sovrascrive se ADMIN_EMAIL coincide)
+2. Oppure eseguire una modifica diretta sul database MongoDB (cancellare documento utente admin e rieseguire seed)
+3. Oppure usare shell Mongo direttamente
 
 ## Maintenance
 

@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { Quote } from '../models/Quote.js';
 import { requireAdmin } from '../middleware/requireAdmin.js';
 import { sendQuoteTelegramNotification } from '../utils/telegram.js';
-import { quoteRateLimiter } from '../middleware/rateLimiter.js';
+import { quoteRateLimiter, quotesGetRateLimiter } from '../middleware/rateLimiter.js';
 import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
 
@@ -52,8 +52,8 @@ const upload = multer({
   },
 });
 
-// GET all quotes
-router.get('/', async (req: Request, res: Response) => {
+// GET all quotes (solo admin autenticato)
+router.get('/', quotesGetRateLimiter as any, requireAdmin, async (req: Request, res: Response) => {
   // Security: Ensure only GET method is accepted
   if (req.method !== 'GET') {
     return res.status(405).json({

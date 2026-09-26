@@ -50,19 +50,6 @@ Enhanced the global error handler to prevent information leakage:
 
 ---
 
-### 3. Hardcoded Secret Removal
-**File:** `server/routes/admin.ts` (lines 196-203)
-
-Removed the hardcoded default password `'Farcom2026'` from the admin password reset endpoint:
-
-- Changed from: `const resetPassword = process.env.ADMIN_RESET_PASSWORD || 'Farcom2026';`
-- Changed to: Require `ADMIN_RESET_PASSWORD` environment variable to be set
-- Returns 500 error if the environment variable is not configured
-
-**Impact:** Low - Requires `ADMIN_RESET_PASSWORD` to be set in `.server.env` for the password reset functionality to work.
-
----
-
 ### 5. HTTP Method Restrictions on All Routes
 **Files:** `server/routes/admin.ts`, `server/routes/products.ts`, `server/routes/projects.ts`, `server/routes/blog.ts`, `server/routes/media.ts`, `server/routes/quotes.ts`, `server/routes/siteConfig.ts`
 
@@ -72,7 +59,6 @@ Added explicit HTTP method validation to all route handlers to prevent method co
 - POST /login - only POST allowed
 - POST /logout - only POST allowed
 - GET /me - only GET allowed
-- POST /reset-admin-password - only POST allowed
 
 **Product Routes (`server/routes/products.ts`):**
 - GET / - only GET allowed
@@ -236,7 +222,6 @@ Implemented automatic email notifications for quote submissions:
 - `ADMIN_EMAIL` - Admin user email
 - `ADMIN_PASSWORD` - Admin user password
 - `ADMIN_NAME` - Admin user display name
-- `ADMIN_RESET_PASSWORD` - Password for admin reset functionality (new requirement)
 
 ---
 
@@ -443,7 +428,6 @@ Before deploying to production, verify the following to ensure no regressions:
 - [ ] Admin login fails with incorrect credentials
 - [ ] Admin logout works correctly
 - [ ] Session persists across page refreshes
-- [ ] Password reset functionality works (if ADMIN_RESET_PASSWORD is configured)
 
 ### CRUD Operations
 - [ ] Create new product in admin panel
@@ -481,11 +465,10 @@ If any issues arise, the changes can be easily reverted:
 
 1. **Security headers middleware:** Remove lines 58-94 from `server/index.ts`
 2. **Error handler:** Revert lines 202-233 in `server/index.ts` to previous version
-3. **Hardcoded password:** Revert lines 196-203 in `server/routes/admin.ts` to include default password
-4. **HTTP method restrictions:** Remove method validation blocks from all route files (sections 5)
-5. **Admin authentication on site config:** Remove `requireAdmin` from POST/PUT in `server/routes/siteConfig.ts` (section 6)
-6. **Input validation:** Remove validation blocks from all route files (section 7)
-7. **Email notifications:** Remove email sending logic from `server/routes/quotes.ts` and remove `server/utils/email.ts`
+3. **HTTP method restrictions:** Remove method validation blocks from all route files (sections 5)
+4. **Admin authentication on site config:** Remove `requireAdmin` from POST/PUT in `server/routes/siteConfig.ts` (section 6)
+5. **Input validation:** Remove validation blocks from all route files (section 7)
+6. **Email notifications:** Remove email sending logic from `server/routes/quotes.ts` and remove `server/utils/email.ts`
 
 All changes are localized and non-invasive, making rollback straightforward.
 
@@ -497,18 +480,17 @@ The security improvements are committed with the following messages:
 
 1. `feat(security): add basic security headers (non-blocking CSP)`
 2. `feat(security): mask sensitive error details in responses`
-3. `fix(security): remove hardcoded default password from admin reset`
-4. `feat(security): add minimal input validation on critical routes`
-5. `docs(security): add SECURITY.md with implemented measures and future improvements`
-6. `feat(security): restrict HTTP methods on all API routes`
-7. `feat(security): add comprehensive input validation across all CRUD operations`
-8. `fix(security): add missing admin authentication to site config routes`
-9. `docs(security): update SECURITY.md with final pre-delivery hardening report`
-10. `feat(email): add SMTP configuration and email notifications for quotes`
-11. `feat(email): add nodemailer dependency and email utility functions`
-12. `feat(email): integrate email notifications into quote submission flow`
-13. `feat(email): add admin panel SMTP configuration interface`
-14. `docs(email): document email notification system in SECURITY.md`
+3. `feat(security): add minimal input validation on critical routes`
+4. `docs(security): add SECURITY.md with implemented measures and future improvements`
+5. `feat(security): restrict HTTP methods on all API routes`
+6. `feat(security): add comprehensive input validation across all CRUD operations`
+7. `fix(security): add missing admin authentication to site config routes`
+8. `docs(security): update SECURITY.md with final pre-delivery hardening report`
+9. `feat(email): add SMTP configuration and email notifications for quotes`
+10. `feat(email): add nodemailer dependency and email utility functions`
+11. `feat(email): integrate email notifications into quote submission flow`
+12. `feat(email): add admin panel SMTP configuration interface`
+13. `docs(email): document email notification system in SECURITY.md`
 
 ---
 

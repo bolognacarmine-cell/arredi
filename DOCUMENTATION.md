@@ -21,7 +21,7 @@ Questa pagina centralizza tutta la documentazione tecnica del progetto.
   - Configurazione environment variables
   - API endpoints
   - Gestione sessioni
-  - Reset password
+  - Password management
 
 ### 🔧 Backend
 - **[BACKEND.md](BACKEND.md)** - Documentazione API backend
@@ -91,8 +91,6 @@ TELEGRAM_CHAT_ID=            # Telegram chat ID (opzionale)
 ADMIN_EMAIL=                 # Admin email
 ADMIN_PASSWORD=              # Admin password
 ADMIN_NAME=                  # Admin display name
-ADMIN_RESET_PASSWORD=        # Password for reset
-ADMIN_RESET_CODE=            # Code for password reset
 SESSION_SECRET=              # Session encryption secret
 ```
 
@@ -228,7 +226,7 @@ Per problemi tecnici:
 - ✅ Rimozione credenziali hardcoded Telegram
 - ✅ Rate limiting su endpoint critici
 - ✅ Health check endpoint per monitoring
-- ✅ Miglioramento sistema reset password
+- ✅ Rimozione endpoint pubblico reset password admin + hardening sicurezza quotes GET
 - ✅ Database indexes per performance
 - ✅ Log management per production
 - ✅ Documentazione centralizzata
