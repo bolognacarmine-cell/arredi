@@ -14,7 +14,7 @@ const statusColor: Record<QuoteRecord["stato"], string> = {
 const statuses: QuoteRecord["stato"][] = ["nuovo", "contattato", "chiuso"]
 
 export default function AdminQuotes() {
-  const { quotes, refreshQuotes } = useQuotes()
+  const { quotes, refreshQuotes, setQuotes } = useQuotes()
   const { checkAuth } = useAdminAuth()
   const [filter, setFilter] = useState<QuoteRecord["stato"] | "all">("all")
   const [selectedQuote, setSelectedQuote] = useState<QuoteRecord | null>(null)
@@ -74,8 +74,33 @@ export default function AdminQuotes() {
     setIsAddingNote(true)
     setError(null)
     try {
-      await quotesApi.addQuoteNote(selectedQuote.id, text)
-      await refreshQuotes()
+      const updatedQuote = await quotesApi.addQuoteNote(selectedQuote.id, text)
+      // Convert API Quote to QuoteRecord format
+      const quoteRecord: QuoteRecord = {
+        id: updatedQuote._id || updatedQuote.id,
+        nome: updatedQuote.nome,
+        cognome: updatedQuote.cognome,
+        azienda: updatedQuote.azienda,
+        settore: updatedQuote.settore,
+        email: updatedQuote.email,
+        telefono: updatedQuote.telefono,
+        data: updatedQuote.data,
+        stato: updatedQuote.stato,
+        metratura: updatedQuote.metratura,
+        arredo: updatedQuote.arredo,
+        messaggio: updatedQuote.messaggio,
+        note: updatedQuote.note,
+        notes: updatedQuote.notes,
+        statusHistory: updatedQuote.statusHistory,
+        attachments: updatedQuote.attachments as QuoteAttachment[],
+        documents: updatedQuote.documents as QuoteDocument[],
+      }
+      // Update only the selected quote locally instead of refreshing all quotes
+      setSelectedQuote(quoteRecord)
+      // Update the quote in the quotes array
+      setQuotes((prevQuotes) =>
+        prevQuotes.map((q) => (q.id === quoteRecord.id ? quoteRecord : q))
+      )
     } catch (err) {
       console.error("Error adding note:", err)
       setError("Impossibile aggiungere la nota. Riprova.")
@@ -89,8 +114,33 @@ export default function AdminQuotes() {
 
     setError(null)
     try {
-      await quotesApi.deleteQuoteNote(selectedQuote.id, noteIndex)
-      await refreshQuotes()
+      const updatedQuote = await quotesApi.deleteQuoteNote(selectedQuote.id, noteIndex)
+      // Convert API Quote to QuoteRecord format
+      const quoteRecord: QuoteRecord = {
+        id: updatedQuote._id || updatedQuote.id,
+        nome: updatedQuote.nome,
+        cognome: updatedQuote.cognome,
+        azienda: updatedQuote.azienda,
+        settore: updatedQuote.settore,
+        email: updatedQuote.email,
+        telefono: updatedQuote.telefono,
+        data: updatedQuote.data,
+        stato: updatedQuote.stato,
+        metratura: updatedQuote.metratura,
+        arredo: updatedQuote.arredo,
+        messaggio: updatedQuote.messaggio,
+        note: updatedQuote.note,
+        notes: updatedQuote.notes,
+        statusHistory: updatedQuote.statusHistory,
+        attachments: updatedQuote.attachments as QuoteAttachment[],
+        documents: updatedQuote.documents as QuoteDocument[],
+      }
+      // Update only the selected quote locally instead of refreshing all quotes
+      setSelectedQuote(quoteRecord)
+      // Update the quote in the quotes array
+      setQuotes((prevQuotes) =>
+        prevQuotes.map((q) => (q.id === quoteRecord.id ? quoteRecord : q))
+      )
     } catch (err) {
       console.error("Error deleting note:", err)
       setError("Impossibile eliminare la nota. Riprova.")

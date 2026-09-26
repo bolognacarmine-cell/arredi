@@ -66,7 +66,7 @@ export default function InternalNotesList({ notes, onAddNote, onDeleteNote, isAd
         <div className="space-y-3 mb-4">
           {sortedNotes.map((note) => (
             <div
-              key={note.originalIndex}
+              key={`${note.originalIndex}-${note.timestamp}`}
               className="bg-white border border-[var(--border)] p-3 rounded-lg shadow-sm"
             >
               <div className="flex items-start justify-between gap-2 mb-2">

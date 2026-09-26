@@ -186,5 +186,5 @@ export function useQuotes() {
     }
   }
 
-  return { quotes, refreshQuotes }
+  return { quotes, refreshQuotes, setQuotes }
 }
