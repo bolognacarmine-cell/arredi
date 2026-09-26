@@ -36,7 +36,7 @@ npm start
 ### Environment Variables (Render)
 ```bash
 # MongoDB Connection
-MONGODB_URI=mongodb+srv://soniaianos1980_db_user:09TC80VbN2mD9jew@cluster0.uvcxexx.mongodb.net/arredi?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://<user>:<password>@cluster0.uvcxexx.mongodb.net/arredi?retryWrites=true&w=majority
 
 # Server Configuration
 PORT=3001
@@ -57,7 +57,7 @@ SESSION_SECRET=your_secure_random_session_secret_here
 
 # Admin Credentials
 ADMIN_EMAIL=admin@farcom.local
-ADMIN_PASSWORD=Farcom2026
+ADMIN_PASSWORD=<cambia-questa-password>
 ADMIN_NAME=Admin Farcom
 ```
 

@@ -8,7 +8,7 @@ The most common cause of "Upload Cloudinary fallito" errors is missing Cloudinar
 
 ### MongoDB & Database
 ```
-MONGODB_URI=mongodb+srv://soniaianos1980_db_user:09TC80VbN2mD9jew@cluster0.uvcxexx.mongodb.net/arredi?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://<user>:<password>@cluster0.uvcxexx.mongodb.net/arredi?retryWrites=true&w=majority
 ```
 
 ### Server Configuration
@@ -38,7 +38,7 @@ VITE_CLOUDINARY_UPLOAD_PRESET=farcom-uploads
 ```
 SESSION_SECRET=your_secure_random_session_secret_here
 ADMIN_EMAIL=admin@farcom.local
-ADMIN_PASSWORD=Farcom2026
+ADMIN_PASSWORD=<cambia-questa-password>
 ADMIN_NAME=Admin Farcom
 ```
 
