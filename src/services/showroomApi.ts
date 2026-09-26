@@ -243,6 +243,8 @@ function mkP(
     discountPct,
     images,
     sku,
+    isSold: false,
+    showSoldInFrontend: true,
     createdAt: now - Math.floor(Math.random() * 120) * DAY,
     updatedAt: now - Math.floor(Math.random() * 15) * DAY,
   }

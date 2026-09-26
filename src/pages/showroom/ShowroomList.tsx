@@ -37,7 +37,8 @@ export default function ShowroomList() {
       if (filters.sector !== "all" && p.activitySector !== filters.sector) return false
       if (filters.furniture !== "all" && p.furnitureType !== filters.furniture) return false
       if (filters.onlyOffers && computeEffectivePrice(p).savings <= 0) return false
-      // Backend already handles sold products filter - sold hidden products are not returned
+      // Hide sold products unless showSoldInFrontend is true (safety filter)
+      if (p.isSold && !p.showSoldInFrontend) return false
       return true
     })
   }, [products, filters])

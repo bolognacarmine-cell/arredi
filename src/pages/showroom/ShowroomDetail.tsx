@@ -164,6 +164,29 @@ export default function ShowroomDetail() {
     )
   }
 
+  // Safety check: hide sold products that should not be shown in frontend
+  if (product.isSold && !product.showSoldInFrontend) {
+    return (
+      <main className="pt-28 pb-24 bg-[var(--background)] min-h-screen">
+        <div className="max-w-3xl mx-auto px-6 md:px-8 lg:px-16 text-center py-24">
+          <div className="text-6xl mb-5 text-[var(--border)]">🔒</div>
+          <h1 className="font-display text-3xl font-light text-[var(--foreground)] mb-3">
+            Prodotto non disponibile
+          </h1>
+          <p className="text-[var(--foreground)] mb-8">
+            Questo prodotto non è più disponibile al pubblico.
+          </p>
+          <Link
+            to="/showroom"
+            className="inline-flex px-6 py-3 bg-[var(--primary)] text-white text-sm font-medium hover:bg-[var(--foreground)] transition-colors"
+          >
+            ← Torna allo Showroom
+          </Link>
+        </div>
+      </main>
+    )
+  }
+
   const p = product
 
   return (
