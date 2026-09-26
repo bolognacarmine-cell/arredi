@@ -68,7 +68,7 @@ export default function HeroBackgroundVideo({
 
   const ioRef = useRef<IntersectionObserver | null>(null)
 
-  const [loadVideo, setLoadVideo] = useState(priority)
+  const [loadVideo, setLoadVideo] = useState(true)
 
   // Experimental mode state
   const [showReveal, setShowReveal] = useState(false)
@@ -78,7 +78,10 @@ export default function HeroBackgroundVideo({
   // Lazy load con IntersectionObserver (solo se priority=false)
 
   useEffect(() => {
-    if (priority) return
+    if (priority) {
+      setLoadVideo(true)
+      return
+    }
 
     if (loadVideo) return
 
@@ -112,7 +115,7 @@ export default function HeroBackgroundVideo({
   // Forza play immediato + auto-show quando priority=true
   // (alcuni browser non fanno partire autoPlay senza esplicito .play() dopo la build)
   useEffect(() => {
-    if (!priority) return
+    if (!priority || !loadVideo) return
     const v = videoRef.current
     if (!v) return
     // Mostriamo subito (non aspettiamo canplay) — se non carica passa al fallback
@@ -128,7 +131,7 @@ export default function HeroBackgroundVideo({
     } catch {
       // non fatal
     }
-  }, [priority])
+  }, [priority, loadVideo])
 
   // Callback when video is ready and playing
   useEffect(() => {
