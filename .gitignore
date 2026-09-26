@@ -8,6 +8,7 @@ build/
 .env.production
 .env.development
 server.env
+server/server.env
 server/.env
 .vite/
 vite.config.*.timestamp-*
