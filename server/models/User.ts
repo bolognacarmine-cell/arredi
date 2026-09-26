@@ -6,6 +6,8 @@ export interface IUser extends Document {
   password: string;
   name: string;
   role: 'user' | 'admin';
+  createdAt: Date;
+  updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -33,9 +35,17 @@ const UserSchema = new Schema<IUser>(
       enum: ['user', 'admin'],
       default: 'user',
     },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+    updatedAt: {
+      type: Date,
+      default: Date.now,
+    },
   },
   {
-    timestamps: true,
+    timestamps: false,
   }
 );
 
@@ -43,19 +53,22 @@ const UserSchema = new Schema<IUser>(
 // Note: email already has unique: true which creates an index automatically
 UserSchema.index({ role: 1 });
 
-// Hash password before saving
+// Hash password before saving and update timestamp
 UserSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) {
-    return next();
+  // Update timestamp on every save
+  this.updatedAt = new Date();
+  
+  // Hash password if modified
+  if (this.isModified('password')) {
+    try {
+      const salt = await bcrypt.genSalt(10);
+      this.password = await bcrypt.hash(this.password, salt);
+    } catch (error) {
+      return next(error as Error);
+    }
   }
   
-  try {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (error) {
-    next(error as Error);
-  }
+  next();
 });
 
 // Method to compare password

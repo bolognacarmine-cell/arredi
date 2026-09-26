@@ -84,6 +84,19 @@ export default function AdminQuotes() {
     }
   }
 
+  const handleDeleteNote = async (noteIndex: number) => {
+    if (!selectedQuote) return
+
+    setError(null)
+    try {
+      await quotesApi.deleteQuoteNote(selectedQuote.id, noteIndex)
+      await refreshQuotes()
+    } catch (err) {
+      console.error("Error deleting note:", err)
+      setError("Impossibile eliminare la nota. Riprova.")
+    }
+  }
+
   const handleDeleteQuote = async (quoteId: string) => {
     if (window.confirm("Sei sicuro di voler eliminare questo preventivo?")) {
       setIsDeleting(quoteId)
@@ -606,6 +619,7 @@ export default function AdminQuotes() {
                 <InternalNotesList
                   notes={selectedQuote.notes || []}
                   onAddNote={handleAddNote}
+                  onDeleteNote={handleDeleteNote}
                   isAdding={isAddingNote}
                 />
 

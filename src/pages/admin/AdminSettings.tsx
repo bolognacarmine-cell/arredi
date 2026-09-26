@@ -7,18 +7,22 @@ import {
   saveSiteSettingsToProject,
   type SiteSettings,
 } from "../../siteConfig"
-
-const users = [
-  { id: 1, nome: "Ugo", email: "admin@farcom.com", ruolo: "admin" },
-  { id: 2, nome: "Giulia", email: "giulia@farcom.com", ruolo: "editor" },
-  { id: 3, nome: "Sara", email: "sara@farcom.com", ruolo: "editor" },
-  { id: 4, nome: "Anna", email: "anna@farcom.com", ruolo: "viewer" },
-]
+import * as usersApi from "../../api/usersApi"
+import { useAdminAuth } from "../../hooks/useAdminAuth"
 
 const roleColor: Record<string, string> = {
   admin: "bg-[#1B4332] text-white",
   editor: "bg-amber-100 text-amber-700",
   viewer: "bg-gray-100 text-gray-600",
+}
+
+interface ApiUser {
+  id: string
+  email: string
+  name: string
+  role: 'user' | 'admin'
+  createdAt: string
+  updatedAt: string
 }
 
 type SiteSettingsFormState = {
@@ -477,9 +481,52 @@ export default function AdminSettings() {
   const [saved, setSaved] = useState(false)
   const [statusMessage, setStatusMessage] = useState("")
   const [statusTone, setStatusTone] = useState<"success" | "warning">("success")
+  const [users, setUsers] = useState<ApiUser[]>([])
+  const [usersLoading, setUsersLoading] = useState(true)
+  const [usersError, setUsersError] = useState<string | null>(null)
+  const [deletingUser, setDeletingUser] = useState<string | null>(null)
+  const { checkAuth } = useAdminAuth()
 
   const updateField = (key: keyof SiteSettingsFormState, value: string) => {
     setForm((current) => ({ ...current, [key]: value }))
+  }
+
+  // Load users when switching to users tab
+  useEffect(() => {
+    if (activeTab === "utenti") {
+      const loadUsers = async () => {
+        setUsersLoading(true)
+        setUsersError(null)
+        try {
+          const apiUsers = await usersApi.getUsers()
+          setUsers(apiUsers)
+        } catch (err) {
+          console.error("Error loading users:", err)
+          setUsersError("Impossibile caricare gli utenti. Riprova.")
+        } finally {
+          setUsersLoading(false)
+        }
+      }
+      loadUsers()
+    }
+  }, [activeTab])
+
+  const handleDeleteUser = async (userId: string, userName: string) => {
+    if (window.confirm(`Sei sicuro di voler eliminare l'utente "${userName}"?`)) {
+      setDeletingUser(userId)
+      setUsersError(null)
+      try {
+        await usersApi.deleteUser(userId)
+        // Refresh users list
+        const apiUsers = await usersApi.getUsers()
+        setUsers(apiUsers)
+      } catch (err) {
+        console.error("Error deleting user:", err)
+        setUsersError("Impossibile eliminare l'utente. Riprova.")
+      } finally {
+        setDeletingUser(null)
+      }
+    }
   }
 
   const showSavedState = () => {
@@ -820,63 +867,88 @@ export default function AdminSettings() {
 
       {activeTab === "utenti" && (
         <div className="max-w-3xl">
-          <div className="mb-4 overflow-hidden border border-[#DDD9D0] bg-white">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-[#DDD9D0] bg-[#F7F5F0] text-xs uppercase tracking-wide text-[#888580]">
-                  <th className="px-5 py-3 text-left">Utente</th>
-                  <th className="hidden px-5 py-3 text-left sm:table-cell">
-                    Email
-                  </th>
-                  <th className="px-5 py-3 text-left">Ruolo</th>
-                  <th className="px-5 py-3 text-left">Azioni</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((user) => (
-                  <tr
-                    key={user.id}
-                    className="border-t border-[#EAE7E0] hover:bg-[#F7F5F0]"
-                  >
-                    <td className="px-5 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[#1B4332] text-xs font-medium text-white">
-                          {user.nome
-                            .split(" ")
-                            .map((name) => name[0])
-                            .join("")
-                            .slice(0, 2)}
-                        </div>
-                        <span className="font-medium text-[#1A1A18]">
-                          {user.nome}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="hidden px-5 py-3 text-xs text-[#888580] sm:table-cell">
-                      {user.email}
-                    </td>
-                    <td className="px-5 py-3">
-                      <span
-                        className={`rounded-full px-2.5 py-1 text-xs font-medium ${roleColor[user.ruolo]}`}
-                      >
-                        {user.ruolo}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3">
-                      <button className="mr-3 text-xs text-[#888580] transition-colors hover:text-[#1B4332]">
-                        Modifica
-                      </button>
-                      {user.ruolo !== "admin" && (
-                        <button className="text-xs text-red-400 transition-colors hover:text-red-600">
-                          Rimuovi
-                        </button>
-                      )}
-                    </td>
+          {usersError && (
+            <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" role="alert">
+              {usersError}
+            </div>
+          )}
+
+          {usersLoading ? (
+            <div className="bg-white border border-[#DDD9D0] rounded-lg p-8 text-center">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#1B4332]"></div>
+              <p className="mt-4 text-[#888580] text-sm">Caricamento utenti...</p>
+            </div>
+          ) : (
+            <div className="mb-4 overflow-hidden border border-[#DDD9D0] bg-white">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-[#DDD9D0] bg-[#F7F5F0] text-xs uppercase tracking-wide text-[#888580]">
+                    <th className="px-5 py-3 text-left">Utente</th>
+                    <th className="hidden px-5 py-3 text-left sm:table-cell">
+                      Email
+                    </th>
+                    <th className="px-5 py-3 text-left">Ruolo</th>
+                    <th className="px-5 py-3 text-left">Azioni</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {users.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="px-5 py-16 text-center">
+                        <p className="text-[#888580] text-sm">Nessun utente presente</p>
+                      </td>
+                    </tr>
+                  ) : (
+                    users.map((user) => (
+                      <tr
+                        key={user.id}
+                        className="border-t border-[#EAE7E0] hover:bg-[#F7F5F0]"
+                      >
+                        <td className="px-5 py-3">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[#1B4332] text-xs font-medium text-white">
+                              {user.name
+                                .split(" ")
+                                .map((name) => name[0])
+                                .join("")
+                                .slice(0, 2)}
+                            </div>
+                            <span className="font-medium text-[#1A1A18]">
+                              {user.name}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="hidden px-5 py-3 text-xs text-[#888580] sm:table-cell">
+                          {user.email}
+                        </td>
+                        <td className="px-5 py-3">
+                          <span
+                            className={`rounded-full px-2.5 py-1 text-xs font-medium ${roleColor[user.role]}`}
+                          >
+                            {user.role}
+                          </span>
+                        </td>
+                        <td className="px-5 py-3">
+                          <button className="mr-3 text-xs text-[#888580] transition-colors hover:text-[#1B4332]">
+                            Modifica
+                          </button>
+                          {user.role !== "admin" && (
+                            <button
+                              onClick={() => handleDeleteUser(user.id, user.name)}
+                              disabled={deletingUser === user.id}
+                              className="text-xs text-red-400 transition-colors hover:text-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {deletingUser === user.id ? "Eliminazione..." : "Rimuovi"}
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
           <button className="bg-[#1B4332] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#143326]">
             + Invita utente
           </button>

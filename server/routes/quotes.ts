@@ -813,4 +813,47 @@ router.delete('/:id', requireAdmin, async (req: Request, res: Response) => {
   }
 });
 
+// DELETE note from quote
+router.delete('/:id/notes/:noteIndex', requireAdmin, async (req: Request, res: Response) => {
+  // Security: Ensure only DELETE method is accepted
+  if (req.method !== 'DELETE') {
+    return res.status(405).json({
+      success: false,
+      message: 'Method not allowed'
+    });
+  }
+
+  try {
+    const { id, noteIndex } = req.params;
+    const index = parseInt(noteIndex, 10);
+
+    if (isNaN(index) || index < 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid note index'
+      });
+    }
+
+    const quote = await Quote.findById(id);
+    if (!quote) {
+      return res.status(404).json({ success: false, message: 'Quote not found' });
+    }
+
+    if (!quote.notes || index >= quote.notes.length) {
+      return res.status(404).json({ success: false, message: 'Note not found' });
+    }
+
+    // Remove note at specific index using $pull
+    quote.notes.splice(index, 1);
+    quote.updatedAt = new Date();
+
+    await quote.save();
+
+    res.json({ success: true, data: quote });
+  } catch (error) {
+    console.error('[Quotes] Error deleting note from quote:', error);
+    res.status(400).json({ success: false, message: 'Failed to delete note' });
+  }
+});
+
 export default router;

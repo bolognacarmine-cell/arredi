@@ -286,3 +286,23 @@ export async function deleteQuote(id: string): Promise<void> {
     throw error
   }
 }
+
+export async function deleteQuoteNote(quoteId: string, noteIndex: number): Promise<Quote> {
+  try {
+    const response = await fetch(getApiUrl(`/api/quotes/${quoteId}/notes/${noteIndex}`), {
+      method: "DELETE",
+      credentials: 'include',
+    })
+
+    const result = await response.json()
+
+    if (result.success && result.data) {
+      return result.data
+    }
+
+    throw new Error(result.error?.message || result.message || "Failed to delete quote note")
+  } catch (error) {
+    console.error("Error deleting quote note:", error)
+    throw error
+  }
+}

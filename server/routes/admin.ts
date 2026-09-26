@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import UserModel from '../models/User.js';
 import { loginRateLimiter } from '../middleware/rateLimiter.js';
+import { requireAdmin } from '../middleware/requireAdmin.js';
 
 const router = Router();
 
@@ -291,6 +292,101 @@ router.post('/reset-admin-password', async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('❌ Error resetting admin password:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+});
+
+/**
+ * GET /api/admin/users
+ * Get all users (admin only)
+ * Security: Only GET method allowed, requires admin authentication
+ */
+router.get('/users', requireAdmin, async (req: Request, res: Response) => {
+  try {
+    // Security: Ensure only GET method is accepted
+    if (req.method !== 'GET') {
+      return res.status(405).json({
+        success: false,
+        message: 'Method not allowed'
+      });
+    }
+
+    const users = await UserModel.find().sort({ createdAt: -1 });
+    res.json({
+      success: true,
+      data: users.map(user => ({
+        id: user._id.toString(),
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+      }))
+    });
+  } catch (error) {
+    console.error('❌ Error fetching users:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+});
+
+/**
+ * DELETE /api/admin/users/:id
+ * Delete a user (admin only)
+ * Security: Only DELETE method allowed, requires admin authentication
+ */
+router.delete('/users/:id', requireAdmin, async (req: Request, res: Response) => {
+  try {
+    // Security: Ensure only DELETE method is accepted
+    if (req.method !== 'DELETE') {
+      return res.status(405).json({
+        success: false,
+        message: 'Method not allowed'
+      });
+    }
+
+    const { id } = req.params;
+
+    // Prevent deletion of the current user
+    if (req.session?.userId === id) {
+      return res.status(403).json({
+        success: false,
+        message: 'Non puoi eliminare il tuo stesso account'
+      });
+    }
+
+    const user = await UserModel.findById(id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Prevent deletion of the last admin user
+    if (user.role === 'admin') {
+      const adminCount = await UserModel.countDocuments({ role: 'admin' });
+      if (adminCount <= 1) {
+        return res.status(403).json({
+          success: false,
+          message: 'Non puoi eliminare l\'ultimo utente admin'
+        });
+      }
+    }
+
+    await UserModel.findByIdAndDelete(id);
+
+    res.json({
+      success: true,
+      message: 'Utente eliminato con successo'
+    });
+  } catch (error) {
+    console.error('❌ Error deleting user:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error'

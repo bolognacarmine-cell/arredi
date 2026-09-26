@@ -4,11 +4,13 @@ import { QuoteNote } from "../../api/quotesApi"
 interface InternalNotesListProps {
   notes: QuoteNote[]
   onAddNote: (text: string) => Promise<void>
+  onDeleteNote: (noteIndex: number) => Promise<void>
   isAdding: boolean
 }
 
-export default function InternalNotesList({ notes, onAddNote, isAdding }: InternalNotesListProps) {
+export default function InternalNotesList({ notes, onAddNote, onDeleteNote, isAdding }: InternalNotesListProps) {
   const [newNote, setNewNote] = useState("")
+  const [deletingNote, setDeletingNote] = useState<number | null>(null)
 
   const formatDate = (timestamp: string): string => {
     const date = new Date(timestamp)
@@ -37,9 +39,21 @@ export default function InternalNotesList({ notes, onAddNote, isAdding }: Intern
     }
   }
 
-  const sortedNotes = [...notes].sort((a, b) => 
-    new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-  )
+  const handleDeleteNote = async (noteIndex: number) => {
+    if (window.confirm("Sei sicuro di voler eliminare questa nota interna?")) {
+      setDeletingNote(noteIndex)
+      try {
+        await onDeleteNote(noteIndex)
+      } catch (error) {
+        console.error("Error deleting note:", error)
+      } finally {
+        setDeletingNote(null)
+      }
+    }
+  }
+
+  const sortedNotes = [...notes].map((note, originalIndex) => ({ ...note, originalIndex }))
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
 
   return (
     <div className="bg-[var(--background)] p-4 rounded-lg">
@@ -50,15 +64,23 @@ export default function InternalNotesList({ notes, onAddNote, isAdding }: Intern
       {/* Notes list */}
       {sortedNotes.length > 0 ? (
         <div className="space-y-3 mb-4">
-          {sortedNotes.map((note, index) => (
+          {sortedNotes.map((note) => (
             <div
-              key={index}
+              key={note.originalIndex}
               className="bg-white border border-[var(--border)] p-3 rounded-lg shadow-sm"
             >
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div className="text-sm text-[var(--foreground)] leading-relaxed whitespace-pre-wrap break-words flex-1">
                   {note.text}
                 </div>
+                <button
+                  onClick={() => handleDeleteNote(note.originalIndex)}
+                  disabled={deletingNote === note.originalIndex}
+                  className="text-xs text-red-600 hover:text-red-800 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 rounded"
+                  title="Elimina nota"
+                >
+                  {deletingNote === note.originalIndex ? "Eliminazione..." : "✕"}
+                </button>
               </div>
               <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)]">
                 <span>{formatAuthor(note.author)}</span>
