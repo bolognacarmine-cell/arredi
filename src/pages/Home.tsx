@@ -10,6 +10,7 @@ import ReviewsSection from "../components/ReviewsSection"
 import ProductCard from "../components/showroom/ProductCard"
 import Reveal from "../components/Reveal"
 import SEOHead from "../components/SEOHead"
+import HeroBackgroundVideo from "../components/HeroBackgroundVideo"
 import { getProducts, type Product } from "../services/showroomApi"
 import { resolveImageUrl } from "../lib/cloudinary"
 
@@ -431,6 +432,45 @@ export default function Home() {
             )
           })}
         </div>
+      </section>
+
+      {/* SHOWROOM HERO: sezione video prima dei prodotti */}
+      <section className="relative h-[70vh] sm:h-[80vh] overflow-hidden">
+        <HeroBackgroundVideo
+          basePath="/videos/showroom"
+          priority={true}
+          isMuted={true}
+          fallbackImg="https://images.unsplash.com/photo-1547609434-b732edfee020?w=1920&h=1080&fit=crop&auto=format"
+        />
+
+        {/* Hero Content Overlay */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="max-w-7xl mx-auto px-6 md:px-8 lg:px-16 text-center relative z-10">
+            <div className="inline-flex items-center gap-3 px-4 py-1.5 mb-6 border border-[var(--accent)]/30 bg-white/90 backdrop-blur-sm">
+              <span className="h-px w-8 bg-[var(--accent)]" />
+              <span className="text-[11px] uppercase tracking-[0.18em] font-medium text-[var(--accent)]">
+                Showroom
+              </span>
+            </div>
+            <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-light text-white leading-tight max-w-4xl mb-6 drop-shadow-lg">
+              Arredi pronti da scoprire
+            </h2>
+            <p className="text-base md:text-lg text-white/90 max-w-2xl leading-relaxed mb-8 drop-shadow-md">
+              Scopri la nostra collezione di arredi professionali su misura per barberie, parrucchieri, uffici e scuole. Qualità artigianale Made in Italy.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                to="/showroom"
+                className="inline-flex items-center justify-center px-8 py-3 bg-[var(--accent)] text-white text-sm font-medium hover:bg-[var(--foreground)] transition-colors shadow-lg"
+              >
+                Esplora tutto lo showroom
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Gradient overlay for better text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60 pointer-events-none" />
       </section>
 
       {/* SHOWROOM: nascosto finche' non c'e' almeno un prodotto attivo */}
