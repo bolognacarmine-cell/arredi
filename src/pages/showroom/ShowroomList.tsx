@@ -6,6 +6,7 @@ import ProductFilters, {
   type PublicFilterState,
 } from "../../components/showroom/ProductFilters"
 import SEOHead from "../../components/SEOHead"
+import HeroBackgroundVideo from "../../components/HeroBackgroundVideo"
 import {
   computeEffectivePrice,
   getProducts,
@@ -16,6 +17,19 @@ export default function ShowroomList() {
   const [products, setProducts] = useState<Product[]>([])
   const [filters, setFilters] = useState<PublicFilterState>(defaultPublicFilters)
   const [loading, setLoading] = useState(true)
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    setPrefersReducedMotion(mediaQuery.matches)
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      setPrefersReducedMotion(e.matches)
+    }
+
+    mediaQuery.addEventListener('change', handleChange)
+    return () => mediaQuery.removeEventListener('change', handleChange)
+  }, [])
 
   useEffect(() => {
     let alive = true
@@ -44,7 +58,7 @@ export default function ShowroomList() {
   }, [products, filters])
 
   return (
-    <main className="pt-24 pb-24 bg-[var(--background)] min-h-screen">
+    <main className="min-h-screen">
       <SEOHead
         title="Showroom Arredamento Campania - Arredi Professionali Farcom Srl"
         description="Showroom arredamento Campania: arredi professionali su misura per barberie, parrucchieri, uffici, scuole. Visita il nostro showroom a Macerata Campania o richiedi un preventivo in tutta Italia."
@@ -84,7 +98,7 @@ export default function ShowroomList() {
             },
             {
               "@type": "OpeningHoursSpecification",
-              "dayOfWeek": "Saturday",
+              "dayOfWeek": ["Saturday"],
               "opens": "09:00",
               "closes": "13:00"
             }
@@ -101,7 +115,67 @@ export default function ShowroomList() {
           ]
         }}
       />
-      <section className="max-w-7xl mx-auto px-6 md:px-8 lg:px-16">
+
+      {/* Hero Video Section */}
+      <section className="relative h-[70vh] sm:h-[80vh] overflow-hidden">
+        {!prefersReducedMotion ? (
+          <HeroBackgroundVideo
+            basePath="/videos/showroom"
+            priority={true}
+            isMuted={true}
+            fallbackImg="https://images.unsplash.com/photo-1547609434-b732edfee020?w=1920&h=1080&fit=crop&auto=format"
+          />
+        ) : (
+          <div className="absolute inset-0 bg-[#1A1A2E]">
+            <img
+              src="https://images.unsplash.com/photo-1547609434-b732edfee020?w=1920&h=1080&fit=crop&auto=format"
+              alt=""
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
+
+        {/* Hero Content Overlay */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="max-w-7xl mx-auto px-6 md:px-8 lg:px-16 text-center relative z-10">
+            <div className="inline-flex items-center gap-3 px-4 py-1.5 mb-6 border border-[var(--accent)]/30 bg-white/90 backdrop-blur-sm">
+              <span className="h-px w-8 bg-[var(--accent)]" />
+              <span className="text-[11px] uppercase tracking-[0.18em] font-medium text-[var(--accent)]">
+                Catalogo
+              </span>
+            </div>
+            <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-light text-white leading-tight max-w-4xl mb-6 drop-shadow-lg">
+              Showroom Arredamento Campania
+            </h1>
+            <p className="text-base md:text-lg text-white/90 max-w-2xl leading-relaxed mb-8 drop-shadow-md">
+              Showroom arredamento Campania a Macerata Campania: arredi professionali su misura per barberie, parrucchieri, uffici, scuole e attività speciali. Qualità artigianale Made in Italy con servizio in tutta Italia.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <a
+                href="#products"
+                className="inline-flex items-center justify-center px-8 py-3 bg-[var(--accent)] text-white text-sm font-medium hover:bg-[var(--foreground)] transition-colors shadow-lg"
+              >
+                Scopri i prodotti
+              </a>
+              {products.some((p) => computeEffectivePrice(p).savings > 0) && (
+                <button
+                  type="button"
+                  onClick={() => setFilters((f) => ({ ...f, onlyOffers: true }))}
+                  className="inline-flex items-center justify-center gap-2 px-8 py-3 bg-white/90 backdrop-blur-sm text-[var(--foreground)] text-sm font-medium hover:bg-white transition-colors shadow-lg"
+                >
+                  🏷️ Vedi le promozioni
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Gradient overlay for better text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60 pointer-events-none" />
+      </section>
+
+      {/* Products Section */}
+      <section id="products" className="max-w-7xl mx-auto px-6 md:px-8 lg:px-16 py-16">
         <div className="mb-12">
           <div className="inline-flex items-center gap-3 px-4 py-1.5 mb-5 border border-[var(--accent)]/30 bg-white">
             <span className="h-px w-8 bg-[var(--accent)]" />
@@ -109,21 +183,9 @@ export default function ShowroomList() {
               Catalogo
             </span>
           </div>
-          <h1 className="font-display text-4xl md:text-5xl font-light text-[var(--foreground)] leading-tight max-w-3xl">
-            Showroom Arredamento Campania
-          </h1>
-          <p className="mt-5 text-base md:text-lg text-[var(--foreground)] max-w-2xl leading-relaxed">
-            Showroom arredamento Campania a Macerata Campania: arredi professionali su misura per barberie, parrucchieri, uffici, scuole e attività speciali. Qualità artigianale Made in Italy con servizio in tutta Italia.
-          </p>
-          {products.some((p) => computeEffectivePrice(p).savings > 0) && (
-            <button
-              type="button"
-              onClick={() => setFilters((f) => ({ ...f, onlyOffers: true }))}
-              className="mt-6 inline-flex items-center gap-2 text-sm font-medium px-6 py-2.5 bg-[var(--accent)] text-white hover:bg-[var(--foreground)] transition-colors"
-            >
-              🏷️ Vedi i prodotti in promozione
-            </button>
-          )}
+          <h2 className="font-display text-3xl md:text-4xl font-light text-[var(--foreground)] leading-tight max-w-3xl">
+            I Nostri Prodotti
+          </h2>
         </div>
 
         <ProductFilters
