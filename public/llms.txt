@@ -1,0 +1,124 @@
+# Farcom Srl - Arredamento e Progettazione Interni
+
+Farcom Srl è un'azienda di arredamento e progettazione interni attiva dal 2003, con sede a Macerata Campania (CE), Italia. Specializzata in arredi su misura per attività commerciali e professionali.
+
+## Informazioni Azienda
+
+- **Nome**: Farcom S.r.l.
+- **Fondazione**: 2003
+- **Sede**: Via P. Vertaldi, 27, 81050 Macerata Campania (CE), Italia
+- **Telefono**: +39 0823 694427
+- **Email**: farcomsrl@hotmail.com
+- **Sito Web**: https://arredi.onrender.com
+
+## Settori di Attività
+
+Farcom Srl opera in quattro settori principali:
+
+1. **Barberie e Parrucchieri** - Arredamento specifico per saloni di bellezza e barber shop
+2. **Uffici** - Mobili da ufficio su misura, scrivanie, archivi
+3. **Negozi** - Allestimenti commerciali, vetrine, espositori
+4. **Scuole** - Arredamento scolastico, aule, laboratori
+
+## Servizi Offerti
+
+- Progettazione tecnica con render 3D
+- Produzione artigianale Made in Italy
+- Installazione e posa in opera
+- Assistenza post-vendita
+- Preventivi gratuiti
+- Sopralluogo
+
+## Struttura del Sito
+
+### Pagine Principali
+
+- **Home** (`/`) - Homepage con presentazione azienda e settori
+- **Settori** (`/settori`) - Overview dei quattro settori di attività
+- **Progetti** (`/progetti`) - Portfolio di realizzazioni
+- **Showroom** (`/showroom`) - Catalogo prodotti pronti
+- **Blog** (`/blog`) - Articoli su arredamento e progettazione
+- **Chi Siamo** (`/chi-siamo`) - Storia e valori aziendali
+- **Contatti** (`/contatti`) - Form di contatto e informazioni
+- **Preventivo** (`/preventivo`) - Richiesta preventivo online
+
+### Pagine Settori
+
+- `/settori/barberie` - Arredamento per barberie e parrucchieri
+- `/settori/uffici` - Arredamento per uffici
+- `/settori/negozi` - Allestimenti per negozi
+- `/settori/scuole` - Arredamento scolastico
+
+### Pagine Dettaglio
+
+- `/progetti/{id}` - Dettaglio singolo progetto
+- `/showroom/{slug}` - Dettaglio prodotto showroom
+- `/blog/{slug}` - Articolo blog singolo
+
+## SEO e Metadata
+
+Il sito è ottimizzato per i motori di ricerca con:
+- Meta description complete
+- Schema.org structured data (LocalBusiness, Organization)
+- Canonical URLs
+- robots.txt configurato per permettere indicizzazione
+- Sitemap (opzionale, configurabile)
+
+## Performance
+
+- Hosting su Render
+- Build con Vite
+- React 19
+- Tailwind CSS v4
+- Lazy loading immagini
+- Ottimizzazione CLS (Cumulative Layout Shift)
+
+## Contenuti
+
+### Progetti
+Il portfolio contiene oltre 500 realizzazioni in tutta Italia, con immagini before/after, descrizioni dettagliate e informazioni su location e anno di realizzazione.
+
+### Showroom
+Catalogo di arredi pronti con:
+- Immagini multiple
+- Prezzi
+- Specifiche tecniche
+- Stato di disponibilità (venduto/disponibile)
+- Filtri per settore e tipo di mobile
+
+### Blog
+Articoli su:
+- Tendenze arredamento
+- Consigli progettazione
+- Case study progetti
+- Novità settore
+
+## Target Audience
+
+- Proprietari di attività commerciali
+- Architetti e interior designer
+- Responsabili acquisti aziendali
+- Direttori scolastici
+- Professionisti del settore
+
+## Valori Aziendali
+
+- Qualità artigianale Made in Italy
+- Materiali certificati (FSC, CE)
+- Tempi di consegna certi
+- Assistenza post-vendita
+- Innovazione e design
+
+## Note per Agenti AI
+
+Per navigare efficacemente questo sito:
+1. Usa la struttura URL logica `/settori/{slug}` per accedere ai settori
+2. Il portfolio progetti è filtrabile per settore
+3. Lo showroom ha filtri per attività e tipo di mobile
+4. Il blog contiene articoli con tag e categorie
+5. Tutte le pagine hanno meta description e schema.org data
+6. Le immagini hanno alt text descrittivo per accessibilità
+
+## Contatto per Collaborazioni
+
+Per partnership, collaborazioni o informazioni commerciali, utilizzare il form nella pagina /contatti o contattare direttamente via email o telefono.

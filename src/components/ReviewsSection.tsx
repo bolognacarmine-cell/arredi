@@ -78,7 +78,7 @@ const reviews: Review[] = [
 
 function StarRow() {
   return (
-    <div className="flex items-center gap-0.5 sm:gap-1" aria-label="5 stelle su 5">
+    <div role="img" aria-label="5 stelle su 5" className="flex items-center gap-0.5 sm:gap-1">
       <GoogleStar />
       <GoogleStar />
       <GoogleStar />

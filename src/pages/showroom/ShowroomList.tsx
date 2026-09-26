@@ -130,6 +130,10 @@ export default function ShowroomList() {
             <img
               src="https://images.unsplash.com/photo-1547609434-b732edfee020?w=1920&h=1080&fit=crop&auto=format"
               alt=""
+              width="1920"
+              height="1080"
+              loading="eager"
+              fetchpriority="high"
               className="w-full h-full object-cover"
             />
           </div>

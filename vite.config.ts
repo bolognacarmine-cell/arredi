@@ -4,6 +4,8 @@ import react from "@vitejs/plugin-react"
 
 import tailwindcss from "@tailwindcss/vite"
 
+import { VitePWA } from 'vite-plugin-pwa'
+
 import fs from "node:fs"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
@@ -38,6 +40,79 @@ export default defineConfig(({ mode }) => {
       react(),
 
       tailwindcss(),
+
+      VitePWA({
+        registerType: 'autoUpdate',
+        includeAssets: ['favicon.ico', 'robots.txt', 'sitemap.xml', 'llms.txt'],
+        manifest: {
+          name: 'Farcom Srl - Arredamento e Progettazione Interni',
+          short_name: 'Farcom Arredi',
+          description: 'Arredamento su misura e progettazione interni a Macerata Campania e in tutta Italia',
+          theme_color: '#E69138',
+          background_color: '#FAFAFA',
+          display: 'standalone',
+          orientation: 'portrait',
+          icons: [
+            {
+              src: '/logo-farcom.png',
+              sizes: '192x192',
+              type: 'image/png'
+            },
+            {
+              src: '/logo-farcom.png',
+              sizes: '512x512',
+              type: 'image/png'
+            }
+          ]
+        },
+        workbox: {
+          globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,avif}'],
+          runtimeCaching: [
+            {
+              urlPattern: /^https:\/\/res\.cloudinary\.com\/.*/i,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'cloudinary-images',
+                expiration: {
+                  maxEntries: 100,
+                  maxAgeSeconds: 60 * 60 * 24 * 30
+                },
+                cacheableResponse: {
+                  statuses: [0, 200]
+                }
+              }
+            },
+            {
+              urlPattern: /^https:\/\/images\.unsplash\.com\/.*/i,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'unsplash-images',
+                expiration: {
+                  maxEntries: 50,
+                  maxAgeSeconds: 60 * 60 * 24 * 7
+                },
+                cacheableResponse: {
+                  statuses: [0, 200]
+                }
+              }
+            },
+            {
+              urlPattern: /\/api\/.*/i,
+              handler: 'NetworkFirst',
+              options: {
+                cacheName: 'api-cache',
+                expiration: {
+                  maxEntries: 50,
+                  maxAgeSeconds: 60 * 5
+                },
+                cacheableResponse: {
+                  statuses: [0, 200]
+                }
+              }
+            }
+          ]
+        }
+      }),
 
       farcomDataApiPlugin(),
 
@@ -78,6 +153,10 @@ export default defineConfig(({ mode }) => {
       port: parseInt(process.env.PORT || "8443"),
 
       allowedHosts: ["arredi.onrender.com"],
+      headers: {
+        'X-Frame-Options': 'SAMEORIGIN',
+        'Content-Security-Policy': "frame-ancestors 'self';",
+      },
     },
   }
 })

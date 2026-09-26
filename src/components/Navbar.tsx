@@ -69,6 +69,10 @@ export default function Navbar() {
           <img
             src="/logo-farcom.png"
             alt="Farcom Società Cooperativa"
+            width="120"
+            height="40"
+            loading="eager"
+            fetchpriority="high"
             className="h-8 sm:h-10 md:h-10 lg:h-12 w-auto object-contain overflow-visible"
           />
         </Link>

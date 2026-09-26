@@ -7,7 +7,8 @@
     "dev": "concurrently \"vite\" \"nodemon --exec tsx server/index.ts\"",
     "build": "vite build && tsc -p server",
     "start": "node server/dist/index.js",
-    "postinstall": "cd server && npm install"
+    "postinstall": "cd server && npm install",
+    "convert-images": "node scripts/convert-images.js"
   },
   "keywords": [],
   "author": "",
@@ -37,9 +38,12 @@
     "@types/nodemailer": "^6.4.17",
     "concurrently": "^9.1.2",
     "nodemon": "^3.1.10",
+    "sharp": "^0.33.5",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3",
-    "vite": "^7.0.6"
+    "vite": "^7.0.6",
+    "vite-plugin-pwa": "^0.21.1",
+    "workbox-window": "^7.3.0"
   },
   "engines": {
     "node": ">=18.0.0"

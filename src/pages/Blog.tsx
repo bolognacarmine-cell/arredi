@@ -148,7 +148,11 @@ export default function Blog() {
                       <img
                         src={post.coverImage}
                         alt={post.title}
+                        width="1600"
+                        height="1000"
                         loading="lazy"
+                        fetchpriority="low"
+                        decoding="async"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>

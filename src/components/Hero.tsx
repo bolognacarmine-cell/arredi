@@ -290,9 +290,11 @@ export default function Hero() {
                     src="/logo-farcom.png"
                     alt=""
                     aria-hidden="true"
+                    width="120"
+                    height="40"
+                    loading="eager"
+                    fetchpriority="high"
                     className="h-6 sm:h-7 md:h-8 w-auto opacity-90"
-                    loading="lazy"
-                    decoding="async"
                   />
                   <div className="h-px flex-1 bg-gradient-to-r from-white/15 to-transparent" />
                 </div>

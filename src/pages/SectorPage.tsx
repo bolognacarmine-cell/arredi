@@ -84,6 +84,10 @@ export default function SectorPage() {
               },
             )}
             alt={sector.label}
+            width="2400"
+            height="1600"
+            loading="eager"
+            fetchpriority="high"
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#1A1A18]/80 via-[#1A1A18]/30 to-transparent" />
@@ -173,6 +177,11 @@ export default function SectorPage() {
                         },
                       )}
                       alt={p.title}
+                      width="1200"
+                      height="900"
+                      loading="lazy"
+                      fetchpriority="low"
+                      decoding="async"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     />
                   </div>

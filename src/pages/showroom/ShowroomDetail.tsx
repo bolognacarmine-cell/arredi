@@ -221,6 +221,7 @@ export default function ShowroomDetail() {
                 {p.isSold && p.showSoldInFrontend && (
                   <div
                     className="px-4 py-2 sm:px-5 sm:py-3 rounded text-xs sm:text-sm font-bold text-white shadow-2xl tracking-widest border-2 border-white/20 transform rotate-[-2deg]"
+                    role="status"
                     aria-label="Prodotto venduto"
                     style={{
                       backgroundColor: '#4a2c2a',

@@ -90,11 +90,16 @@ export default function About() {
               per il tuo progetto ovunque in Italia.
             </p>
           </div>
-          <div className="relative">
+          <div className="relative aspect-[7/8]">
             <img
               src="https://images.unsplash.com/photo-1547609434-b732edfee020?w=700&h=800&fit=crop&auto=format"
               alt="Laboratorio artigianale Farcom Srl - Produzione arredi su misura Macerata Campania"
-              className="w-full object-cover"
+              width="700"
+              height="800"
+              loading="lazy"
+              fetchpriority="low"
+              decoding="async"
+              className="w-full h-full object-cover"
             />
             <div className="absolute -bottom-6 -left-6 bg-[#1B4332] text-white p-6 hidden lg:block">
               <div className="font-display text-4xl font-light mb-1">2003</div>

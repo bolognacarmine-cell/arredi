@@ -37,7 +37,11 @@ export default function ProductCard({ product }: Props) {
           <img
             src={product.images[0]}
             alt={`${product.name} - Arredamento ${sectorLabel} Made in Italy`}
+            width="800"
+            height="600"
             loading="lazy"
+            fetchpriority="low"
+            decoding="async"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
@@ -72,6 +76,7 @@ export default function ProductCard({ product }: Props) {
             <div className="absolute top-4 right-4">
               <div
                 className="px-4 py-2 sm:px-5 sm:py-3 rounded text-xs sm:text-sm font-bold text-white shadow-2xl tracking-widest border-[3px] border-white/30 transform rotate-[-2deg]"
+                role="status"
                 aria-label="Prodotto venduto"
                 style={{
                   backgroundColor: '#4a2c2a',

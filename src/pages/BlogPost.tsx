@@ -137,6 +137,11 @@ export default function BlogPost() {
                 <img
                   src={post.author.avatar}
                   alt={post.author.name}
+                  width="48"
+                  height="48"
+                  loading="lazy"
+                  fetchpriority="low"
+                  decoding="async"
                   className="w-12 h-12 rounded-full object-cover"
                 />
               )}
@@ -154,6 +159,11 @@ export default function BlogPost() {
             <img
               src={post.coverImage}
               alt={`${post.title} - Articolo blog arredamento e progettazione interni Farcom`}
+              width="1200"
+              height="675"
+              loading="lazy"
+              fetchpriority="low"
+              decoding="async"
               className="w-full rounded-lg"
             />
           </div>
@@ -221,6 +231,11 @@ export default function BlogPost() {
                       <img
                         src={relatedPost.coverImage}
                         alt={`${relatedPost.title} - Articolo blog arredamento Farcom`}
+                        width="1600"
+                        height="1000"
+                        loading="lazy"
+                        fetchpriority="low"
+                        decoding="async"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>

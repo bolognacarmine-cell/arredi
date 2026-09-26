@@ -150,6 +150,10 @@ function SectorCard({ sector, index, reversedIndex, experimental }: {
             },
           )}
           alt={`${sector.label} - Arredamento professionale Macerata Campania`}
+          width="1200"
+          height="1600"
+          loading="eager"
+          fetchpriority="high"
           className={`w-full h-full object-cover ${
             experimental ? 'sector-image' : 'group-hover:scale-110 transition-transform duration-700'
           }`}
@@ -572,6 +576,11 @@ export default function Home() {
                       },
                     )}
                     alt={`${p.title} - Progetto arredamento ${p.location} Farcom Srl`}
+                    width="1200"
+                    height="900"
+                    loading="lazy"
+                    fetchpriority="low"
+                    decoding="async"
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />
                   <span className="absolute top-4 left-4 bg-[#E69138] text-[#1A1A2E] text-xs px-3 py-1 font-semibold">

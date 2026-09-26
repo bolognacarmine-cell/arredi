@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# AI Agent Discovery
+Allow: /llms.txt
+
+# Sitemap
+Sitemap: https://arredi.onrender.com/sitemap.xml

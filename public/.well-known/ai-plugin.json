@@ -1,0 +1,31 @@
+{
+  "name": "Farcom Srl Arredamento",
+  "description": "Plugin per accedere a informazioni su arredamento su misura, progettazione interni e catalogo prodotti Farcom Srl",
+  "version": "1.0.0",
+  "url": "https://arredi.onrender.com",
+  "manifest": {
+    "contact_url": "https://arredi.onrender.com/contatti",
+    "website_url": "https://arredi.onrender.com",
+    "documentation_url": "https://arredi.onrender.com/llms.txt"
+  },
+  "endpoints": [
+    {
+      "name": "Catalogo Prodotti",
+      "description": "Accedi al catalogo showroom di arredi pronti",
+      "url": "https://arredi.onrender.com/showroom",
+      "method": "GET"
+    },
+    {
+      "name": "Portfolio Progetti",
+      "description": "Visualizza i progetti realizzati da Farcom Srl",
+      "url": "https://arredi.onrender.com/progetti",
+      "method": "GET"
+    },
+    {
+      "name": "Settori Attività",
+      "description": "Informazioni sui settori di specializzazione",
+      "url": "https://arredi.onrender.com/settori",
+      "method": "GET"
+    }
+  ]
+}
