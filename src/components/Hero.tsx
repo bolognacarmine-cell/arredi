@@ -85,7 +85,7 @@ export default function Hero() {
       style={{ paddingTop: "env(safe-area-inset-top)" }}
     >
       {/* Grid di progettazione (molto sottile) */}
-      <div className="absolute inset-0 opacity-[0.035] pointer-events-none">
+      <div className="absolute inset-0 opacity-[0.05] pointer-events-none">
         <div
           className="absolute inset-0"
           style={{
@@ -117,7 +117,7 @@ export default function Hero() {
         className="pointer-events-none absolute inset-0 z-[1]"
         style={{
           background:
-            "linear-gradient(135deg, rgba(26,26,46,0.42) 0%, rgba(26,26,46,0.12) 45%, rgba(26,26,46,0.48) 100%)",
+            "linear-gradient(135deg, rgba(26,26,46,0.65) 0%, rgba(26,26,46,0.35) 45%, rgba(26,26,46,0.70) 100%)",
         }}
       />
       {/* Overlay selettivo su mobile solo dietro il testo */}
@@ -125,7 +125,7 @@ export default function Hero() {
         className="pointer-events-none absolute inset-0 z-[1] lg:hidden"
         style={{
           background:
-            "linear-gradient(to bottom, rgba(26,26,46,0.62) 0%, rgba(26,26,46,0.34) 50%, rgba(26,26,46,0.18) 100%)",
+            "linear-gradient(to bottom, rgba(26,26,46,0.75) 0%, rgba(26,26,46,0.50) 50%, rgba(26,26,46,0.35) 100%)",
         }}
       />
       <div
@@ -173,7 +173,7 @@ export default function Hero() {
                 <div className="h-px w-6 sm:w-8 md:w-12 lg:w-16 bg-gradient-to-r from-[#E69138]/60 to-transparent" />
               </div>
 
-              <h1 className="font-display text-[1.25rem] sm:text-[1.5rem] md:text-4xl lg:text-5xl xl:text-7xl font-bold text-white leading-[1.2] sm:leading-[1.2] md:leading-[1.1] lg:leading-[1.05] tracking-tight">
+              <h1 className="font-display text-[1.5rem] sm:text-[1.75rem] md:text-4xl lg:text-5xl xl:text-7xl font-bold text-white leading-[1.2] sm:leading-[1.2] md:leading-[1.1] lg:leading-[1.05] tracking-tight">
                 Progettazione tecnica e{" "}
                 <span className="text-[#E69138]">artigianalità premium</span>.
               </h1>
@@ -202,7 +202,7 @@ export default function Hero() {
               <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 md:gap-4 mt-4 sm:mt-5 md:mt-6 lg:mt-8">
                 <Link
                   to="/preventivo"
-                  className="group relative inline-flex items-center justify-center min-h-[40px] sm:min-h-[44px] md:min-h-[48px] bg-[#E69138] text-[#1A1A2E] text-[11px] sm:text-xs md:text-sm font-semibold px-3 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-2.5 md:py-3 lg:py-4 overflow-hidden shadow-lg shadow-[#E69138]/20 hover:scale-[1.03] hover:shadow-xl hover:shadow-[#E69138]/40 transition-all duration-300 ease-out glow-pulse magnetic-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E69138]"
+                  className="group relative inline-flex items-center justify-center min-h-[40px] sm:min-h-[44px] md:min-h-[48px] bg-[#E69138] text-[#1A1A2E] text-[11px] sm:text-xs md:text-sm font-semibold px-3 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-2.5 md:py-3 lg:py-4 overflow-hidden shadow-lg shadow-[#E69138]/20 hover:shadow-xl hover:shadow-[#E69138]/30 transition-all duration-300 ease-out glow-pulse magnetic-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E69138] focus-visible:ring-offset-2"
                   aria-label="Richiedi un preventivo gratuito"
                 >
                   <span className="absolute inset-0 bg-[#D67F28] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -226,7 +226,7 @@ export default function Hero() {
 
                 <Link
                   to="/progetti"
-                  className="group relative inline-flex items-center justify-center min-h-[40px] sm:min-h-[44px] md:min-h-[48px] border border-white/40 text-white text-[11px] sm:text-xs md:text-sm font-semibold px-3 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-2.5 md:py-3 lg:py-4 overflow-hidden hover:border-white/70 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                  className="group relative inline-flex items-center justify-center min-h-[40px] sm:min-h-[44px] md:min-h-[48px] border border-white/40 text-white text-[11px] sm:text-xs md:text-sm font-semibold px-3 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-2.5 md:py-3 lg:py-4 overflow-hidden hover:border-white/70 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2"
                   aria-label="Vedi i progetti"
                 >
                   <span className="absolute inset-0 bg-white/10 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out origin-left" />

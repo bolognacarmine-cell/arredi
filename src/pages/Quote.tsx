@@ -438,7 +438,7 @@ export default function Quote() {
                     required={req as boolean}
                     value={form[(k as keyof typeof form)] as string}
                     onChange={(e) => set(k as string, e.target.value)}
-                    className="w-full border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)] focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 transition-colors"
+                    className="w-full border border-[var(--border)] bg-white px-4 py-3 sm:py-3 text-sm text-[var(--foreground)] focus:outline-none focus:border-[#E69138] focus:ring-2 focus:ring-[#E69138]/30 transition-colors min-h-[48px]"
                   />
                 </div>
               ))}
@@ -459,7 +459,7 @@ export default function Quote() {
                   required
                   value={form.settore}
                   onChange={(e) => set("settore", e.target.value)}
-                  className="w-full border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)] focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 transition-colors"
+                  className="w-full border border-[var(--border)] bg-white px-4 py-3 sm:py-3 text-sm text-[var(--foreground)] focus:outline-none focus:border-[#E69138] focus:ring-2 focus:ring-[#E69138]/30 transition-colors min-h-[48px]"
                 >
                   <option value="">Seleziona settore</option>
                   {SECTORS.map((s) => (
@@ -478,7 +478,7 @@ export default function Quote() {
                   min="5"
                   value={form.metratura}
                   onChange={(e) => set("metratura", e.target.value)}
-                  className="w-full border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)] focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 transition-colors"
+                  className="w-full border border-[var(--border)] bg-white px-4 py-3 sm:py-3 text-sm text-[var(--foreground)] focus:outline-none focus:border-[#E69138] focus:ring-2 focus:ring-[#E69138]/30 transition-colors min-h-[48px]"
                   placeholder="es. 40"
                 />
               </div>
@@ -491,7 +491,7 @@ export default function Quote() {
                   value={form.arredo}
                   onChange={(e) => set("arredo", e.target.value)}
                   placeholder="es. banco reception, postazioni, specchiere…"
-                  className="w-full border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)] focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 transition-colors"
+                  className="w-full border border-[var(--border)] bg-white px-4 py-3 sm:py-3 text-sm text-[var(--foreground)] focus:outline-none focus:border-[#E69138] focus:ring-2 focus:ring-[#E69138]/30 transition-colors min-h-[48px]"
                 />
               </div>
               <div className="sm:col-span-2">
@@ -503,7 +503,7 @@ export default function Quote() {
                   value={form.messaggio}
                   onChange={(e) => set("messaggio", e.target.value)}
                   placeholder="Raccontaci la tua idea, le dimensioni dello spazio, i materiali preferiti, i tempi previsti…"
-                  className="w-full border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--foreground)] focus:outline-none focus:border-[var(--primary)] focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 transition-colors resize-none"
+                  className="w-full border border-[var(--border)] bg-white px-4 py-3 sm:py-3 text-sm text-[var(--foreground)] focus:outline-none focus:border-[#E69138] focus:ring-2 focus:ring-[#E69138]/30 transition-colors resize-none min-h-[120px]"
                 />
               </div>
               <div className="sm:col-span-2">
@@ -511,29 +511,37 @@ export default function Quote() {
                   Immagini del progetto (opzionale)
                 </label>
                 <div
-                  className={`border border-dashed bg-white p-6 text-center text-sm text-[var(--muted-foreground)] transition-colors ${
-                    dragActive ? 'border-[var(--primary)] bg-[var(--background)]' : 'border-[var(--border)]'
+                  className={`border-2 border-dashed bg-white p-8 text-center text-sm text-[var(--muted-foreground)] transition-colors rounded-lg ${
+                    dragActive ? 'border-[#E69138] bg-[#E69138]/5' : 'border-[var(--border)] hover:border-[#E69138]/50'
                   }`}
                   onDragEnter={handleDrag}
                   onDragLeave={handleDrag}
                   onDragOver={handleDrag}
                   onDrop={handleDrop}
                 >
-                  <span className="block text-2xl mb-2">📎</span>
-                  <span>Trascina qui le immagini o </span>
-                  <label className="text-[var(--primary)] underline cursor-pointer">
-                    sfoglia
-                    <input
-                      type="file"
-                      multiple
-                      className="hidden"
-                      accept="image/jpeg,image/jpg,image/png,image/webp"
-                      onChange={handleFileSelect}
-                    />
-                  </label>
-                  <span className="block text-xs mt-1 text-[var(--muted-foreground)]">
-                    JPG, PNG, WebP – max 8MB per immagine, max 6 immagini
-                  </span>
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-[#E69138]/10 flex items-center justify-center">
+                      <svg className="w-6 h-6 text-[#E69138]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <span>Trascina qui le immagini o </span>
+                      <label className="text-[#E69138] underline cursor-pointer font-medium">
+                        sfoglia
+                        <input
+                          type="file"
+                          multiple
+                          className="hidden"
+                          accept="image/jpeg,image/jpg,image/png,image/webp"
+                          onChange={handleFileSelect}
+                        />
+                      </label>
+                    </div>
+                    <span className="text-xs text-[var(--muted-foreground)]">
+                      JPG, PNG, WebP – max 8MB per immagine, max 6 immagini
+                    </span>
+                  </div>
                 </div>
 
                 {selectedFiles.length > 0 && (
@@ -581,29 +589,37 @@ export default function Quote() {
                   Documenti del progetto (opzionale)
                 </label>
                 <div
-                  className={`border border-dashed bg-white p-6 text-center text-sm text-[var(--muted-foreground)] transition-colors ${
-                    documentDragActive ? 'border-[var(--primary)] bg-[var(--background)]' : 'border-[var(--border)]'
+                  className={`border-2 border-dashed bg-white p-8 text-center text-sm text-[var(--muted-foreground)] transition-colors rounded-lg ${
+                    documentDragActive ? 'border-[#E69138] bg-[#E69138]/5' : 'border-[var(--border)] hover:border-[#E69138]/50'
                   }`}
                   onDragEnter={handleDocumentDrag}
                   onDragLeave={handleDocumentDrag}
                   onDragOver={handleDocumentDrag}
                   onDrop={handleDocumentDrop}
                 >
-                  <span className="block text-2xl mb-2">📄</span>
-                  <span>Trascina qui i documenti o </span>
-                  <label className="text-[var(--primary)] underline cursor-pointer">
-                    sfoglia
-                    <input
-                      type="file"
-                      multiple
-                      className="hidden"
-                      accept=".pdf,.dwg,.dxf,application/pdf"
-                      onChange={handleDocumentSelect}
-                    />
-                  </label>
-                  <span className="block text-xs mt-1 text-[var(--muted-foreground)]">
-                    PDF, DWG, DXF – max 8MB per documento, max 3 documenti
-                  </span>
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-[#E69138]/10 flex items-center justify-center">
+                      <svg className="w-6 h-6 text-[#E69138]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <span>Trascina qui i documenti o </span>
+                      <label className="text-[#E69138] underline cursor-pointer font-medium">
+                        sfoglia
+                        <input
+                          type="file"
+                          multiple
+                          className="hidden"
+                          accept=".pdf,.dwg,.dxf,application/pdf"
+                          onChange={handleDocumentSelect}
+                        />
+                      </label>
+                    </div>
+                    <span className="text-xs text-[var(--muted-foreground)]">
+                      PDF, DWG, DXF – max 8MB per documento, max 3 documenti
+                    </span>
+                  </div>
                 </div>
 
                 {selectedDocuments.length > 0 && (
@@ -614,7 +630,11 @@ export default function Quote() {
                     <div className="space-y-2">
                       {selectedDocuments.map((file, index) => (
                         <div key={index} className="relative group flex items-center gap-3 bg-[var(--background)] p-3 rounded-lg border border-[var(--border)]">
-                          <div className="text-2xl">📄</div>
+                          <div className="w-10 h-10 rounded-full bg-[#E69138]/10 flex items-center justify-center shrink-0">
+                            <svg className="w-5 h-5 text-[#E69138]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                          </div>
                           <div className="flex-1 min-w-0">
                             <div className="text-xs text-[var(--foreground)] font-medium truncate" title={file.name}>
                               {file.name}

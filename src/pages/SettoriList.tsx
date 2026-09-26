@@ -50,7 +50,7 @@ export default function SettoriList() {
       </section>
 
       {/* SETTORI GRID */}
-      <section className="py-8 sm:py-10 md:py-12 lg:py-16 xl:py-20 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 relative bg-white">
+      <section className="py-16 sm:py-20 md:py-24 lg:py-28 xl:py-32 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 relative bg-white">
         {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 
@@ -125,7 +125,7 @@ export default function SettoriList() {
       </section>
 
       {/* CTA */}
-      <section className="py-8 sm:py-10 md:py-12 lg:py-16 xl:py-20 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 sm:gap-5 md:gap-6 lg:gap-8 relative bg-white">
+      <section className="py-16 sm:py-20 md:py-24 lg:py-28 xl:py-32 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 sm:gap-5 md:gap-6 lg:gap-8 relative bg-white">
         {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 

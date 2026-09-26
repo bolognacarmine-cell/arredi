@@ -30,7 +30,7 @@ export default function ProductCard({ product }: Props) {
   return (
     <Link
       to={`/showroom/${product.slug}`}
-      className="group block bg-white border border-[var(--border)] overflow-hidden hover:shadow-lg transition-all duration-300"
+      className="group block bg-white border border-[var(--border)] overflow-hidden hover:shadow-lg hover:shadow-[#E69138]/10 transition-all duration-300"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-[var(--background)]">
         {product.images[0] ? (
@@ -68,14 +68,14 @@ export default function ProductCard({ product }: Props) {
           </div>
         )}
         {product.isSold && product.showSoldInFrontend && (
-          <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
             <div className="absolute top-4 right-4">
               <div
-                className="px-4 py-2 sm:px-5 sm:py-3 rounded text-xs sm:text-sm font-bold text-white shadow-2xl tracking-widest border-2 border-white/20 transform rotate-[-2deg]"
+                className="px-4 py-2 sm:px-5 sm:py-3 rounded text-xs sm:text-sm font-bold text-white shadow-2xl tracking-widest border-[3px] border-white/30 transform rotate-[-2deg]"
                 aria-label="Prodotto venduto"
                 style={{
                   backgroundColor: '#4a2c2a',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)'
+                  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.6)'
                 }}
               >
                 VENDUTO
@@ -85,7 +85,7 @@ export default function ProductCard({ product }: Props) {
         )}
       </div>
 
-      <div className="p-4 sm:p-5 space-y-2.5">
+      <div className="p-4 sm:p-5 space-y-2">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-[10px] uppercase tracking-wider font-medium px-2 py-0.5 bg-[var(--muted)] text-[var(--foreground)]">
             {sectorLabel}
@@ -112,11 +112,16 @@ export default function ProductCard({ product }: Props) {
           <div>
             {eff.savings > 0 ? (
               <div>
-                <div className="text-xs text-[var(--muted-foreground)] line-through">
+                <div className="text-xs text-[var(--muted-foreground)] line-through mb-1">
                   {formatPrice(product.basePrice)}
                 </div>
-                <div className="font-semibold text-[var(--primary)] text-lg leading-tight">
-                  {formatPrice(eff.finalPrice)}
+                <div className="flex items-center gap-2">
+                  <div className="font-semibold text-[var(--primary)] text-lg leading-tight">
+                    {formatPrice(eff.finalPrice)}
+                  </div>
+                  <span className="text-[10px] font-bold text-[var(--accent)] bg-[var(--accent)]/10 px-1.5 py-0.5 rounded">
+                    -{Math.round((eff.savings / product.basePrice) * 100)}%
+                  </span>
                 </div>
               </div>
             ) : (

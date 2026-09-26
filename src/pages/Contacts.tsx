@@ -30,7 +30,7 @@ export default function Contacts() {
   const socialLinks = getSocialLinks(siteConfig)
 
   return (
-    <div className="bg-[#F7F5F0] min-h-screen pt-24">
+    <div className="bg-[#FAFAFA] min-h-screen pt-24">
       <SEOHead
         title="Contatti - Farcom Srl | Showroom Macerata Campania"
         description="Contatta Farcom Srl: showroom arredamento a Macerata Campania, Via P. Vertaldi 27. Telefono +39 0823 694427, WhatsApp +39 329 4576079. Arredamento su misura in tutta Italia."
@@ -145,10 +145,10 @@ export default function Contacts() {
       />
       <div className="max-w-7xl mx-auto px-6 lg:px-10 py-16">
         <div className="mb-12">
-          <span className="text-[#888580] text-xs tracking-widest uppercase font-semibold">
+          <span className="text-[#6B7280] text-xs tracking-widest uppercase font-semibold">
             Dove siamo
           </span>
-          <h1 className="font-display text-5xl font-light text-[#1A1A18] mt-2">
+          <h1 className="font-display text-5xl font-light text-[#1A1A2E] mt-2">
             Contatti
           </h1>
         </div>
@@ -160,9 +160,9 @@ export default function Contacts() {
               {contactInfoCards.map((item) => (
                 <div
                   key={item.label}
-                  className="bg-white border border-[#DDD9D0] p-5"
+                  className="bg-white border border-[#E5E5E7] p-5"
                 >
-                  <div className="text-xs text-[#888580] uppercase tracking-widest mb-2">
+                  <div className="text-xs text-[#6B7280] uppercase tracking-widest mb-2">
                     {item.label}
                   </div>
                   {item.entries.map(({ text, href, external }, i) =>
@@ -172,14 +172,14 @@ export default function Contacts() {
                         href={href}
                         target={external ? "_blank" : undefined}
                         rel={external ? "noopener noreferrer" : undefined}
-                        className="block text-[#1A1A18] text-sm font-medium hover:text-[#E69138] transition-colors"
+                        className="block text-[#1A1A2E] text-sm font-medium hover:text-[#E69138] transition-colors"
                       >
                         {text}
                       </a>
                     ) : (
                       <div
                         key={`${item.label}-${i}`}
-                        className="text-[#1A1A18] text-sm font-medium"
+                        className="text-[#1A1A2E] text-sm font-medium"
                       >
                         {text}
                       </div>
@@ -190,7 +190,7 @@ export default function Contacts() {
             </div>
 
             {/* Google Maps */}
-            <div className="relative bg-[#EAE7E0] h-72 overflow-hidden">
+            <div className="relative bg-[#E8E8EC] h-80 sm:h-96 overflow-hidden">
               <iframe
                 src={siteConfig.mapEmbedSrc}
                 width="100%"
@@ -211,7 +211,7 @@ export default function Contacts() {
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="border border-[#DDD9D0] text-[#4A4A46] text-xs px-4 py-2.5 hover:border-[#E69138] hover:text-[#E69138] transition-colors font-medium flex items-center gap-2"
+                  className="border border-[#E5E5E7] text-[#4A4A46] text-xs px-4 py-2.5 hover:border-[#E69138] hover:text-[#E69138] transition-colors font-medium flex items-center gap-2"
                 >
                   {icon}
                   {label}
@@ -241,7 +241,7 @@ export default function Contacts() {
 
           {/* Form */}
           <div>
-            <h2 className="font-display text-2xl font-light text-[#1A1A18] mb-6">
+            <h2 className="font-display text-2xl font-light text-[#1A1A2E] mb-6">
               Scrivici
             </h2>
 
@@ -269,7 +269,7 @@ ${form.messaggio}`
                 ["email", "Email *", "email"],
               ].map(([k, label, type]) => (
                 <div key={k as string}>
-                  <label className="block text-xs text-[#888580] uppercase tracking-wide mb-1.5">
+                  <label className="block text-xs text-[#6B7280] uppercase tracking-wide mb-1.5">
                     {label}
                   </label>
                   <input
@@ -277,12 +277,12 @@ ${form.messaggio}`
                     required
                     value={form[(k as keyof typeof form)]}
                     onChange={(e) => set(k as string, e.target.value)}
-                    className="w-full border border-[#DDD9D0] bg-white px-4 py-3 text-sm text-[#1A1A18] focus:outline-none focus:border-[#E69138] transition-colors"
+                    className="w-full border border-[#E5E5E7] bg-white px-4 py-3 text-sm text-[#1A1A2E] focus:outline-none focus:border-[#E69138] focus:ring-2 focus:ring-[#E69138]/20 transition-colors"
                   />
                 </div>
               ))}
               <div>
-                <label className="block text-xs text-[#888580] uppercase tracking-wide mb-1.5">
+                <label className="block text-xs text-[#6B7280] uppercase tracking-wide mb-1.5">
                   Telefono (facoltativo)
                 </label>
                 <input
@@ -292,11 +292,11 @@ ${form.messaggio}`
                   maxLength={25}
                   value={form.telefono}
                   onChange={(e) => set("telefono", e.target.value)}
-                  className="w-full border border-[#DDD9D0] bg-white px-4 py-3 text-sm text-[#1A1A18] focus:outline-none focus:border-[#E69138] transition-colors"
+                  className="w-full border border-[#E5E5E7] bg-white px-4 py-3 text-sm text-[#1A1A2E] focus:outline-none focus:border-[#E69138] focus:ring-2 focus:ring-[#E69138]/20 transition-colors"
                 />
               </div>
               <div>
-                <label className="block text-xs text-[#888580] uppercase tracking-wide mb-1.5">
+                <label className="block text-xs text-[#6B7280] uppercase tracking-wide mb-1.5">
                   Messaggio *
                 </label>
                 <textarea
@@ -304,7 +304,7 @@ ${form.messaggio}`
                   required
                   value={form.messaggio}
                   onChange={(e) => set("messaggio", e.target.value)}
-                  className="w-full border border-[#DDD9D0] bg-white px-4 py-3 text-sm text-[#1A1A18] focus:outline-none focus:border-[#E69138] transition-colors resize-none"
+                  className="w-full border border-[#E5E5E7] bg-white px-4 py-3 text-sm text-[#1A1A2E] focus:outline-none focus:border-[#E69138] focus:ring-2 focus:ring-[#E69138]/20 transition-colors resize-none"
                 />
               </div>
               <button
@@ -313,7 +313,7 @@ ${form.messaggio}`
               >
                 Contattaci su WhatsApp
               </button>
-              <p className="text-xs text-[#888580] mt-3">
+              <p className="text-xs text-[#6B7280] mt-3">
                 I dati inseriti saranno utilizzati esclusivamente per ricontattarti in merito alla tua richiesta. Consulta la nostra <a href="/privacy" className="text-[#E69138] underline">Informativa privacy</a>.
               </p>
             </form>
@@ -321,9 +321,9 @@ ${form.messaggio}`
         </div>
 
         {/* FAQ Section */}
-        <section className="mt-20 pt-16 border-t border-[#DDD9D0]">
+        <section className="mt-20 pt-16 border-t border-[#E5E5E7]">
           <div className="max-w-3xl mx-auto">
-            <h2 className="font-display text-3xl font-light text-[#1A1A18] mb-8 text-center">
+            <h2 className="font-display text-3xl font-light text-[#1A1A2E] mb-8 text-center">
               Domande frequenti
             </h2>
             <div className="space-y-6">
@@ -345,8 +345,8 @@ ${form.messaggio}`
                   a: "Siamo aperti dal lunedì al venerdì: 9:00-13:00 / 15:00-19:00. Sabato: 9:00-13:00. Domenica chiusi."
                 }
               ].map((faq, i) => (
-                <div key={i} className="bg-white border border-[#DDD9D0] p-6">
-                  <h3 className="font-display text-lg font-medium text-[#1A1A18] mb-2">
+                <div key={i} className="bg-white border border-[#E5E5E7] p-6">
+                  <h3 className="font-display text-lg font-medium text-[#1A1A2E] mb-2">
                     {faq.q}
                   </h3>
                   <p className="text-[#4A4A46] text-sm leading-relaxed">
