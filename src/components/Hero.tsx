@@ -100,7 +100,7 @@ export default function Hero() {
 
       {/* Video background: poster locale per LCP più stabile */}
       <HeroBackgroundVideo
-        className="z-0"
+        className="z-0 max-lg:[&_video]:brightness-[1.08] max-lg:[&_img]:brightness-[1.08]"
         basePath="/videos/farcom-hero"
         poster="/barber-farcom.jpg"
         fallbackImg="/barber-farcom.jpg"
@@ -112,20 +112,17 @@ export default function Hero() {
         framed
       />
 
-      {/* Overlay + glow animato (no-layout, solo transform/opacity) */}
+      {/* Overlay + glow animato (no-layout, solo transform/opacity).
+          Desktop invariato; mobile più chiaro per compensare lo stacking. */}
       <div
-        className="pointer-events-none absolute inset-0 z-[1]"
-        style={{
-          background:
-            "linear-gradient(135deg, rgba(26,26,46,0.65) 0%, rgba(26,26,46,0.35) 45%, rgba(26,26,46,0.70) 100%)",
-        }}
+        className="pointer-events-none absolute inset-0 z-[1] bg-[linear-gradient(135deg,rgba(26,26,46,0.48)_0%,rgba(26,26,46,0.24)_45%,rgba(26,26,46,0.52)_100%)] lg:bg-[linear-gradient(135deg,rgba(26,26,46,0.65)_0%,rgba(26,26,46,0.35)_45%,rgba(26,26,46,0.70)_100%)]"
       />
-      {/* Overlay selettivo su mobile solo dietro il testo */}
+      {/* Overlay selettivo su mobile: alleggerito per luminosità video, testo ancora contrastato */}
       <div
         className="pointer-events-none absolute inset-0 z-[1] lg:hidden"
         style={{
           background:
-            "linear-gradient(to bottom, rgba(26,26,46,0.75) 0%, rgba(26,26,46,0.50) 50%, rgba(26,26,46,0.35) 100%)",
+            "linear-gradient(to bottom, rgba(26,26,46,0.42) 0%, rgba(26,26,46,0.24) 50%, rgba(26,26,46,0.14) 100%)",
         }}
       />
       <div

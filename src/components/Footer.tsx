@@ -175,13 +175,7 @@ export default function Footer() {
   }
 
   return (
-    <footer className="relative overflow-hidden bg-[#11111F] text-white">
-      {/* Accenti sfondo */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-0 top-0 h-72 w-72 -translate-x-1/3 -translate-y-1/3 rounded-full bg-[#E69138]/18 blur-3xl" />
-        <div className="absolute bottom-0 right-0 h-80 w-80 translate-x-1/4 translate-y-1/4 rounded-full bg-[#1B4332]/30 blur-3xl" />
-      </div>
-
+    <footer className="relative overflow-hidden bg-[#000] text-white">
       {/* Banda CTA superiore */}
       <div className="relative border-b border-white/10">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 sm:gap-5 md:gap-6 px-4 sm:px-6 py-4 sm:py-5 md:py-6 md:px-8 lg:flex-row lg:items-center lg:justify-between lg:px-16">
