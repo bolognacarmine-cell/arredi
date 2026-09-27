@@ -90,7 +90,7 @@ function StarRow() {
 
 export default function ReviewsSection() {
   return (
-    <section className="py-8 sm:py-10 md:py-12 lg:py-16 xl:py-20 bg-gray-50 relative">
+    <section className="pt-4 pb-4 sm:py-10 md:py-12 lg:py-16 xl:py-20 bg-gray-50 relative">
       {/* Separatore visivo */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 

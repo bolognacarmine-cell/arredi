@@ -383,11 +383,11 @@ export default function Home() {
       </section>
 
       {/* SECTORS */}
-      <section id="settori" className="py-16 sm:py-20 md:py-24 lg:py-28 xl:py-32 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 relative bg-white" data-bg="#FFFFFF">
+      <section id="settori" className="pt-6 pb-16 sm:py-20 md:py-24 lg:py-28 xl:py-32 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 relative bg-white" data-bg="#FFFFFF">
         {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/30 to-transparent" />
 
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-5 md:gap-6 mb-5 sm:mb-6 md:mb-8 lg:mb-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-2 sm:gap-5 md:gap-6 mb-2 sm:mb-6 md:mb-8 lg:mb-10">
           <div className="relative">
             {/* Elemento decorativo */}
             <div className="absolute -left-1.5 sm:-left-2 md:-left-4 top-0 w-1 h-full bg-gradient-to-b from-[#E69138] to-transparent" />
@@ -395,7 +395,7 @@ export default function Home() {
               Settori di attività
             </span>
             <h2
-              className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-[#1A1A2E] mt-1.5 sm:mt-2 pl-2.5 sm:pl-3 md:pl-4 leading-[1.15] sm:leading-tight text-balance"
+              className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-[#1A1A2E] mt-1 sm:mt-2 pl-2.5 sm:pl-3 md:pl-4 leading-[1.15] sm:leading-tight text-balance"
               style={{
                 opacity: 0,
                 animation:
@@ -479,17 +479,17 @@ export default function Home() {
 
       {/* SHOWROOM: nascosto finche' non c'e' almeno un prodotto attivo */}
       {showroomProducts.length > 0 && (
-        <section id="showroom" className="py-16 sm:py-20 md:py-24 lg:py-28 xl:py-32 bg-[#FAFAF7] relative" data-bg="#FAFAF7">
+        <section id="showroom" className="pt-6 pb-6 sm:py-20 md:py-24 lg:py-28 xl:py-32 bg-[#FAFAF7] relative" data-bg="#FAFAF7">
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 
           <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-5 md:gap-6 mb-5 sm:mb-6 md:mb-8 lg:mb-10">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-2 sm:gap-5 md:gap-6 mb-2 sm:mb-6 md:mb-8 lg:mb-10">
               <div className="relative">
                 <div className="absolute -left-1.5 sm:-left-2 md:-left-4 top-0 w-1 h-full bg-gradient-to-b from-[#E69138] to-transparent" />
                 <span className="text-[#6B7280] text-[10px] sm:text-[11px] md:text-xs tracking-[0.16em] sm:tracking-[0.18em] md:tracking-[0.2em] uppercase font-semibold pl-2.5 sm:pl-3 md:pl-4">
                   Showroom
                 </span>
-                <h2 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-[#1A1A2E] mt-1.5 sm:mt-2 pl-2.5 sm:pl-3 md:pl-4 leading-[1.15] sm:leading-tight text-balance">
+                <h2 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-[#1A1A2E] mt-1 sm:mt-2 pl-2.5 sm:pl-3 md:pl-4 leading-[1.15] sm:leading-tight text-balance">
                   Arredi pronti da scoprire
                 </h2>
               </div>
@@ -512,7 +512,7 @@ export default function Home() {
 
       {/* FEATURED PROJECTS: nascosto se non ci sono progetti da mostrare */}
       {safeDisplayedProjects.length > 0 && (
-      <section id="progetti" className="py-16 sm:py-20 md:py-24 lg:py-28 xl:py-32 bg-[#1A1A2E] relative" data-bg="#1A1A2E">
+      <section id="progetti" className="pt-16 pb-6 sm:py-20 md:py-24 lg:py-28 xl:py-32 bg-[#1A1A2E] relative" data-bg="#1A1A2E">
         {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/30 to-transparent" />
 
@@ -612,7 +612,7 @@ export default function Home() {
       <ReviewsSection />
 
       {/* SERVICES */}
-      <section id="servizi" className="py-16 sm:py-20 md:py-24 lg:py-28 xl:py-32 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 relative bg-white" data-bg="#FFFFFF">
+      <section id="servizi" className="pt-6 pb-16 sm:py-20 md:py-24 lg:py-28 xl:py-32 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 relative bg-white" data-bg="#FFFFFF">
         {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/30 to-transparent" />
 
