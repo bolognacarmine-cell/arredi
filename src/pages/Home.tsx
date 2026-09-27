@@ -8,7 +8,10 @@ import { useProjects } from "../projectStore"
 import Hero from "../components/Hero"
 import ReviewsSection from "../components/ReviewsSection"
 import ProductCard from "../components/showroom/ProductCard"
+import Magnetic from "../components/Magnetic"
+import MotionLine from "../components/MotionLine"
 import Reveal from "../components/Reveal"
+import Stagger from "../components/Stagger"
 import SEOHead from "../components/SEOHead"
 import HeroBackgroundVideo from "../components/HeroBackgroundVideo"
 import { getProducts, type Product } from "../services/showroomApi"
@@ -112,80 +115,70 @@ function SectorCard({ sector, index, reversedIndex, experimental }: {
   }, [experimental])
 
   return (
-    <Link
-      ref={cardRef}
-      to={`/settori/${sector.id}`}
-      className={`group relative overflow-hidden bg-white aspect-[3/4] flex flex-col justify-end p-4 sm:p-5 md:p-6 ${
-        experimental ? 'sector-card' : ''
-      } ${
-        experimental
-          ? 'slide-in-right'
-          : 'fade-in-up glow-pulse magnetic-hover hover:shadow-2xl hover:shadow-[#E69138]/20 hover:-translate-y-1 sm:hover:-translate-y-2 transition-all duration-500 ease-out'
-      }`}
-      style={{
-        ...(experimental
-          ? {
-              animationDelay: `${reversedIndex * SETTORI_CONFIG.staggerDelay}ms`,
-              animationFillMode: 'forwards',
-              transform: `translateX(${scrollX}px)`,
-            }
-          : {
-              animationDelay: `${(index + 1) * 150}ms`,
-              animationFillMode: 'forwards',
-            }),
-      }}
-    >
-      <div className="absolute inset-0">
-        <img
-          src={resolveImageUrl(
-            {
-              src: sector.heroImage,
-              publicId: sector.heroImageCloudinaryPublicId ?? null,
-            },
-            {
-              width: 1200,
-              height: 1600,
-              objectFit: "cover",
-              gravity: "auto",
-            },
-          )}
-          alt={`${sector.label} - Arredamento professionale Macerata Campania`}
-          width="1200"
-          height="1600"
-          loading="eager"
-          fetchpriority="high"
-          className={`w-full h-full object-cover ${
-            experimental ? 'sector-image' : 'group-hover:scale-110 transition-transform duration-700'
-          }`}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent sm:from-black/70 sm:via-black/20" />
-      </div>
-      <div
-        className={`relative z-10 ${
-          experimental ? 'sector-content' : ''
+    <Reveal delay={experimental ? reversedIndex * SETTORI_CONFIG.staggerDelay : (index + 1) * 90} variant="up" duration={720}>
+      <Link
+        ref={cardRef}
+        to={`/settori/${sector.id}`}
+        className={`group relative overflow-hidden bg-white aspect-[3/4] flex flex-col justify-end p-4 sm:p-5 md:p-6 card-motion ${
+          experimental ? "sector-card" : ""
         }`}
+        style={
+          experimental
+            ? { transform: `translateX(${scrollX}px)` }
+            : undefined
+        }
       >
-        {/* Number indicator */}
-        {experimental && (
-          <span className="absolute -top-12 left-0 text-[#E69138] text-[10px] sm:text-xs font-mono font-semibold tracking-wider opacity-60">
-            {String(index + 1).padStart(2, '0')}
-          </span>
-        )}
-        <h3 className="font-display text-base sm:text-lg md:text-xl font-bold text-white mb-1 sm:mb-1.5 md:mb-2 leading-snug">
-          {sector.label}
-        </h3>
-        <p className="text-white/70 text-[11px] sm:text-xs leading-[1.65] sm:leading-[1.6] md:leading-relaxed line-clamp-2 mb-2 sm:mb-3 md:mb-4">
-          {sector.description}
-        </p>
-        <span
-          className={`inline-flex items-center min-h-[32px] sm:min-h-[36px] text-[#E69138] text-[10px] sm:text-xs font-medium tracking-wide ${
-            experimental ? 'sector-cta' : 'group-hover:tracking-widest transition-all'
+        <div className="absolute inset-0">
+          <img
+            src={resolveImageUrl(
+              {
+                src: sector.heroImage,
+                publicId: sector.heroImageCloudinaryPublicId ?? null,
+              },
+              {
+                width: 1200,
+                height: 1600,
+                objectFit: "cover",
+                gravity: "auto",
+              },
+            )}
+            alt={`${sector.label} - Arredamento professionale Macerata Campania`}
+            width="1200"
+            height="1600"
+            loading="eager"
+            fetchpriority="high"
+            className={`w-full h-full object-cover card-motion-media ${
+              experimental ? "sector-image" : ""
+            }`}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent sm:from-black/70 sm:via-black/20" />
+        </div>
+        <div
+          className={`relative z-10 ${
+            experimental ? "sector-content" : ""
           }`}
         >
-          Scopri di più →
-        </span>
-      </div>
-    </Link>
+          {experimental && (
+            <span className="absolute -top-12 left-0 text-[#E69138] text-[10px] sm:text-xs font-mono font-semibold tracking-wider opacity-60">
+              {String(index + 1).padStart(2, "0")}
+            </span>
+          )}
+          <h3 className="font-display text-base sm:text-lg md:text-xl font-bold text-white mb-1 sm:mb-1.5 md:mb-2 leading-snug">
+            {sector.label}
+          </h3>
+          <p className="text-white/70 text-[11px] sm:text-xs leading-[1.65] sm:leading-[1.6] md:leading-relaxed line-clamp-2 mb-2 sm:mb-3 md:mb-4">
+            {sector.description}
+          </p>
+          <span
+            className={`inline-flex items-center min-h-[32px] sm:min-h-[36px] text-[#E69138] text-[10px] sm:text-xs font-medium tracking-wide ${
+              experimental ? "sector-cta" : "card-motion-cta"
+            }`}
+          >
+            Scopri di più →
+          </span>
+        </div>
+      </Link>
+    </Reveal>
   )
 }
 
@@ -388,37 +381,24 @@ export default function Home() {
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/30 to-transparent" />
 
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-2 sm:gap-5 md:gap-6 mb-2 sm:mb-6 md:mb-8 lg:mb-10">
-          <div className="relative">
-            {/* Elemento decorativo */}
+          <Reveal className="relative" variant="up" duration={800}>
             <div className="absolute -left-1.5 sm:-left-2 md:-left-4 top-0 w-1 h-full bg-gradient-to-b from-[#E69138] to-transparent" />
             <span className="text-[#6B7280] text-[10px] sm:text-[11px] md:text-xs tracking-[0.16em] sm:tracking-[0.18em] md:tracking-[0.2em] uppercase font-semibold pl-2.5 sm:pl-3 md:pl-4">
               Settori di attività
             </span>
-            <h2
-              className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-[#1A1A2E] mt-1 sm:mt-2 pl-2.5 sm:pl-3 md:pl-4 leading-[1.15] sm:leading-tight text-balance"
-              style={{
-                opacity: 0,
-                animation:
-                  "fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards",
-                animationDelay: "200ms",
-              }}
-            >
+            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-[#1A1A2E] mt-1 sm:mt-2 pl-2.5 sm:pl-3 md:pl-4 leading-[1.15] sm:leading-tight text-balance">
               Arredamento su misura a
               <br />
               <span className="text-[#E69138]">Macerata Campania e in tutta Italia</span>
             </h2>
-          </div>
-          <p
-            className="text-[#6B7280] max-w-xs text-xs sm:text-sm leading-[1.65] sm:leading-relaxed"
-            style={{
-              opacity: 0,
-              animation: "fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards",
-              animationDelay: "300ms",
-            }}
-          >
-            Quattro settori, un'unica filosofia: progettazione attenta,
-            materiali di qualità, esecuzione impeccabile.
-          </p>
+            <MotionLine className="mt-4 ml-2.5 sm:ml-3 md:ml-4" width="4.5rem" thickness={3} delay={200} />
+          </Reveal>
+          <Reveal delay={120} variant="up" duration={700} className="max-w-xs">
+            <p className="text-[#6B7280] text-xs sm:text-sm leading-[1.65] sm:leading-relaxed">
+              Quattro settori, un'unica filosofia: progettazione attenta,
+              materiali di qualità, esecuzione impeccabile.
+            </p>
+          </Reveal>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
@@ -463,12 +443,14 @@ export default function Home() {
               Scopri la nostra collezione di arredi professionali su misura per barberie, parrucchieri, uffici e scuole. Qualità artigianale Made in Italy.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                to="/showroom"
-                className="inline-flex items-center justify-center px-8 py-3 bg-[var(--accent)] text-white text-sm font-medium hover:bg-[var(--foreground)] transition-colors shadow-lg"
-              >
-                Esplora tutto lo showroom
-              </Link>
+              <Magnetic strength={10}>
+                <Link
+                  to="/showroom"
+                  className="btn-primary-motion glow-pulse inline-flex items-center justify-center px-8 py-3 bg-[var(--accent)] text-white text-sm font-medium shadow-lg"
+                >
+                  Esplora tutto lo showroom
+                </Link>
+              </Magnetic>
             </div>
           </div>
         </div>
@@ -484,7 +466,7 @@ export default function Home() {
 
           <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-2 sm:gap-5 md:gap-6 mb-2 sm:mb-6 md:mb-8 lg:mb-10">
-              <div className="relative">
+              <Reveal className="relative" variant="up" duration={800}>
                 <div className="absolute -left-1.5 sm:-left-2 md:-left-4 top-0 w-1 h-full bg-gradient-to-b from-[#E69138] to-transparent" />
                 <span className="text-[#6B7280] text-[10px] sm:text-[11px] md:text-xs tracking-[0.16em] sm:tracking-[0.18em] md:tracking-[0.2em] uppercase font-semibold pl-2.5 sm:pl-3 md:pl-4">
                   Showroom
@@ -492,20 +474,27 @@ export default function Home() {
                 <h2 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-[#1A1A2E] mt-1 sm:mt-2 pl-2.5 sm:pl-3 md:pl-4 leading-[1.15] sm:leading-tight text-balance">
                   Arredi pronti da scoprire
                 </h2>
-              </div>
-              <Link
-                to="/showroom"
-                className="inline-flex items-center self-start min-h-[36px] sm:min-h-[40px] -ml-2 px-2 text-[#E69138] text-xs sm:text-sm font-medium hover:underline rounded-md"
-              >
-                Vedi tutto lo showroom →
-              </Link>
+                <MotionLine className="mt-4 ml-2.5 sm:ml-3 md:ml-4" width="4.5rem" thickness={3} delay={160} />
+              </Reveal>
+              <Reveal delay={100}>
+                <Link
+                  to="/showroom"
+                  className="inline-flex items-center self-start min-h-[36px] sm:min-h-[40px] -ml-2 px-2 text-[#E69138] text-xs sm:text-sm font-medium hover:underline rounded-md"
+                >
+                  Vedi tutto lo showroom →
+                </Link>
+              </Reveal>
             </div>
 
-            <Reveal delay={80} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
+            <Stagger
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5 lg:gap-6"
+              step={90}
+              duration={700}
+            >
               {showroomProducts.map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}
-            </Reveal>
+            </Stagger>
           </div>
         </section>
       )}
@@ -518,90 +507,75 @@ export default function Home() {
 
         <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-5 md:gap-6 mb-5 sm:mb-6 md:mb-8 lg:mb-10">
-            <div className="relative">
-              {/* Elemento decorativo */}
+            <Reveal className="relative" variant="up" duration={800}>
               <div className="absolute -left-1.5 sm:-left-2 md:-left-4 top-0 w-1 h-full bg-gradient-to-b from-[#E69138] to-transparent" />
               <span className="text-[#6B7280] text-[10px] sm:text-[11px] md:text-xs tracking-[0.16em] sm:tracking-[0.18em] md:tracking-[0.2em] uppercase font-semibold pl-2.5 sm:pl-3 md:pl-4">
                 Portfolio
               </span>
-              <h2
-                className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mt-1.5 sm:mt-2 pl-2.5 sm:pl-3 md:pl-4 leading-[1.15] sm:leading-tight text-balance"
-                style={{
-                  opacity: 0,
-                  animation:
-                    "fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards",
-                  animationDelay: "200ms",
-                }}
-              >
+              <h2 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mt-1.5 sm:mt-2 pl-2.5 sm:pl-3 md:pl-4 leading-[1.15] sm:leading-tight text-balance">
                 Progetti in evidenza
               </h2>
-            </div>
-            <Link
-              to="/progetti"
-              className="inline-flex items-center self-start min-h-[36px] sm:min-h-[40px] -ml-2 px-2 text-[#E69138] text-xs sm:text-sm font-medium hover:underline rounded-md"
-              style={{
-                opacity: 0,
-                animation:
-                  "fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards",
-                animationDelay: "300ms",
-              }}
-            >
-              Vedi tutti i progetti →
-            </Link>
+              <MotionLine className="mt-4 ml-2.5 sm:ml-3 md:ml-4" width="4.5rem" thickness={3} delay={160} />
+            </Reveal>
+            <Reveal delay={100}>
+              <Link
+                to="/progetti"
+                className="inline-flex items-center self-start min-h-[36px] sm:min-h-[40px] -ml-2 px-2 text-[#E69138] text-xs sm:text-sm font-medium hover:underline rounded-md"
+              >
+                Vedi tutti i progetti →
+              </Link>
+            </Reveal>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
             {safeDisplayedProjects.map((p, index) => (
-              <Link
-                key={p.id}
-                to={`/progetti/${p.id}`}
-                className="group bg-[#252523] overflow-hidden hover:bg-[#2D2D2B] hover:shadow-xl hover:shadow-[#E69138]/20 hover:-translate-y-2 transition-all duration-500 ease-out fade-in-up"
-                style={{
-                  animationDelay: `${(index + 1) * 150}ms`,
-                  animationFillMode: "forwards",
-                }}
-              >
-                <div className="relative overflow-hidden aspect-[4/3]">
-                  <img
-                    src={resolveImageUrl(
-                      {
-                        src: p.image,
-                        publicId: p.imageCloudinaryPublicId ?? null,
-                      },
-                      {
-                        width: 1200,
-                        height: 900,
-                        objectFit: "cover",
-                        gravity: "auto",
-                      },
-                    )}
-                    alt={`${p.title} - Progetto arredamento ${p.location} Farcom Srl`}
-                    width="1200"
-                    height="900"
-                    loading="lazy"
-                    fetchpriority="low"
-                    decoding="async"
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                  />
-                  <span className="absolute top-4 left-4 bg-[#E69138] text-[#1A1A2E] text-xs px-3 py-1 font-semibold">
-                    {p.sectorId ? p.sectorId.charAt(0).toUpperCase() + p.sectorId.slice(1) : ''}
-                  </span>
-                </div>
-                <div className="p-4 sm:p-5 md:p-6">
-                  <h3 className="font-display text-base sm:text-lg md:text-xl font-bold text-white mb-1 leading-snug">
-                    {p.title}
-                  </h3>
-                  <p className="text-[#6B7280] text-[11px] sm:text-xs mb-2 sm:mb-2.5 md:mb-3">
-                    {p.location} · {p.year}
-                  </p>
-                  <p className="text-[#6B7280] text-xs sm:text-sm leading-[1.65] sm:leading-[1.6] md:leading-relaxed line-clamp-2">
-                    {p.description}
-                  </p>
-                  <span className="mt-2 sm:mt-3 md:mt-4 inline-flex items-center min-h-[32px] sm:min-h-[36px] text-[#E69138] text-[10px] sm:text-xs font-medium tracking-wide group-hover:tracking-widest transition-all">
-                    Vedi progetto →
-                  </span>
-                </div>
-              </Link>
+              <Reveal key={p.id} delay={(index + 1) * 90} duration={720}>
+                <Link
+                  to={`/progetti/${p.id}`}
+                  className="group bg-[#252523] overflow-hidden card-motion block"
+                >
+                  <div className="relative overflow-hidden aspect-[4/3]">
+                    <img
+                      src={resolveImageUrl(
+                        {
+                          src: p.image,
+                          publicId: p.imageCloudinaryPublicId ?? null,
+                        },
+                        {
+                          width: 1200,
+                          height: 900,
+                          objectFit: "cover",
+                          gravity: "auto",
+                        },
+                      )}
+                      alt={`${p.title} - Progetto arredamento ${p.location} Farcom Srl`}
+                      width="1200"
+                      height="900"
+                      loading="lazy"
+                      fetchpriority="low"
+                      decoding="async"
+                      className="w-full h-full object-cover card-motion-media"
+                    />
+                    <span className="absolute top-4 left-4 bg-[#E69138] text-[#1A1A2E] text-xs px-3 py-1 font-semibold">
+                      {p.sectorId ? p.sectorId.charAt(0).toUpperCase() + p.sectorId.slice(1) : ''}
+                    </span>
+                  </div>
+                  <div className="p-4 sm:p-5 md:p-6">
+                    <h3 className="font-display text-base sm:text-lg md:text-xl font-bold text-white mb-1 leading-snug">
+                      {p.title}
+                    </h3>
+                    <p className="text-[#6B7280] text-[11px] sm:text-xs mb-2 sm:mb-2.5 md:mb-3">
+                      {p.location} · {p.year}
+                    </p>
+                    <p className="text-[#6B7280] text-xs sm:text-sm leading-[1.65] sm:leading-[1.6] md:leading-relaxed line-clamp-2">
+                      {p.description}
+                    </p>
+                    <span className="mt-2 sm:mt-3 md:mt-4 inline-flex items-center min-h-[32px] sm:min-h-[36px] text-[#E69138] text-[10px] sm:text-xs font-medium tracking-wide card-motion-cta">
+                      Vedi progetto →
+                    </span>
+                  </div>
+                </Link>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -623,18 +597,16 @@ export default function Home() {
           <h2 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-[#1A1A2E] mt-1.5 sm:mt-2 leading-[1.15] sm:leading-tight text-balance">
             Il nostro processo
           </h2>
+          <MotionLine className="mx-auto mt-4" width="4rem" thickness={3} origin="center" delay={120} />
         </Reveal>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
+        <Stagger
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6"
+          step={100}
+          duration={700}
+        >
           {services.map((svc, i) => (
-            <div
-              key={svc.title}
-              className="flex flex-col opacity-0 fade-in-up"
-              style={{
-                animationDelay: `${(i + 1) * 100}ms`,
-                animationFillMode: "forwards",
-              }}
-            >
+            <div key={svc.title} className="flex flex-col">
               <div className="flex items-center gap-2 sm:gap-3 md:gap-4 mb-3 sm:mb-4 md:mb-5">
                 <span className="text-[#E69138] text-lg sm:text-xl md:text-2xl">{svc.icon}</span>
                 <span className="w-4 sm:w-6 md:w-8 h-px bg-[#E5E5E7]" />
@@ -650,7 +622,7 @@ export default function Home() {
               </p>
             </div>
           ))}
-        </div>
+        </Stagger>
       </section>
 
       {/* WHY US */}
@@ -666,17 +638,14 @@ export default function Home() {
             <h2 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mt-1.5 sm:mt-2 leading-[1.15] sm:leading-tight text-balance">
               La differenza artigianale
             </h2>
+            <MotionLine className="mx-auto mt-4" width="4rem" thickness={3} origin="center" delay={120} />
           </Reveal>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
-            {whys.map((w, index) => (
-              <div
-                key={w.label}
-                className="border-t border-white/20 pt-4 sm:pt-5 md:pt-6 opacity-0 fade-in-up"
-                style={{
-                  animationDelay: `${(index + 1) * 100}ms`,
-                  animationFillMode: "forwards",
-                }}
-              >
+          <Stagger
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6"
+            step={100}
+          >
+            {whys.map((w) => (
+              <div key={w.label} className="border-t border-white/20 pt-4 sm:pt-5 md:pt-6">
                 <h3 className="font-display text-base sm:text-lg md:text-xl font-bold text-white mb-2 sm:mb-2.5 md:mb-3 leading-snug">
                   {w.label}
                 </h3>
@@ -685,7 +654,7 @@ export default function Home() {
                 </p>
               </div>
             ))}
-          </div>
+          </Stagger>
         </div>
       </section>
 
@@ -694,7 +663,12 @@ export default function Home() {
         {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/30 to-transparent" />
 
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6 text-center">
+        <Stagger
+          className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6 text-center"
+          step={90}
+          variant="scale"
+          duration={650}
+        >
           {[
             ["500+", "Progetti realizzati"],
 
@@ -703,22 +677,15 @@ export default function Home() {
             ["4", "Settori serviti"],
 
             ["98%", "Clienti soddisfatti"],
-          ].map(([n, l], index) => (
-            <div
-              key={n}
-              className="opacity-0 fade-in-up"
-              style={{
-                animationDelay: `${(index + 1) * 100}ms`,
-                animationFillMode: "forwards",
-              }}
-            >
+          ].map(([n, l]) => (
+            <div key={n}>
               <div className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold text-[#1A1A2E] mb-1 sm:mb-1.5 md:mb-2 leading-none">
                 {n}
               </div>
               <div className="text-[#6B7280] text-[10px] sm:text-xs md:text-sm leading-snug">{l}</div>
             </div>
           ))}
-        </div>
+        </Stagger>
       </section>
 
       {/* CTA BAND */}
@@ -732,21 +699,24 @@ export default function Home() {
             <br />
             <span className="text-[#E69138]">Parliamone.</span>
           </h2>
+          <MotionLine className="mt-4" width="5rem" thickness={3} delay={100} />
         </Reveal>
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 md:gap-4 w-full sm:w-auto">
-          <Link
-            to="/preventivo"
-            className="inline-flex items-center justify-center min-h-[44px] sm:min-h-[48px] bg-[#E69138] text-[#1A1A2E] text-xs sm:text-sm font-semibold px-4 sm:px-5 md:px-6 lg:px-7 py-2.5 sm:py-3 md:py-4 hover:bg-[#D67F28] hover:shadow-xl hover:shadow-[#E69138]/40 transition-all duration-300 ease-out glow-pulse magnetic-hover w-full sm:w-auto"
-          >
-            Richiedi un preventivo gratuito
-          </Link>
+        <Reveal delay={120} className="flex flex-col sm:flex-row gap-2 sm:gap-3 md:gap-4 w-full sm:w-auto">
+          <Magnetic strength={10}>
+            <Link
+              to="/preventivo"
+              className="btn-primary-motion glow-pulse inline-flex items-center justify-center min-h-[44px] sm:min-h-[48px] bg-[#E69138] text-[#1A1A2E] text-xs sm:text-sm font-semibold px-4 sm:px-5 md:px-6 lg:px-7 py-2.5 sm:py-3 md:py-4 w-full sm:w-auto"
+            >
+              Richiedi un preventivo gratuito
+            </Link>
+          </Magnetic>
           <Link
             to="/contatti"
             className="inline-flex items-center justify-center min-h-[44px] sm:min-h-[48px] border border-[#1A1A2E] text-[#1A1A2E] text-xs sm:text-sm font-medium px-4 sm:px-5 md:px-6 lg:px-7 py-2.5 sm:py-3 md:py-4 hover:bg-[#1A1A2E]/5 transition-colors w-full sm:w-auto"
           >
             Contattaci
           </Link>
-        </div>
+        </Reveal>
       </section>
     </div>
   )

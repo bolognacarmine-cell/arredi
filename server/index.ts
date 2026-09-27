@@ -6,8 +6,18 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Load environment variables BEFORE importing other modules
-dotenv.config({ path: path.resolve(__dirname, '../.server.env') });
-
+// Prefer root `.server.env`, fallback to `server/server.env` (legacy local path).
+const envCandidates = [
+  path.resolve(__dirname, '../.server.env'),
+  path.resolve(__dirname, './server.env'),
+]
+for (const envPath of envCandidates) {
+  const result = dotenv.config({ path: envPath })
+  if (!result.error) {
+    console.log(`[env] Loaded ${envPath}`)
+    break
+  }
+}
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import session from 'express-session';

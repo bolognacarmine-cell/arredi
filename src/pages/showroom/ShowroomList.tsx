@@ -5,6 +5,10 @@ import ProductFilters, {
   defaultPublicFilters,
   type PublicFilterState,
 } from "../../components/showroom/ProductFilters"
+import Magnetic from "../../components/Magnetic"
+import MotionLine from "../../components/MotionLine"
+import Reveal from "../../components/Reveal"
+import Stagger from "../../components/Stagger"
 import SEOHead from "../../components/SEOHead"
 import HeroBackgroundVideo from "../../components/HeroBackgroundVideo"
 import {
@@ -141,7 +145,11 @@ export default function ShowroomList() {
 
         {/* Hero Content Overlay */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="max-w-7xl mx-auto px-6 md:px-8 lg:px-16 text-center relative z-10">
+          <Reveal
+            className="max-w-7xl mx-auto px-6 md:px-8 lg:px-16 text-center relative z-10"
+            duration={800}
+            rootMargin="0px"
+          >
             <div className="inline-flex items-center gap-3 px-4 py-1.5 mb-6 border border-[var(--accent)]/30 bg-white/90 backdrop-blur-sm">
               <span className="h-px w-8 bg-[var(--accent)]" />
               <span className="text-[11px] uppercase tracking-[0.18em] font-medium text-[var(--accent)]">
@@ -151,27 +159,30 @@ export default function ShowroomList() {
             <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-light text-white leading-tight max-w-4xl mb-6 drop-shadow-lg">
               Showroom Arredamento Campania
             </h1>
-            <p className="text-base md:text-lg text-white/90 max-w-2xl leading-relaxed mb-8 drop-shadow-md">
+            <MotionLine className="mx-auto mb-6" width="4.5rem" thickness={3} origin="center" delay={100} />
+            <p className="text-base md:text-lg text-white/90 max-w-2xl leading-relaxed mb-8 drop-shadow-md mx-auto">
               Showroom arredamento Campania a Macerata Campania: arredi professionali su misura per barberie, parrucchieri, uffici, scuole e attività speciali. Qualità artigianale Made in Italy con servizio in tutta Italia.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
-                href="#products"
-                className="inline-flex items-center justify-center px-8 py-3 bg-[var(--accent)] text-white text-sm font-medium hover:bg-[var(--foreground)] transition-colors shadow-lg"
-              >
-                Scopri i prodotti
-              </a>
+              <Magnetic strength={10}>
+                <a
+                  href="#products"
+                  className="btn-primary-motion glow-pulse inline-flex items-center justify-center px-8 py-3 bg-[var(--accent)] text-white text-sm font-medium shadow-lg"
+                >
+                  Scopri i prodotti
+                </a>
+              </Magnetic>
               {products.some((p) => computeEffectivePrice(p).savings > 0) && (
                 <button
                   type="button"
                   onClick={() => setFilters((f) => ({ ...f, onlyOffers: true }))}
                   className="inline-flex items-center justify-center gap-2 px-8 py-3 bg-white/90 backdrop-blur-sm text-[var(--foreground)] text-sm font-medium hover:bg-white transition-colors shadow-lg"
                 >
-                  🏷️ Vedi le promozioni
+                  Vedi le promozioni
                 </button>
               )}
             </div>
-          </div>
+          </Reveal>
         </div>
 
         {/* Gradient overlay for better text readability */}
@@ -180,7 +191,7 @@ export default function ShowroomList() {
 
       {/* Products Section */}
       <section id="products" className="max-w-7xl mx-auto px-6 md:px-8 lg:px-16 py-16">
-        <div className="mb-12">
+        <Reveal className="mb-12" duration={750}>
           <div className="inline-flex items-center gap-3 px-4 py-1.5 mb-5 border border-[var(--accent)]/30 bg-white">
             <span className="h-px w-8 bg-[var(--accent)]" />
             <span className="text-[11px] uppercase tracking-[0.18em] font-medium text-[var(--accent)]">
@@ -190,7 +201,8 @@ export default function ShowroomList() {
           <h2 className="font-display text-3xl md:text-4xl font-light text-[var(--foreground)] leading-tight max-w-3xl">
             I Nostri Prodotti
           </h2>
-        </div>
+          <MotionLine className="mt-4" width="4rem" thickness={3} delay={120} />
+        </Reveal>
 
         <ProductFilters
           filters={filters}
@@ -230,11 +242,15 @@ export default function ShowroomList() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+          <Stagger
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
+            step={80}
+            duration={680}
+          >
             {visible.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
-          </div>
+          </Stagger>
         )}
       </section>
     </main>

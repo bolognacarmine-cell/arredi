@@ -8,6 +8,9 @@ import {
   sectorLinks,
   useSiteSettings,
 } from "../siteConfig"
+import Magnetic from "./Magnetic"
+import MotionLine from "./MotionLine"
+import Reveal from "./Reveal"
 
 type SectionKey = "settori" | "azienda" | "contatti" | "sociallegal"
 
@@ -178,7 +181,10 @@ export default function Footer() {
     <footer className="relative overflow-hidden bg-[#000] text-white">
       {/* Banda CTA superiore */}
       <div className="relative border-b border-white/10">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 sm:gap-5 md:gap-6 px-4 sm:px-6 py-4 sm:py-5 md:py-6 md:px-8 lg:flex-row lg:items-center lg:justify-between lg:px-16">
+        <Reveal
+          className="mx-auto flex max-w-7xl flex-col gap-4 sm:gap-5 md:gap-6 px-4 sm:px-6 py-4 sm:py-5 md:py-6 md:px-8 lg:flex-row lg:items-center lg:justify-between lg:px-16"
+          duration={750}
+        >
           <div className="max-w-2xl">
             <p className="mb-1.5 sm:mb-2 text-[10px] sm:text-[11px] md:text-xs font-semibold uppercase tracking-[0.2em] sm:tracking-[0.24em] md:tracking-[0.28em] text-[#E69138]">
               {siteConfig.brandName}
@@ -186,17 +192,20 @@ export default function Footer() {
             <h2 className="font-display text-xl sm:text-2xl md:text-3xl lg:text-4xl font-light text-white leading-[1.2] sm:leading-tight">
               Hai un progetto da arredare?
             </h2>
+            <MotionLine className="mt-3" width="4rem" thickness={2} delay={80} />
             <p className="mt-2 sm:mt-2.5 md:mt-3 text-xs sm:text-sm md:text-base leading-[1.65] sm:leading-relaxed text-white/68">
               {siteConfig.footerIntro}
             </p>
           </div>
           <div className="flex flex-col gap-2 sm:gap-3 md:flex-row w-full md:w-auto">
-            <Link
-              to="/preventivo"
-              className="inline-flex items-center justify-center min-h-[44px] sm:min-h-[48px] bg-[#E69138] px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold text-[#1A1A2E] transition-all duration-300 hover:bg-[#f0a14b] hover:shadow-lg hover:shadow-[#E69138]/20 w-full sm:w-auto"
-            >
-              Richiedi preventivo
-            </Link>
+            <Magnetic strength={10}>
+              <Link
+                to="/preventivo"
+                className="btn-primary-motion glow-pulse inline-flex items-center justify-center min-h-[44px] sm:min-h-[48px] bg-[#E69138] px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold text-[#1A1A2E] w-full sm:w-auto"
+              >
+                Richiedi preventivo
+              </Link>
+            </Magnetic>
             <a
               href={siteConfig.whatsappHref}
               target="_blank"
@@ -206,7 +215,7 @@ export default function Footer() {
               {siteConfig.whatsappLabel}
             </a>
           </div>
-        </div>
+        </Reveal>
       </div>
 
       {/* Riga separatore bronzo "wow" */}

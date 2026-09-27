@@ -3,6 +3,10 @@ import { Link } from "react-router-dom"
 
 import { SECTORS } from "../data"
 import { resolveImageUrl } from "../lib/cloudinary"
+import Magnetic from "../components/Magnetic"
+import MotionLine from "../components/MotionLine"
+import Reveal from "../components/Reveal"
+import Stagger from "../components/Stagger"
 
 export default function SettoriList() {
   useEffect(() => {
@@ -38,55 +42,55 @@ export default function SettoriList() {
           />
         </div>
         <div className="relative z-10 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 w-full">
-          <span className="block text-[#E69138] text-[10px] sm:text-[11px] md:text-xs font-semibold tracking-[0.16em] sm:tracking-[0.18em] md:tracking-[0.2em] uppercase mb-3 sm:mb-4">
-            Settori di attività
-          </span>
-          <h1 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-[1.15] sm:leading-tight">
-            Ogni spazio ha la sua
-            <br />
-            <span className="text-[#E69138]">storia da raccontare</span>
-          </h1>
+          <Reveal variant="up" duration={750}>
+            <span className="block text-[#E69138] text-[10px] sm:text-[11px] md:text-xs font-semibold tracking-[0.16em] sm:tracking-[0.18em] md:tracking-[0.2em] uppercase mb-3 sm:mb-4">
+              Settori di attività
+            </span>
+            <h1 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-[1.15] sm:leading-tight">
+              Ogni spazio ha la sua
+              <br />
+              <span className="text-[#E69138]">storia da raccontare</span>
+            </h1>
+            <MotionLine className="mt-4" width="5rem" thickness={3} delay={120} />
+          </Reveal>
         </div>
       </section>
 
       {/* SETTORI GRID */}
       <section className="py-16 sm:py-20 md:py-24 lg:py-28 xl:py-32 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 relative bg-white">
-        {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-5 md:gap-6 mb-5 sm:mb-6 md:mb-8 lg:mb-10">
-          <div className="relative">
-            {/* Elemento decorativo */}
+          <Reveal className="relative" variant="up" duration={800}>
             <div className="absolute -left-1.5 sm:-left-2 md:-left-4 top-0 w-1 h-full bg-gradient-to-b from-[#E69138] to-transparent" />
             <span className="text-[#6B7280] text-[10px] sm:text-[11px] md:text-xs tracking-[0.16em] sm:tracking-[0.18em] md:tracking-[0.2em] uppercase font-semibold pl-2.5 sm:pl-3 md:pl-4">
               I nostri settori
             </span>
-            <h2
-              className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-[#1A1A2E] mt-1.5 sm:mt-2 pl-2.5 sm:pl-3 md:pl-4 leading-[1.15] sm:leading-tight text-balance"
-            >
+            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-[#1A1A2E] mt-1.5 sm:mt-2 pl-2.5 sm:pl-3 md:pl-4 leading-[1.15] sm:leading-tight text-balance">
               Scopri le nostre
               <br />
               <span className="text-[#E69138]">specializzazioni</span>
             </h2>
-          </div>
-          <p
-            className="text-[#6B7280] max-w-xs text-xs sm:text-sm leading-[1.65] sm:leading-relaxed"
-          >
-            Quattro settori, un'unica filosofia: progettazione attenta,
-            materiali di qualità, esecuzione impeccabile.
-          </p>
+            <MotionLine className="mt-4 ml-2.5 sm:ml-3 md:ml-4" width="4.5rem" thickness={3} delay={160} />
+          </Reveal>
+          <Reveal delay={120} className="max-w-xs">
+            <p className="text-[#6B7280] text-xs sm:text-sm leading-[1.65] sm:leading-relaxed">
+              Quattro settori, un'unica filosofia: progettazione attenta,
+              materiali di qualità, esecuzione impeccabile.
+            </p>
+          </Reveal>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
-          {SECTORS.map((s, index) => (
+        <Stagger
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6"
+          step={90}
+          duration={720}
+        >
+          {SECTORS.map((s) => (
             <Link
               key={s.id}
               to={`/settori/${s.id}`}
-              className="group relative overflow-hidden bg-white aspect-[3/4] flex flex-col justify-end p-4 sm:p-5 md:p-6 hover:shadow-2xl hover:shadow-[#E69138]/20 hover:-translate-y-1 sm:hover:-translate-y-2 transition-all duration-500 ease-out fade-in-up glow-pulse magnetic-hover min-h-[40px] sm:min-h-[44px]"
-              style={{
-                animationDelay: `${(index + 1) * 150}ms`,
-                animationFillMode: "forwards",
-              }}
+              className="group relative overflow-hidden bg-white aspect-[3/4] flex flex-col justify-end p-4 sm:p-5 md:p-6 card-motion min-h-[40px] sm:min-h-[44px]"
             >
               <div className="absolute inset-0">
                 <img
@@ -104,7 +108,7 @@ export default function SettoriList() {
                   )}
                   alt={s.label}
                   loading="lazy"
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  className="w-full h-full object-cover card-motion-media"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent sm:from-black/70 sm:via-black/20" />
               </div>
@@ -115,41 +119,43 @@ export default function SettoriList() {
                 <p className="text-white/70 text-[11px] sm:text-xs leading-[1.65] sm:leading-[1.6] md:leading-relaxed line-clamp-2 mb-2 sm:mb-3 md:mb-4">
                   {s.description}
                 </p>
-                <span className="inline-flex items-center min-h-[32px] sm:min-h-[36px] text-[#E69138] text-[10px] sm:text-xs font-medium tracking-wide group-hover:tracking-widest transition-all">
+                <span className="inline-flex items-center min-h-[32px] sm:min-h-[36px] text-[#E69138] text-[10px] sm:text-xs font-medium tracking-wide card-motion-cta">
                   Scopri di più →
                 </span>
               </div>
             </Link>
           ))}
-        </div>
+        </Stagger>
       </section>
 
       {/* CTA */}
       <section className="py-16 sm:py-20 md:py-24 lg:py-28 xl:py-32 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 sm:gap-5 md:gap-6 lg:gap-8 relative bg-white">
-        {/* Separatore visivo */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 
-        <div className="w-full lg:w-auto">
+        <Reveal className="w-full lg:w-auto">
           <h2 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-[#1A1A2E] max-w-xl leading-[1.15] sm:leading-tight">
             Hai un'idea per il tuo spazio?
             <br />
             <span className="text-[#E69138]">Parliamone.</span>
           </h2>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 md:gap-4 w-full sm:w-auto">
-          <Link
-            to="/preventivo"
-            className="inline-flex items-center justify-center min-h-[44px] sm:min-h-[48px] bg-[#E69138] text-[#1A1A2E] text-xs sm:text-sm font-semibold px-4 sm:px-5 md:px-6 lg:px-7 py-2.5 sm:py-3 md:py-4 hover:bg-[#D67F28] hover:shadow-xl hover:shadow-[#E69138]/40 transition-all duration-300 ease-out glow-pulse magnetic-hover w-full sm:w-auto"
-          >
-            Richiedi un preventivo gratuito
-          </Link>
+          <MotionLine className="mt-4" width="5rem" thickness={3} delay={100} />
+        </Reveal>
+        <Reveal delay={120} className="flex flex-col sm:flex-row gap-2 sm:gap-3 md:gap-4 w-full sm:w-auto">
+          <Magnetic strength={10}>
+            <Link
+              to="/preventivo"
+              className="btn-primary-motion glow-pulse inline-flex items-center justify-center min-h-[44px] sm:min-h-[48px] bg-[#E69138] text-[#1A1A2E] text-xs sm:text-sm font-semibold px-4 sm:px-5 md:px-6 lg:px-7 py-2.5 sm:py-3 md:py-4 w-full sm:w-auto"
+            >
+              Richiedi un preventivo gratuito
+            </Link>
+          </Magnetic>
           <Link
             to="/contatti"
             className="inline-flex items-center justify-center min-h-[44px] sm:min-h-[48px] border border-[#1A1A2E] text-[#1A1A2E] text-xs sm:text-sm font-medium px-4 sm:px-5 md:px-6 lg:px-7 py-2.5 sm:py-3 md:py-4 hover:bg-[#1A1A2E]/5 transition-colors w-full sm:w-auto"
           >
             Contattaci
           </Link>
-        </div>
+        </Reveal>
       </section>
     </div>
   )

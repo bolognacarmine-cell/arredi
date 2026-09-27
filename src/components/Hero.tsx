@@ -3,6 +3,7 @@ import { Link } from "react-router-dom"
 import { useEffect, useState } from "react"
 
 import HeroBackgroundVideo from "./HeroBackgroundVideo"
+import Magnetic from "./Magnetic"
 import { useInViewOnce } from "../hooks/useInViewOnce"
 import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion"
 
@@ -175,7 +176,12 @@ export default function Hero() {
                 <span className="text-[#E69138]">artigianalità premium</span>.
               </h1>
 
-              <div className="w-16 sm:w-20 md:w-24 h-1 bg-[#E69138] mt-3 sm:mt-4 md:mt-5 mb-4 sm:mb-5 md:mb-6" />
+              <div
+                className={`w-16 sm:w-20 md:w-24 h-[3px] bg-[#E69138] mt-3 sm:mt-4 md:mt-5 mb-4 sm:mb-5 md:mb-6 ${
+                  showText ? "line-expand" : "opacity-0"
+                }`}
+                style={{ animationDelay: "180ms" }}
+              />
             </div>
 
             {/* Sottotitolo */}
@@ -197,29 +203,31 @@ export default function Hero() {
               style={{ animationDelay: `${HERO_CTA_DELAY}ms` }}
             >
               <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 md:gap-4 mt-4 sm:mt-5 md:mt-6 lg:mt-8">
-                <Link
-                  to="/preventivo"
-                  className="group relative inline-flex items-center justify-center min-h-[40px] sm:min-h-[44px] md:min-h-[48px] bg-[#E69138] text-[#1A1A2E] text-[11px] sm:text-xs md:text-sm font-semibold px-3 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-2.5 md:py-3 lg:py-4 overflow-hidden shadow-lg shadow-[#E69138]/20 hover:shadow-xl hover:shadow-[#E69138]/30 transition-all duration-300 ease-out glow-pulse magnetic-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E69138] focus-visible:ring-offset-2"
-                  aria-label="Richiedi un preventivo gratuito"
-                >
-                  <span className="absolute inset-0 bg-[#D67F28] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <span className="relative z-10 flex items-center gap-1 sm:gap-1.5 md:gap-2">
-                    Richiedi un preventivo
-                    <svg
-                      className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 transform group-hover:translate-x-1 transition-transform duration-300"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M17 8l4 4m0 0l-4 4m4-4H3"
-                      />
-                    </svg>
-                  </span>
-                </Link>
+                <Magnetic strength={12}>
+                  <Link
+                    to="/preventivo"
+                    className="group relative btn-primary-motion glow-pulse inline-flex items-center justify-center min-h-[40px] sm:min-h-[44px] md:min-h-[48px] bg-[#E69138] text-[#1A1A2E] text-[11px] sm:text-xs md:text-sm font-semibold px-3 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-2.5 md:py-3 lg:py-4 shadow-lg shadow-[#E69138]/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E69138] focus-visible:ring-offset-2"
+                    aria-label="Richiedi un preventivo gratuito"
+                  >
+                    <span className="absolute inset-0 bg-[#D67F28] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <span className="relative z-10 flex items-center gap-1 sm:gap-1.5 md:gap-2">
+                      Richiedi un preventivo
+                      <svg
+                        className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 transform group-hover:translate-x-1 transition-transform duration-300"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M17 8l4 4m0 0l-4 4m4-4H3"
+                        />
+                      </svg>
+                    </span>
+                  </Link>
+                </Magnetic>
 
                 <Link
                   to="/progetti"
@@ -334,7 +342,10 @@ export default function Hero() {
         <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-6 z-10 hidden sm:block">
           <div className="flex flex-col items-center gap-2 text-white/55">
             <span className="text-[10px] tracking-[0.22em] uppercase">Scroll</span>
-            <span className="h-8 w-px bg-gradient-to-b from-white/40 to-transparent" aria-hidden="true" />
+            <span
+              className={`h-8 w-px bg-gradient-to-b from-white/40 to-transparent ${reducedMotion ? "" : "scroll-hint-line"}`}
+              aria-hidden="true"
+            />
           </div>
         </div>
       </div>

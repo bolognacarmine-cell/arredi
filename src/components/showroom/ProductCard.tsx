@@ -30,7 +30,7 @@ export default function ProductCard({ product }: Props) {
   return (
     <Link
       to={`/showroom/${product.slug}`}
-      className="group block bg-white border border-[var(--border)] overflow-hidden hover:shadow-lg hover:shadow-[#E69138]/10 transition-all duration-300"
+      className="group block bg-white border border-[var(--border)] overflow-hidden card-motion"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-[var(--background)]">
         {product.images[0] ? (
@@ -42,7 +42,7 @@ export default function ProductCard({ product }: Props) {
             loading="lazy"
             fetchpriority="low"
             decoding="async"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className="w-full h-full object-cover card-motion-media"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-[var(--border)]">
@@ -135,7 +135,7 @@ export default function ProductCard({ product }: Props) {
               </div>
             )}
           </div>
-          <span className="text-xs font-medium text-[var(--accent)] group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
+          <span className="text-xs font-medium text-[var(--accent)] card-motion-cta inline-flex items-center gap-1">
             Dettagli →
           </span>
         </div>
