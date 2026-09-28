@@ -9,7 +9,7 @@ import {
   displayFurnitureType,
   type SortDirection,
 } from "../../../types/showroom"
-import { withFarcomWatermark } from "../../../lib/cloudinary"
+import { productImageSrc } from "../../FarcomImageWatermark"
 
 interface Props {
   products: Product[]
@@ -134,7 +134,7 @@ export default function ProductTable({
                       <div className="h-10 w-10 overflow-hidden border bg-[#F7F5F0]">
                         {p.images[0] && (
                           <img
-                            src={withFarcomWatermark(p.images[0])}
+                            src={productImageSrc(p.images[0])}
                             alt=""
                             className="w-full h-full object-cover"
                           />
@@ -229,7 +229,7 @@ export default function ProductTable({
                   <div className="h-14 w-14 overflow-hidden border bg-[#F7F5F0]">
                     {p.images[0] && (
                       <img
-                        src={withFarcomWatermark(p.images[0])}
+                        src={productImageSrc(p.images[0])}
                         alt=""
                         className="w-full h-full object-cover"
                       />

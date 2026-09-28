@@ -1,9 +1,11 @@
 // Card prodotto per lista pubblica showroom (activitySector + campi Other)
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Link } from "react-router-dom"
 import type { Product } from "../../services/showroomApi"
 import { activePromo, computeEffectivePrice } from "../../services/showroomApi"
 import { displaySector, displayFurnitureType } from "../../types/showroom"
-import { withFarcomWatermark } from "../../lib/cloudinary"
+import FarcomImageWatermark, { productImageSrc } from "../FarcomImageWatermark"
+import type { Rect } from "../../lib/cloudinary/watermark"
 import PromoCountdown from "./PromoCountdown"
 
 interface Props {
@@ -28,23 +30,71 @@ export default function ProductCard({ product }: Props) {
   const sectorLabel = displaySector(product.activitySector, product.activitySectorOther)
   const furnitureLabel = displayFurnitureType(product.furnitureType, product.furnitureTypeOther)
 
+  const coverSrc = product.images[0] ? productImageSrc(product.images[0]) : ""
+  const mediaRef = useRef<HTMLDivElement>(null)
+  const [mediaSize, setMediaSize] = useState({ w: 0, h: 0 })
+
+  useEffect(() => {
+    const el = mediaRef.current
+    if (!el) return
+    const apply = () => setMediaSize({ w: el.clientWidth, h: el.clientHeight })
+    apply()
+    const ro = new ResizeObserver(apply)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
+  // Solo controlli UI (badge / stamp), non il soggetto prodotto.
+  const badgeObstacles = useMemo((): Rect[] => {
+    const { w } = mediaSize
+    if (w <= 0) return []
+    const zones: Rect[] = []
+    if (eff.badge || promo) {
+      zones.push({
+        x: 8,
+        y: 8,
+        w: Math.min(148, Math.max(96, w * 0.42)),
+        h: 72,
+      })
+    }
+    if (product.isSold && product.showSoldInFrontend) {
+      const stampW = Math.min(168, Math.max(112, w * 0.38))
+      zones.push({
+        x: Math.max(8, w - stampW - 12),
+        y: 8,
+        w: stampW,
+        h: 72,
+      })
+    }
+    return zones
+  }, [mediaSize, eff.badge, promo, product.isSold, product.showSoldInFrontend])
+
   return (
     <Link
       to={`/showroom/${product.slug}`}
       className="group block bg-white border border-[var(--border)] overflow-hidden card-motion"
     >
-      <div className="relative aspect-[4/3] overflow-hidden bg-[var(--background)]">
-        {product.images[0] ? (
-          <img
-            src={withFarcomWatermark(product.images[0])}
-            alt={`${product.name} - Arredamento ${sectorLabel} Made in Italy`}
-            width="800"
-            height="600"
-            loading="lazy"
-            fetchpriority="low"
-            decoding="async"
-            className="w-full h-full object-cover card-motion-media"
-          />
+      <div
+        ref={mediaRef}
+        className="relative aspect-[4/3] overflow-hidden bg-[var(--background)]"
+      >
+        {coverSrc ? (
+          <>
+            <img
+              src={coverSrc}
+              alt={`${product.name} - Arredamento ${sectorLabel} Made in Italy`}
+              width="800"
+              height="600"
+              loading="lazy"
+              fetchpriority="low"
+              decoding="async"
+              className="w-full h-full object-cover card-motion-media"
+            />
+            <FarcomImageWatermark
+              layoutKey={`${mediaSize.w}x${mediaSize.h}`}
+              obstacles={badgeObstacles}
+            />
+          </>
         ) : (
           <div className="w-full h-full flex items-center justify-center text-[var(--border)]">
             <svg

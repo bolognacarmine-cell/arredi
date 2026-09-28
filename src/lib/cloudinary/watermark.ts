@@ -1,29 +1,360 @@
 /**
- * Watermark Farcom via trasformazione dinamica Cloudinary.
- * Non modifica né sovrascrive i file originali su Cloudinary.
+ * Watermark Farcom — layout UI adattivo + trasformazione Cloudinary opzionale (SEO).
  *
- * Public ID del logo: farcom/brand/logo-farcom
- * (caricato da public/logo-farcom.png — PNG RGBA già con trasparenza)
+ * Il watermark UI è ancorato all'area visibile del contenitore (dopo object-fit).
+ * Gli originali Cloudinary restano puliti. Non combinare mai overlay UI + URL
+ * già trasformato con l_farcom sulla stessa immagine pubblica.
+ *
+ * Public ID logo: farcom/brand/logo-farcom
  */
 
-/** Overlay: basso-destra, ~14% larghezza, opacità 80%, margine 25px. */
 export const FARCOM_WATERMARK_PUBLIC_ID = "farcom/brand/logo-farcom"
 
-/** Marker usato per evitare overlay duplicati (slash → colon in overlay Cloudinary). */
+/** Marker overlay Cloudinary (slash → colon). */
 export const FARCOM_WATERMARK_MARKER = "l_farcom:brand:logo-farcom"
 
 /**
- * w_0.14 + fl_relative → larghezza logo = 14% dell'immagine base
- * (resta proporzionale anche con resize responsive a monte/valle).
+ * Overlay Cloudinary solo per URL non renderizzati con overlay UI
+ * (es. Open Graph / crawler). Margini relativi 4%, logo ~10%.
  */
 export const FARCOM_WATERMARK_TRANSFORM =
-  "l_farcom:brand:logo-farcom,w_0.14,fl_relative,o_80,g_south_east,x_25,y_25"
+  "l_farcom:brand:logo-farcom,w_0.10,fl_relative,o_80,g_south_east,x_0.04,y_0.04"
+
+/** Aspect ratio del file logo-farcom.png (1915×821). */
+export const FARCOM_LOGO_ASPECT = 1915 / 821
+
+/** Larghezza minima leggibile; sotto questa soglia si nasconde. */
+export const MIN_LOGO_WIDTH = 28
+
+/** Cap massimo su viewport grandi. */
+export const MAX_LOGO_WIDTH = 168
+
+/** Margine anti-collisione tra logo e controlli UI. */
+export const OBSTACLE_GAP = 8
 
 /**
- * Inserisce il watermark Farcom in un URL Cloudinary.
- * - Ignora URL non-Cloudinary (placehold, data URL, ecc.)
- * - Se il watermark è già presente, restituisce l'URL invariato
- * - Gli originali restano accessibili senza trasformazione
+ * Bleed del bounding box reale (ombra / antialias).
+ * Nessuna box-shadow CSS attuale: 2px per sicurezza antialias.
+ */
+export const LOGO_SHADOW_BLEED = 2
+
+export type WatermarkCorner = "south_east" | "south_west" | "north_east" | "north_west"
+
+/** Ordine fallback professionale: SE → SW → NE → NW. */
+export const WATERMARK_CORNER_ORDER: WatermarkCorner[] = [
+  "south_east",
+  "south_west",
+  "north_east",
+  "north_west",
+]
+
+export type Rect = { x: number; y: number; w: number; h: number }
+
+export type EdgeInsets = {
+  top: number
+  right: number
+  bottom: number
+  left: number
+}
+
+export type WatermarkLayout = {
+  /** false = spazio insufficiente anche al minimo → nascondi (mai tagliare). */
+  visible: boolean
+  corner: WatermarkCorner
+  /** Safe inset uniforme calcolato dal lato corto (prima degli extra). */
+  padding: number
+  /** Inset effettivi per-lato (safe + extraInset). */
+  insets: EdgeInsets
+  /** Larghezza logo in px (contenuto, senza bleed). */
+  width: number
+  /** Altezza logo in px. */
+  height: number
+  /** Bounding box completo incluso bleed, in coordinate contenitore. */
+  box: Rect
+  opacity: number
+}
+
+export type ComputeWatermarkOptions = {
+  /** Zone UI da evitare (frecce, counter, badge, dots…). Coordinate contenitore. */
+  obstacles?: Rect[]
+  /** Aspect ratio reale del logo (naturalWidth/naturalHeight). */
+  logoAspect?: number
+  /** Spazio extra oltre la safe area (es. barra dots carosello). */
+  extraInset?: Partial<EdgeInsets>
+  /** Bleed ombra/antialias incluso nel box. */
+  shadowBleed?: number
+  /** Gap minimo tra logo e ostacoli. */
+  obstacleGap?: number
+}
+
+/**
+ * Safe area interna: 4% del lato corto, minimo 24px, massimo 64px.
+ */
+export function computeSafeInset(containerW: number, containerH: number): number {
+  const short = Math.min(containerW, containerH)
+  return Math.round(Math.min(64, Math.max(24, short * 0.04)))
+}
+
+/**
+ * Larghezza logo relativa alla larghezza del contenitore visibile.
+ * grandi ≥900 → 9%; medie ≥400 → 11%; card/miniature → 13%.
+ */
+export function computeLogoWidthPct(containerW: number): number {
+  if (containerW >= 900) return 0.09
+  if (containerW >= 400) return 0.11
+  return 0.13
+}
+
+export function rectsOverlap(a: Rect, b: Rect, gap = 0): boolean {
+  return !(
+    a.x + a.w + gap <= b.x ||
+    b.x + b.w + gap <= a.x ||
+    a.y + a.h + gap <= b.y ||
+    b.y + b.h + gap <= a.y
+  )
+}
+
+export function fitsInContainer(box: Rect, containerW: number, containerH: number): boolean {
+  const eps = 0.5
+  return (
+    box.x >= -eps &&
+    box.y >= -eps &&
+    box.x + box.w <= containerW + eps &&
+    box.y + box.h <= containerH + eps
+  )
+}
+
+/**
+ * Bounding box del logo in un angolo, inclusi padding e bleed (ombra/antialias).
+ */
+export function logoBoundingBox(
+  corner: WatermarkCorner,
+  containerW: number,
+  containerH: number,
+  logoW: number,
+  logoH: number,
+  insets: EdgeInsets,
+  bleed: number,
+): Rect {
+  const bw = logoW + bleed * 2
+  const bh = logoH + bleed * 2
+  switch (corner) {
+    case "south_west":
+      return {
+        x: insets.left,
+        y: containerH - insets.bottom - bh,
+        w: bw,
+        h: bh,
+      }
+    case "north_east":
+      return {
+        x: containerW - insets.right - bw,
+        y: insets.top,
+        w: bw,
+        h: bh,
+      }
+    case "north_west":
+      return {
+        x: insets.left,
+        y: insets.top,
+        w: bw,
+        h: bh,
+      }
+    case "south_east":
+    default:
+      return {
+        x: containerW - insets.right - bw,
+        y: containerH - insets.bottom - bh,
+        w: bw,
+        h: bh,
+      }
+  }
+}
+
+function collidesAny(box: Rect, obstacles: Rect[], gap: number): boolean {
+  for (const o of obstacles) {
+    if (o.w <= 0 || o.h <= 0) continue
+    if (rectsOverlap(box, o, gap)) return true
+  }
+  return false
+}
+
+function preferredWidth(containerW: number): number {
+  return Math.min(MAX_LOGO_WIDTH, containerW * computeLogoWidthPct(containerW))
+}
+
+/**
+ * Prova un angolo: parte dalla larghezza preferita e riduce fino a MIN.
+ * Ritorna null se anche il minimo collide o esce dalla safe area.
+ *
+ * Il fallback angolo scatta solo per fit/collisione UI — non per contenuto prodotto.
+ */
+function tryCorner(
+  corner: WatermarkCorner,
+  containerW: number,
+  containerH: number,
+  insets: EdgeInsets,
+  aspect: number,
+  targetW: number,
+  obstacles: Rect[],
+  bleed: number,
+  gap: number,
+): { width: number; height: number; box: Rect } | null {
+  const maxContentW = Math.max(0, containerW - insets.left - insets.right - bleed * 2)
+  const maxContentH = Math.max(0, containerH - insets.top - insets.bottom - bleed * 2)
+  if (maxContentW < MIN_LOGO_WIDTH || maxContentH < MIN_LOGO_WIDTH / aspect) {
+    return null
+  }
+
+  let width = Math.min(targetW, maxContentW, maxContentH * aspect)
+  if (width < MIN_LOGO_WIDTH) {
+    // Spazio massimo sotto il minimo: prova comunque al massimo disponibile,
+    // ma se resta < MIN nascondi (gestito dal chiamante).
+    width = maxContentW
+  }
+
+  // Riduci finché entra senza collisione; stop a MIN_LOGO_WIDTH.
+  const floor = Math.min(MIN_LOGO_WIDTH, maxContentW)
+  while (width >= floor - 0.5) {
+    const w = Math.round(width)
+    const h = Math.round(w / aspect)
+    if (h > maxContentH) {
+      width -= 2
+      continue
+    }
+    const box = logoBoundingBox(corner, containerW, containerH, w, h, insets, bleed)
+    if (fitsInContainer(box, containerW, containerH) && !collidesAny(box, obstacles, gap)) {
+      return { width: w, height: h, box }
+    }
+    width -= 2
+  }
+  return null
+}
+
+const HIDDEN: WatermarkLayout = {
+  visible: false,
+  corner: "south_east",
+  padding: 0,
+  insets: { top: 0, right: 0, bottom: 0, left: 0 },
+  width: 0,
+  height: 0,
+  box: { x: 0, y: 0, w: 0, h: 0 },
+  opacity: 0.8,
+}
+
+/**
+ * Calcola layout watermark rispetto all'area visibile finale.
+ * Ordine angoli: basso-destra → basso-sinistra → alto-destra → alto-sinistra.
+ * Nasconde se nessuno angolo ospita il logo intero (anche al minimo).
+ */
+export function computeWatermarkLayout(
+  containerW: number,
+  containerH: number,
+  options: ComputeWatermarkOptions = {},
+): WatermarkLayout {
+  if (!containerW || !containerH || containerW < 72 || containerH < 72) {
+    return { ...HIDDEN }
+  }
+
+  const aspect = options.logoAspect && options.logoAspect > 0 ? options.logoAspect : FARCOM_LOGO_ASPECT
+  const bleed = options.shadowBleed ?? LOGO_SHADOW_BLEED
+  const gap = options.obstacleGap ?? OBSTACLE_GAP
+  const obstacles = options.obstacles ?? []
+
+  const padding = computeSafeInset(containerW, containerH)
+  const insets: EdgeInsets = {
+    top: padding + (options.extraInset?.top ?? 0),
+    right: padding + (options.extraInset?.right ?? 0),
+    bottom: padding + (options.extraInset?.bottom ?? 0),
+    left: padding + (options.extraInset?.left ?? 0),
+  }
+
+  const targetW = preferredWidth(containerW)
+
+  for (const corner of WATERMARK_CORNER_ORDER) {
+    const fit = tryCorner(
+      corner,
+      containerW,
+      containerH,
+      insets,
+      aspect,
+      targetW,
+      obstacles,
+      bleed,
+      gap,
+    )
+    if (fit && fit.width >= MIN_LOGO_WIDTH) {
+      return {
+        visible: true,
+        corner,
+        padding,
+        insets,
+        width: fit.width,
+        height: fit.height,
+        box: fit.box,
+        opacity: 0.8,
+      }
+    }
+  }
+
+  return {
+    ...HIDDEN,
+    padding,
+    insets,
+  }
+}
+
+export function watermarkCornerStyle(
+  corner: WatermarkCorner,
+  insets: EdgeInsets,
+): { top?: number; right?: number; bottom?: number; left?: number } {
+  switch (corner) {
+    case "south_west":
+      return { left: insets.left, bottom: insets.bottom }
+    case "north_east":
+      return { right: insets.right, top: insets.top }
+    case "north_west":
+      return { left: insets.left, top: insets.top }
+    case "south_east":
+    default:
+      return { right: insets.right, bottom: insets.bottom }
+  }
+}
+
+/**
+ * Ostacoli tipici del carosello prodotti (coordinate viewport).
+ * Usati solo per evitare controlli UI — non per contenuto prodotto.
+ */
+export function carouselWatermarkObstacles(
+  containerW: number,
+  containerH: number,
+  opts: { multiSlide: boolean; hasOverlay: boolean },
+): Rect[] {
+  const out: Rect[] = []
+  if (opts.hasOverlay) {
+    // Badge / overlay alto-sinistra
+    out.push({ x: 8, y: 8, w: Math.min(180, containerW * 0.45), h: 72 })
+  }
+  if (!opts.multiSlide) return out
+
+  // Contatore "n / m" alto-destra
+  out.push({ x: containerW - 80, y: 10, w: 70, h: 32 })
+  // Frecce laterali (centro)
+  out.push({ x: 8, y: containerH / 2 - 24, w: 48, h: 48 })
+  out.push({ x: containerW - 56, y: containerH / 2 - 24, w: 48, h: 48 })
+  // Indicatori dots + gradient in basso
+  out.push({
+    x: containerW * 0.15,
+    y: containerH - 48,
+    w: containerW * 0.7,
+    h: 44,
+  })
+  return out
+}
+
+/**
+ * Inserisce il watermark Farcom in un URL Cloudinary (SEO / share).
+ * Non usare insieme all'overlay UI sulla stessa immagine pubblica.
  */
 export function withFarcomWatermark(url: string): string {
   if (!url || typeof url !== "string") return url
@@ -41,4 +372,17 @@ export function withFarcomWatermark(url: string): string {
 
 export function withFarcomWatermarkAll(urls: string[]): string[] {
   return urls.map(withFarcomWatermark)
+}
+
+/** Rimuove un eventuale overlay Farcom già presente nell'URL. */
+export function withoutFarcomWatermark(url: string): string {
+  if (!url || !url.includes(FARCOM_WATERMARK_MARKER)) return url
+  return url
+    .replace(/\/?l_farcom:brand:logo-farcom(?:,[a-z0-9_.]+)*\/?/gi, "/")
+    .replace("/upload//", "/upload/")
+    .replace(/([^:])\/{2,}/g, "$1/")
+}
+
+export function withoutFarcomWatermarkAll(urls: string[]): string[] {
+  return urls.map(withoutFarcomWatermark)
 }

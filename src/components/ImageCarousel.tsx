@@ -1,5 +1,10 @@
 // Carosello immagini: autoplay, slide fluido, swipe/drag, frecce, indicatori e thumbnail.
-import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react"
+import FarcomImageWatermark from "./FarcomImageWatermark"
+import {
+  carouselWatermarkObstacles,
+  withoutFarcomWatermarkAll,
+} from "../lib/cloudinary/watermark"
 
 type Props = {
   images: string[]
@@ -17,6 +22,8 @@ type Props = {
    * sfondo sfocato ricavato dalla foto stessa; "cover" riempie il viewport.
    */
   fit?: "cover" | "contain"
+  /** Watermark Farcom sull'area visibile del viewport (non sull'asset originale). */
+  showFarcomWatermark?: boolean
   /** Scorrimento automatico (in pausa su hover, focus e durante il drag). */
   autoPlay?: boolean
   autoPlayMs?: number
@@ -35,10 +42,13 @@ export default function ImageCarousel({
   maxHeightClass = "",
   fallbackSrc,
   fit = "contain",
+  showFarcomWatermark = false,
   autoPlay = true,
   autoPlayMs = 5000,
 }: Props) {
-  const list = Array.isArray(images) ? images.filter(Boolean) : []
+  const list = withoutFarcomWatermarkAll(
+    Array.isArray(images) ? images.filter(Boolean) : [],
+  )
   const count = list.length
 
   const [index, setIndex] = useState(0)
@@ -46,6 +56,7 @@ export default function ImageCarousel({
   const [dragging, setDragging] = useState(false)
   const [loaded, setLoaded] = useState<Record<number, boolean>>({})
   const [paused, setPaused] = useState(false)
+  const [viewportSize, setViewportSize] = useState({ w: 0, h: 0 })
 
   const viewportRef = useRef<HTMLDivElement>(null)
   const thumbsRef = useRef<HTMLDivElement>(null)
@@ -54,6 +65,26 @@ export default function ImageCarousel({
   useEffect(() => {
     setIndex(0)
   }, [count, list[0]])
+
+  useEffect(() => {
+    const el = viewportRef.current
+    if (!el) return
+    const apply = () => setViewportSize({ w: el.clientWidth, h: el.clientHeight })
+    apply()
+    const ro = new ResizeObserver(apply)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [count])
+
+  const hasOverlay = Boolean(overlay)
+  const watermarkObstacles = useMemo(
+    () =>
+      carouselWatermarkObstacles(viewportSize.w, viewportSize.h, {
+        multiSlide: count > 1,
+        hasOverlay,
+      }),
+    [viewportSize.w, viewportSize.h, count, hasOverlay],
+  )
 
   const goTo = useCallback(
     (i: number) => {
@@ -191,6 +222,13 @@ export default function ImageCarousel({
         </div>
 
         {overlay && <div className="pointer-events-none absolute top-4 left-4 z-10">{overlay}</div>}
+        {showFarcomWatermark && (
+          <FarcomImageWatermark
+            layoutKey={`${index}-${viewportSize.w}x${viewportSize.h}-${count}`}
+            obstacles={watermarkObstacles}
+            extraInset={{ bottom: count > 1 ? 40 : 0 }}
+          />
+        )}
 
         {count > 1 && (
           <>
