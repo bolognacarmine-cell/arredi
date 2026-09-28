@@ -1,14 +1,24 @@
-import { useParams, Link } from "react-router-dom";
-import { useProjects } from "../projectStore";
-import ImageCarousel from "../components/ImageCarousel";
+import { useParams, Link } from "react-router-dom"
+import { useProjects } from "../projectStore"
+import ImageCarousel from "../components/ImageCarousel"
+import FarcomImageWatermark, { productImageSrc } from "../components/FarcomImageWatermark"
 
 const FALLBACK_IMAGE =
-  "https://images.unsplash.com/photo-1497366216548-37526070297c?w=2400&h=1350&fit=crop";
+  "https://images.unsplash.com/photo-1497366216548-37526070297c?w=2400&h=1350&fit=crop"
+
+const FALLBACK_COVER =
+  "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=900&fit=crop"
+
+function projectCoverUrl(p: { coverImages?: string[]; image?: string }) {
+  const raw =
+    (p.coverImages && p.coverImages.length > 0 ? p.coverImages[0] : p.image) || FALLBACK_COVER
+  return productImageSrc(raw)
+}
 
 export default function ProjectDetail() {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams<{ id: string }>()
   const projects = useProjects() || []
-  const project = projects.find((p) => p.id === id);
+  const project = projects.find((p) => p.id === id)
 
   // Use direct URL arrays from project data - no API calls
   const coverImages = project?.coverImages || []
@@ -19,23 +29,18 @@ export default function ProjectDetail() {
   // Build display gallery with all available images
   const displayGallery = [
     ...(coverImages.length > 0 ? coverImages : mainImage ? [mainImage] : []),
-    ...galleryImages
+    ...galleryImages,
   ]
 
-  // Remove duplicates while preserving order
+  // Remove duplicates while preserving order (Cloudinary strip handled by ImageCarousel)
   const uniqueGallery = Array.from(new Set(displayGallery))
 
   if (!project) {
     return (
       <div className="min-h-screen flex items-center justify-center pt-20 bg-[#F7F5F0]">
         <div className="text-center">
-          <h1 className="font-display text-3xl text-[#1A1A18] mb-4">
-            Progetto non trovato
-          </h1>
-          <Link
-            to="/progetti"
-            className="text-[#1B4332] text-sm hover:underline"
-          >
+          <h1 className="font-display text-3xl text-[#1A1A18] mb-4">Progetto non trovato</h1>
+          <Link to="/progetti" className="text-[#1B4332] text-sm hover:underline">
             ← Torna ai progetti
           </Link>
         </div>
@@ -43,7 +48,9 @@ export default function ProjectDetail() {
     )
   }
 
-  const related = Array.isArray(projects) ? projects.filter((p) => p.sectorId === project.sectorId && p.id !== project.id).slice(0, 3) : [];
+  const related = Array.isArray(projects)
+    ? projects.filter((p) => p.sectorId === project.sectorId && p.id !== project.id).slice(0, 3)
+    : []
 
   return (
     <div className="bg-[#F7F5F0] min-h-screen pt-24">
@@ -65,6 +72,7 @@ export default function ProjectDetail() {
             aspectClass="aspect-[16/10]"
             maxHeightClass="max-h-[65vh]"
             fallbackSrc={FALLBACK_IMAGE}
+            showFarcomWatermark
           />
         </div>
 
@@ -77,9 +85,7 @@ export default function ProjectDetail() {
             <h1 className="font-display text-4xl lg:text-5xl font-light text-[#1A1A18] mb-6">
               {project.title}
             </h1>
-            <p className="text-[#4A4A46] leading-relaxed text-base mb-8">
-              {project.description}
-            </p>
+            <p className="text-[#4A4A46] leading-relaxed text-base mb-8">{project.description}</p>
 
             <div>
               <h3 className="font-display text-lg font-medium text-[#1A1A18] mb-4">
@@ -87,10 +93,7 @@ export default function ProjectDetail() {
               </h3>
               <div className="flex flex-wrap gap-2">
                 {tags.map((t) => (
-                  <span
-                    key={t}
-                    className="bg-[#EAE7E0] text-[#4A4A46] text-xs px-4 py-2"
-                  >
+                  <span key={t} className="bg-[#EAE7E0] text-[#4A4A46] text-xs px-4 py-2">
                     {t}
                   </span>
                 ))}
@@ -110,13 +113,8 @@ export default function ProjectDetail() {
                 ["Settore", project.sector],
                 ["Materiali", project.materials],
               ].map(([label, value]) => (
-                <div
-                  key={label}
-                  className="border-b border-[#EAE7E0] pb-4 last:border-0"
-                >
-                  <dt className="text-[#888580] text-xs uppercase tracking-wide mb-1">
-                    {label}
-                  </dt>
+                <div key={label} className="border-b border-[#EAE7E0] pb-4 last:border-0">
+                  <dt className="text-[#888580] text-xs uppercase tracking-wide mb-1">{label}</dt>
                   <dd className="text-[#1A1A18] font-medium">{value}</dd>
                 </div>
               ))}
@@ -157,7 +155,7 @@ export default function ProjectDetail() {
                 >
                   <div className="relative overflow-hidden aspect-[4/3] bg-[#EAE7E0]">
                     <img
-                      src={(p.coverImages && p.coverImages.length > 0 ? p.coverImages[0] : p.image) || "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=900&fit=crop"}
+                      src={projectCoverUrl(p)}
                       alt={p.title}
                       width="1200"
                       height="900"
@@ -166,6 +164,7 @@ export default function ProjectDetail() {
                       decoding="async"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     />
+                    <FarcomImageWatermark />
                   </div>
                   <div className="p-5">
                     <h3 className="font-display text-lg font-light text-[#1A1A18] mb-1">

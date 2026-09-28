@@ -1,12 +1,123 @@
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { SECTORS } from "../data";
-import { useProjects } from "../projectStore";
+import { useState, useEffect, useMemo, useRef } from "react"
+import { Link } from "react-router-dom"
+import { SECTORS } from "../data"
+import { useProjects } from "../projectStore"
+import FarcomImageWatermark, { productImageSrc } from "../components/FarcomImageWatermark"
+import type { Rect } from "../lib/cloudinary/watermark"
+import type { ProjectRecord } from "../projectStore"
 
 const filters = [
   { id: "all", label: "Tutti" },
   ...SECTORS.map((s) => ({ id: s.id, label: s.label })),
 ]
+
+const FALLBACK_COVER =
+  "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=900&fit=crop"
+
+function projectCoverUrl(p: { coverImages?: string[]; image?: string }) {
+  const raw =
+    (p.coverImages && p.coverImages.length > 0 ? p.coverImages[0] : p.image) || FALLBACK_COVER
+  return productImageSrc(raw)
+}
+
+/** Card griglia: watermark UI + ostacolo badge settore misurato. */
+function ProjectGridCard({ project: p }: { project: ProjectRecord }) {
+  const mediaRef = useRef<HTMLDivElement>(null)
+  const badgeRef = useRef<HTMLSpanElement>(null)
+  const [mediaSize, setMediaSize] = useState({ w: 0, h: 0 })
+  const [badgeBox, setBadgeBox] = useState<Rect | null>(null)
+
+  useEffect(() => {
+    const media = mediaRef.current
+    const badge = badgeRef.current
+    if (!media) return
+
+    const apply = () => {
+      setMediaSize({ w: media.clientWidth, h: media.clientHeight })
+      if (!badge) {
+        setBadgeBox(null)
+        return
+      }
+      const m = media.getBoundingClientRect()
+      const b = badge.getBoundingClientRect()
+      setBadgeBox({
+        x: b.left - m.left,
+        y: b.top - m.top,
+        w: b.width,
+        h: b.height,
+      })
+    }
+
+    apply()
+    const ro = new ResizeObserver(apply)
+    ro.observe(media)
+    if (badge) ro.observe(badge)
+    return () => ro.disconnect()
+  }, [p.sector])
+
+  const obstacles = useMemo((): Rect[] => {
+    if (!badgeBox || badgeBox.w <= 0 || badgeBox.h <= 0) return []
+    // Piccolo padding intorno al badge per evitare collisione al bordo.
+    return [
+      {
+        x: Math.max(0, badgeBox.x - 4),
+        y: Math.max(0, badgeBox.y - 4),
+        w: badgeBox.w + 8,
+        h: badgeBox.h + 8,
+      },
+    ]
+  }, [badgeBox])
+
+  const coverSrc = projectCoverUrl(p)
+
+  return (
+    <Link
+      to={`/progetti/${p.id}`}
+      className="group bg-white overflow-hidden border border-[#E5E5E7] hover:shadow-lg transition-shadow"
+    >
+      <div ref={mediaRef} className="relative overflow-hidden aspect-[4/3] bg-[#E8E8EC]">
+        <img
+          src={coverSrc}
+          alt={p.title}
+          width="1200"
+          height="900"
+          loading="lazy"
+          fetchpriority="low"
+          decoding="async"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement
+            if (!target.src.includes("unsplash.com")) {
+              target.src = FALLBACK_COVER
+            }
+          }}
+        />
+        {mediaSize.w >= 72 && mediaSize.h >= 72 && (
+          <FarcomImageWatermark
+            layoutKey={`${mediaSize.w}x${mediaSize.h}-${p.sector}`}
+            obstacles={obstacles}
+          />
+        )}
+        <span
+          ref={badgeRef}
+          className="absolute top-4 left-4 bg-[#E69138] text-white text-xs px-3 py-1 font-medium"
+        >
+          {p.sector}
+        </span>
+      </div>
+      <div className="p-6">
+        <h3 className="font-display text-xl font-light text-[#1A1A2E] mb-1">{p.title}</h3>
+        <p className="text-[#6B7280] text-xs mb-3">
+          {p.location} · {p.year}
+        </p>
+        <p className="text-[#4A4A46] text-sm leading-relaxed line-clamp-2">{p.description}</p>
+        <span className="mt-4 inline-block text-[#E69138] text-xs font-semibold tracking-wide group-hover:tracking-widest transition-all">
+          Vedi progetto →
+        </span>
+      </div>
+    </Link>
+  )
+}
 
 export default function Projects() {
   useEffect(() => {
@@ -25,10 +136,15 @@ export default function Projects() {
     }, 300)
   }, [])
 
-  const [active, setActive] = useState("all");
+  const [active, setActive] = useState("all")
   const projects = useProjects() || []
 
-  const visible = active === "all" ? projects : (Array.isArray(projects) ? projects.filter((p) => p.sectorId === active) : []);
+  const visible =
+    active === "all"
+      ? projects
+      : Array.isArray(projects)
+        ? projects.filter((p) => p.sectorId === active)
+        : []
 
   return (
     <div className="bg-[#FAFAFA] min-h-screen pt-24">
@@ -42,8 +158,8 @@ export default function Projects() {
             I nostri progetti
           </h1>
           <p className="text-[#6B7280] max-w-xl leading-relaxed">
-            Oltre 500 realizzazioni in tutta Italia. Ogni progetto è unico, ogni
-            spazio ha una storia da raccontare.
+            Oltre 500 realizzazioni in tutta Italia. Ogni progetto è unico, ogni spazio ha una
+            storia da raccontare.
           </p>
         </div>
 
@@ -78,50 +194,9 @@ export default function Projects() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 pb-24">
             {visible.map((p) => (
-            <Link
-              key={p.id}
-              to={`/progetti/${p.id}`}
-              className="group bg-white overflow-hidden border border-[#E5E5E7] hover:shadow-lg transition-shadow"
-            >
-              <div className="relative overflow-hidden aspect-[4/3] bg-[#E8E8EC]">
-                <img
-                  src={(p.coverImages && p.coverImages.length > 0 ? p.coverImages[0] : p.image) || "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=900&fit=crop"}
-                  alt={p.title}
-                  width="1200"
-                  height="900"
-                  loading="lazy"
-                  fetchpriority="low"
-                  decoding="async"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  onError={(e) => {
-                    // Fallback if image fails to load
-                    const target = e.target as HTMLImageElement;
-                    if (!target.src.includes('unsplash.com')) {
-                      target.src = "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=900&fit=crop";
-                    }
-                  }}
-                />
-                <span className="absolute top-4 left-4 bg-[#E69138] text-white text-xs px-3 py-1 font-medium">
-                  {p.sector}
-                </span>
-              </div>
-              <div className="p-6">
-                <h3 className="font-display text-xl font-light text-[#1A1A2E] mb-1">
-                  {p.title}
-                </h3>
-                <p className="text-[#6B7280] text-xs mb-3">
-                  {p.location} · {p.year}
-                </p>
-                <p className="text-[#4A4A46] text-sm leading-relaxed line-clamp-2">
-                  {p.description}
-                </p>
-                <span className="mt-4 inline-block text-[#E69138] text-xs font-semibold tracking-wide group-hover:tracking-widest transition-all">
-                  Vedi progetto →
-                </span>
-              </div>
-            </Link>
-          ))}
-        </div>
+              <ProjectGridCard key={p.id} project={p} />
+            ))}
+          </div>
         )}
       </div>
     </div>
