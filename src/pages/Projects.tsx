@@ -21,91 +21,69 @@ function projectCoverUrl(p: { coverImages?: string[]; image?: string }) {
   return productImageSrc(raw)
 }
 
-/** Card griglia: watermark UI + ostacolo badge settore misurato. */
+/** Card griglia: stesso pattern dello showroom ProductCard (watermark dentro la foto). */
 function ProjectGridCard({ project: p }: { project: ProjectRecord }) {
   const mediaRef = useRef<HTMLDivElement>(null)
-  const badgeRef = useRef<HTMLSpanElement>(null)
   const [mediaSize, setMediaSize] = useState({ w: 0, h: 0 })
-  const [badgeBox, setBadgeBox] = useState<Rect | null>(null)
 
   useEffect(() => {
-    const media = mediaRef.current
-    const badge = badgeRef.current
-    if (!media) return
-
-    const apply = () => {
-      setMediaSize({ w: media.clientWidth, h: media.clientHeight })
-      if (!badge) {
-        setBadgeBox(null)
-        return
-      }
-      const m = media.getBoundingClientRect()
-      const b = badge.getBoundingClientRect()
-      setBadgeBox({
-        x: b.left - m.left,
-        y: b.top - m.top,
-        w: b.width,
-        h: b.height,
-      })
-    }
-
+    const el = mediaRef.current
+    if (!el) return
+    const apply = () => setMediaSize({ w: el.clientWidth, h: el.clientHeight })
     apply()
     const ro = new ResizeObserver(apply)
-    ro.observe(media)
-    if (badge) ro.observe(badge)
+    ro.observe(el)
     return () => ro.disconnect()
-  }, [p.sector])
+  }, [])
 
+  // Badge settore alto-sinistra (sempre presente) — ostacolo UI proporzionale.
   const obstacles = useMemo((): Rect[] => {
-    if (!badgeBox || badgeBox.w <= 0 || badgeBox.h <= 0) return []
-    // Piccolo padding intorno al badge per evitare collisione al bordo.
+    const { w } = mediaSize
+    if (w <= 0) return []
     return [
       {
-        x: Math.max(0, badgeBox.x - 4),
-        y: Math.max(0, badgeBox.y - 4),
-        w: badgeBox.w + 8,
-        h: badgeBox.h + 8,
+        x: 8,
+        y: 8,
+        w: Math.min(160, Math.max(88, w * 0.42)),
+        h: 36,
       },
     ]
-  }, [badgeBox])
+  }, [mediaSize])
 
   const coverSrc = projectCoverUrl(p)
 
   return (
     <Link
       to={`/progetti/${p.id}`}
-      className="group bg-white overflow-hidden border border-[#E5E5E7] hover:shadow-lg transition-shadow"
+      className="group block bg-white overflow-hidden border border-[#E5E5E7] hover:shadow-lg transition-shadow"
     >
-      {/* Piano media: relative + clip — watermark solo dentro la foto (non nel testo). */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-[#E8E8EC]">
-        <div ref={mediaRef} className="absolute inset-0 overflow-hidden">
-          <img
-            src={coverSrc}
-            alt={p.title}
-            width="1200"
-            height="900"
-            loading="lazy"
-            fetchpriority="low"
-            decoding="async"
-            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement
-              if (!target.src.includes("unsplash.com")) {
-                target.src = FALLBACK_COVER
-              }
-            }}
+      <div
+        ref={mediaRef}
+        className="relative aspect-[4/3] overflow-hidden bg-[#E8E8EC]"
+      >
+        <img
+          src={coverSrc}
+          alt={p.title}
+          width="1200"
+          height="900"
+          loading="lazy"
+          fetchpriority="low"
+          decoding="async"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement
+            if (!target.src.includes("unsplash.com")) {
+              target.src = FALLBACK_COVER
+            }
+          }}
+        />
+        {!isWatermarkContainerTooSmall(mediaSize.w, mediaSize.h) && (
+          <FarcomImageWatermark
+            layoutKey={`${mediaSize.w}x${mediaSize.h}`}
+            obstacles={obstacles}
           />
-          {!isWatermarkContainerTooSmall(mediaSize.w, mediaSize.h) && (
-            <FarcomImageWatermark
-              layoutKey={`${mediaSize.w}x${mediaSize.h}-${p.sector}`}
-              obstacles={obstacles}
-            />
-          )}
-        </div>
-        <span
-          ref={badgeRef}
-          className="absolute top-4 left-4 z-10 bg-[#E69138] text-white text-xs px-3 py-1 font-medium"
-        >
+        )}
+        <span className="absolute top-4 left-4 z-10 bg-[#E69138] text-white text-xs px-3 py-1 font-medium">
           {p.sector}
         </span>
       </div>
