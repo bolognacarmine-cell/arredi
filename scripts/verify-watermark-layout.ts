@@ -28,16 +28,19 @@ function assert(cond: boolean, msg: string) {
   }
 }
 
-// Hide thresholds
+// Hide thresholds: solo 72×72 (non più hard-hide a 240)
 assert(isWatermarkContainerTooSmall(71, 200), "hide se lato < 72")
 assert(isWatermarkContainerTooSmall(200, 71), "hide se altezza < 72")
-assert(isWatermarkContainerTooSmall(239, 200), "hide se larghezza < 240")
+assert(!isWatermarkContainerTooSmall(72, 72), "mostra da 72×72")
+assert(!isWatermarkContainerTooSmall(180, 200), "mostra sotto 240 se ≥72")
 assert(!isWatermarkContainerTooSmall(240, 180), "mostra da 240×180")
 assert(MIN_WATERMARK_EDGE === 72, "MIN_WATERMARK_EDGE = 72")
-assert(MIN_WATERMARK_CONTAINER_WIDTH === 240, "MIN_WATERMARK_CONTAINER_WIDTH = 240")
+assert(MIN_WATERMARK_CONTAINER_WIDTH === 240, "MIN_WATERMARK_CONTAINER_WIDTH = 240 (banda %)")
 
 // Logo % by container width
-assert(computeLogoWidthPct(239) === 0, "% = 0 sotto 240")
+assert(computeLogoWidthPct(71) === 0, "% = 0 sotto 72")
+assert(computeLogoWidthPct(72) === 0.1, "72–239 → 10%")
+assert(computeLogoWidthPct(239) === 0.1, "239 → 10%")
 assert(computeLogoWidthPct(240) === 0.08, "240–359 → 8%")
 assert(computeLogoWidthPct(359) === 0.08, "359 → 8%")
 assert(computeLogoWidthPct(360) === 0.09, "360–639 → 9%")
@@ -87,9 +90,21 @@ assert(
 )
 assert(carousel.insets.bottom >= 40 + 16, `inset bottom ≥ safe+40 (got ${carousel.insets.bottom})`)
 
-// Too small → hidden, never partial
-const tiny = computeWatermarkLayout(200, 150)
-assert(!tiny.visible && tiny.width === 0, "sotto 240: nascosto, width 0")
+// Sotto 72×72 → nascosto, never partial
+const tiny = computeWatermarkLayout(71, 71)
+assert(!tiny.visible && tiny.width === 0, "sotto 72: nascosto, width 0")
+
+// Content-rect contain stretto (mobile pillarbox) → logo ridotto, visibile
+const narrow = computeWatermarkLayout(171, 214, {
+  logoAspect: FARCOM_LOGO_ASPECT,
+  extraInset: { bottom: 40 },
+})
+assert(narrow.visible, `photoRect mobile 171×214 visibile (got visible=${narrow.visible})`)
+assert(
+  fitsInContainer(narrow.box, 171, 214),
+  "logo intero dentro photoRect mobile",
+)
+assert(narrow.width >= minLogoWidth(171), `logo ≥ floor stretto (got ${narrow.width})`)
 
 // object-fit contain: foto ritratto in viewport wide → pillarbox (barre L/R)
 const pillar = objectFitContentRect(1040, 650, 800, 1000, "contain")

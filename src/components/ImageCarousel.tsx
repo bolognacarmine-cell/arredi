@@ -105,9 +105,8 @@ export default function ImageCarousel({
     return translateRects(raw, -photoRect.x, -photoRect.y)
   }, [viewportSize.w, viewportSize.h, count, hasOverlay, photoRect])
 
-  // Dots sul fondo viewport: extra inset solo se coincidono col bordo foto (no letterbox Y).
-  const watermarkBottomExtra =
-    photoRect && count > 1 && photoRect.h >= viewportSize.h - 1 ? 40 : 0
+  // Dots sul fondo: margine extra fisso quando ci sono pallini (multi-slide).
+  const watermarkBottomExtra = count > 1 ? 40 : 0
 
   const goTo = useCallback(
     (i: number) => {

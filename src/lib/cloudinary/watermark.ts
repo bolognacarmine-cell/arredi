@@ -35,8 +35,8 @@ export const MIN_LOGO_WIDTH = 28
 export const MAX_LOGO_WIDTH = 168
 
 /**
- * Sotto questa larghezza contenitore il watermark è nascosto
- * (troppo piccolo per un logo discreto e leggibile).
+ * Soglia “compact narrow”: sotto questa larghezza si usano % logo più basse.
+ * Non è più un hard-hide (il hide resta a MIN_WATERMARK_EDGE 72×72).
  */
 export const MIN_WATERMARK_CONTAINER_WIDTH = 240
 
@@ -58,22 +58,25 @@ export const OBSTACLE_GAP = 8
  */
 export const LOGO_SHADOW_BLEED = 2
 
-/** True se il contenitore è troppo piccolo per qualsiasi watermark. */
+/**
+ * True se il contenitore è troppo piccolo per qualsiasi watermark.
+ * Solo sotto 72×72 (o dimensione invalida): mai tagliare, solo nascondere.
+ */
 export function isWatermarkContainerTooSmall(containerW: number, containerH: number): boolean {
   return (
     !containerW ||
     !containerH ||
     containerW < MIN_WATERMARK_EDGE ||
-    containerH < MIN_WATERMARK_EDGE ||
-    containerW < MIN_WATERMARK_CONTAINER_WIDTH
+    containerH < MIN_WATERMARK_EDGE
   )
 }
 
 /**
- * Larghezza minima logo: più bassa su card strette così si riduce
+ * Larghezza minima logo: più bassa su card/content-rect stretti così si riduce
  * prima di cambiare angolo, senza tagliare.
  */
 export function minLogoWidth(containerW: number): number {
+  if (containerW < 240) return 12
   if (containerW < 360) return 18
   return MIN_LOGO_WIDTH
 }
@@ -144,13 +147,15 @@ export function computeSafeInset(containerW: number, containerH: number): number
 /**
  * Larghezza logo relativa alla larghezza del contenitore visibile.
  * Breakpoint sul contenitore (non sulla viewport):
- * - ≥900 → 9%; 640–899 → 11%; 360–639 → 9%; 240–359 → 8%; &lt;240 → nascosto a monte.
+ * - ≥900 → 9%; 640–899 → 11%; 360–639 → 9%; 240–359 → 8%;
+ * - 72–239 → 10% (content-rect contain stretto su mobile); &lt;72 → nascosto a monte.
  */
 export function computeLogoWidthPct(containerW: number): number {
   if (containerW >= 900) return 0.09
   if (containerW >= 640) return 0.11
   if (containerW >= 360) return 0.09
   if (containerW >= MIN_WATERMARK_CONTAINER_WIDTH) return 0.08
+  if (containerW >= MIN_WATERMARK_EDGE) return 0.1
   return 0
 }
 
@@ -360,9 +365,13 @@ export function computeWatermarkLayout(
     left: padding + (options.extraInset?.left ?? 0),
   }
 
-  const targetW = preferredWidth(containerW)
-  if (targetW < floorW) {
+  // Preferita; se sotto il minimo prova comunque al floor (tryCorner nasconde se non entra).
+  let targetW = preferredWidth(containerW)
+  if (targetW <= 0) {
     return { ...HIDDEN, padding, insets }
+  }
+  if (targetW < floorW) {
+    targetW = floorW
   }
 
   for (const corner of WATERMARK_CORNER_ORDER) {
