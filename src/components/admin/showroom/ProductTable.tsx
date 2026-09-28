@@ -9,6 +9,7 @@ import {
   displayFurnitureType,
   type SortDirection,
 } from "../../../types/showroom"
+import { withFarcomWatermark } from "../../../lib/cloudinary"
 
 interface Props {
   products: Product[]
@@ -132,7 +133,11 @@ export default function ProductTable({
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 overflow-hidden border bg-[#F7F5F0]">
                         {p.images[0] && (
-                          <img src={p.images[0]} alt="" className="w-full h-full object-cover" />
+                          <img
+                            src={withFarcomWatermark(p.images[0])}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
                         )}
                       </div>
                       <div className="min-w-0">
@@ -223,7 +228,11 @@ export default function ProductTable({
                 <div className="flex gap-3">
                   <div className="h-14 w-14 overflow-hidden border bg-[#F7F5F0]">
                     {p.images[0] && (
-                      <img src={p.images[0]} alt="" className="w-full h-full object-cover" />
+                      <img
+                        src={withFarcomWatermark(p.images[0])}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">

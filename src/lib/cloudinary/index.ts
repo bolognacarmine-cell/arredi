@@ -7,3 +7,10 @@ export {
   type SrcOrPublicIdPair,
 } from "./image"
 export { useCloudinaryUpload, type UploadState, type CloudinaryUploadResult } from "./useCloudinaryUpload"
+export {
+  FARCOM_WATERMARK_PUBLIC_ID,
+  FARCOM_WATERMARK_MARKER,
+  FARCOM_WATERMARK_TRANSFORM,
+  withFarcomWatermark,
+  withFarcomWatermarkAll,
+} from "./watermark"

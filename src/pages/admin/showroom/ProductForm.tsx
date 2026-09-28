@@ -6,7 +6,7 @@ import type { Product, PromoDiscountType } from "../../../types/showroom"
 import type { ActivitySector } from "../../../constants/showroomSectors"
 import { FURNITURE_BY_SECTOR } from "../../../constants/showroomSectors"
 import { useProducts, slugify } from "../../../services/showroomApi"
-import { isCloudinaryConfigured, useCloudinaryUpload } from "../../../lib/cloudinary"
+import { isCloudinaryConfigured, useCloudinaryUpload, withFarcomWatermark } from "../../../lib/cloudinary"
 import { createMedia } from "../../../api/mediaApi"
 
 interface Props {
@@ -542,7 +542,11 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
                       }}
                       className="relative aspect-[4/3] overflow-hidden border bg-white cursor-move group"
                     >
-                      <img src={url} className="w-full h-full object-cover" alt="" />
+                      <img
+                        src={withFarcomWatermark(url)}
+                        className="w-full h-full object-cover"
+                        alt=""
+                      />
                       {i === 0 && (
                         <div className="absolute top-1 left-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#1B4332] text-white">
                           Copertina

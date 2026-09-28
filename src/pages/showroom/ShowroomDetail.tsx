@@ -14,6 +14,7 @@ import {
 import ImageCarousel from "../../components/ImageCarousel"
 import PromoCountdown from "../../components/showroom/PromoCountdown"
 import SEOHead from "../../components/SEOHead"
+import { withFarcomWatermark, withFarcomWatermarkAll } from "../../lib/cloudinary"
 
 const eur = (n: number) =>
   n.toLocaleString("it-IT", {
@@ -42,7 +43,7 @@ const getProductSchema = (product: Product, effectivePrice: ReturnType<typeof co
     "@type": "Product",
     "name": product.name,
     "description": product.description,
-    "image": product.images,
+    "image": withFarcomWatermarkAll(product.images),
     "sku": product.sku || product.id,
     "brand": {
       "@type": "Brand",
@@ -208,7 +209,7 @@ export default function ShowroomDetail() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
           <ImageCarousel
-            images={p.images}
+            images={withFarcomWatermarkAll(p.images)}
             alt={`${p.name} - Arredamento ${displaySector(p.activitySector, p.activitySectorOther)} Made in Italy`}
             maxHeightClass="max-h-[60vh]"
             overlay={

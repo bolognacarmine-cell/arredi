@@ -3,6 +3,7 @@ import { Link } from "react-router-dom"
 import type { Product } from "../../services/showroomApi"
 import { activePromo, computeEffectivePrice } from "../../services/showroomApi"
 import { displaySector, displayFurnitureType } from "../../types/showroom"
+import { withFarcomWatermark } from "../../lib/cloudinary"
 import PromoCountdown from "./PromoCountdown"
 
 interface Props {
@@ -35,7 +36,7 @@ export default function ProductCard({ product }: Props) {
       <div className="relative aspect-[4/3] overflow-hidden bg-[var(--background)]">
         {product.images[0] ? (
           <img
-            src={product.images[0]}
+            src={withFarcomWatermark(product.images[0])}
             alt={`${product.name} - Arredamento ${sectorLabel} Made in Italy`}
             width="800"
             height="600"
