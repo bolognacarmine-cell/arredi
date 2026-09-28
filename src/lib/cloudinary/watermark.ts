@@ -1,7 +1,9 @@
 /**
  * Watermark Farcom — layout UI adattivo + trasformazione Cloudinary opzionale (SEO).
  *
- * Il watermark UI è ancorato all'area visibile del contenitore (dopo object-fit).
+ * Il watermark UI è ancorato all'area visibile della foto (dopo object-fit).
+ * Con object-contain usare `objectFitContentRect` e montare l'overlay sul
+ * content-rect, non sul viewport (altrimenti finisce sul letterbox).
  * Gli originali Cloudinary restano puliti. Non combinare mai overlay UI + URL
  * già trasformato con l_farcom sulla stessa immagine pubblica.
  *
@@ -169,6 +171,43 @@ export function fitsInContainer(box: Rect, containerW: number, containerH: numbe
     box.x + box.w <= containerW + eps &&
     box.y + box.h <= containerH + eps
   )
+}
+
+/**
+ * Rettangolo dell'immagine effettivamente disegnata dentro il contenitore
+ * con CSS object-fit contain/cover (coordinate del contenitore).
+ * Per contain con letterbox/pillarbox il watermark va ancorato qui,
+ * non al viewport intero (altrimenti finisce sul fondo grigio).
+ */
+export function objectFitContentRect(
+  containerW: number,
+  containerH: number,
+  naturalW: number,
+  naturalH: number,
+  fit: "contain" | "cover" = "contain",
+): Rect {
+  if (!containerW || !containerH) {
+    return { x: 0, y: 0, w: 0, h: 0 }
+  }
+  if (!naturalW || !naturalH || fit === "cover") {
+    return { x: 0, y: 0, w: containerW, h: containerH }
+  }
+  const cAspect = containerW / containerH
+  const iAspect = naturalW / naturalH
+  if (iAspect > cAspect) {
+    // Immagine più larga: barre sopra/sotto
+    const h = containerW / iAspect
+    return { x: 0, y: (containerH - h) / 2, w: containerW, h }
+  }
+  // Immagine più alta/stretta: barre sinistra/destra
+  const w = containerH * iAspect
+  return { x: (containerW - w) / 2, y: 0, w, h: containerH }
+}
+
+/** Sposta ostacoli dal sistema viewport a quello del content-rect. */
+export function translateRects(rects: Rect[], dx: number, dy: number): Rect[] {
+  if (!dx && !dy) return rects
+  return rects.map((r) => ({ ...r, x: r.x + dx, y: r.y + dy }))
 }
 
 /**

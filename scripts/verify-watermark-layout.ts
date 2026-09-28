@@ -14,6 +14,7 @@ import {
   isWatermarkContainerTooSmall,
   minLogoWidth,
   fitsInContainer,
+  objectFitContentRect,
 } from "../src/lib/cloudinary/watermark"
 
 let failed = 0
@@ -89,6 +90,33 @@ assert(carousel.insets.bottom >= 40 + 16, `inset bottom ≥ safe+40 (got ${carou
 // Too small → hidden, never partial
 const tiny = computeWatermarkLayout(200, 150)
 assert(!tiny.visible && tiny.width === 0, "sotto 240: nascosto, width 0")
+
+// object-fit contain: foto ritratto in viewport wide → pillarbox (barre L/R)
+const pillar = objectFitContentRect(1040, 650, 800, 1000, "contain")
+assert(pillar.h === 650, `pillar h = viewport h (got ${pillar.h})`)
+assert(pillar.w < 1040, `pillar w < viewport (got ${pillar.w})`)
+assert(pillar.x > 0, `pillar x > 0 (got ${pillar.x})`)
+assert(Math.abs(pillar.x * 2 + pillar.w - 1040) < 1, "pillar centrato in X")
+
+// object-fit contain: foto landscape in viewport alto → letterbox (barre T/B)
+const letter = objectFitContentRect(400, 500, 1600, 900, "contain")
+assert(letter.w === 400, `letter w = viewport w (got ${letter.w})`)
+assert(letter.h < 500, `letter h < viewport (got ${letter.h})`)
+assert(letter.y > 0, `letter y > 0 (got ${letter.y})`)
+
+// cover: sempre viewport pieno
+const covered = objectFitContentRect(800, 600, 100, 1000, "cover")
+assert(
+  covered.x === 0 && covered.y === 0 && covered.w === 800 && covered.h === 600,
+  "cover = viewport intero",
+)
+
+// Watermark calcolato sul content-rect resta dentro la foto (non sul gray)
+const onPhoto = computeWatermarkLayout(pillar.w, pillar.h, {
+  logoAspect: FARCOM_LOGO_ASPECT,
+})
+assert(onPhoto.visible && onPhoto.corner === "south_east", "logo SE sulla foto pillarbox")
+assert(fitsInContainer(onPhoto.box, pillar.w, pillar.h), "logo intero dentro content-rect")
 
 if (failed > 0) {
   console.error(`\n${failed} assertion(s) failed`)

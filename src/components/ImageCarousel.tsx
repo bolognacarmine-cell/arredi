@@ -3,7 +3,10 @@ import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as
 import FarcomImageWatermark from "./FarcomImageWatermark"
 import {
   carouselWatermarkObstacles,
+  objectFitContentRect,
+  translateRects,
   withoutFarcomWatermarkAll,
+  type Rect,
 } from "../lib/cloudinary/watermark"
 
 type Props = {
@@ -55,6 +58,7 @@ export default function ImageCarousel({
   const [drag, setDrag] = useState(0)
   const [dragging, setDragging] = useState(false)
   const [loaded, setLoaded] = useState<Record<number, boolean>>({})
+  const [naturalSize, setNaturalSize] = useState<Record<number, { w: number; h: number }>>({})
   const [paused, setPaused] = useState(false)
   const [viewportSize, setViewportSize] = useState({ w: 0, h: 0 })
 
@@ -76,15 +80,34 @@ export default function ImageCarousel({
     return () => ro.disconnect()
   }, [count])
 
+  const activeNatural = naturalSize[index]
+  /**
+   * Area foto reale dopo object-fit. Con contain il watermark deve stare
+   * sulla foto, non sul letterbox/pillarbox grigio del viewport.
+   * null finché non abbiamo natural size (evita flash fuori foto).
+   */
+  const photoRect = useMemo((): Rect | null => {
+    const { w, h } = viewportSize
+    if (!w || !h) return null
+    if (fit === "cover") return { x: 0, y: 0, w, h }
+    if (!activeNatural?.w || !activeNatural?.h) return null
+    return objectFitContentRect(w, h, activeNatural.w, activeNatural.h, "contain")
+  }, [viewportSize, fit, activeNatural?.w, activeNatural?.h])
+
   const hasOverlay = Boolean(overlay)
-  const watermarkObstacles = useMemo(
-    () =>
-      carouselWatermarkObstacles(viewportSize.w, viewportSize.h, {
-        multiSlide: count > 1,
-        hasOverlay,
-      }),
-    [viewportSize.w, viewportSize.h, count, hasOverlay],
-  )
+  const watermarkObstacles = useMemo(() => {
+    if (!photoRect) return []
+    const raw = carouselWatermarkObstacles(viewportSize.w, viewportSize.h, {
+      multiSlide: count > 1,
+      hasOverlay,
+    })
+    // Ostacoli UI sono in coordinate viewport → porta nel content-rect foto.
+    return translateRects(raw, -photoRect.x, -photoRect.y)
+  }, [viewportSize.w, viewportSize.h, count, hasOverlay, photoRect])
+
+  // Dots sul fondo viewport: extra inset solo se coincidono col bordo foto (no letterbox Y).
+  const watermarkBottomExtra =
+    photoRect && count > 1 && photoRect.h >= viewportSize.h - 1 ? 40 : 0
 
   const goTo = useCallback(
     (i: number) => {
@@ -206,7 +229,16 @@ export default function ImageCarousel({
                 draggable={false}
                 loading={i === 0 ? "eager" : "lazy"}
                 decoding="async"
-                onLoad={() => setLoaded((s) => ({ ...s, [i]: true }))}
+                onLoad={(e) => {
+                  const el = e.currentTarget
+                  setLoaded((s) => ({ ...s, [i]: true }))
+                  if (el.naturalWidth > 0 && el.naturalHeight > 0) {
+                    setNaturalSize((s) => ({
+                      ...s,
+                      [i]: { w: el.naturalWidth, h: el.naturalHeight },
+                    }))
+                  }
+                }}
                 onError={(e) => {
                   const el = e.currentTarget
                   if (fallbackSrc && el.src !== fallbackSrc) el.src = fallbackSrc
@@ -222,12 +254,23 @@ export default function ImageCarousel({
         </div>
 
         {overlay && <div className="pointer-events-none absolute top-4 left-4 z-10">{overlay}</div>}
-        {showFarcomWatermark && (
-          <FarcomImageWatermark
-            layoutKey={`${index}-${viewportSize.w}x${viewportSize.h}-${count}`}
-            obstacles={watermarkObstacles}
-            extraInset={{ bottom: count > 1 ? 40 : 0 }}
-          />
+        {showFarcomWatermark && photoRect && (
+          <div
+            className="pointer-events-none absolute z-[5] overflow-hidden"
+            style={{
+              left: photoRect.x,
+              top: photoRect.y,
+              width: photoRect.w,
+              height: photoRect.h,
+            }}
+            aria-hidden="true"
+          >
+            <FarcomImageWatermark
+              layoutKey={`${index}-${Math.round(photoRect.w)}x${Math.round(photoRect.h)}-${fit}-${count}`}
+              obstacles={watermarkObstacles}
+              extraInset={{ bottom: watermarkBottomExtra }}
+            />
+          </div>
         )}
 
         {count > 1 && (

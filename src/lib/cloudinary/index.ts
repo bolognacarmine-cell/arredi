@@ -26,6 +26,8 @@ export {
   logoBoundingBox,
   carouselWatermarkObstacles,
   watermarkCornerStyle,
+  objectFitContentRect,
+  translateRects,
   withFarcomWatermark,
   withFarcomWatermarkAll,
   withoutFarcomWatermark,
