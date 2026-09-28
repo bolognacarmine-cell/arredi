@@ -120,17 +120,18 @@ export default function ShowroomList() {
         }}
       />
 
-      {/* Hero Video Section */}
+      {/* Hero Video Section — nessun watermark sul video; CTA sopra video/gradient */}
       <section className="relative h-[70vh] sm:h-[80vh] overflow-hidden">
         {!prefersReducedMotion ? (
           <HeroBackgroundVideo
+            className="z-0"
             basePath="/videos/showroom"
             priority={true}
             isMuted={true}
             fallbackImg="https://images.unsplash.com/photo-1547609434-b732edfee020?w=1920&h=1080&fit=crop&auto=format"
           />
         ) : (
-          <div className="absolute inset-0 bg-[#1A1A2E]">
+          <div className="absolute inset-0 z-0 bg-[#1A1A2E]">
             <img
               src="https://images.unsplash.com/photo-1547609434-b732edfee020?w=1920&h=1080&fit=crop&auto=format"
               alt=""
@@ -143,10 +144,13 @@ export default function ShowroomList() {
           </div>
         )}
 
+        {/* Gradient sotto i controlli/CTA */}
+        <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
+
         {/* Hero Content Overlay */}
-        <div className="absolute inset-0 flex items-center justify-center">
+        <div className="absolute inset-0 z-10 flex items-center justify-center">
           <Reveal
-            className="max-w-7xl mx-auto px-6 md:px-8 lg:px-16 text-center relative z-10"
+            className="max-w-7xl mx-auto px-6 md:px-8 lg:px-16 text-center"
             duration={800}
             rootMargin="0px"
           >
@@ -184,9 +188,6 @@ export default function ShowroomList() {
             </div>
           </Reveal>
         </div>
-
-        {/* Gradient overlay for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60 pointer-events-none" />
       </section>
 
       {/* Products Section */}

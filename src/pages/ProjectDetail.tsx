@@ -153,18 +153,20 @@ export default function ProjectDetail() {
                   to={`/progetti/${p.id}`}
                   className="group bg-white border border-[#DDD9D0] overflow-hidden hover:shadow-md transition-shadow"
                 >
-                  <div className="relative overflow-hidden aspect-[4/3] bg-[#EAE7E0]">
-                    <img
-                      src={projectCoverUrl(p)}
-                      alt={p.title}
-                      width="1200"
-                      height="900"
-                      loading="lazy"
-                      fetchpriority="low"
-                      decoding="async"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                    />
-                    <FarcomImageWatermark />
+                  <div className="relative aspect-[4/3] overflow-hidden bg-[#EAE7E0]">
+                    <div className="absolute inset-0 overflow-hidden">
+                      <img
+                        src={projectCoverUrl(p)}
+                        alt={p.title}
+                        width="1200"
+                        height="900"
+                        loading="lazy"
+                        fetchpriority="low"
+                        decoding="async"
+                        className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700"
+                      />
+                      <FarcomImageWatermark />
+                    </div>
                   </div>
                   <div className="p-5">
                     <h3 className="font-display text-lg font-light text-[#1A1A18] mb-1">

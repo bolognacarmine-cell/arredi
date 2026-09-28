@@ -418,18 +418,20 @@ export default function Home() {
         </div>
       </section>
 
-      {/* SHOWROOM HERO: sezione video prima dei prodotti */}
+      {/* SHOWROOM HERO: video senza watermark; CTA sopra video/gradient */}
       <section className="relative h-[70vh] sm:h-[80vh] overflow-hidden">
         <HeroBackgroundVideo
+          className="z-0"
           basePath="/videos/showroom"
           priority={true}
           isMuted={true}
           fallbackImg="https://images.unsplash.com/photo-1547609434-b732edfee020?w=1920&h=1080&fit=crop&auto=format"
         />
 
-        {/* Hero Content Overlay */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="max-w-7xl mx-auto px-6 md:px-8 lg:px-16 text-center relative z-10">
+        <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
+
+        <div className="absolute inset-0 z-10 flex items-center justify-center">
+          <div className="max-w-7xl mx-auto px-6 md:px-8 lg:px-16 text-center">
             <div className="inline-flex items-center gap-3 px-4 py-1.5 mb-6 border border-[var(--accent)]/30 bg-white/90 backdrop-blur-sm">
               <span className="h-px w-8 bg-[var(--accent)]" />
               <span className="text-[11px] uppercase tracking-[0.18em] font-medium text-[var(--accent)]">
@@ -454,9 +456,6 @@ export default function Home() {
             </div>
           </div>
         </div>
-
-        {/* Gradient overlay for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60 pointer-events-none" />
       </section>
 
       {/* SHOWROOM: nascosto finche' non c'e' almeno un prodotto attivo */}

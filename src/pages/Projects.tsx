@@ -76,32 +76,35 @@ function ProjectGridCard({ project: p }: { project: ProjectRecord }) {
       to={`/progetti/${p.id}`}
       className="group bg-white overflow-hidden border border-[#E5E5E7] hover:shadow-lg transition-shadow"
     >
-      <div ref={mediaRef} className="relative overflow-hidden aspect-[4/3] bg-[#E8E8EC]">
-        <img
-          src={coverSrc}
-          alt={p.title}
-          width="1200"
-          height="900"
-          loading="lazy"
-          fetchpriority="low"
-          decoding="async"
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement
-            if (!target.src.includes("unsplash.com")) {
-              target.src = FALLBACK_COVER
-            }
-          }}
-        />
-        {!isWatermarkContainerTooSmall(mediaSize.w, mediaSize.h) && (
-          <FarcomImageWatermark
-            layoutKey={`${mediaSize.w}x${mediaSize.h}-${p.sector}`}
-            obstacles={obstacles}
+      {/* Piano media: relative + clip — watermark solo dentro la foto (non nel testo). */}
+      <div className="relative aspect-[4/3] overflow-hidden bg-[#E8E8EC]">
+        <div ref={mediaRef} className="absolute inset-0 overflow-hidden">
+          <img
+            src={coverSrc}
+            alt={p.title}
+            width="1200"
+            height="900"
+            loading="lazy"
+            fetchpriority="low"
+            decoding="async"
+            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement
+              if (!target.src.includes("unsplash.com")) {
+                target.src = FALLBACK_COVER
+              }
+            }}
           />
-        )}
+          {!isWatermarkContainerTooSmall(mediaSize.w, mediaSize.h) && (
+            <FarcomImageWatermark
+              layoutKey={`${mediaSize.w}x${mediaSize.h}-${p.sector}`}
+              obstacles={obstacles}
+            />
+          )}
+        </div>
         <span
           ref={badgeRef}
-          className="absolute top-4 left-4 bg-[#E69138] text-white text-xs px-3 py-1 font-medium"
+          className="absolute top-4 left-4 z-10 bg-[#E69138] text-white text-xs px-3 py-1 font-medium"
         >
           {p.sector}
         </span>
