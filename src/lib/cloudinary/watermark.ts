@@ -23,11 +23,29 @@ export const FARCOM_WATERMARK_TRANSFORM =
 /** Aspect ratio del file logo-farcom.png (1915×821). */
 export const FARCOM_LOGO_ASPECT = 1915 / 821
 
-/** Larghezza minima leggibile; sotto questa soglia si nasconde. */
+/**
+ * Larghezza minima leggibile (contenitori medi/grandi).
+ * Su card strette si usa `minLogoWidth()` più basso.
+ */
 export const MIN_LOGO_WIDTH = 28
 
 /** Cap massimo su viewport grandi. */
 export const MAX_LOGO_WIDTH = 168
+
+/**
+ * Sotto questa larghezza contenitore il watermark è nascosto
+ * (troppo piccolo per un logo discreto e leggibile).
+ */
+export const MIN_WATERMARK_CONTAINER_WIDTH = 240
+
+/** Lato minimo (w e h) sotto cui non montare/mostrare il watermark (miniature). */
+export const MIN_WATERMARK_EDGE = 72
+
+/**
+ * Contenitori sotto questa larghezza usano safe-area e % logo “compact/mobile”.
+ * Basato sulla dimensione reale del contenitore, non sulla viewport.
+ */
+export const COMPACT_CONTAINER_MAX = 640
 
 /** Margine anti-collisione tra logo e controlli UI. */
 export const OBSTACLE_GAP = 8
@@ -37,6 +55,26 @@ export const OBSTACLE_GAP = 8
  * Nessuna box-shadow CSS attuale: 2px per sicurezza antialias.
  */
 export const LOGO_SHADOW_BLEED = 2
+
+/** True se il contenitore è troppo piccolo per qualsiasi watermark. */
+export function isWatermarkContainerTooSmall(containerW: number, containerH: number): boolean {
+  return (
+    !containerW ||
+    !containerH ||
+    containerW < MIN_WATERMARK_EDGE ||
+    containerH < MIN_WATERMARK_EDGE ||
+    containerW < MIN_WATERMARK_CONTAINER_WIDTH
+  )
+}
+
+/**
+ * Larghezza minima logo: più bassa su card strette così si riduce
+ * prima di cambiare angolo, senza tagliare.
+ */
+export function minLogoWidth(containerW: number): number {
+  if (containerW < 360) return 18
+  return MIN_LOGO_WIDTH
+}
 
 export type WatermarkCorner = "south_east" | "south_west" | "north_east" | "north_west"
 
@@ -88,21 +126,30 @@ export type ComputeWatermarkOptions = {
 }
 
 /**
- * Safe area interna: 4% del lato corto, minimo 24px, massimo 64px.
+ * Safe area interna: 4% del lato corto.
+ * - compact (contenitore &lt; 640): clamp 16–32 px (mobile/tablet card)
+ * - desktop: clamp 24–64 px
  */
 export function computeSafeInset(containerW: number, containerH: number): number {
   const short = Math.min(containerW, containerH)
-  return Math.round(Math.min(64, Math.max(24, short * 0.04)))
+  const raw = short * 0.04
+  if (containerW < COMPACT_CONTAINER_MAX) {
+    return Math.round(Math.min(32, Math.max(16, raw)))
+  }
+  return Math.round(Math.min(64, Math.max(24, raw)))
 }
 
 /**
  * Larghezza logo relativa alla larghezza del contenitore visibile.
- * grandi ≥900 → 9%; medie ≥400 → 11%; card/miniature → 13%.
+ * Breakpoint sul contenitore (non sulla viewport):
+ * - ≥900 → 9%; 640–899 → 11%; 360–639 → 9%; 240–359 → 8%; &lt;240 → nascosto a monte.
  */
 export function computeLogoWidthPct(containerW: number): number {
   if (containerW >= 900) return 0.09
-  if (containerW >= 400) return 0.11
-  return 0.13
+  if (containerW >= 640) return 0.11
+  if (containerW >= 360) return 0.09
+  if (containerW >= MIN_WATERMARK_CONTAINER_WIDTH) return 0.08
+  return 0
 }
 
 export function rectsOverlap(a: Rect, b: Rect, gap = 0): boolean {
@@ -180,11 +227,14 @@ function collidesAny(box: Rect, obstacles: Rect[], gap: number): boolean {
 }
 
 function preferredWidth(containerW: number): number {
-  return Math.min(MAX_LOGO_WIDTH, containerW * computeLogoWidthPct(containerW))
+  const pct = computeLogoWidthPct(containerW)
+  if (pct <= 0) return 0
+  return Math.min(MAX_LOGO_WIDTH, containerW * pct)
 }
 
 /**
  * Prova un angolo: parte dalla larghezza preferita e riduce fino a MIN.
+ * Riduce la dimensione prima di fallire (il chiamante prova poi l'angolo successivo).
  * Ritorna null se anche il minimo collide o esce dalla safe area.
  *
  * Il fallback angolo scatta solo per fit/collisione UI — non per contenuto prodotto.
@@ -199,22 +249,23 @@ function tryCorner(
   obstacles: Rect[],
   bleed: number,
   gap: number,
+  floorW: number,
 ): { width: number; height: number; box: Rect } | null {
   const maxContentW = Math.max(0, containerW - insets.left - insets.right - bleed * 2)
   const maxContentH = Math.max(0, containerH - insets.top - insets.bottom - bleed * 2)
-  if (maxContentW < MIN_LOGO_WIDTH || maxContentH < MIN_LOGO_WIDTH / aspect) {
+  if (maxContentW < floorW || maxContentH < floorW / aspect) {
     return null
   }
 
   let width = Math.min(targetW, maxContentW, maxContentH * aspect)
-  if (width < MIN_LOGO_WIDTH) {
+  if (width < floorW) {
     // Spazio massimo sotto il minimo: prova comunque al massimo disponibile,
-    // ma se resta < MIN nascondi (gestito dal chiamante).
+    // ma se resta < floor nascondi (gestito dal chiamante).
     width = maxContentW
   }
 
-  // Riduci finché entra senza collisione; stop a MIN_LOGO_WIDTH.
-  const floor = Math.min(MIN_LOGO_WIDTH, maxContentW)
+  // Riduci finché entra senza collisione; stop a floorW (mai tagliare).
+  const floor = Math.min(floorW, maxContentW)
   while (width >= floor - 0.5) {
     const w = Math.round(width)
     const h = Math.round(w / aspect)
@@ -252,7 +303,7 @@ export function computeWatermarkLayout(
   containerH: number,
   options: ComputeWatermarkOptions = {},
 ): WatermarkLayout {
-  if (!containerW || !containerH || containerW < 72 || containerH < 72) {
+  if (isWatermarkContainerTooSmall(containerW, containerH)) {
     return { ...HIDDEN }
   }
 
@@ -260,6 +311,7 @@ export function computeWatermarkLayout(
   const bleed = options.shadowBleed ?? LOGO_SHADOW_BLEED
   const gap = options.obstacleGap ?? OBSTACLE_GAP
   const obstacles = options.obstacles ?? []
+  const floorW = minLogoWidth(containerW)
 
   const padding = computeSafeInset(containerW, containerH)
   const insets: EdgeInsets = {
@@ -270,6 +322,9 @@ export function computeWatermarkLayout(
   }
 
   const targetW = preferredWidth(containerW)
+  if (targetW < floorW) {
+    return { ...HIDDEN, padding, insets }
+  }
 
   for (const corner of WATERMARK_CORNER_ORDER) {
     const fit = tryCorner(
@@ -282,8 +337,9 @@ export function computeWatermarkLayout(
       obstacles,
       bleed,
       gap,
+      floorW,
     )
-    if (fit && fit.width >= MIN_LOGO_WIDTH) {
+    if (fit && fit.width >= floorW) {
       return {
         visible: true,
         corner,
@@ -332,22 +388,42 @@ export function carouselWatermarkObstacles(
 ): Rect[] {
   const out: Rect[] = []
   if (opts.hasOverlay) {
-    // Badge / overlay alto-sinistra
-    out.push({ x: 8, y: 8, w: Math.min(180, containerW * 0.45), h: 72 })
+    // Badge / overlay alto-sinistra (proporzionale su mobile)
+    out.push({
+      x: 8,
+      y: 8,
+      w: Math.min(180, Math.max(96, containerW * 0.42)),
+      h: Math.min(72, Math.max(40, containerH * 0.14)),
+    })
   }
   if (!opts.multiSlide) return out
 
+  const compact = containerW < COMPACT_CONTAINER_MAX
+  const arrow = compact ? 44 : 48
+  const counterW = compact ? 64 : 70
+  const counterH = 32
   // Contatore "n / m" alto-destra
-  out.push({ x: containerW - 80, y: 10, w: 70, h: 32 })
-  // Frecce laterali (centro)
-  out.push({ x: 8, y: containerH / 2 - 24, w: 48, h: 48 })
-  out.push({ x: containerW - 56, y: containerH / 2 - 24, w: 48, h: 48 })
-  // Indicatori dots + gradient in basso
   out.push({
-    x: containerW * 0.15,
-    y: containerH - 48,
-    w: containerW * 0.7,
-    h: 44,
+    x: containerW - counterW - 10,
+    y: 10,
+    w: counterW,
+    h: counterH,
+  })
+  // Frecce laterali (centro) — hit area reale dei controlli
+  out.push({ x: 8, y: containerH / 2 - arrow / 2, w: arrow, h: arrow })
+  out.push({
+    x: containerW - arrow - 8,
+    y: containerH / 2 - arrow / 2,
+    w: arrow,
+    h: arrow,
+  })
+  // Indicatori dots + gradient in basso (allineato all'extra inset ≥40 px)
+  const dotsH = 56
+  out.push({
+    x: containerW * 0.1,
+    y: containerH - dotsH,
+    w: containerW * 0.8,
+    h: dotsH,
   })
   return out
 }

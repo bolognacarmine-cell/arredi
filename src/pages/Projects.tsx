@@ -4,6 +4,7 @@ import { SECTORS } from "../data"
 import { useProjects } from "../projectStore"
 import FarcomImageWatermark, { productImageSrc } from "../components/FarcomImageWatermark"
 import type { Rect } from "../lib/cloudinary/watermark"
+import { isWatermarkContainerTooSmall } from "../lib/cloudinary/watermark"
 import type { ProjectRecord } from "../projectStore"
 
 const filters = [
@@ -92,7 +93,7 @@ function ProjectGridCard({ project: p }: { project: ProjectRecord }) {
             }
           }}
         />
-        {mediaSize.w >= 72 && mediaSize.h >= 72 && (
+        {!isWatermarkContainerTooSmall(mediaSize.w, mediaSize.h) && (
           <FarcomImageWatermark
             layoutKey={`${mediaSize.w}x${mediaSize.h}-${p.sector}`}
             obstacles={obstacles}

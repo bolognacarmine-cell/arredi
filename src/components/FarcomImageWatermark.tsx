@@ -31,6 +31,7 @@ const EMPTY: WatermarkLayout = computeWatermarkLayout(0, 0)
  * Overlay watermark ancorato all'area visibile del genitore `relative`.
  * Fallback angoli: SE → SW → NE → NW solo per fit/collisione UI.
  * Se non entra nemmeno al minimo → nascosto (mai tagliato).
+ * z-[5]: sopra l'immagine, sotto controlli carosello (z-10), modal e menu.
  */
 export default function FarcomImageWatermark({
   opacity,
@@ -77,11 +78,16 @@ export default function FarcomImageWatermark({
     const onWin = () => recalc()
     window.addEventListener("resize", onWin)
     window.addEventListener("orientationchange", onWin)
+    const vv = window.visualViewport
+    vv?.addEventListener("resize", onWin)
+    vv?.addEventListener("scroll", onWin)
 
     return () => {
       ro.disconnect()
       window.removeEventListener("resize", onWin)
       window.removeEventListener("orientationchange", onWin)
+      vv?.removeEventListener("resize", onWin)
+      vv?.removeEventListener("scroll", onWin)
     }
   }, [recalc, layoutKey])
 

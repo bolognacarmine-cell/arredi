@@ -6,6 +6,7 @@ import { activePromo, computeEffectivePrice } from "../../services/showroomApi"
 import { displaySector, displayFurnitureType } from "../../types/showroom"
 import FarcomImageWatermark, { productImageSrc } from "../FarcomImageWatermark"
 import type { Rect } from "../../lib/cloudinary/watermark"
+import { isWatermarkContainerTooSmall } from "../../lib/cloudinary/watermark"
 import PromoCountdown from "./PromoCountdown"
 
 interface Props {
@@ -90,10 +91,12 @@ export default function ProductCard({ product }: Props) {
               decoding="async"
               className="w-full h-full object-cover card-motion-media"
             />
-            <FarcomImageWatermark
-              layoutKey={`${mediaSize.w}x${mediaSize.h}`}
-              obstacles={badgeObstacles}
-            />
+            {!isWatermarkContainerTooSmall(mediaSize.w, mediaSize.h) && (
+              <FarcomImageWatermark
+                layoutKey={`${mediaSize.w}x${mediaSize.h}`}
+                obstacles={badgeObstacles}
+              />
+            )}
           </>
         ) : (
           <div className="w-full h-full flex items-center justify-center text-[var(--border)]">
