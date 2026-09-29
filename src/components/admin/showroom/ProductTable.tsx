@@ -141,7 +141,18 @@ export default function ProductTable({
                         )}
                       </div>
                       <div className="min-w-0">
-                        <div className="font-medium truncate">{p.name}</div>
+                        <div className="font-medium truncate flex items-center gap-1.5">
+                          <span className="truncate">{p.name}</span>
+                          {p.reelUrl ? (
+                            <span
+                              title="Ha un video / Reel"
+                              className="shrink-0 text-[10px] px-1.5 py-0.5 rounded bg-[#1B4332]/10 text-[#1B4332] font-semibold"
+                              aria-label="Ha un video Reel"
+                            >
+                              ▶ Reel
+                            </span>
+                          ) : null}
+                        </div>
                         <div className="text-xs text-[#888580] truncate">
                           SKU <span className="font-mono">{p.sku || p.id}</span>
                         </div>
@@ -236,7 +247,17 @@ export default function ProductTable({
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sm truncate">{p.name}</div>
+                    <div className="font-medium text-sm truncate flex items-center gap-1.5">
+                      <span className="truncate">{p.name}</span>
+                      {p.reelUrl ? (
+                        <span
+                          title="Ha un video / Reel"
+                          className="shrink-0 text-[10px] px-1.5 py-0.5 rounded bg-[#1B4332]/10 text-[#1B4332] font-semibold"
+                        >
+                          ▶ Reel
+                        </span>
+                      ) : null}
+                    </div>
                     <div className="text-xs text-[#888580]">
                       {sectorLabel} · {furnitureLabel}
                     </div>

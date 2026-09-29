@@ -20,6 +20,8 @@ export interface Product {
   /** Sconto storico dei prodotti creati prima della promozione in scheda. */
   discountPct: number | null
   images: string[]
+  /** URL Cloudinary del video verticale (Reels/Shorts), opzionale. */
+  reelUrl?: string | null
   sku?: string
   isSold?: boolean
   showSoldInFrontend?: boolean

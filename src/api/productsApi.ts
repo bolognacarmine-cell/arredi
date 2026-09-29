@@ -35,6 +35,7 @@ export interface Product {
   basePrice: number
   discountPct: number | null
   images: string[]
+  reelUrl?: string | null
   sku?: string
   isSold?: boolean
   showSoldInFrontend?: boolean

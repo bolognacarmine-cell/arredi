@@ -14,6 +14,7 @@ const ProductSchema = new Schema({
   basePrice: { type: Number, required: true, min: 0 },
   discountPct: { type: Number, default: null },
   images: [{ type: String }],
+  reelUrl: { type: String, default: null },
   sku: { type: String },
   isSold: { type: Boolean, default: false },
   showSoldInFrontend: { type: Boolean, default: true },

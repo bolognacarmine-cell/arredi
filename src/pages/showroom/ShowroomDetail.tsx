@@ -1,5 +1,5 @@
 // Pagina pubblica: dettaglio prodotto showroom
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Link, useParams } from "react-router-dom"
 import {
   activePromo,
@@ -92,6 +92,8 @@ export default function ShowroomDetail() {
   const [product, setProduct] = useState<Product | null | undefined>(undefined)
   const [infoOpen, setInfoOpen] = useState(false)
   const [infoForm, setInfoForm] = useState({ nome: "", email: "", telefono: "", messaggio: "" })
+  const [reelMuted, setReelMuted] = useState(true)
+  const reelRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
     if (!slug) {
@@ -207,34 +209,67 @@ export default function ShowroomDetail() {
         </nav>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
-          <ImageCarousel
-            images={p.images}
-            alt={`${p.name} - Arredamento ${displaySector(p.activitySector, p.activitySectorOther)} Made in Italy`}
-            maxHeightClass="max-h-[60vh]"
-            showFarcomWatermark
-            overlay={
-              <>
-                {eff?.badge ? (
-                  <span className="px-4 py-1.5 rounded-full text-sm font-bold text-white shadow-lg tracking-wide bg-[var(--accent)]">
-                    {eff.badge}
-                  </span>
-                ) : null}
-                {p.isSold && p.showSoldInFrontend && (
-                  <div
-                    className="px-4 py-2 sm:px-5 sm:py-3 rounded text-xs sm:text-sm font-bold text-white shadow-2xl tracking-widest border-2 border-white/20 transform rotate-[-2deg]"
-                    role="status"
-                    aria-label="Prodotto venduto"
-                    style={{
-                      backgroundColor: '#4a2c2a',
-                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)'
+          <div className="space-y-6 min-w-0">
+            <ImageCarousel
+              images={p.images}
+              alt={`${p.name} - Arredamento ${displaySector(p.activitySector, p.activitySectorOther)} Made in Italy`}
+              maxHeightClass="max-h-[60vh]"
+              showFarcomWatermark
+              overlay={
+                <>
+                  {eff?.badge ? (
+                    <span className="px-4 py-1.5 rounded-full text-sm font-bold text-white shadow-lg tracking-wide bg-[var(--accent)]">
+                      {eff.badge}
+                    </span>
+                  ) : null}
+                  {p.isSold && p.showSoldInFrontend && (
+                    <div
+                      className="px-4 py-2 sm:px-5 sm:py-3 rounded text-xs sm:text-sm font-bold text-white shadow-2xl tracking-widest border-2 border-white/20 transform rotate-[-2deg]"
+                      role="status"
+                      aria-label="Prodotto venduto"
+                      style={{
+                        backgroundColor: '#4a2c2a',
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)'
+                      }}
+                    >
+                      VENDUTO
+                    </div>
+                  )}
+                </>
+              }
+            />
+
+            {p.reelUrl ? (
+              <div className="mt-6 w-full max-w-xs mx-auto lg:mx-0">
+                <video
+                  ref={reelRef}
+                  src={p.reelUrl}
+                  controls
+                  playsInline
+                  loop
+                  muted={reelMuted}
+                  autoPlay
+                  style={{ aspectRatio: "9/16" }}
+                  className="w-full rounded bg-black"
+                />
+                <div className="mt-2 text-right">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const video = reelRef.current
+                      if (!video) return
+                      const next = !video.muted
+                      video.muted = next
+                      setReelMuted(next)
                     }}
+                    className="text-xs text-[#1B4332] hover:underline"
                   >
-                    VENDUTO
-                  </div>
-                )}
-              </>
-            }
-          />
+                    Attiva/disattiva audio
+                  </button>
+                </div>
+              </div>
+            ) : null}
+          </div>
 
           <div className="space-y-7">
             <div className="space-y-4">

@@ -29,6 +29,7 @@ type FS = {
   furnitureTypeOther: string
   basePrice: string
   images: string[]
+  reelUrl: string | null
   isSold: boolean
   showSoldInFrontend: boolean
   promoActive: boolean
@@ -47,6 +48,7 @@ const empty: FS = {
   furnitureTypeOther: "",
   basePrice: "",
   images: [],
+  reelUrl: null,
   isSold: false,
   showSoldInFrontend: true,
   promoActive: true,
@@ -67,6 +69,7 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
   const [form, setForm] = useState<FS>(empty)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [uploading, setUploading] = useState(0)
+  const [uploadingVideo, setUploadingVideo] = useState(false)
   const { upload: uploadToCloudinary } = useCloudinaryUpload()
   const dragIdxRef = { current: -1 }
 
@@ -81,6 +84,7 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
         furnitureTypeOther: initial.furnitureTypeOther ?? "",
         basePrice: String(initial.basePrice),
         images: [...initial.images],
+        reelUrl: initial.reelUrl || null,
         isSold: initial.isSold ?? false,
         showSoldInFrontend: initial.showSoldInFrontend ?? true,
         promoActive: initial.promoActive !== false,
@@ -151,6 +155,7 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
       e.promoEndDate = "La data fine deve seguire la data inizio"
     if (form.images.length === 0) e.images = "Aggiungi almeno un'immagine"
     if (uploading > 0) e.images = "Attendi il completamento dell'upload delle immagini"
+    if (uploadingVideo) e.reelUrl = "Attendi il completamento dell'upload del video"
     return e
   }
 
@@ -181,6 +186,7 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
       promoEndDate: hasPromo && form.promoEndDate ? form.promoEndDate : null,
       promoText: hasPromo && form.promoText.trim() ? form.promoText.trim() : null,
       images: form.images,
+      reelUrl: form.reelUrl || null,
       sku: slugify(form.name).toUpperCase().slice(0, 10) + "-" + Date.now().toString().slice(-4),
       isSold: form.isSold,
       showSoldInFrontend: form.showSoldInFrontend,
@@ -260,6 +266,39 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
       n.splice(to, 0, it)
       return { ...f, images: n }
     })
+  }
+
+  const addVideoFile = async (file: File) => {
+    if (!file.type.startsWith("video/") || file.size > 80 * 1024 * 1024) {
+      setErrors((e) => ({
+        ...e,
+        reelUrl: "File non valido: solo video fino a 80 MB",
+      }))
+      return
+    }
+    if (!isCloudinaryConfigured) {
+      setErrors((e) => ({
+        ...e,
+        reelUrl:
+          "Upload video non disponibile: Cloudinary non è configurato (VITE_CLOUDINARY_CLOUD_NAME / VITE_CLOUDINARY_UPLOAD_PRESET).",
+      }))
+      return
+    }
+
+    setUploadingVideo(true)
+    try {
+      const res = await uploadToCloudinary(file, "farcom/showroom/reels")
+      if (!res) throw new Error("Upload Cloudinary fallito")
+      setForm((s) => ({ ...s, reelUrl: res.secure_url }))
+      setErrors((e) => ({ ...e, reelUrl: "" }))
+    } catch (err) {
+      setErrors((e) => ({
+        ...e,
+        reelUrl: err instanceof Error ? err.message : `Upload di ${file.name} fallito`,
+      }))
+    } finally {
+      setUploadingVideo(false)
+    }
   }
 
   const inCls = (err?: string) =>
@@ -578,6 +617,73 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
               )}
             </div>
           </div>
+
+          <div>
+            <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
+              <h3 className="text-xs uppercase tracking-wide text-[#888580]">
+                Video / Reel (opzionale)
+              </h3>
+              <div className="flex items-center gap-2">
+                <label className="text-xs text-[#1B4332] font-medium hover:underline cursor-pointer">
+                  ＋ Seleziona video
+                  <input
+                    type="file"
+                    accept="video/*"
+                    hidden
+                    disabled={uploadingVideo}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) void addVideoFile(file)
+                      e.target.value = ""
+                    }}
+                  />
+                </label>
+                {uploadingVideo && (
+                  <span className="flex items-center gap-1.5 text-xs text-[#888580]">
+                    <span className="w-3 h-3 border-2 border-[#1B4332]/30 border-t-[#1B4332] rounded-full animate-spin" />
+                    Caricamento video…
+                  </span>
+                )}
+              </div>
+            </div>
+            <p className="text-xs text-[#888580] mb-2">
+              Video verticale (9:16) – max 80 MB
+            </p>
+            {errors.reelUrl && (
+              <p className="text-xs text-red-600 mb-2">{errors.reelUrl}</p>
+            )}
+            <div
+              className={`border-2 border-dashed p-3 ${
+                errors.reelUrl ? "border-red-400" : "border-[#DDD9D0]"
+              } bg-[#F7F5F0]`}
+            >
+              {form.reelUrl ? (
+                <div className="space-y-3">
+                  <video
+                    src={form.reelUrl}
+                    controls
+                    playsInline
+                    loop
+                    muted
+                    style={{ aspectRatio: "9/16" }}
+                    className="w-full max-w-xs rounded mx-auto block bg-black"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setForm((s) => ({ ...s, reelUrl: null }))}
+                    className="text-xs text-[#1B4332] hover:underline"
+                  >
+                    Rimuovi video
+                  </button>
+                </div>
+              ) : (
+                <div className="py-8 text-center">
+                  <div className="text-4xl text-[#DDD9D0] mb-2">🎬</div>
+                  <p className="text-sm text-[#4A4A46]">Nessun video — clicca “Seleziona video”</p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         <div className="px-6 py-4 border-t border-[#EAE7E0] flex items-center justify-between gap-3 flex-wrap">
@@ -595,7 +701,7 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
             </button>
             <button
               type="submit"
-              disabled={busy || uploading > 0}
+              disabled={busy || uploading > 0 || uploadingVideo}
               className="bg-[#1B4332] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#143326] disabled:opacity-50 flex items-center gap-2"
             >
               {busy && (
