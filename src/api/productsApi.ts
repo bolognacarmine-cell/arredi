@@ -35,7 +35,6 @@ export interface Product {
   basePrice: number
   discountPct: number | null
   images: string[]
-  reelUrl?: string | null
   sku?: string
   isSold?: boolean
   showSoldInFrontend?: boolean
@@ -66,6 +65,9 @@ export async function getProducts(filters?: { activitySector?: string }): Promis
 
     // Fallback for legacy array responses
     if (Array.isArray(result)) return result
+
+    // Fallback for legacy single object responses
+    if (result._id || result.id) return [result as Product]
 
     throw new Error(result.message || "Failed to fetch products")
   } catch (error) {
