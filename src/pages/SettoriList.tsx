@@ -1,134 +1,14 @@
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react"
+import { useEffect } from "react"
 import { Link } from "react-router-dom"
 
-import { SECTORS } from "../data"
-import { resolveImageUrl } from "../lib/cloudinary"
 import Magnetic from "../components/Magnetic"
 import MotionLine from "../components/MotionLine"
 import Reveal from "../components/Reveal"
+import SectorDragStrip from "../components/SectorDragStrip"
 // Per ripristinare la griglia originale: decommenta anche
 // import Stagger from "../components/Stagger"
-
-/** Soglia in px oltre la quale il gesto conta come drag (non come click sul link). */
-const DRAG_SLOP = 6
-
-/**
- * Strip orizzontale delle card settori: click + trascina col mouse per scorrere
- * da destra verso sinistra (e viceversa). Il tap/click senza drag apre il settore.
- */
-function SectorDragStrip() {
-  const trackRef = useRef<HTMLDivElement>(null)
-  const drag = useRef({
-    active: false,
-    startX: 0,
-    scrollLeft: 0,
-    moved: false,
-  })
-  const suppressClick = useRef(false)
-  const [grabbing, setGrabbing] = useState(false)
-
-  const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
-    if (e.pointerType === "mouse" && e.button !== 0) return
-    const el = trackRef.current
-    if (!el) return
-    drag.current = {
-      active: true,
-      startX: e.clientX,
-      scrollLeft: el.scrollLeft,
-      moved: false,
-    }
-    suppressClick.current = false
-    setGrabbing(true)
-    el.setPointerCapture(e.pointerId)
-  }
-
-  const onPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
-    const state = drag.current
-    const el = trackRef.current
-    if (!state.active || !el) return
-    const dx = e.clientX - state.startX
-    if (Math.abs(dx) > DRAG_SLOP) state.moved = true
-    // Trascina a sinistra → scrollLeft aumenta → le immagini scorrono right→left
-    el.scrollLeft = state.scrollLeft - dx
-  }
-
-  const endDrag = (e: ReactPointerEvent<HTMLDivElement>) => {
-    const state = drag.current
-    if (!state.active) return
-    const el = trackRef.current
-    if (el?.hasPointerCapture(e.pointerId)) {
-      el.releasePointerCapture(e.pointerId)
-    }
-    suppressClick.current = state.moved
-    state.active = false
-    setGrabbing(false)
-  }
-
-  return (
-    <div
-      ref={trackRef}
-      role="region"
-      aria-label="Scorri i settori trascinando"
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={endDrag}
-      onPointerCancel={endDrag}
-      className={`flex gap-3 sm:gap-4 md:gap-5 lg:gap-6 overflow-x-auto select-none touch-pan-x pb-1 ${
-        grabbing ? "cursor-grabbing" : "cursor-grab"
-      }`}
-    >
-      {SECTORS.map((s) => (
-        <Link
-          key={s.id}
-          to={`/settori/${s.id}`}
-          draggable={false}
-          onClick={(e) => {
-            // Dopo un drag, blocca la navigazione del Link
-            if (suppressClick.current) {
-              e.preventDefault()
-              e.stopPropagation()
-              suppressClick.current = false
-            }
-          }}
-          className="group relative shrink-0 w-[78vw] max-w-[300px] sm:w-[260px] md:w-[280px] overflow-hidden bg-white aspect-[3/4] flex flex-col justify-end p-4 sm:p-5 md:p-6 card-motion min-h-[40px] sm:min-h-[44px]"
-        >
-          <div className="absolute inset-0">
-            <img
-              src={resolveImageUrl(
-                {
-                  src: s.heroImage,
-                  publicId: s.heroImageCloudinaryPublicId ?? null,
-                },
-                {
-                  width: 1200,
-                  height: 1600,
-                  objectFit: "cover",
-                  gravity: "auto",
-                },
-              )}
-              alt={s.label}
-              loading="lazy"
-              draggable={false}
-              className="w-full h-full object-cover card-motion-media pointer-events-none"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent sm:from-black/70 sm:via-black/20" />
-          </div>
-          <div className="relative z-10">
-            <h3 className="font-display text-base sm:text-lg md:text-xl font-bold text-white mb-1 sm:mb-1.5 md:mb-2 leading-snug">
-              {s.label}
-            </h3>
-            <p className="text-white/70 text-[11px] sm:text-xs leading-[1.65] sm:leading-[1.6] md:leading-relaxed line-clamp-2 mb-2 sm:mb-3 md:mb-4">
-              {s.description}
-            </p>
-            <span className="inline-flex items-center min-h-[32px] sm:min-h-[36px] text-[#E69138] text-[10px] sm:text-xs font-medium tracking-wide card-motion-cta">
-              Scopri di più →
-            </span>
-          </div>
-        </Link>
-      ))}
-    </div>
-  )
-}
+// import { SECTORS } from "../data"
+// import { resolveImageUrl } from "../lib/cloudinary"
 
 export default function SettoriList() {
   useEffect(() => {
@@ -208,8 +88,10 @@ export default function SettoriList() {
           LAYOUT ORIGINALE — griglia + Reveal bottom→top (Stagger/up)
           Per ripristinare:
           1) riaggiungi: import Stagger from "../components/Stagger"
-          2) commenta <SectorDragStrip />
-          3) decommenta questo blocco Stagger
+          2) riaggiungi: import { SECTORS } from "../data"
+          3) riaggiungi: import { resolveImageUrl } from "../lib/cloudinary"
+          4) commenta <SectorDragStrip />
+          5) decommenta questo blocco Stagger
           Oppure via Git: git checkout -- src/pages/SettoriList.tsx
           ============================================================
         */}
