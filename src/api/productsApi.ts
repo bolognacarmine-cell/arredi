@@ -67,9 +67,6 @@ export async function getProducts(filters?: { activitySector?: string }): Promis
     // Fallback for legacy array responses
     if (Array.isArray(result)) return result
 
-    // Fallback for legacy single object responses
-    if (result._id || result.id) return [result as Product]
-
     throw new Error(result.message || "Failed to fetch products")
   } catch (error) {
     console.error("Error fetching products:", error)

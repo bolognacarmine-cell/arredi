@@ -200,6 +200,11 @@ router.put('/:id', requireAdmin, async (req: Request, res: Response) => {
       });
     }
     const { _id, id: _ignoredId, createdAt, ...update } = req.body;
+    // Non azzerare le immagini se il client manda un valore non-array
+    // (es. undefined/null): altrimenti un update parziale le cancellerebbe.
+    if (update.images !== undefined && !Array.isArray(update.images)) {
+      delete update.images;
+    }
     const product = await Product.findOneAndUpdate(
       byId(id),
       { ...update, updatedAt: new Date() },

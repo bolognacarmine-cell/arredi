@@ -5,7 +5,7 @@ import FurnitureTypeSelect from "../../../components/admin/showroom/FurnitureTyp
 import type { Product, PromoDiscountType } from "../../../types/showroom"
 import type { ActivitySector } from "../../../constants/showroomSectors"
 import { FURNITURE_BY_SECTOR } from "../../../constants/showroomSectors"
-import { useProducts, slugify } from "../../../services/showroomApi"
+import { slugify } from "../../../services/showroomApi"
 import { isCloudinaryConfigured, useCloudinaryUpload } from "../../../lib/cloudinary"
 import FarcomImageWatermark, { productImageSrc } from "../../../components/FarcomImageWatermark"
 import { createMedia } from "../../../api/mediaApi"
@@ -65,7 +65,6 @@ const fallbackFurniture = (sector: ActivitySector): string => {
 }
 
 export default function ProductForm({ initial, onCancel, onSave, busy }: Props) {
-  const all = useProducts()
   const [form, setForm] = useState<FS>(empty)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [uploading, setUploading] = useState(0)
@@ -83,7 +82,8 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
         furnitureType: initial.furnitureType,
         furnitureTypeOther: initial.furnitureTypeOther ?? "",
         basePrice: String(initial.basePrice),
-        images: [...initial.images],
+        // Evita di azzerare le immagini se il payload arriva senza array.
+        images: Array.isArray(initial.images) ? [...initial.images] : [],
         reelUrl: initial.reelUrl || null,
         isSold: initial.isSold ?? false,
         showSoldInFrontend: initial.showSoldInFrontend ?? true,
@@ -185,6 +185,7 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
       promoStartDate: hasPromo && form.promoStartDate ? form.promoStartDate : null,
       promoEndDate: hasPromo && form.promoEndDate ? form.promoEndDate : null,
       promoText: hasPromo && form.promoText.trim() ? form.promoText.trim() : null,
+      // Sul prodotto si salvano solo gli URL Cloudinary (immagini + reel).
       images: form.images,
       reelUrl: form.reelUrl || null,
       sku: slugify(form.name).toUpperCase().slice(0, 10) + "-" + Date.now().toString().slice(-4),
