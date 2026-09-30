@@ -1,6 +1,6 @@
 // Pagina pubblica: dettaglio prodotto showroom
-import { useEffect, useMemo, useState } from "react"
-import { Link, useParams } from "react-router-dom"
+import { useEffect, useMemo, useRef, useState } from "react"
+import { Link, useLocation, useParams } from "react-router-dom"
 import {
   activePromo,
   computeEffectivePrice,
@@ -89,9 +89,32 @@ const getProductSchema = (product: Product, effectivePrice: ReturnType<typeof co
 
 export default function ShowroomDetail() {
   const { slug } = useParams<{ slug: string }>()
+  const location = useLocation()
+  const backGuardRef = useRef<string | null>(null)
   const [product, setProduct] = useState<Product | null | undefined>(undefined)
   const [infoOpen, setInfoOpen] = useState(false)
   const [infoForm, setInfoForm] = useState({ nome: "", email: "", telefono: "", messaggio: "" })
+
+  // La freccia "indietro" del browser deve portare a /showroom (non alla home),
+  // anche se il prodotto e' stato aperto dalla homepage o da un link diretto.
+  useEffect(() => {
+    if (!slug) return
+    if (backGuardRef.current === slug) return
+    backGuardRef.current = slug
+
+    const productPath = `${location.pathname}${location.search}${location.hash}`
+    const histState = window.history.state ?? {}
+    window.history.replaceState(
+      { ...histState, farcomShowroomBack: true },
+      "",
+      "/showroom",
+    )
+    window.history.pushState(
+      { ...histState, farcomShowroomBack: true },
+      "",
+      productPath,
+    )
+  }, [slug, location.pathname, location.search, location.hash])
 
   useEffect(() => {
     if (!slug) {
@@ -198,6 +221,14 @@ export default function ShowroomDetail() {
         schema={getProductSchema(p, eff)}
       />
       <div className="max-w-7xl mx-auto px-6 md:px-8 lg:px-16">
+        <div className="mb-6">
+          <Link
+            to="/showroom"
+            className="inline-flex items-center gap-1.5 text-sm text-[var(--muted-foreground)] hover:text-[var(--primary)] transition-colors"
+          >
+            ← Torna allo Showroom
+          </Link>
+        </div>
         <nav className="mb-8 text-xs text-[var(--muted-foreground)] flex flex-wrap items-center gap-2">
           <Link to="/" className="hover:text-[var(--primary)]">Home</Link>
           <span>/</span>
