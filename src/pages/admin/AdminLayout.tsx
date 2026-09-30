@@ -74,8 +74,24 @@ export default function AdminLayout() {
     return () => window.clearTimeout(t)
   }, [])
 
-  const closeSidebar = () => setSideOpen(false)
-  const toggleSidebar = () => setSideOpen((prev) => !prev)
+  const blurSidebarFocus = () => {
+    const sidebar = sidebarRef.current
+    if (!sidebar?.contains(document.activeElement)) return
+    const toggle = document.querySelector<HTMLElement>(
+      `button[aria-controls="${SIDEBAR_ID}"]`,
+    )
+    toggle?.focus()
+  }
+
+  const closeSidebar = () => {
+    blurSidebarFocus()
+    setSideOpen(false)
+  }
+  const toggleSidebar = () =>
+    setSideOpen((prev) => {
+      if (prev) blurSidebarFocus()
+      return !prev
+    })
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -83,6 +99,11 @@ export default function AdminLayout() {
     }
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [sideOpen])
+
+  // Safety net for programmatic closes (e.g. route default)
+  useEffect(() => {
+    if (!sideOpen) blurSidebarFocus()
   }, [sideOpen])
 
   const sidebarW = useMemo(
@@ -129,7 +150,8 @@ export default function AdminLayout() {
         ref={sidebarRef}
         role="navigation"
         aria-label="Menu amministrazione"
-        aria-hidden={!sideOpen}
+        aria-hidden={!sideOpen ? true : undefined}
+        inert={!sideOpen ? true : undefined}
         className={`fixed top-0 left-0 h-screen z-49 bg-[var(--foreground)] flex flex-col shadow-2xl ease-out ${
           isMobile ? "w-64" : "w-56"
         } transition-[transform,opacity,visibility] duration-200`}
