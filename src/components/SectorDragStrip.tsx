@@ -11,31 +11,38 @@ import { resolveImageUrl } from "../lib/cloudinary"
 import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion"
 
 /** Soglia in px oltre la quale il gesto conta come drag (non come click sul link). */
-const DRAG_SLOP = 6
-/** Velocità auto-scroll desktop (px/s) — abbastanza visibile. */
+const DRAG_SLOP = 8
+/** Velocità auto-scroll desktop (px/s). */
 const AUTO_SPEED_DESKTOP = 48
 /** Velocità auto-scroll mobile (px/s). */
 const AUTO_SPEED_MOBILE = 32
 /** Breakpoint allineato a Tailwind `sm`. */
 const MOBILE_MQ = "(max-width: 639px)"
 /** Dopo un drag/touch, riprende lo scroll automatico. */
-const RESUME_DELAY_MS = 2000
+const RESUME_DELAY_MS = 2200
 
 /**
  * Strip orizzontale delle card settori:
  * - full-bleed responsive
  * - scroll automatico continuo right→left (loop seamless)
- * - desktop: click + trascina; mobile: swipe nativo
+ * - swipe/drag unificato su mouse + touch (axis lock: X vs Y)
  * - tap/click senza drag apre il settore
+ *
+ * Nota: non affidarsi al solo overflow-x nativo su mobile — su molti device
+ * il gesto viene interpretato come scroll verticale della pagina.
  */
 export default function SectorDragStrip() {
   const trackRef = useRef<HTMLDivElement>(null)
   const drag = useRef({
     active: false,
     startX: 0,
+    startY: 0,
     scrollLeft: 0,
     moved: false,
+    pointerId: -1,
   })
+  /** Asse bloccato dopo il primo movimento oltre la soglia. */
+  const axis = useRef<"none" | "x" | "y">("none")
   const suppressClick = useRef(false)
   const paused = useRef(false)
   const inView = useRef(false)
@@ -90,7 +97,6 @@ export default function SectorDragStrip() {
 
       if (!paused.current && !drag.current.active && inView.current) {
         const half = el.scrollWidth / 2
-        // Serve overflow reale per muoversi
         if (half > el.clientWidth * 0.5) {
           const speed = mobileMq?.matches
             ? AUTO_SPEED_MOBILE
@@ -110,61 +116,100 @@ export default function SectorDragStrip() {
     }
   }, [reducedMotion])
 
+  // touchmove non-passive: serve preventDefault quando lo swipe è orizzontale,
+  // altrimenti iOS/Android continuano lo scroll verticale della pagina.
   useEffect(() => {
     const el = trackRef.current
     if (!el) return
 
-    const onTouchStart = () => pauseAuto()
-    const onTouchEnd = () => scheduleResume()
-
-    el.addEventListener("touchstart", onTouchStart, { passive: true })
-    el.addEventListener("touchend", onTouchEnd, { passive: true })
-    el.addEventListener("touchcancel", onTouchEnd, { passive: true })
-    return () => {
-      el.removeEventListener("touchstart", onTouchStart)
-      el.removeEventListener("touchend", onTouchEnd)
-      el.removeEventListener("touchcancel", onTouchEnd)
+    const onTouchMove = (e: TouchEvent) => {
+      if (axis.current === "x") {
+        e.preventDefault()
+      }
     }
+
+    el.addEventListener("touchmove", onTouchMove, { passive: false })
+    return () => el.removeEventListener("touchmove", onTouchMove)
   }, [])
 
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
-    if (e.pointerType !== "mouse") {
-      pauseAuto()
-      return
-    }
-    if (e.button !== 0) return
+    if (e.pointerType === "mouse" && e.button !== 0) return
     const el = trackRef.current
     if (!el) return
+
     pauseAuto()
+    axis.current = "none"
     drag.current = {
       active: true,
       startX: e.clientX,
+      startY: e.clientY,
       scrollLeft: el.scrollLeft,
       moved: false,
+      pointerId: e.pointerId,
     }
     suppressClick.current = false
-    setGrabbing(true)
-    el.setPointerCapture(e.pointerId)
   }
 
   const onPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
     const state = drag.current
     const el = trackRef.current
     if (!state.active || !el) return
+
     const dx = e.clientX - state.startX
-    if (Math.abs(dx) > DRAG_SLOP) state.moved = true
+    const dy = e.clientY - state.startY
+
+    if (axis.current === "none") {
+      if (Math.abs(dx) < DRAG_SLOP && Math.abs(dy) < DRAG_SLOP) return
+
+      if (Math.abs(dx) >= Math.abs(dy)) {
+        // Lock orizzontale: gestiamo noi lo scroll della strip
+        axis.current = "x"
+        setGrabbing(true)
+        try {
+          el.setPointerCapture(e.pointerId)
+        } catch {
+          /* ignore */
+        }
+      } else {
+        // Lock verticale: lascia lo scroll pagina nativo
+        axis.current = "y"
+        state.active = false
+        scheduleResume()
+        return
+      }
+    }
+
+    if (axis.current !== "x") return
+
+    state.moved = true
+    // Usare lo start scroll + dx totale (non incrementale) evita drift
     el.scrollLeft = state.scrollLeft - dx
   }
 
   const endDrag = (e: ReactPointerEvent<HTMLDivElement>) => {
     const state = drag.current
-    if (!state.active) return
-    const el = trackRef.current
-    if (el?.hasPointerCapture(e.pointerId)) {
-      el.releasePointerCapture(e.pointerId)
+    if (!state.active && axis.current !== "x") {
+      axis.current = "none"
+      return
     }
-    suppressClick.current = state.moved
+
+    const el = trackRef.current
+    if (el && state.pointerId === e.pointerId) {
+      try {
+        if (el.hasPointerCapture(e.pointerId)) {
+          el.releasePointerCapture(e.pointerId)
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+
+    suppressClick.current =
+      state.moved ||
+      (axis.current === "x" && Math.abs(e.clientX - state.startX) > DRAG_SLOP)
     state.active = false
+    state.moved = false
+    axis.current = "none"
     setGrabbing(false)
     scheduleResume()
   }
@@ -172,7 +217,7 @@ export default function SectorDragStrip() {
   const items = [...SECTORS, ...SECTORS]
 
   return (
-    // Wrapper full-bleed: forza larghezza vincolata così overflow-x funziona
+    // Wrapper full-bleed: larghezza vincolata così overflow-x ha un containing block
     <div className="-mx-3 sm:-mx-4 md:-mx-6 lg:-mx-8 xl:-mx-16 min-w-0">
       <div
         ref={trackRef}
@@ -183,13 +228,19 @@ export default function SectorDragStrip() {
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
         className={[
-          "flex w-full min-w-0 gap-3 sm:gap-4 md:gap-5 lg:gap-6",
-          "overflow-x-auto overscroll-x-contain",
-          "px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16",
-          "select-none touch-pan-x",
-          "pb-2 [scroll-behavior:auto] [-webkit-overflow-scrolling:touch]",
+          "horz-scroll",
+          // flex-nowrap esplicito: batte il globale `* { max-width: 100% }`
+          "flex flex-row flex-nowrap w-full min-w-0 gap-3 sm:gap-4 md:gap-5 lg:gap-6",
+          // overflow-y hidden evita che il browser scelga lo scroll verticale del container
+          "overflow-x-auto overflow-y-hidden overscroll-x-contain",
+          "px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 pb-2",
+          // pan-y: lo scroll verticale pagina resta nativo; l'orizzontale lo gestiamo noi
+          "select-none touch-pan-y",
+          "[scroll-behavior:auto] [-webkit-overflow-scrolling:touch]",
+          "[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden",
           grabbing ? "cursor-grabbing" : "cursor-grab",
         ].join(" ")}
+        style={{ WebkitOverflowScrolling: "touch" }}
       >
         {items.map((s, i) => (
           <Link
@@ -204,7 +255,7 @@ export default function SectorDragStrip() {
               }
             }}
             className={[
-              "group relative shrink-0 overflow-hidden bg-white",
+              "group relative shrink-0 grow-0 overflow-hidden bg-white",
               "aspect-[3/4] flex flex-col justify-end",
               "p-4 sm:p-5 md:p-6 card-motion",
               "min-h-[44px]",
