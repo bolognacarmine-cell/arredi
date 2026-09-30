@@ -124,8 +124,11 @@ export default function Home() {
     getProducts()
       .then((list) => {
         if (!alive) return
+        // Tutti i prodotti pubblici dall'API (stessa fonte dell'admin), senza slice/hardcoded
         setShowroomProducts(
-          Array.isArray(list) ? list.filter((p) => !p.isSold || (p.isSold && p.showSoldInFrontend)).slice(0, 3) : [],
+          Array.isArray(list)
+            ? list.filter((p) => !p.isSold || (p.isSold && p.showSoldInFrontend))
+            : [],
         )
       })
       .catch(() => setShowroomProducts([]))
