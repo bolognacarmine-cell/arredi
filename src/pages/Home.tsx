@@ -293,6 +293,89 @@ export default function Home() {
         <SectorDragStrip />
       </section>
 
+      {/* FEATURED PROJECTS: nascosto se non ci sono progetti da mostrare */}
+      {safeDisplayedProjects.length > 0 && (
+      <section id="progetti" className="pt-16 pb-6 sm:py-20 md:py-24 lg:py-28 xl:py-32 bg-[#1A1A2E] relative" data-bg="#1A1A2E">
+        {/* Separatore visivo */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/30 to-transparent" />
+
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-5 md:gap-6 mb-5 sm:mb-6 md:mb-8 lg:mb-10">
+            <Reveal className="relative" variant="up" duration={800}>
+              <div className="absolute -left-1.5 sm:-left-2 md:-left-4 top-0 w-1 h-full bg-gradient-to-b from-[#E69138] to-transparent" />
+              <span className="text-[#6B7280] text-[10px] sm:text-[11px] md:text-xs tracking-[0.16em] sm:tracking-[0.18em] md:tracking-[0.2em] uppercase font-semibold pl-2.5 sm:pl-3 md:pl-4">
+                Portfolio
+              </span>
+              <h2 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mt-1.5 sm:mt-2 pl-2.5 sm:pl-3 md:pl-4 leading-[1.15] sm:leading-tight text-balance">
+                Progetti in evidenza
+              </h2>
+              <MotionLine className="mt-4 ml-2.5 sm:ml-3 md:ml-4" width="4.5rem" thickness={3} delay={160} />
+            </Reveal>
+            <Reveal delay={100}>
+              <Link
+                to="/progetti"
+                className="inline-flex items-center self-start min-h-[36px] sm:min-h-[40px] -ml-2 px-2 text-[#E69138] text-xs sm:text-sm font-medium hover:underline rounded-md"
+              >
+                Vedi tutti i progetti →
+              </Link>
+            </Reveal>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
+            {safeDisplayedProjects.map((p, index) => (
+              <Reveal key={p.id} delay={(index + 1) * 90} duration={720}>
+                <Link
+                  to={`/progetti/${p.id}`}
+                  className="group bg-[#252523] overflow-hidden card-motion block"
+                >
+                  <div className="relative overflow-hidden aspect-[4/3]">
+                    <img
+                      src={resolveImageUrl(
+                        {
+                          src: p.image,
+                          publicId: p.imageCloudinaryPublicId ?? null,
+                        },
+                        {
+                          width: 1200,
+                          height: 900,
+                          objectFit: "cover",
+                          gravity: "auto",
+                        },
+                      )}
+                      alt={`${p.title} - Progetto arredamento ${p.location} Farcom Srl`}
+                      width="1200"
+                      height="900"
+                      loading="lazy"
+                      fetchpriority="low"
+                      decoding="async"
+                      className="w-full h-full object-cover card-motion-media"
+                    />
+                    <span className="absolute top-4 left-4 bg-[#E69138] text-[#1A1A2E] text-xs px-3 py-1 font-semibold">
+                      {p.sectorId ? p.sectorId.charAt(0).toUpperCase() + p.sectorId.slice(1) : ''}
+                    </span>
+                  </div>
+                  <div className="p-4 sm:p-5 md:p-6">
+                    <h3 className="font-display text-base sm:text-lg md:text-xl font-bold text-white mb-1 leading-snug">
+                      {p.title}
+                    </h3>
+                    <p className="text-[#6B7280] text-[11px] sm:text-xs mb-2 sm:mb-2.5 md:mb-3">
+                      {p.location} · {p.year}
+                    </p>
+                    <p className="text-[#6B7280] text-xs sm:text-sm leading-[1.65] sm:leading-[1.6] md:leading-relaxed line-clamp-2">
+                      {p.description}
+                    </p>
+                    <span className="mt-2 sm:mt-3 md:mt-4 inline-flex items-center min-h-[32px] sm:min-h-[36px] text-[#E69138] text-[10px] sm:text-xs font-medium tracking-wide card-motion-cta">
+                      Vedi progetto →
+                    </span>
+                  </div>
+                </Link>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+      )}
+
       {/* SHOWROOM HERO: video senza watermark; CTA sopra video/gradient */}
       <section className="relative h-[70vh] sm:h-[80vh] overflow-hidden">
         <HeroBackgroundVideo
@@ -401,89 +484,6 @@ export default function Home() {
 
           <BlogDragStrip posts={blogPosts} />
         </section>
-      )}
-
-      {/* FEATURED PROJECTS: nascosto se non ci sono progetti da mostrare */}
-      {safeDisplayedProjects.length > 0 && (
-      <section id="progetti" className="pt-16 pb-6 sm:py-20 md:py-24 lg:py-28 xl:py-32 bg-[#1A1A2E] relative" data-bg="#1A1A2E">
-        {/* Separatore visivo */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/30 to-transparent" />
-
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-5 md:gap-6 mb-5 sm:mb-6 md:mb-8 lg:mb-10">
-            <Reveal className="relative" variant="up" duration={800}>
-              <div className="absolute -left-1.5 sm:-left-2 md:-left-4 top-0 w-1 h-full bg-gradient-to-b from-[#E69138] to-transparent" />
-              <span className="text-[#6B7280] text-[10px] sm:text-[11px] md:text-xs tracking-[0.16em] sm:tracking-[0.18em] md:tracking-[0.2em] uppercase font-semibold pl-2.5 sm:pl-3 md:pl-4">
-                Portfolio
-              </span>
-              <h2 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mt-1.5 sm:mt-2 pl-2.5 sm:pl-3 md:pl-4 leading-[1.15] sm:leading-tight text-balance">
-                Progetti in evidenza
-              </h2>
-              <MotionLine className="mt-4 ml-2.5 sm:ml-3 md:ml-4" width="4.5rem" thickness={3} delay={160} />
-            </Reveal>
-            <Reveal delay={100}>
-              <Link
-                to="/progetti"
-                className="inline-flex items-center self-start min-h-[36px] sm:min-h-[40px] -ml-2 px-2 text-[#E69138] text-xs sm:text-sm font-medium hover:underline rounded-md"
-              >
-                Vedi tutti i progetti →
-              </Link>
-            </Reveal>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
-            {safeDisplayedProjects.map((p, index) => (
-              <Reveal key={p.id} delay={(index + 1) * 90} duration={720}>
-                <Link
-                  to={`/progetti/${p.id}`}
-                  className="group bg-[#252523] overflow-hidden card-motion block"
-                >
-                  <div className="relative overflow-hidden aspect-[4/3]">
-                    <img
-                      src={resolveImageUrl(
-                        {
-                          src: p.image,
-                          publicId: p.imageCloudinaryPublicId ?? null,
-                        },
-                        {
-                          width: 1200,
-                          height: 900,
-                          objectFit: "cover",
-                          gravity: "auto",
-                        },
-                      )}
-                      alt={`${p.title} - Progetto arredamento ${p.location} Farcom Srl`}
-                      width="1200"
-                      height="900"
-                      loading="lazy"
-                      fetchpriority="low"
-                      decoding="async"
-                      className="w-full h-full object-cover card-motion-media"
-                    />
-                    <span className="absolute top-4 left-4 bg-[#E69138] text-[#1A1A2E] text-xs px-3 py-1 font-semibold">
-                      {p.sectorId ? p.sectorId.charAt(0).toUpperCase() + p.sectorId.slice(1) : ''}
-                    </span>
-                  </div>
-                  <div className="p-4 sm:p-5 md:p-6">
-                    <h3 className="font-display text-base sm:text-lg md:text-xl font-bold text-white mb-1 leading-snug">
-                      {p.title}
-                    </h3>
-                    <p className="text-[#6B7280] text-[11px] sm:text-xs mb-2 sm:mb-2.5 md:mb-3">
-                      {p.location} · {p.year}
-                    </p>
-                    <p className="text-[#6B7280] text-xs sm:text-sm leading-[1.65] sm:leading-[1.6] md:leading-relaxed line-clamp-2">
-                      {p.description}
-                    </p>
-                    <span className="mt-2 sm:mt-3 md:mt-4 inline-flex items-center min-h-[32px] sm:min-h-[36px] text-[#E69138] text-[10px] sm:text-xs font-medium tracking-wide card-motion-cta">
-                      Vedi progetto →
-                    </span>
-                  </div>
-                </Link>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
       )}
 
       {/* RECENSIONI */}
