@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { resolveImageUrl } from "../lib/cloudinary";
 import { SECTORS } from "../data";
 import { useProjects } from "../projectStore";
+import { getParentPath } from "../utils/navigation";
 
 const steps = [
   {
@@ -47,6 +48,7 @@ export default function SectorPage() {
   const { id } = useParams<{ id: string }>();
   const sector = SECTORS.find((s) => s.id === id);
   const projects = useProjects() || []
+  const backPath = getParentPath(`/settori/${id}`)
 
   if (!sector) {
     return (
@@ -55,8 +57,8 @@ export default function SectorPage() {
           <h1 className="font-display text-3xl text-[#1A1A18] mb-4">
             Settore non trovato
           </h1>
-          <Link to="/" className="text-[#1B4332] text-sm hover:underline">
-            Torna alla home →
+          <Link to="/settori" className="text-[#1B4332] text-sm hover:underline">
+            Torna ai settori →
           </Link>
         </div>
       </div>
@@ -94,10 +96,10 @@ export default function SectorPage() {
         </div>
         <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 w-full">
           <Link
-            to="/"
+            to={backPath}
             className="text-white/60 text-xs mb-6 inline-block hover:text-white transition-colors"
           >
-            ← Home
+            ← Settori
           </Link>
           <span className="block text-[#B5965A] text-xs font-semibold tracking-widest uppercase mb-3">
             Settore
