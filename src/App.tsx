@@ -22,7 +22,6 @@ import AdminLogin from "./pages/admin/AdminLogin";
 import Dashboard from "./pages/admin/Dashboard";
 import AdminProjects from "./pages/admin/AdminProjects";
 import AdminQuotes from "./pages/admin/AdminQuotes";
-// import AdminMedia from "./pages/admin/AdminMedia"; // Removed: Media page no longer accessible from menu
 import AdminSettings from "./pages/admin/AdminSettings";
 import {
   ShowroomIndexRedirect,
@@ -42,44 +41,44 @@ export default function App() {
           <ScrollToTop />
           <Navbar />
           <Routes>
-          {/* PUBLIC */}
-          <Route path="/" element={<Home />} />
-          <Route path="/settori" element={<SettoriList />} />
-          <Route path="/settori/:id" element={<SectorPage />} />
-          <Route path="/progetti" element={<Projects />} />
-          <Route path="/progetti/:id" element={<ProjectDetail />} />
-          <Route path="/showroom" element={<PublicShowroomList />} />
-          <Route path="/showroom/offerte" element={<Navigate to="/showroom" replace />} />
-          <Route path="/showroom/:slug" element={<PublicShowroomDetail />} />
-          <Route path="/preventivo" element={<Quote />} />
-          <Route path="/chi-siamo" element={<About />} />
-          <Route path="/contatti" element={<Contacts />} />
-          <Route path="/privacy" element={<PrivacyPage />} />
-          <Route path="/cookie" element={<CookiePage />} />
-          <Route path="/note-legali" element={<LegalNotesPage />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/blog/:slug" element={<BlogPost />} />
+            {/* PUBLIC */}
+            <Route path="/" element={<Home />} />
+            <Route path="/settori" element={<SettoriList />} />
+            <Route path="/settori/:id" element={<SectorPage />} />
+            <Route path="/progetti" element={<Projects />} />
+            <Route path="/progetti/:id" element={<ProjectDetail />} />
+            <Route path="/showroom" element={<PublicShowroomList />} />
+            <Route path="/showroom/offerte" element={<Navigate to="/showroom" replace />} />
+            <Route path="/showroom/:slug" element={<PublicShowroomDetail />} />
+            <Route path="/preventivo" element={<Quote />} />
+            <Route path="/chi-siamo" element={<About />} />
+            <Route path="/contatti" element={<Contacts />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/cookie" element={<CookiePage />} />
+            <Route path="/note-legali" element={<LegalNotesPage />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
 
-          {/* ADMIN */}
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="progetti" element={<AdminProjects />} />
-            <Route path="progetti/nuovo" element={<AdminProjects />} />
-            <Route path="progetti/:id" element={<AdminProjects />} />
-            <Route path="preventivi" element={<AdminQuotes />} />
-            {/* <Route path="media" element={<AdminMedia />} /> Removed: Media page no longer accessible from menu */}
-            <Route path="impostazioni" element={<AdminSettings />} />
-            <Route path="showroom">
-              <Route index element={<ShowroomIndexRedirect />} />
-              <Route path="products" element={<ShowroomProducts />} />
+            {/* ADMIN */}
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<Dashboard />} />
+              <Route path="progetti" element={<AdminProjects />} />
+              <Route path="progetti/nuovo" element={<AdminProjects />} />
+              <Route path="progetti/:id" element={<AdminProjects />} />
+              <Route path="preventivi" element={<AdminQuotes />} />
+              {/* <Route path="media" element={<AdminMedia />} /> Removed: Media page no longer accessible from menu */}
+              <Route path="impostazioni" element={<AdminSettings />} />
+              <Route path="showroom">
+                <Route index element={<ShowroomIndexRedirect />} />
+                <Route path="products" element={<ShowroomProducts />} />
+              </Route>
             </Route>
-          </Route>
-        </Routes>
-        <Footer />
-        <CookieBanner />
-      </AdminAuthProvider>
-    </BrowserRouter>
+          </Routes>
+          <Footer />
+          <CookieBanner />
+        </AdminAuthProvider>
+      </BrowserRouter>
     </HelmetProvider>
   )
 }
