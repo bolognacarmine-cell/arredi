@@ -439,9 +439,18 @@ export function useProducts(): Product[] {
   return useRemoteList(() => getProducts())
 }
 
-// Admin version that includes all products (including sold and hidden)
+// Admin: sempre dall'API (tutti i prodotti, anche venduti/nascosti).
+// Dopo il fetch allinea anche localStorage così non restano listini seed/stale.
 export function useProductsAdmin(): Product[] {
-  return useRemoteList(() => productsApi.getProducts({}))
+  return useRemoteList(async () => {
+    const products = await productsApi.getProducts({})
+    try {
+      window.localStorage.setItem(P_KEY, JSON.stringify(products))
+    } catch {
+      /* ignore quota */
+    }
+    return products
+  })
 }
 
 export { SECTORS, furnitureTypesFor }

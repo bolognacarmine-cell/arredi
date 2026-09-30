@@ -66,7 +66,8 @@ export default function ProductsList() {
     return Array.isArray(all) ? all.filter((p) => {
       if (q && !p.name.toLowerCase().includes(q) && !(p.sku && p.sku.toLowerCase().includes(q)))
         return false
-      if (filters.activity !== "all" && p.activityCategory !== filters.activity) return false
+      // Filtri UI usano `sector` / `activitySector` (non activity/activityCategory legacy)
+      if (filters.sector !== "all" && p.activitySector !== filters.sector) return false
       if (filters.furniture !== "all" && p.furnitureType !== filters.furniture) return false
       if (filters.offerStatus === "available" && p.isSold) return false
       if (filters.offerStatus === "sold_visible" && (!p.isSold || !p.showSoldInFrontend)) return false

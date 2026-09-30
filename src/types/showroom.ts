@@ -23,8 +23,8 @@ export interface Product {
   sku?: string
   isSold?: boolean
   showSoldInFrontend?: boolean
-  createdAt: number
-  updatedAt: number
+  createdAt: number | string
+  updatedAt: number | string
   // Promozione: tutti i campi sono opzionali, un prodotto senza promozione
   // viene mostrato senza badge ne' prezzo barrato.
   promoActive?: boolean

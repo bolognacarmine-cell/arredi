@@ -62,8 +62,11 @@ export default function ProductTable({
           return a.sectorLabel.localeCompare(b.sectorLabel) * d
         case "furnitureType":
           return a.furnitureLabel.localeCompare(b.furnitureLabel) * d
-        default:
-          return (a.p.createdAt - b.p.createdAt) * d
+        default: {
+          const aT = new Date(a.p.createdAt as string | number).getTime() || 0
+          const bT = new Date(b.p.createdAt as string | number).getTime() || 0
+          return (aT - bT) * d
+        }
       }
     })
     return arr

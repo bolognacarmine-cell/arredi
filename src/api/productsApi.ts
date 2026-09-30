@@ -48,26 +48,75 @@ export interface Product {
   promoText?: string | null
 }
 
+/** Normalizza il documento Mongo/API al shape Product usato dal frontend. */
+function normalizeProduct(raw: any): Product {
+  const id = String(raw?.id || raw?._id || "")
+  const toMs = (v: unknown): string => {
+    if (typeof v === "number" && Number.isFinite(v)) return new Date(v).toISOString()
+    if (typeof v === "string" && v) return v
+    if (v instanceof Date) return v.toISOString()
+    return new Date().toISOString()
+  }
+  return {
+    ...raw,
+    id,
+    _id: String(raw?._id || id),
+    slug: String(raw?.slug || id),
+    name: String(raw?.name || ""),
+    description: String(raw?.description || ""),
+    activitySector: String(raw?.activitySector || raw?.activityCategory || ""),
+    activitySectorOther: raw?.activitySectorOther,
+    furnitureType: String(raw?.furnitureType || ""),
+    furnitureTypeOther: raw?.furnitureTypeOther,
+    basePrice: Number(raw?.basePrice) || 0,
+    discountPct:
+      raw?.discountPct === null || raw?.discountPct === undefined
+        ? null
+        : Number(raw.discountPct),
+    images: Array.isArray(raw?.images) ? raw.images.filter(Boolean) : [],
+    sku: raw?.sku,
+    isSold: Boolean(raw?.isSold),
+    showSoldInFrontend: raw?.showSoldInFrontend !== false,
+    createdAt: toMs(raw?.createdAt),
+    updatedAt: toMs(raw?.updatedAt),
+    promoActive: Boolean(raw?.promoActive),
+    promoDiscountType: raw?.promoDiscountType ?? null,
+    promoDiscountValue: raw?.promoDiscountValue ?? null,
+    promoStartDate: raw?.promoStartDate ?? null,
+    promoEndDate: raw?.promoEndDate ?? null,
+    promoText: raw?.promoText ?? null,
+  }
+}
+
+function normalizeProductList(list: unknown): Product[] {
+  if (!Array.isArray(list)) return []
+  return list.map(normalizeProduct).filter((p) => Boolean(p.id))
+}
+
 export async function getProducts(filters?: { activitySector?: string }): Promise<Product[]> {
   try {
     const baseUrl = getApiUrl('/api/products')
     const url = new URL(baseUrl, window.location.origin)
     if (filters?.activitySector) url.searchParams.append("activitySector", filters.activitySector)
+    // Evita risposte stale da Service Worker / HTTP cache (admin vedeva listini vecchi)
+    url.searchParams.set("_", String(Date.now()))
 
     const response = await fetch(url.toString(), {
       credentials: 'include',
+      cache: 'no-store',
+      headers: { Accept: 'application/json' },
     })
     const result = await response.json()
 
     if (result.success && Array.isArray(result.data)) {
-      return result.data
+      return normalizeProductList(result.data)
     }
 
     // Fallback for legacy array responses
-    if (Array.isArray(result)) return result
+    if (Array.isArray(result)) return normalizeProductList(result)
 
     // Fallback for legacy single object responses
-    if (result._id || result.id) return [result as Product]
+    if (result._id || result.id) return normalizeProductList([result])
 
     throw new Error(result.message || "Failed to fetch products")
   } catch (error) {
