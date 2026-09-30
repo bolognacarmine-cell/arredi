@@ -157,12 +157,12 @@ export const PROJECTS: Project[] = [
       "Progetto completo per un barbershop di fascia alta nel centro di Milano. Bancone reception in noce canaletto con piano in ottone, 4 postazioni taglio con specchiere retroilluminate, zona attesa con sedute su misura in pelle naturale.",
     image: "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=800&h=600&fit=crop",
     imageCloudinaryPublicId: "farcom/progetti/davinci____image1_utilizza_l_immagine_allegata_come_riferi-png",
-    galleryImagesImages: [
+    galleryImages: [
       "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=1200&h=800&fit=crop",
       "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=1200&h=800&fit=crop",
       "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?w=1200&h=800&fit=crop",
     ],
-    galleryImagesCloudinaryPublicIds: ["farcom/progetti/arredo-2-jpg"],
+    galleryCloudinaryPublicIds: ["farcom/progetti/arredo-2-jpg"],
     tags: ["Bancone", "Specchiere", "Zona attesa"],
     materials:
       "Noce canaletto, ottone satinato, pelle naturale conciata al vegetale",
@@ -180,7 +180,7 @@ export const PROJECTS: Project[] = [
       "Arredamento completo per uno studio legale in un palazzo liberty. Librerie su misura dal pavimento al soffitto, scrivania direzionale in rovere, sala riunioni con tavolo in marmo Calacatta.",
     image:
       "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop",
-    galleryImagesImages: [
+    galleryImages: [
       "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=800&fit=crop",
       "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=1200&h=800&fit=crop",
     ],

@@ -8,7 +8,10 @@
     "build": "vite build && tsc -p server",
     "start": "node server/dist/index.js",
     "postinstall": "cd server && npm install",
-    "convert-images": "node scripts/convert-images.js"
+    "convert-images": "node scripts/convert-images.js",
+    "db:inspect": "tsx scripts/inspect-mongodb.ts",
+    "seed:projects": "tsx scripts/seed-projects.ts",
+    "seed:projects:dry": "tsx scripts/seed-projects.ts --dry-run"
   },
   "keywords": [],
   "author": "",
