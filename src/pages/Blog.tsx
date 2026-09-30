@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { getPosts, getSectors, type Post, type BlogSector } from "../api/blogApi"
+import HorzDragScroll from "../components/HorzDragScroll"
 import SEOHead from "../components/SEOHead"
 
 export default function Blog() {
@@ -117,9 +118,16 @@ export default function Blog() {
 
         {/* Loading State */}
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <HorzDragScroll
+            aria-label="Caricamento articoli"
+            bleedClassName="-mx-6"
+            padClassName="px-6"
+          >
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-white rounded-lg overflow-hidden animate-pulse">
+              <div
+                key={i}
+                className="shrink-0 grow-0 w-[min(80vw,20rem)] sm:w-[280px] md:w-[300px] bg-white rounded-lg overflow-hidden animate-pulse"
+              >
                 <div className="h-48 bg-gray-200" />
                 <div className="p-6">
                   <div className="h-4 bg-gray-200 rounded mb-3" />
@@ -128,20 +136,28 @@ export default function Blog() {
                 </div>
               </div>
             ))}
-          </div>
+          </HorzDragScroll>
         ) : posts.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-[var(--muted-foreground)] text-lg">Nessun articolo disponibile</p>
           </div>
         ) : (
           <>
-            {/* Posts Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Posts — strip orizzontale drag/swipe */}
+            <HorzDragScroll
+              aria-label="Scorri gli articoli del blog"
+              bleedClassName="-mx-6"
+              padClassName="px-6"
+            >
               {posts.map((post) => (
                 <Link
                   key={post._id}
                   to={`/blog/${post.slug}`}
-                  className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow group"
+                  draggable={false}
+                  className={[
+                    "shrink-0 grow-0 bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow group",
+                    "w-[min(80vw,20rem)] sm:w-[280px] md:w-[300px]",
+                  ].join(" ")}
                 >
                   {post.coverImage && (
                     <div className="aspect-[16/10] overflow-hidden">
@@ -151,9 +167,10 @@ export default function Blog() {
                         width="1600"
                         height="1000"
                         loading="lazy"
-                        fetchpriority="low"
+                        fetchPriority="low"
                         decoding="async"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        draggable={false}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none"
                       />
                     </div>
                   )}
@@ -175,7 +192,7 @@ export default function Blog() {
                   </div>
                 </Link>
               ))}
-            </div>
+            </HorzDragScroll>
 
             {/* Pagination */}
             {totalPages > 1 && (
