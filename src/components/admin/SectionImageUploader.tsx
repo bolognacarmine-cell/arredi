@@ -43,8 +43,20 @@ export default function SectionImageUploader({
   const [uploads, setUploads] = useState<UploadItem[]>([])
   const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  // Ref sincronizzato: upload paralleli non devono leggere uno `value` stale
+  // da closure (altrimenti onChange lascia solo l'ultima URL).
+  const valueRef = useRef(value)
+  const uploadsRef = useRef(uploads)
   const { state: cloudinaryState, upload: uploadToCloudinary, reset: resetCloudinary } = useCloudinaryUpload()
   const { isAuthenticated } = useAdminAuth()
+
+  useEffect(() => {
+    valueRef.current = value
+  }, [value])
+
+  useEffect(() => {
+    uploadsRef.current = uploads
+  }, [uploads])
 
   // Show warning if Cloudinary is not configured
   useEffect(() => {
@@ -58,11 +70,22 @@ export default function SectionImageUploader({
     }
   }, [isCloudinaryConfigured, CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET, onError])
 
+  const appendUrl = useCallback(
+    (url: string) => {
+      const next = [...valueRef.current, url]
+      valueRef.current = next
+      onChange(next)
+      console.log("[SectionImageUploader] URL aggiunta:", url.slice(0, 80), "| totale:", next.length)
+    },
+    [onChange],
+  )
+
   const handleFileSelect = useCallback((files: FileList | null) => {
     if (!files || disabled) return
 
     const newUploads: UploadItem[] = []
     const maxSizeBytes = maxSizeMB * 1024 * 1024
+    const currentCount = valueRef.current.length + uploadsRef.current.length
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i]
@@ -80,7 +103,7 @@ export default function SectionImageUploader({
       }
 
       // Check max files limit
-      if (value.length + uploads.length + newUploads.length >= maxFiles) {
+      if (currentCount + newUploads.length >= maxFiles) {
         onError?.(`Numero massimo di file (${maxFiles}) raggiunto`)
         break
       }
@@ -98,7 +121,7 @@ export default function SectionImageUploader({
     if (newUploads.length > 0) {
       setUploads((prev) => [...prev, ...newUploads])
     }
-  }, [value.length, uploads.length, maxFiles, maxSizeMB, disabled, onError])
+  }, [maxFiles, maxSizeMB, disabled, onError])
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -138,8 +161,10 @@ export default function SectionImageUploader({
   }, [])
 
   const removeExistingImage = useCallback((url: string) => {
-    onChange(value.filter((u) => u !== url))
-  }, [value, onChange])
+    const next = valueRef.current.filter((u) => u !== url)
+    valueRef.current = next
+    onChange(next)
+  }, [onChange])
 
   const uploadSingleFile = useCallback(async (upload: UploadItem): Promise<void> => {
     setUploads((prev) =>
@@ -210,8 +235,8 @@ export default function SectionImageUploader({
         )
       )
 
-      // Add to value array
-      onChange([...value, cloudinaryResult.secure_url])
+      // Append atomico via ref: sicuro con upload paralleli
+      appendUrl(cloudinaryResult.secure_url)
 
       // Remove from uploads after a delay
       setTimeout(() => {
@@ -229,13 +254,13 @@ export default function SectionImageUploader({
       )
       onError?.(errorMessage)
     }
-  }, [category, library, uploadToCloudinary, onChange, value, removeUpload, onError, isAuthenticated])
+  }, [category, library, uploadToCloudinary, appendUrl, removeUpload, onError, isAuthenticated])
 
-  // Auto-upload files when they are added
+  // Auto-upload files when they are added (marca subito "uploading" via uploadSingleFile)
   useEffect(() => {
     const idleUploads = uploads.filter((u) => u.status === "idle")
     idleUploads.forEach((upload) => {
-      uploadSingleFile(upload)
+      void uploadSingleFile(upload)
     })
   }, [uploads, uploadSingleFile])
 
