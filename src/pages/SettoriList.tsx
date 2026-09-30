@@ -77,7 +77,7 @@ export default function SettoriList() {
           </Reveal>
           <Reveal delay={120} className="max-w-xs">
             <p className="text-[#6B7280] text-xs sm:text-sm leading-[1.65] sm:leading-relaxed">
-              Quattro settori, un'unica filosofia: progettazione attenta,
+              Sei settori, un'unica filosofia: progettazione attenta,
               materiali di qualità, esecuzione impeccabile.
             </p>
           </Reveal>

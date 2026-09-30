@@ -286,7 +286,7 @@ export default function Home() {
           </Reveal>
           <Reveal delay={120} variant="up" duration={700} className="max-w-xs">
             <p className="text-[#6B7280] text-xs sm:text-sm leading-[1.65] sm:leading-relaxed">
-              Quattro settori, un'unica filosofia: progettazione attenta,
+              Sei settori, un'unica filosofia: progettazione attenta,
               materiali di qualità, esecuzione impeccabile.
             </p>
           </Reveal>
@@ -581,7 +581,7 @@ export default function Home() {
 
             ["25", "Anni di attività"],
 
-            ["4", "Settori serviti"],
+            ["6", "Settori serviti"],
 
             ["98%", "Clienti soddisfatti"],
           ].map(([n, l]) => (
