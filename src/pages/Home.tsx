@@ -10,10 +10,12 @@ import ProductCard from "../components/showroom/ProductCard"
 import Magnetic from "../components/Magnetic"
 import MotionLine from "../components/MotionLine"
 import Reveal from "../components/Reveal"
+import BlogDragStrip from "../components/BlogDragStrip"
 import SectorDragStrip from "../components/SectorDragStrip"
 import Stagger from "../components/Stagger"
 import SEOHead from "../components/SEOHead"
 import HeroBackgroundVideo from "../components/HeroBackgroundVideo"
+import { getPosts, type Post } from "../api/blogApi"
 import { getProducts, type Product } from "../services/showroomApi"
 import { resolveImageUrl } from "../lib/cloudinary"
 
@@ -115,6 +117,7 @@ export default function Home() {
   const safeDisplayedProjects = Array.isArray(displayedProjects) ? displayedProjects : []
 
   const [showroomProducts, setShowroomProducts] = useState<Product[]>([])
+  const [blogPosts, setBlogPosts] = useState<Post[]>([])
 
   useEffect(() => {
     let alive = true
@@ -126,6 +129,19 @@ export default function Home() {
         )
       })
       .catch(() => setShowroomProducts([]))
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  useEffect(() => {
+    let alive = true
+    getPosts({ page: 1, limit: 8 })
+      .then((res) => {
+        if (!alive) return
+        setBlogPosts(Array.isArray(res?.data) ? res.data : [])
+      })
+      .catch(() => setBlogPosts([]))
     return () => {
       alive = false
     }
@@ -354,6 +370,36 @@ export default function Home() {
               ))}
             </Stagger>
           </div>
+        </section>
+      )}
+
+      {/* BLOG: nascosto se non ci sono articoli */}
+      {blogPosts.length > 0 && (
+        <section id="blog" className="pt-6 pb-16 sm:py-20 md:py-24 lg:py-28 xl:py-32 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 relative bg-white" data-bg="#FFFFFF">
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
+
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-2 sm:gap-5 md:gap-6 mb-2 sm:mb-6 md:mb-8 lg:mb-10">
+            <Reveal className="relative" variant="up" duration={800}>
+              <div className="absolute -left-1.5 sm:-left-2 md:-left-4 top-0 w-1 h-full bg-gradient-to-b from-[#E69138] to-transparent" />
+              <span className="text-[#6B7280] text-[10px] sm:text-[11px] md:text-xs tracking-[0.16em] sm:tracking-[0.18em] md:tracking-[0.2em] uppercase font-semibold pl-2.5 sm:pl-3 md:pl-4">
+                Blog
+              </span>
+              <h2 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-[#1A1A2E] mt-1 sm:mt-2 pl-2.5 sm:pl-3 md:pl-4 leading-[1.15] sm:leading-tight text-balance">
+                Ultimi dal Blog
+              </h2>
+              <MotionLine className="mt-4 ml-2.5 sm:ml-3 md:ml-4" width="4.5rem" thickness={3} delay={160} />
+            </Reveal>
+            <Reveal delay={100}>
+              <Link
+                to="/blog"
+                className="inline-flex items-center self-start min-h-[36px] sm:min-h-[40px] -ml-2 px-2 text-[#E69138] text-xs sm:text-sm font-medium hover:underline rounded-md"
+              >
+                Vedi tutti gli articoli →
+              </Link>
+            </Reveal>
+          </div>
+
+          <BlogDragStrip posts={blogPosts} />
         </section>
       )}
 
