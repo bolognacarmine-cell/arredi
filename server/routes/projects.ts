@@ -124,33 +124,40 @@ router.post('/', requireAdmin, async (req: Request, res: Response) => {
   const db = dbReady();
   if (!db.ok) return dbError(res, db.reason!);
   try {
+    // Apply fallbacks for required fields that may be empty
+    const cleanedBody = {
+      ...req.body,
+      description: req.body.description?.trim() || "Descrizione non disponibile",
+      materials: req.body.materials?.trim() || "Materiali da definire",
+    };
+
     // Minimal input validation for project creation
-    if (!req.body.name || typeof req.body.name !== 'string') {
-      return res.status(400).json({ 
-        ok: false, 
-        error: { code: 'VALIDATION_FAILED', message: 'Project name is required and must be a string' }
+    if (!cleanedBody.title || typeof cleanedBody.title !== 'string') {
+      return res.status(400).json({
+        ok: false,
+        error: { code: 'VALIDATION_FAILED', message: 'Project title is required and must be a string' }
       });
     }
-    
-    // Project name length validation
-    if (req.body.name.length > 200) {
-      return res.status(400).json({ 
-        ok: false, 
-        error: { code: 'VALIDATION_FAILED', message: 'Project name too long (max 200 characters)' }
+
+    // Project title length validation
+    if (cleanedBody.title.length > 200) {
+      return res.status(400).json({
+        ok: false,
+        error: { code: 'VALIDATION_FAILED', message: 'Project title too long (max 200 characters)' }
       });
     }
-    
+
     // Description length validation (if present)
-    if (req.body.description && typeof req.body.description === 'string') {
-      if (req.body.description.length > 2000) {
-        return res.status(400).json({ 
-          ok: false, 
+    if (cleanedBody.description && typeof cleanedBody.description === 'string') {
+      if (cleanedBody.description.length > 2000) {
+        return res.status(400).json({
+          ok: false,
           error: { code: 'VALIDATION_FAILED', message: 'Description too long (max 2000 characters)' }
         });
       }
     }
-    
-    const project = new Project(req.body);
+
+    const project = new Project(cleanedBody);
     await project.save();
     res.status(201).json(project.toObject());
   } catch (error: any) {
@@ -174,9 +181,17 @@ router.put('/:id', requireAdmin, async (req: Request, res: Response) => {
   if (!db.ok) return dbError(res, db.reason!);
   try {
     const { id } = req.params;
+
+    // Apply fallbacks for required fields that may be empty on update
+    const cleanedBody = {
+      ...req.body,
+      description: req.body.description?.trim() || "Descrizione non disponibile",
+      materials: req.body.materials?.trim() || "Materiali da definire",
+    };
+
     const project = await Project.findOneAndUpdate(
       byId(id),
-      req.body,
+      cleanedBody,
       { new: true, runValidators: true, upsert: false }
     ).lean();
     if (!project) {
@@ -258,6 +273,9 @@ async function handleBatchReplace(req: Request, res: Response) {
           delete out._id;
           delete out.__v;
           if (!out.id && out._id) out.id = String(out._id);
+          // Apply fallbacks for required fields that may be empty
+          out.description = out.description?.trim() || "Descrizione non disponibile";
+          out.materials = out.materials?.trim() || "Materiali da definire";
           return out;
         });
         console.log('[Batch Replace] Inserting', clean.length, 'projects');

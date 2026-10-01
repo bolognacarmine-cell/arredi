@@ -96,6 +96,7 @@ app.use(cors({
     }
   },
   credentials: true,
+  exposedHeaders: ['Set-Cookie'],
 }));
 app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
