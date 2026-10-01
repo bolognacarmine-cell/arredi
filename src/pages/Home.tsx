@@ -384,7 +384,7 @@ export default function Home() {
         <HeroBackgroundVideo
           className="z-0"
           basePath="/videos/showroom"
-          priority={true}
+          priority={false}
           isMuted={true}
           fallbackImg="https://images.unsplash.com/photo-1547609434-b732edfee020?w=1920&h=1080&fit=crop&auto=format"
         />

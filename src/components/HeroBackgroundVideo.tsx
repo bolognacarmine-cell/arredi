@@ -285,7 +285,7 @@ export default function HeroBackgroundVideo({
             playsInline
             disablePictureInPicture
             controls={false}
-            preload={priority ? "auto" : "none"}
+            preload={priority ? "metadata" : "none"}
             poster={poster}
             onError={onVideoError}
             style={{
