@@ -43,6 +43,13 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
           'Content-Type': 'application/json',
         },
       })
+
+      // Handle 401 Unauthorized explicitly
+      if (response.status === 401) {
+        setUser(null)
+        return
+      }
+
       const data = await response.json()
 
       if (data.success && data.user) {
@@ -86,10 +93,12 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         })
         return { success: true, message: data.message }
       } else {
-        return { success: false, message: data.message || 'Login failed' }
+        // Return specific error message from server
+        return { success: false, message: data.message || 'Credenziali non valide' }
       }
     } catch (error) {
-      return { success: false, message: 'An error occurred during login' }
+      console.error('Login error:', error)
+      return { success: false, message: 'Errore di connessione al server. Riprova.' }
     }
   }
 

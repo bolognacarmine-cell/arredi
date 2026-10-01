@@ -297,9 +297,20 @@ export default function AdminProjects() {
       await saveProjectsToProject(nextProjects)
       saveProjects(nextProjects)
       showStatus(successMessage, "success")
-    } catch {
+    } catch (error) {
+      console.error('Error saving projects:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Errore sconosciuto'
+      
+      // Show specific error message based on error type
+      if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
+        showStatus('Sessione scaduta. Effettua nuovamente il login.', 'warning')
+      } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
+        showStatus('Errore di connessione al server. Salvataggio locale effettuato.', 'warning')
+      } else {
+        showStatus(`${fallbackMessage} (${errorMessage})`, 'warning')
+      }
+      
       saveProjects(nextProjects)
-      showStatus(fallbackMessage, "warning")
     }
 
     showSavedState()
