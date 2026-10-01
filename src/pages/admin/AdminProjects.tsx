@@ -120,7 +120,7 @@ function toProjectRecord(
     location: form.citta.trim(),
     year: Number(form.anno) || new Date().getFullYear(),
     client: form.cliente.trim() || undefined,
-    description: form.descrizione.trim(),
+    description: form.descrizione.trim() || "Descrizione non disponibile",
     image: form.immagine.trim() || normalizedCoverImages[0] || "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=800&fit=crop",
     imageCloudinaryPublicId,
     coverImages: normalizedCoverImages,
