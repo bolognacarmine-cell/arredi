@@ -326,8 +326,8 @@ export default function AdminProjects() {
     await persistProjects(
       nextProjects,
       editingId
-        ? "Progetto aggiornato nel progetto e sincronizzato nel browser."
-        : "Nuovo progetto salvato nel progetto e sincronizzato nel browser.",
+        ? "Progetto aggiornato nel database e sincronizzato nel browser."
+        : "Nuovo progetto salvato nel database e sincronizzato nel browser.",
       editingId
         ? "Modifica salvata solo nel browser corrente."
         : "Nuovo progetto salvato solo nel browser corrente.",
@@ -357,7 +357,7 @@ export default function AdminProjects() {
 
     await persistProjects(
       nextProjects,
-      "Progetto eliminato e archivio aggiornato nel progetto.",
+      "Progetto eliminato e archivio aggiornato nel database.",
       "Progetto eliminato solo nel browser corrente.",
     )
     setIsDeleting(false)
@@ -369,7 +369,7 @@ export default function AdminProjects() {
     try {
       await saveProjectsToProject(defaultProjects)
       resetProjects()
-      showStatus("Archivio progetti ripristinato nel progetto.", "success")
+      showStatus("Archivio progetti ripristinato nel database.", "success")
     } catch {
       saveProjects(defaultProjects)
       showStatus(
@@ -410,10 +410,8 @@ export default function AdminProjects() {
       </div>
 
       <div className="mb-6 border border-[#DDD9D0] bg-[#F7F5F0] p-4 text-sm text-[#4A4A46]">
-        In sviluppo i progetti vengono salvati direttamente in
-        <span className="font-medium text-[#1A1A18]"> `src/data.ts` </span>
-        con backup automatico. Se il file non e scrivibile, il pannello usa il
-        fallback nel browser.
+        I progetti vengono salvati nel database MongoDB. Se il database non è disponibile,
+        il pannello usa il fallback nel browser locale.
       </div>
 
       {showForm && (
