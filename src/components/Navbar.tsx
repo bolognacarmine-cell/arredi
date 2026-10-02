@@ -23,119 +23,78 @@ export default function Navbar() {
   const location = useLocation()
   const isAdmin = location.pathname.startsWith("/admin")
 
-  const lastScrollY = useRef<number & { pendingY?: number }>(0)
+  const lastScrollY = useRef<number>(0)
   const rafId = useRef<number | null>(null)
-  const pendingTimeout = useRef<number | null>(null)
   const navRef = useRef<HTMLElement | null>(null)
+  const openRef = useRef(open)
+  const visibleRef = useRef(visible)
+
+  // Sync refs with state (this runs after render)
+  openRef.current = open
+  visibleRef.current = visible
 
   if (isAdmin) return null
 
-  // Scroll behavior: direction detection + hysteresis + at-top pin + RAF throttle + 80ms debounce flip-flop
+  // Scroll behavior: direction detection + hysteresis + at-top pin + RAF throttle
   useEffect(() => {
     if (typeof window === "undefined") return
 
-    const TRIGGER_OFFSET_HERO = 150
-    const FALLBACK_SCROLLED_Y = 96
-    const AT_TOP_THRESHOLD = 32
-    const SCROLL_DOWN_HIDE_DELTA = 6
-    const SCROLL_UP_SHOW_DELTA = 4
-    const STATE_DEBOUNCE_MS = reducedMotion ? 0 : 80
+    const AT_TOP_THRESHOLD = 80
+    const HIDE_AFTER_DOWN_PX = reducedMotion ? 20 : 40
+    const SHOW_AFTER_UP_PX = reducedMotion ? 16 : 30
 
-    const getHeroHeight = (): number | null => {
-      const hero = document.getElementById("hero")
-      return hero ? hero.offsetHeight : null
-    }
+    let lastDecisionY = window.scrollY
 
     const applyState = (currentY: number) => {
-      const heroHeight = getHeroHeight()
-      const scrolledNow = heroHeight
-        ? currentY > heroHeight - TRIGGER_OFFSET_HERO
-        : currentY > FALLBACK_SCROLLED_Y
       const atTopNow = currentY < AT_TOP_THRESHOLD
+      const scrolledNow = currentY > AT_TOP_THRESHOLD
 
       let nextVisible: boolean
 
       if (atTopNow) {
         nextVisible = true
-      } else if (open) {
-        // Never hide while the mobile hamburger is open (UX safety)
+      } else if (openRef.current) {
         nextVisible = true
       } else {
-        const delta = currentY - lastScrollY.current
-        if (delta > SCROLL_DOWN_HIDE_DELTA) {
+        const deltaFromLastDecision = currentY - lastDecisionY
+        if (deltaFromLastDecision > HIDE_AFTER_DOWN_PX) {
           nextVisible = false
-        } else if (delta < -SCROLL_UP_SHOW_DELTA) {
+          lastDecisionY = currentY
+        } else if (deltaFromLastDecision < -SHOW_AFTER_UP_PX) {
           nextVisible = true
+          lastDecisionY = currentY
         } else {
-          nextVisible = visible // within hysteresis band, no change
+          nextVisible = visibleRef.current
         }
       }
 
-      lastScrollY.current = currentY
+      if (atTopNow) lastDecisionY = currentY
 
-      // Batch updates in single state-set pass to reduce re-renders
       setScrolled((prev: boolean) => (prev === scrolledNow ? prev : scrolledNow))
       setAtTop((prev: boolean) => (prev === atTopNow ? prev : atTopNow))
       setVisible((prev: boolean) => (prev === nextVisible ? prev : nextVisible))
     }
 
     const onScroll = () => {
-      if (rafId.current != null) return // already queued
+      if (rafId.current != null) return
 
       rafId.current = window.requestAnimationFrame(() => {
         rafId.current = null
-        const currentY = window.scrollY
-
-        if (STATE_DEBOUNCE_MS <= 0) {
-          applyState(currentY)
-          return
-        }
-
-        if (pendingTimeout.current != null) {
-          // Keep the latest scroll value, timer will consume it on fire
-          lastScrollY.pendingY = currentY
-          return
-        }
-
-        // Store the value so timeout can pick latest if another scroll arrives
-        lastScrollY.pendingY = currentY
-        pendingTimeout.current = window.setTimeout(() => {
-          pendingTimeout.current = null
-          const latestY =
-            typeof lastScrollY.pendingY === "number" ? lastScrollY.pendingY : window.scrollY
-          lastScrollY.pendingY = undefined
-          applyState(latestY)
-        }, STATE_DEBOUNCE_MS)
+        applyState(window.scrollY)
       })
     }
 
-    const onResize = () => {
-      // Re-evaluate state with refreshed hero height / viewport
-      const currentY = window.scrollY
-      lastScrollY.current = currentY
-      applyState(currentY)
-    }
-
-    // Initial sync
-    lastScrollY.current = window.scrollY
+    lastDecisionY = window.scrollY
     applyState(window.scrollY)
 
     window.addEventListener("scroll", onScroll, { passive: true })
-    window.addEventListener("resize", onResize)
-    window.addEventListener("orientationchange", onResize)
 
     return () => {
       window.removeEventListener("scroll", onScroll)
-      window.removeEventListener("resize", onResize)
-      window.removeEventListener("orientationchange", onResize)
       if (rafId.current != null) cancelAnimationFrame(rafId.current)
-      if (pendingTimeout.current != null) clearTimeout(pendingTimeout.current)
       rafId.current = null
-      pendingTimeout.current = null
     }
-    // open is also checked in applyState; keep in dependency so closing the
-    // hamburger doesn't leave visible "stuck" in the wrong state
-  }, [open, reducedMotion])
+  }, [reducedMotion])
 
   // Keyboard focus safety: if any focusable element inside navbar receives
   // focus while visible is false, force visible so the user can see it.
@@ -151,30 +110,29 @@ export default function Navbar() {
       }
     }
 
-    document.addEventListener("focusin", checkFocus)
-    document.addEventListener("keydown", (e) => {
-      // Tab key, anticipate visibility just in case focus is moving our way
-      if (e.key === "Tab" && !visible && !atTop) {
-        // Force visible now; focusin callback will confirm if needed
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Tab" && !visible) {
         setVisible(true)
       }
-    })
-    return () => document.removeEventListener("focusin", checkFocus)
-  }, [visible, atTop])
+    }
+
+    document.addEventListener("focusin", checkFocus)
+    document.addEventListener("keydown", handleKeyDown)
+    return () => {
+      document.removeEventListener("focusin", checkFocus)
+      document.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [visible])
 
   // When user navigates (e.g. route change from /progetti to /chi-siamo)
   // reset visible state so the new page starts in a consistent "on top" feel.
   useEffect(() => {
     if (typeof window === "undefined") return
-    // If the new route scrolls to top (ScrollToTop component does), the scroll
-    // listener will set atTop=true -> visible=true as part of the normal flow.
-    // Force an immediate state sync to cover any race.
     lastScrollY.current = window.scrollY
-    const heroHeight = document.getElementById("hero")?.offsetHeight ?? null
     const y = window.scrollY
-    setAtTop(y < 32)
-    setScrolled(heroHeight ? y > heroHeight - 150 : y > 96)
-    setVisible(y < 32 ? true : visible)
+    setAtTop(y < 80)
+    setScrolled(y > 80)
+    setVisible(y < 80 ? true : visible)
   }, [location.pathname])
 
   const transitionClasses = reducedMotion ? "transition-none" : ""
@@ -205,9 +163,9 @@ export default function Navbar() {
     : { left: 0, right: 0 }
 
   const headerBackgroundClasses = usePillLayout
-    ? "bg-white/95 backdrop-blur-md shadow-[0_6px_24px_-8px_rgba(0,0,0,0.18)] border border-[#E5E5E7]/70 rounded-[999px] px-1.5"
+    ? "bg-[#E69138]/10 backdrop-blur-xl shadow-[0_6px_24px_-8px_rgba(230,145,56,0.15)] border border-[#E69138]/20 rounded-[999px] px-1.5"
     : scrolled
-      ? "bg-[#FAFAFA]/95 backdrop-blur-md border-b border-[#E5E5E7]"
+      ? "bg-[#E69138]/8 backdrop-blur-xl border-b border-[#E69138]/15"
       : "bg-transparent"
 
   const headerPositionStyle: React.CSSProperties =
@@ -298,7 +256,7 @@ export default function Navbar() {
             />
           </Link>
 
-          <ul className="hidden lg:flex items-center gap-7 xl:gap-8">
+          <ul className="hidden lg:flex items-center gap-7 xl:gap-8 ml-6">
             {links.map((l) => (
               <li key={l.to}>
                 <Link
@@ -320,7 +278,7 @@ export default function Navbar() {
           <Link
             to="/preventivo"
             translate="no"
-            className={`hidden lg:inline-flex items-center gap-2 text-sm font-semibold px-4 lg:px-5 py-2.5 rounded ${transitionClasses} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E69138] focus-visible:ring-offset-2 ${
+            className={`hidden lg:inline-flex items-center gap-2 text-sm font-semibold px-4 lg:px-5 py-2.5 rounded ml-6 ${transitionClasses} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E69138] focus-visible:ring-offset-2 ${
               heroContrast && !usePillLayout
                 ? "bg-white text-[#1A1A2E] hover:bg-[#E69138] hover:text-[#1A1A2E]"
                 : "bg-[#E69138] text-[#1A1A2E] hover:bg-[#D67F28] hover:shadow-lg hover:shadow-[#E69138]/30"
