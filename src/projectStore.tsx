@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback, useMemo } from "react"
 import { type Project } from "./data"
 import {
   getProjects as getProjectsApi,
@@ -83,24 +83,51 @@ export function readProjects(): ProjectRecord[] {
   }
 }
 
+// #region debug-point dispatch-batcher
+// React 19 Error #300: batching + queueMicrotask dei dispatchEvent impedisce
+// che un listener setState su un consumer diverso venga chiamato DURANTE il render
+// di un altro componente. I dispatch partono DOPO il microtask corrente (post-render).
+let _pendingDispatch = false
+function _batchedProjectsDispatch() {
+  if (_pendingDispatch) return
+  _pendingDispatch = true
+  // NOTA: queueMicrotask garantisce l'esecuzione dopo la fine della fase di render
+  // corrente (non tra beginWork e completeWork).
+  queueMicrotask(() => {
+    _pendingDispatch = false
+    try {
+      if (typeof window !== "undefined") {
+        ;(window as any).dispatchEvent(new CustomEvent(PROJECTS_EVENT))
+      }
+    } catch {
+      /* cross-context / iframe dispatch may throw, ignore */
+    }
+  })
+}
+// #endregion
+
 export function saveProjects(projects: ProjectRecord[]) {
   if (typeof window === "undefined") return
   window.localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects))
+  // #region debug-point save-projects-dispatch
   try {
-    window.dispatchEvent(new CustomEvent(PROJECTS_EVENT))
+    _batchedProjectsDispatch()
   } catch {
-    /* cross-context dispatch may throw, ignore */
+    /* ignore */
   }
+  // #endregion
 }
 
 export function resetProjects() {
   if (typeof window === "undefined") return
   window.localStorage.removeItem(PROJECTS_STORAGE_KEY)
+  // #region debug-point reset-projects-dispatch
   try {
-    window.dispatchEvent(new CustomEvent(PROJECTS_EVENT))
+    _batchedProjectsDispatch()
   } catch {
     /* ignore */
   }
+  // #endregion
 }
 
 export async function saveProjectsToProject(projects: ProjectRecord[]) {
@@ -140,17 +167,29 @@ export function useProjectsLoadState(): ProjectsLoadState {
   return loadState
 }
 
+// #region debug-point consumer-counter
+let _consumerCounter = 0
+// #endregion
+
 export function useProjectsDetailed(): {
   projects: ProjectRecord[]
   loadState: ProjectsLoadState
   refresh: () => Promise<void>
 } {
+  // #region debug-point consumer-id
+  // Ogni consumer riceve un id monotono; usato solo nei trace di debug
+  const consumerId = useMemo(() => `p${++_consumerCounter}`, [])
+  // #endregion
+
   const [projects, setProjects] = useState<ProjectRecord[]>(
     typeof window !== "undefined" ? readProjects() : defaultProjects
   )
   const [loadState, setLoadState] = useState<ProjectsLoadState>({ status: "idle" })
 
   const refresh = useCallback(async () => {
+    // #region debug-point refresh-start
+    ;(console as any).debug?.('[useProjectsDetailed]', 'consumer', consumerId, 'refresh()')
+    // #endregion
     setLoadState({ status: "loading" })
     try {
       const res = await loadProjectsFromApi()
@@ -167,20 +206,33 @@ export function useProjectsDetailed(): {
         setLoadState({ status: "error", message })
       }
     }
-  }, [])
+  }, [consumerId])
 
   useEffect(() => {
+    // #region debug-point mount
+    ;(console as any).debug?.('[useProjectsDetailed]', consumerId, 'mounted; total consumers:', _consumerCounter)
+    // #endregion
+
     void refresh()
 
     const syncFromEvent = () => {
-      setProjects(readProjects())
+      // QueueMicrotask ANCHE sul lato consumer: evitiamo che il dispatch sincro scateni
+      // setState durante un render già iniziato in corso (caso #300).
+      queueMicrotask(() => {
+        setProjects(readProjects())
+      })
     }
     const onStorage = () => {
-      setProjects(readProjects())
+      queueMicrotask(() => {
+        setProjects(readProjects())
+      })
     }
     window.addEventListener(PROJECTS_EVENT, syncFromEvent)
     window.addEventListener("storage", onStorage)
     return () => {
+      // #region debug-point unmount
+      ;(console as any).debug?.('[useProjectsDetailed]', consumerId, 'unmounted')
+      // #endregion
       window.removeEventListener(PROJECTS_EVENT, syncFromEvent)
       window.removeEventListener("storage", onStorage)
     }

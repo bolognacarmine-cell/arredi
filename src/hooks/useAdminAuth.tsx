@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react"
+import { createContext, useContext, useEffect, useMemo, useState, useCallback, type ReactNode } from "react"
 import { useNavigate } from "react-router-dom"
 import { getApiUrl } from "../lib/apiConfig"
 
@@ -30,7 +30,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
   const [authError, setAuthError] = useState<AuthErrorKind>(null)
   const navigate = useNavigate()
 
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     setIsLoading(true)
     setAuthError(null)
     try {
@@ -82,9 +82,9 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
-  const login = async (email: string, password: string) => {
+  const login = useCallback(async (email: string, password: string) => {
     try {
       const apiUrl = getApiUrl('/api/admin/login')
       console.log('[Login] Attempting login to:', apiUrl)
@@ -118,9 +118,9 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       console.error('Login error:', error)
       return { success: false, message: 'Errore di connessione al server. Riprova.' }
     }
-  }
+  }, [])
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       await fetch(getApiUrl('/api/admin/logout'), {
         method: 'POST',
@@ -133,7 +133,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       setAuthError(null)
       navigate('/admin/login', { replace: true })
     }
-  }
+  }, [navigate])
 
   useEffect(() => {
     checkAuth()
@@ -150,7 +150,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       logout,
       checkAuth,
     }),
-    [user, isLoading, authError],
+    [user, isLoading, authError, login, logout, checkAuth],
   )
   return <AC.Provider value={value}>{children}</AC.Provider>
 }
