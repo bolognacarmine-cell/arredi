@@ -120,8 +120,18 @@ let storeState: StoreState = {
 }
 
 const subscribers = new Set<() => void>()
+let notifyScheduled = false
 function notify() {
-  subscribers.forEach((s: () => void) => s())
+  if (notifyScheduled) return
+  notifyScheduled = true
+  // Tutte le notifiche ai subscriber React passano per queueMicrotask:
+  // questo garantisce che siano SEMPRE fuori da una fase di render,
+  // impedendo il React 19 error #300 ("setState during render of another component")
+  // anche in caso di StrictMode o rendering concorrente.
+  queueMicrotask(() => {
+    notifyScheduled = false
+    subscribers.forEach((s: () => void) => s())
+  })
 }
 
 export function setProjectStoreAuthReady(ready: boolean) {

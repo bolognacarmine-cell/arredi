@@ -32,7 +32,6 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate()
 
   const checkAuth = async () => {
-    setProjectStoreAuthReady(false)
     setIsLoading(true)
     setAuthError(null)
     try {
@@ -53,7 +52,6 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         console.log('[Auth Check] User not authenticated (401/403)')
         setUser(null)
         setAuthError(response.status === 401 ? "401" : "server")
-        setProjectStoreAuthReady(false)
         return
       }
 
@@ -61,7 +59,6 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         console.warn('[Auth Check] Auth check failed:', response.status)
         setUser(null)
         setAuthError(response.status >= 500 ? "server" : "network")
-        setProjectStoreAuthReady(false)
         return
       }
 
@@ -75,17 +72,14 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
           role: data.user.role || 'admin',
         })
         setAuthError(null)
-        setProjectStoreAuthReady(true)
       } else {
         setUser(null)
         setAuthError("server")
-        setProjectStoreAuthReady(false)
       }
     } catch (error) {
       console.warn('[Auth Check] Errore:', error)
       setUser(null)
       setAuthError("network")
-      setProjectStoreAuthReady(false)
     } finally {
       setIsLoading(false)
     }
@@ -117,7 +111,6 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
           role: data.user.role,
         })
         setAuthError(null)
-        setProjectStoreAuthReady(true)
         return { success: true, message: data.message }
       } else {
         return { success: false, message: data.message || 'Credenziali non valide' }
@@ -139,7 +132,6 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setUser(null)
       setAuthError(null)
-      setProjectStoreAuthReady(false)
       navigate('/admin/login', { replace: true })
     }
   }
@@ -147,6 +139,15 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     checkAuth()
   }, [])
+
+  // — DERIVA il gating del projectStore SOLAMENTE dopo il commit (useEffect),
+  //   MAI durante la render. Questo evita il React 19 error #300.
+  useEffect(() => {
+    const ready = !!user && !isLoading
+    // Usa queueMicrotask per essere sicuro che sia fuori da qualsiasi fase di render
+    // anche in caso di StrictMode double-invoke o concurrent features.
+    queueMicrotask(() => setProjectStoreAuthReady(ready))
+  }, [user, isLoading])
 
   const value = useMemo<Ctx>(
     () => ({
