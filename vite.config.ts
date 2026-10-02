@@ -98,7 +98,8 @@ export default defineConfig(({ mode }) => {
             },
             {
               // Mai cacheare le API: listini admin/showroom devono essere sempre freschi
-              urlPattern: /\/api\/.*/i,
+              // Escludi /api/admin/* per evitare interferenze con auth check
+              urlPattern: /\/api\/(?!admin\/).*/i,
               handler: 'NetworkOnly',
               method: 'GET',
             }

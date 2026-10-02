@@ -41,9 +41,15 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 
       console.log('[Auth Check] Response status:', response.status)
 
-      // Handle 401 Unauthorized explicitly
-      if (response.status === 401) {
-        console.log('[Auth Check] User not authenticated (401)')
+      // Handle 401 Unauthorized and 403 Forbidden explicitly
+      if (response.status === 401 || response.status === 403) {
+        console.log('[Auth Check] User not authenticated (401/403)')
+        setUser(null)
+        return
+      }
+
+      if (!response.ok) {
+        console.warn('[Auth Check] Auth check failed:', response.status)
         setUser(null)
         return
       }
@@ -61,9 +67,8 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         setUser(null)
       }
     } catch (error) {
-      console.error('Auth check failed:', error)
-      // Don't set user to null on network errors - keep existing state
-      // Only set null on explicit 401 responses
+      console.warn('[Auth Check] Errore:', error)
+      setUser(null)
     } finally {
       setIsLoading(false)
     }
