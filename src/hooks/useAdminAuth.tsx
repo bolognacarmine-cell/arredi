@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react"
 import { useNavigate } from "react-router-dom"
 import { getApiUrl } from "../lib/apiConfig"
-import { setProjectStoreAuthReady } from "../projectStore"
 
 type Role = "admin" | "user" | "guest"
 export interface AdminUser {
@@ -139,15 +138,6 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     checkAuth()
   }, [])
-
-  // — DERIVA il gating del projectStore SOLAMENTE dopo il commit (useEffect),
-  //   MAI durante la render. Questo evita il React 19 error #300.
-  useEffect(() => {
-    const ready = !!user && !isLoading
-    // Usa queueMicrotask per essere sicuro che sia fuori da qualsiasi fase di render
-    // anche in caso di StrictMode double-invoke o concurrent features.
-    queueMicrotask(() => setProjectStoreAuthReady(ready))
-  }, [user, isLoading])
 
   const value = useMemo<Ctx>(
     () => ({

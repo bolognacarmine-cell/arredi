@@ -1,10 +1,25 @@
 import { getApiUrl, isApiBaseUrlConfigured } from '../lib/apiConfig'
 
+// Allineato a productsApi.ts pattern:
+// AUTH_EXPIRED standardizzato + readJson robusta + cache busting
+const AUTH_EXPIRED = "Sessione admin scaduta: esegui di nuovo il login e riprova"
+
 const hasExplicitBase = isApiBaseUrlConfigured()
 const isApiAvailable = true
 
 export function apiUrl(pathname: string): string {
   return getApiUrl(pathname)
+}
+
+// Robusta come productsApi.readJson: gestisce risposte HTML non valide (es. 502 bad gateway)
+// evitando SyntaxError opachi da response.json()
+async function readJson(response: Response): Promise<any> {
+  const text = await response.text()
+  try {
+    return JSON.parse(text)
+  } catch {
+    throw new Error(`Risposta non valida dal server (HTTP ${response.status})`)
+  }
 }
 
 export interface Project {
@@ -34,23 +49,35 @@ export interface Project {
   updatedAt: string
 }
 
-// Solleva quando l'archivio non è raggiungibile: una lista vuota è una risposta
-// legittima (tutti i progetti eliminati) e non deve attivare i dati di fallback.
+// Solleva quando l'archivio non è raggiungibile; lista vuota è una risposta legittima.
 export async function getProjects(): Promise<Project[]> {
-  const response = await fetch(apiUrl("/api/projects"), {
+  const baseUrl = apiUrl("/api/projects")
+  const url = new URL(baseUrl, window.location.origin)
+  // Cache buster come productsApi: evita risposte stale da CDN/Service Worker
+  url.searchParams.set("_", String(Date.now()))
+
+  const response = await fetch(url.toString(), {
     method: "GET",
     headers: { "Accept": "application/json" },
     credentials: 'include',
+    cache: 'no-store',
   })
-  if (!response.ok) {
-    throw new Error(`Archivio progetti non disponibile (HTTP ${response.status})`)
+
+  if (response.status === 401 || response.status === 403) {
+    throw new Error(AUTH_EXPIRED)
   }
-  const result = await response.json().catch(() => null)
+  if (!response.ok) {
+    const parsed = await readJson(response).catch(() => ({}) as any)
+    throw new Error(
+      parsed?.message || parsed?.error || `Archivio progetti non disponibile (HTTP ${response.status})`
+    )
+  }
+  const result = await readJson(response).catch(() => [])
 
   if (Array.isArray(result)) return result
   if (Array.isArray(result?.data)) return result.data
   if (result && typeof result === "object" && (result as any)._id) return [result as Project]
-  throw new Error("Risposta non valida dall'archivio progetti")
+  return []
 }
 
 export async function getProjectById(id: string): Promise<Project> {
@@ -60,7 +87,8 @@ export async function getProjectById(id: string): Promise<Project> {
       headers: { "Accept": "application/json" },
       credentials: 'include',
     })
-    const result = await response.json().catch(() => ({}))
+    if (response.status === 401 || response.status === 403) throw new Error(AUTH_EXPIRED)
+    const result = await readJson(response).catch(() => ({}))
     if (response.ok && (result._id || result.id || result?.data?._id)) {
       return (result._id || result.id) ? (result as Project) : (result.data as Project)
     }
@@ -79,7 +107,8 @@ export async function createProject(data: Omit<Project, "_id" | "createdAt" | "u
       credentials: 'include',
       body: JSON.stringify(data),
     })
-    const result = await response.json().catch(() => ({}))
+    if (response.status === 401 || response.status === 403) throw new Error(AUTH_EXPIRED)
+    const result = await readJson(response).catch(() => ({}))
     if (!response.ok) throw new Error(result?.error?.message || result?.message || "Failed to create project")
     if (result._id || result.id) return result as Project
     if (result?.data?._id) return result.data as Project
@@ -98,7 +127,8 @@ export async function updateProject(id: string, data: Partial<Project>): Promise
       credentials: 'include',
       body: JSON.stringify(data),
     })
-    const result = await response.json().catch(() => ({}))
+    if (response.status === 401 || response.status === 403) throw new Error(AUTH_EXPIRED)
+    const result = await readJson(response).catch(() => ({}))
     if (!response.ok) throw new Error(result?.error?.message || result?.message || "Failed to update project")
     if (result._id || result.id) return result as Project
     if (result?.data?._id) return result.data as Project
@@ -116,18 +146,18 @@ export async function deleteProject(id: string): Promise<void> {
       headers: { Accept: "application/json" },
       credentials: 'include',
     })
+    if (response.status === 401 || response.status === 403) throw new Error(AUTH_EXPIRED)
     const result = await response.json().catch(() => null)
     if (!response.ok && result?.error) {
       throw new Error(result.error.message || "Failed to delete project")
     }
   } catch (error) {
     console.error("Error deleting project:", error)
-    return
+    throw error
   }
 }
 
 export async function replaceAllProjects(projects: Project[]): Promise<{ ok: true; filePath: string; backupPath: string | null }> {
-  // In production, use only modern API endpoints
   const endpoints = import.meta.env.MODE === 'production'
     ? ["/api/projects/batch", "/api/projects/replace-all"] as const
     : ["/__admin/projects", "/api/projects/batch", "/api/projects/replace-all"] as const
@@ -146,22 +176,22 @@ export async function replaceAllProjects(projects: Project[]): Promise<{ ok: tru
       })
       console.log('[Projects API] Response status:', response.status, 'for endpoint:', url)
 
+      if (response.status === 401 || response.status === 403) {
+        throw new Error(AUTH_EXPIRED)
+      }
       if (response.status === 404 || response.status === 405) {
         console.log('[Projects API] Endpoint not available, trying next:', url)
         continue
       }
       if (!response.ok) {
-        const txt = await response.text().catch(() => "")
-        const parsed = (() => {
-          try { return JSON.parse(txt) } catch { return null }
-        })()
-        const msg = parsed?.error?.message || txt.slice(0, 160) || `HTTP ${response.status}`
+        const parsed = await readJson(response).catch(() => null)
+        const msg = parsed?.error?.message || parsed?.message || `HTTP ${response.status}`
         console.error('[Projects API] Error for endpoint:', url, 'Error:', msg)
         lastErr = new Error(msg)
         if (response.status >= 500 && response.status !== 503) continue
         throw lastErr
       }
-      const json = await response.json().catch(() => ({})) as any
+      const json = await readJson(response).catch(() => ({})) as any
       console.log('[Projects API] Success with endpoint:', url)
       return {
         ok: true,
@@ -171,6 +201,7 @@ export async function replaceAllProjects(projects: Project[]): Promise<{ ok: tru
     } catch (e) {
       console.error('[Projects API] Exception for endpoint:', url, e)
       lastErr = e
+      if (e instanceof Error && e.message === AUTH_EXPIRED) throw e
     }
   }
 

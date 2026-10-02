@@ -6,12 +6,9 @@ import {
   resetProjects,
   saveProjects,
   saveProjectsToProject,
-  useProjects,
-  useProjectsLoadState,
-  loadProjectsFromApi,
+  useProjectsDetailed,
   type ProjectRecord,
 } from "../../projectStore"
-import { useAdminAuth } from "../../hooks/useAdminAuth"
 import Loading from "../../components/Loading"
 import {
   takePendingProjectImages,
@@ -147,7 +144,7 @@ export default function AdminProjects() {
   const { id: routeId } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const location = useLocation()
-  const projects = useProjects()
+  const { projects, loadState, refresh } = useProjectsDetailed()
   const [filter, setFilter] = useState("all")
   const [stateFilter, setStateFilter] = useState("all")
   const [showForm, setShowForm] = useState(false)
@@ -161,12 +158,22 @@ export default function AdminProjects() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [autoLoadedImagesCount, setAutoLoadedImagesCount] = useState<number>(0)
   const [galleryDragIndex, setGalleryDragIndex] = useState<number | null>(null)
+  const [toast, setToast] = useState<string | null>(null)
+  const [errorToast, setErrorToast] = useState<string | null>(null)
 
   const [coverImages, setCoverImages] = useState<string[]>([])
   const [galleryImages, setGalleryImages] = useState<string[]>([])
 
-  const loadState = useProjectsLoadState()
-  const { isLoading: authLoading, authError, checkAuth } = useAdminAuth()
+  const showToast = (msg: string) => {
+    setToast(msg)
+    window.setTimeout(() => setToast(null), 2000)
+  }
+  const showError = (err: unknown, fallback: string) => {
+    console.error(fallback, err)
+    const msg = err instanceof Error ? err.message : fallback
+    setErrorToast(msg)
+    window.setTimeout(() => setErrorToast(null), 6000)
+  }
 
   useEffect(() => {
     const isNuovo = location.pathname === "/admin/progetti/nuovo"
@@ -424,39 +431,7 @@ export default function AdminProjects() {
         </div>
       </div>
 
-      {authLoading && (
-        <div className="mb-6 border border-[#DDD9D0] bg-[#F7F5F0] p-4 text-sm text-[#4A4A46] flex items-center gap-2">
-          <span className="w-4 h-4 border-2 border-[#1B4332]/30 border-t-[#1B4332] rounded-full animate-spin" />
-          Verifica autorizzazioni in corso… (i progetti verranno caricati a breve)
-        </div>
-      )}
-
-      {!authLoading && authError === "401" && (
-        <div className="mb-6 border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-          <strong>⚠ Sessione scaduta.</strong> I progetti non possono essere caricati.
-          <button
-            onClick={checkAuth}
-            className="ml-3 underline text-red-800 hover:text-red-900"
-          >
-            Riprova verifica login
-          </button>
-        </div>
-      )}
-
-      {!authLoading && (authError === "network" || authError === "server") && (
-        <div className="mb-6 border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-          <strong>⚠ Impossibile contattare il server</strong>
-          {authError === "server" ? " (errore interno)." : "."} &nbsp;
-          <button
-            onClick={checkAuth}
-            className="underline hover:text-amber-900"
-          >
-            Riprova
-          </button>
-        </div>
-      )}
-
-      {!authLoading && !authError && loadState.status === "error" && (
+      {loadState.status === "error" && (
         <div className="mb-6 border border-red-200 bg-red-50 p-4 text-sm text-red-700 flex items-center justify-between flex-wrap gap-3">
           <div>
             <strong>❌ Errore nel caricamento dei progetti:</strong> {loadState.message}
@@ -467,7 +442,7 @@ export default function AdminProjects() {
             )}
           </div>
           <button
-            onClick={() => loadProjectsFromApi()}
+            onClick={() => refresh()}
             className="bg-[#1B4332] px-4 py-2 text-xs font-medium text-white hover:bg-[#143326] transition-colors"
           >
             Ricarica progetti
@@ -475,7 +450,7 @@ export default function AdminProjects() {
         </div>
       )}
 
-      {!authLoading && !authError && loadState.status === "ready" && projects.length === 0 && (
+      {loadState.status === "ready" && projects.length === 0 && (
         <div className="mb-6 border border-[#DDD9D0] bg-[#F7F5F0] p-6 text-center text-sm text-[#888580]">
           <div className="text-3xl mb-2">📁</div>
           <div className="font-medium text-[#4A4A46] mb-1">Nessun progetto presente</div>
@@ -924,6 +899,17 @@ export default function AdminProjects() {
           </tbody>
         </table>
       </div>
+
+      {toast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] bg-[#1A1A18] text-white text-sm px-5 py-2.5 shadow-2xl animate-fade-in">
+          {toast}
+        </div>
+      )}
+      {errorToast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] max-w-md bg-red-700 text-white text-sm px-5 py-2.5 shadow-2xl animate-fade-in">
+          {errorToast}
+        </div>
+      )}
     </div>
   )
 }

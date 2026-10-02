@@ -1,4 +1,4 @@
-import { useEffect, useState, useSyncExternalStore } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { type Project } from "./data"
 import {
   getProjects as getProjectsApi,
@@ -39,7 +39,6 @@ function normalizeProject(project: AnyProject, index: number): ProjectRecord {
     (project as Partial<ProjectRecord>).coverImages!.length > 0
       ? (project as Partial<ProjectRecord>).coverImages!
       : galleryImages
-
   return {
     ...(project as Project),
     _id: anyProj._id,
@@ -59,14 +58,11 @@ function normalizeProjects(projects: AnyProject[]): ProjectRecord[] {
 
 export function readProjects(): ProjectRecord[] {
   if (typeof window === "undefined") return defaultProjects
-
   try {
     const storedValue = window.localStorage.getItem(PROJECTS_STORAGE_KEY)
     if (!storedValue) return defaultProjects
-
     const parsed = JSON.parse(storedValue) as AnyProject[]
     if (!Array.isArray(parsed) || parsed.length === 0) return defaultProjects
-
     const knownMissingImages = ['/barber-farcom1.jpg']
     const hasInvalidImages = parsed.some((p: AnyProject) => {
       const image = (p as Partial<Project>).image as string
@@ -76,13 +72,11 @@ export function readProjects(): ProjectRecord[] {
         gallery.some((g: string) => knownMissingImages.includes(g))
       )
     })
-
     if (hasInvalidImages) {
       console.log('[projectStore] Clearing localStorage due to known missing image paths')
       window.localStorage.removeItem(PROJECTS_STORAGE_KEY)
       return defaultProjects
     }
-
     return normalizeProjects(parsed)
   } catch {
     return defaultProjects
@@ -91,143 +85,107 @@ export function readProjects(): ProjectRecord[] {
 
 export function saveProjects(projects: ProjectRecord[]) {
   if (typeof window === "undefined") return
-
   window.localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects))
-  window.dispatchEvent(new CustomEvent(PROJECTS_EVENT))
+  try {
+    window.dispatchEvent(new CustomEvent(PROJECTS_EVENT))
+  } catch {
+    /* cross-context dispatch may throw, ignore */
+  }
 }
 
 export function resetProjects() {
   if (typeof window === "undefined") return
-
   window.localStorage.removeItem(PROJECTS_STORAGE_KEY)
-  window.dispatchEvent(new CustomEvent(PROJECTS_EVENT))
+  try {
+    window.dispatchEvent(new CustomEvent(PROJECTS_EVENT))
+  } catch {
+    /* ignore */
+  }
 }
 
 export async function saveProjectsToProject(projects: ProjectRecord[]) {
-  return await replaceAllProjects(projects as unknown as ApiProject[])
+  const out = await replaceAllProjects(projects as unknown as ApiProject[])
+  saveProjects(projects)
+  return out
 }
 
-type StoreState = {
-  projects: ProjectRecord[]
-  loadState: ProjectsLoadState
-  authEnabled: boolean
-}
-
-let storeState: StoreState = {
-  projects: typeof window !== "undefined" ? readProjects() : defaultProjects,
-  loadState: { status: "idle" },
-  authEnabled: true,
-}
-
-const subscribers = new Set<() => void>()
-let notifyScheduled = false
-function notify() {
-  if (notifyScheduled) return
-  notifyScheduled = true
-  // Tutte le notifiche ai subscriber React passano per queueMicrotask:
-  // questo garantisce che siano SEMPRE fuori da una fase di render,
-  // impedendo il React 19 error #300 ("setState during render of another component")
-  // anche in caso di StrictMode o rendering concorrente.
-  queueMicrotask(() => {
-    notifyScheduled = false
-    subscribers.forEach((s: () => void) => s())
-  })
-}
-
-export function setProjectStoreAuthReady(ready: boolean) {
-  if (storeState.authEnabled === ready) return
-  storeState = { ...storeState, authEnabled: ready }
-  notify()
-  if (ready && storeState.loadState.status === "idle") {
-    void loadProjectsFromApi()
-  }
-}
-
-export function getProjectLoadState(): ProjectsLoadState {
-  return storeState.loadState
-}
-
-export async function loadProjectsFromApi() {
-  if (!storeState.authEnabled) {
-    console.log('[projectStore] Auth not ready: skip API fetch')
-    return
-  }
-
-  storeState = { ...storeState, loadState: { status: "loading" } }
-  notify()
-
+export async function loadProjectsFromApi(): Promise<{ projects: ProjectRecord[]; source: "api" | "local" }> {
   try {
     const apiProjects = await getProjectsApi()
     const normalized = normalizeProjects(apiProjects)
     if (typeof window !== "undefined") {
       window.localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(normalized))
     }
-    storeState = {
-      projects: normalized,
-      loadState: { status: "ready", source: "api" },
-      authEnabled: storeState.authEnabled,
-    }
-    notify()
+    return { projects: normalized, source: "api" }
   } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "Errore sconosciuto nel caricamento progetti"
+    const message = err instanceof Error ? err.message : "Errore sconosciuto nel caricamento progetti"
     console.error("[projectStore] archivio remoto non raggiungibile:", err)
-
     const local = readProjects()
-    storeState = {
-      projects: local,
-      loadState:
-        local.length > 0
-          ? { status: "ready", source: "local" }
-          : { status: "error", message },
-      authEnabled: storeState.authEnabled,
-    }
-    notify()
+    if (local.length > 0) return { projects: local, source: "local" }
+    throw new Error(message)
   }
 }
 
+// Pattern ALLINEATO A showroomApi.useRemoteList<T>:
+// useState + useEffect, listener (PROJECTS_EVENT, storage).
+// Nessun useSyncExternalStore, nessun notify cross-store.
+// Zero possibilità di React error #300.
 export function useProjects(): ProjectRecord[] {
-  const state = useSyncExternalStore<StoreState>(
-    (cb: () => void) => {
-      subscribers.add(cb)
-      return () => subscribers.delete(cb)
-    },
-    () => storeState,
-    () => storeState,
-  )
-
-  const [, setTick] = useState<number>(0)
-  useEffect(() => {
-    const syncProjects = () => {
-      storeState = { ...storeState, projects: readProjects() }
-      setTick((t: number) => t + 1)
-      notify()
-    }
-    const onStorage = () => syncProjects()
-    window.addEventListener(PROJECTS_EVENT, syncProjects)
-    window.addEventListener("storage", onStorage)
-    return () => {
-      window.removeEventListener(PROJECTS_EVENT, syncProjects)
-      window.removeEventListener("storage", onStorage)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (storeState.authEnabled && storeState.loadState.status === "idle") {
-      void loadProjectsFromApi()
-    }
-  }, [])
-
-  return state.projects
+  const { projects } = useProjectsDetailed()
+  return projects
 }
 
 export function useProjectsLoadState(): ProjectsLoadState {
-  return useSyncExternalStore<ProjectsLoadState>(
-    (cb: () => void) => {
-      subscribers.add(cb)
-      return () => subscribers.delete(cb)
-    },
-    () => storeState.loadState,
-    () => storeState.loadState,
+  const { loadState } = useProjectsDetailed()
+  return loadState
+}
+
+export function useProjectsDetailed(): {
+  projects: ProjectRecord[]
+  loadState: ProjectsLoadState
+  refresh: () => Promise<void>
+} {
+  const [projects, setProjects] = useState<ProjectRecord[]>(
+    typeof window !== "undefined" ? readProjects() : defaultProjects
   )
+  const [loadState, setLoadState] = useState<ProjectsLoadState>({ status: "idle" })
+
+  const refresh = useCallback(async () => {
+    setLoadState({ status: "loading" })
+    try {
+      const res = await loadProjectsFromApi()
+      setProjects(res.projects)
+      setLoadState({ status: "ready", source: res.source })
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Errore nel caricamento"
+      const local = readProjects()
+      if (local.length > 0) {
+        setProjects(local)
+        setLoadState({ status: "ready", source: "local" })
+      } else {
+        setProjects(defaultProjects)
+        setLoadState({ status: "error", message })
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    void refresh()
+
+    const syncFromEvent = () => {
+      setProjects(readProjects())
+    }
+    const onStorage = () => {
+      setProjects(readProjects())
+    }
+    window.addEventListener(PROJECTS_EVENT, syncFromEvent)
+    window.addEventListener("storage", onStorage)
+    return () => {
+      window.removeEventListener(PROJECTS_EVENT, syncFromEvent)
+      window.removeEventListener("storage", onStorage)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  return { projects, loadState, refresh }
 }
