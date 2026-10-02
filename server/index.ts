@@ -164,19 +164,23 @@ if (!sessionStore) {
   console.warn('⚠️  MONGODB_URI mancante: sessioni in memoria, il login admin non sopravvive ai riavvii');
 }
 
+const isProduction = process.env.NODE_ENV === 'production';
 app.use(session({
   store: sessionStore,
   secret: sessionSecret,
   resave: false,
   saveUninitialized: false,
+  proxy: true,
   cookie: {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    secure: isProduction,
+    sameSite: isProduction ? 'lax' : 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 giorni
     path: '/',
+    domain: isProduction ? 'arredi.onrender.com' : undefined,
   },
   name: 'farcom.sid',
+  rolling: true,
 }));
 
 // Serve static files from dist/ (parent directory of server/dist)

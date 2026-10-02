@@ -7,8 +7,11 @@ import {
   saveProjects,
   saveProjectsToProject,
   useProjects,
+  useProjectsLoadState,
+  loadProjectsFromApi,
   type ProjectRecord,
 } from "../../projectStore"
+import { useAdminAuth } from "../../hooks/useAdminAuth"
 import Loading from "../../components/Loading"
 import {
   takePendingProjectImages,
@@ -161,6 +164,9 @@ export default function AdminProjects() {
 
   const [coverImages, setCoverImages] = useState<string[]>([])
   const [galleryImages, setGalleryImages] = useState<string[]>([])
+
+  const loadState = useProjectsLoadState()
+  const { isLoading: authLoading, authError, checkAuth } = useAdminAuth()
 
   useEffect(() => {
     const isNuovo = location.pathname === "/admin/progetti/nuovo"
@@ -384,13 +390,22 @@ export default function AdminProjects() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="font-display text-3xl font-light text-[#1A1A18]">
             Progetti
           </h1>
           <p className="mt-0.5 text-sm text-[#888580]">
             {projects.length} progetti totali
+            {loadState.status === "ready" && loadState.source === "local" && (
+              <span className="ml-2 text-amber-600">· dati locali (server non disponibile)</span>
+            )}
+            {loadState.status === "loading" && (
+              <span className="ml-2 inline-flex items-center">
+                <span className="w-3 h-3 border border-[#1B4332]/30 border-t-[#1B4332] rounded-full animate-spin ml-2 mr-1" />
+                caricamento…
+              </span>
+            )}
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
@@ -408,6 +423,65 @@ export default function AdminProjects() {
           </button>
         </div>
       </div>
+
+      {authLoading && (
+        <div className="mb-6 border border-[#DDD9D0] bg-[#F7F5F0] p-4 text-sm text-[#4A4A46] flex items-center gap-2">
+          <span className="w-4 h-4 border-2 border-[#1B4332]/30 border-t-[#1B4332] rounded-full animate-spin" />
+          Verifica autorizzazioni in corso… (i progetti verranno caricati a breve)
+        </div>
+      )}
+
+      {!authLoading && authError === "401" && (
+        <div className="mb-6 border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <strong>⚠ Sessione scaduta.</strong> I progetti non possono essere caricati.
+          <button
+            onClick={checkAuth}
+            className="ml-3 underline text-red-800 hover:text-red-900"
+          >
+            Riprova verifica login
+          </button>
+        </div>
+      )}
+
+      {!authLoading && (authError === "network" || authError === "server") && (
+        <div className="mb-6 border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+          <strong>⚠ Impossibile contattare il server</strong>
+          {authError === "server" ? " (errore interno)." : "."} &nbsp;
+          <button
+            onClick={checkAuth}
+            className="underline hover:text-amber-900"
+          >
+            Riprova
+          </button>
+        </div>
+      )}
+
+      {!authLoading && !authError && loadState.status === "error" && (
+        <div className="mb-6 border border-red-200 bg-red-50 p-4 text-sm text-red-700 flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <strong>❌ Errore nel caricamento dei progetti:</strong> {loadState.message}
+            {projects.length === 0 && (
+              <span className="block mt-1 text-red-600/80">
+                Nessun progetto disponibile (neanche nel browser locale).
+              </span>
+            )}
+          </div>
+          <button
+            onClick={() => loadProjectsFromApi()}
+            className="bg-[#1B4332] px-4 py-2 text-xs font-medium text-white hover:bg-[#143326] transition-colors"
+          >
+            Ricarica progetti
+          </button>
+        </div>
+      )}
+
+      {!authLoading && !authError && loadState.status === "ready" && projects.length === 0 && (
+        <div className="mb-6 border border-[#DDD9D0] bg-[#F7F5F0] p-6 text-center text-sm text-[#888580]">
+          <div className="text-3xl mb-2">📁</div>
+          <div className="font-medium text-[#4A4A46] mb-1">Nessun progetto presente</div>
+          <div>Clicca <strong>"+ Nuovo progetto"</strong> per iniziare.</div>
+        </div>
+      )}
 
       <div className="mb-6 border border-[#DDD9D0] bg-[#F7F5F0] p-4 text-sm text-[#4A4A46]">
         I progetti vengono salvati nel database MongoDB. Se il database non è disponibile,

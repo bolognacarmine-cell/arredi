@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useSyncExternalStore } from "react"
 import { type Project } from "./data"
 import {
   getProjects as getProjectsApi,
@@ -14,23 +14,46 @@ export type ProjectRecord = Project & {
 const PROJECTS_STORAGE_KEY = "farcom-projects"
 const PROJECTS_EVENT = "farcom-projects-updated"
 
-function normalizeProject(project: Project | ApiProject, index: number): ProjectRecord {
-  // Preserve original id if it exists, otherwise use _id (MongoDB compatibility)
-  // Only generate a fallback if both are missing
-  const id = project.id || project._id || `project-${index}`
+export type ProjectsLoadState =
+  | { status: "idle" }
+  | { status: "loading" }
+  | { status: "ready"; source: "api" | "local" }
+  | { status: "error"; message: string }
+
+type AnyProject = Project | ApiProject
+
+function pickGallery(p: AnyProject): string[] {
+  const apiProj = p as Partial<ApiProject>
+  const localProj = p as Partial<Project>
+  if (Array.isArray(localProj.galleryImages)) return localProj.galleryImages
+  if (Array.isArray(apiProj.gallery)) return apiProj.gallery
+  return []
+}
+
+function normalizeProject(project: AnyProject, index: number): ProjectRecord {
+  const anyProj = project as any
+  const id = project.id || anyProj._id || `project-${index}`
+  const galleryImages = pickGallery(project)
+  const coverImages =
+    Array.isArray((project as Partial<ProjectRecord>).coverImages) &&
+    (project as Partial<ProjectRecord>).coverImages!.length > 0
+      ? (project as Partial<ProjectRecord>).coverImages!
+      : galleryImages
+
   return {
-    ...project,
+    ...(project as Project),
+    _id: anyProj._id,
     id,
-    status: project.status ?? "completato",
-    featured: project.featured ?? index < 6,
+    galleryImages,
+    coverImages,
+    status: (project as Partial<ProjectRecord>).status ?? "completato",
+    featured: (project as Partial<ProjectRecord>).featured ?? index < 6,
   }
 }
 
-// Archivio base vuoto: "Ripristina archivio base" azzera l'elenco per i
-// progetti futuri, senza riportare indietro nessun esempio.
 export const defaultProjects: ProjectRecord[] = []
 
-function normalizeProjects(projects: (Project | ApiProject)[]): ProjectRecord[] {
+function normalizeProjects(projects: AnyProject[]): ProjectRecord[] {
   return projects.map(normalizeProject)
 }
 
@@ -41,17 +64,19 @@ export function readProjects(): ProjectRecord[] {
     const storedValue = window.localStorage.getItem(PROJECTS_STORAGE_KEY)
     if (!storedValue) return defaultProjects
 
-    const parsed = JSON.parse(storedValue) as Project[]
+    const parsed = JSON.parse(storedValue) as AnyProject[]
     if (!Array.isArray(parsed) || parsed.length === 0) return defaultProjects
 
-    // Check if any project has known missing local images
     const knownMissingImages = ['/barber-farcom1.jpg']
-    const hasInvalidImages = parsed.some(p =>
-      knownMissingImages.includes(p.image) ||
-      p.gallery?.some(g => knownMissingImages.includes(g))
-    )
+    const hasInvalidImages = parsed.some((p: AnyProject) => {
+      const image = (p as Partial<Project>).image as string
+      const gallery = pickGallery(p)
+      return (
+        (image && knownMissingImages.includes(image)) ||
+        gallery.some((g: string) => knownMissingImages.includes(g))
+      )
+    })
 
-    // If projects have known missing local images, clear localStorage and use defaults
     if (hasInvalidImages) {
       console.log('[projectStore] Clearing localStorage due to known missing image paths')
       window.localStorage.removeItem(PROJECTS_STORAGE_KEY)
@@ -82,36 +107,117 @@ export async function saveProjectsToProject(projects: ProjectRecord[]) {
   return await replaceAllProjects(projects as unknown as ApiProject[])
 }
 
-export function useProjects() {
-  const [projects, setProjects] = useState<ProjectRecord[]>(() => readProjects())
+type StoreState = {
+  projects: ProjectRecord[]
+  loadState: ProjectsLoadState
+  authEnabled: boolean
+}
 
+let storeState: StoreState = {
+  projects: typeof window !== "undefined" ? readProjects() : defaultProjects,
+  loadState: { status: "idle" },
+  authEnabled: true,
+}
+
+const subscribers = new Set<() => void>()
+function notify() {
+  subscribers.forEach((s: () => void) => s())
+}
+
+export function setProjectStoreAuthReady(ready: boolean) {
+  if (storeState.authEnabled === ready) return
+  storeState = { ...storeState, authEnabled: ready }
+  notify()
+  if (ready && storeState.loadState.status === "idle") {
+    void loadProjectsFromApi()
+  }
+}
+
+export function getProjectLoadState(): ProjectsLoadState {
+  return storeState.loadState
+}
+
+export async function loadProjectsFromApi() {
+  if (!storeState.authEnabled) {
+    console.log('[projectStore] Auth not ready: skip API fetch')
+    return
+  }
+
+  storeState = { ...storeState, loadState: { status: "loading" } }
+  notify()
+
+  try {
+    const apiProjects = await getProjectsApi()
+    const normalized = normalizeProjects(apiProjects)
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(normalized))
+    }
+    storeState = {
+      projects: normalized,
+      loadState: { status: "ready", source: "api" },
+      authEnabled: storeState.authEnabled,
+    }
+    notify()
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "Errore sconosciuto nel caricamento progetti"
+    console.error("[projectStore] archivio remoto non raggiungibile:", err)
+
+    const local = readProjects()
+    storeState = {
+      projects: local,
+      loadState:
+        local.length > 0
+          ? { status: "ready", source: "local" }
+          : { status: "error", message },
+      authEnabled: storeState.authEnabled,
+    }
+    notify()
+  }
+}
+
+export function useProjects(): ProjectRecord[] {
+  const state = useSyncExternalStore<StoreState>(
+    (cb: () => void) => {
+      subscribers.add(cb)
+      return () => subscribers.delete(cb)
+    },
+    () => storeState,
+    () => storeState,
+  )
+
+  const [, setTick] = useState<number>(0)
   useEffect(() => {
-    const syncProjects = () => setProjects(readProjects())
-
+    const syncProjects = () => {
+      storeState = { ...storeState, projects: readProjects() }
+      setTick((t: number) => t + 1)
+      notify()
+    }
+    const onStorage = () => syncProjects()
     window.addEventListener(PROJECTS_EVENT, syncProjects)
-    window.addEventListener("storage", syncProjects)
-
+    window.addEventListener("storage", onStorage)
     return () => {
       window.removeEventListener(PROJECTS_EVENT, syncProjects)
-      window.removeEventListener("storage", syncProjects)
+      window.removeEventListener("storage", onStorage)
     }
   }, [])
 
-  // L'archivio remoto è la fonte di verità: un elenco vuoto significa "nessun
-  // progetto", non "usa i dati di esempio" (altrimenti gli eliminati riappaiono).
   useEffect(() => {
-    async function loadProjectsFromApi() {
-      try {
-        const apiProjects = await getProjectsApi()
-        setProjects(normalizeProjects(apiProjects))
-      } catch (err) {
-        console.error("[projectStore] archivio remoto non raggiungibile, uso i dati locali:", err)
-        setProjects(readProjects())
-      }
+    if (storeState.authEnabled && storeState.loadState.status === "idle") {
+      void loadProjectsFromApi()
     }
-
-    loadProjectsFromApi()
   }, [])
 
-  return projects
+  return state.projects
+}
+
+export function useProjectsLoadState(): ProjectsLoadState {
+  return useSyncExternalStore<ProjectsLoadState>(
+    (cb: () => void) => {
+      subscribers.add(cb)
+      return () => subscribers.delete(cb)
+    },
+    () => storeState.loadState,
+    () => storeState.loadState,
+  )
 }
