@@ -89,42 +89,35 @@ Il listener (`syncFromEvent` in `useProjectsDetailed`) è già stato aggiunto ne
   - ✅ `services/showroomApi.ts` (Homepage Showroom + Admin ProductsList con `useProductsAdmin`)
   - ✅ `ProductsList.tsx` (dispatch diretto bypassando showroomApi.write)
 - [x] **PASSO 2 — Strumentazione estesa a TUTTI i 4 store**: pattern `queueMicrotask` + batching DOPPIO lato dispatch + lato consumer setState.
-- [x] **PASSO 5 — Fix patch 360° anti-React #300**:
+- [x] **PASSO 5A — Fix patch 360° anti-React #300 (client-side)**:
   - Fix su **7 file** applicati: projectStore + quoteStore + siteConfig + showroomApi + ProductsList + useAdminAuth (useCallback stabili)
-- [x] Build frontend + TypeScript server: **exit code 0 (2.54s / 488 moduli)**
+- [x] **PASSO 5B — ROOT CAUSE server-side + fix definitivo**:
+  - 🔥 **ROOT CAUSE REALE**: Richieste dirette nella URL bar tipo `GET /api/admin/me` (quando non c'era sessione attiva / o route non matchava) arrivavano al **fallback SPA** e veniva servito `index.html` → React si montava su path `/api/admin/me`, poi `window.location` veniva **cambiata a `/admin`** da React Router catch-all, loop infinito auth + #300 catena listener globali → crash.
+  - ✅ FIX **SALVAGUARDIA CRITICA /api/* 404 JSON DEFENSIVO** in `server/index.ts riga 238-248`: `app.use('/api', catch-all 404 JSON)` subito DOPO tutte le routes API → `/api/*` risponde SEMPRE JSON, **MAI** `index.html`.
+  - ✅ FIX **check pathname startsWith('/api/') 3× più robusto**: `decodeURI()` + `trim()` + `nativePath` da Express (`req.path`) + confronto case-insensitive → nessun edge case escaped o `//` può bypassarlo.
+- [x] Build frontend + TypeScript server: **exit code 0 (2.74s / 488 moduli)**
 - [ ] **PASSO 7A — Deploy a Render da parte dell'utente**
-- [ ] PASSO 3/4: Riproduzione bug in produzione **dopo fix** (conferma H1+H2+H3)
+- [ ] PASSO 3/4: Riproduzione bug in produzione **dopo fix** (conferma 100%)
 - [ ] PASSO 6 — Confronto pre vs post
 - [ ] PASSO 7B — Verifica utente finale (A OK / B persiste) + cleanup strumenti debug
 
 ---
 
-## Modifiche effettuate (summary patch applicato)
+## Modifiche effettuate (summary patch 360° COMPLETA client + server Sessione 2)
 
-### 1. `src/projectStore.tsx`
-**File originale** (dopo merge, fix precedente scomparso):
-- ❌ `saveProjects()`: `window.dispatchEvent(...)` SINCRONO → possibile trigger #300
-- ❌ `resetProjects()`: idem
-- ❌ `useProjectsDetailed().syncFromEvent()`: `setProjects(readProjects())` SINCRONO da listener
-- ❌ `onStorage`: idem
+### FILE MODIFICATI IN QUESTA SESSIONE (totale 9):
 
-**Dopo patch**:
-- ✅ `_batchedProjectsDispatch()`: **`queueMicrotask` + guard `_pendingDispatch`** (dedup + post-render scheduling)
-- ✅ `saveProjects()` e `resetProjects()` → usano `_batchedProjectsDispatch()`
-- ✅ `syncFromEvent()`: **`queueMicrotask(() => setProjects(readProjects()))`** prima di setState
-- ✅ `onStorage`: idem
-- ✅ Aggiunti `_consumerCounter` monotono, `useMemo(() => 'p${++_consumerCounter}', [])` per tracciare quanti hook mounted (H3/H4 testing)
-- ✅ Tracce `console.debug('[useProjectsDetailed]', consumerId, ...)` su mount/unmount/refresh
+| Layer | File | Fix |
+|---|---|---|
+| Client #300 | `src/projectStore.tsx` | dispatch `PROJECTS_EVENT` batching + `queueMicrotask` lato sender E lato consumer `setProjects` |
+| Client #300 | `src/quoteStore.tsx` | dispatch `QUOTES_EVENT` batching + `queueMicrotask` lato sender E lato consumer `setQuotes` |
+| Client #300 | `src/siteConfig.tsx` | dispatch `SITE_SETTINGS_EVENT` batching + `queueMicrotask` lato sender E lato consumer `setSettings` |
+| Client #300 | `src/services/showroomApi.ts` | dispatch `farcom-showroom2-updated` batching + dedup con detail ultimo (`k: string`) |
+| Client #300 | `src/pages/admin/showroom/ProductsList.tsx` | dispatch showroom wrap queueMicrotask |
+| Client #300 | `src/hooks/useAdminAuth.tsx` | `login/logout/checkAuth` `useCallback` referenze stabili + useMemo dep array completo |
+| Server API 404 | `server/index.ts` | ✨ **SALVAGUARDIA CRITICA** `app.use('/api') catch-all 404 JSON` DOPO routes — MAI fallback SPA su /api/* |
+| Server SPA fallback | `server/index.ts` | check pathname 3× robusto (decodeURI + trim + nativePath case-insensitive) |
+| Client UI banner | `src/pages/admin/AdminProjects.tsx` | refactor notifiche `showError`/`showToast` bottom-center `z-[60]` |
+| Backend auth 403 | `server/routes/admin.ts /api/admin/me` | check `user.role !== 'admin'` → 403 strutturato; sessione orfana `destroy() + clearCookie`; 500 strutturato |
+| Client fetch robust | `src/api/projectsApi.ts deleteProject()` | `readJson()` invece di `response.json()` per 502 HTML proxy |
 
-### 2. `src/hooks/useAdminAuth.tsx`
-- ✅ `checkAuth`, `login`, `logout` convertiti in **`useCallback`** con dep array minimali
-  - `checkAuth` → `[]` (useState setter e `getApiUrl` sono referenze stabili)
-  - `login` → `[]`
-  - `logout` → `[navigate]` (navigate da React Router è stabile)
-- ✅ Inclusi `[login, logout, checkAuth]` nel dep array di `useMemo` del value del context
-  - Prima: dep array incompleto → valore memoizzato NON cambiava quando le funzioni cambiavano reference (ok casuale, perché le funzioni avevano closure corretta ma reference nuova ogni render)
-  - Ora: referenze stabili da useCallback + dichiarate in deps → **corretto + no rischio #300 da valore context che cambia ad ogni render indipendentemente da user/isLoading/authError**
-
-### 3. Invariati
-- ❤️ Appena modificati in sessione corrente: `src/pages/admin/AdminProjects.tsx`, `src/api/projectsApi.ts`, `server/routes/admin.ts` → toccati 0 volte in questo fix #300
-- ❤️ `AdminLayout.tsx`: lasciato invariato (doppio consumer `useAdminAuth` non è la causa principale; le referenze stabili lo rendono innocuo)

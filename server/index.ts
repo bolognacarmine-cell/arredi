@@ -229,6 +229,24 @@ if (process.env.NODE_ENV !== 'production') {
   })();
 }
 
+// ⚠️ SALVAGUARDIA CRITICA /api/* (defense-in-depth):
+// Qualsiasi richiesta il cui path inizi per /api/ E CHE ARRIVA QUI
+// (quindi nessuna route delle API montate sopra ha matchato)
+// DEVE SEMPRE rispondere JSON. Non può MAI finire nel fallback SPA che
+// servirebbe index.html → React mount → loop infinito / React error #300
+// quando l'utente scrive a mano endpoint tipo /api/admin/me nella URL bar.
+app.use('/api', (_req: Request, res: Response) => {
+  res.status(404).json({
+    success: false,
+    message: 'API endpoint non trovato',
+    error: {
+      code: 'API_ENDPOINT_NOT_FOUND',
+      path: _req.path,
+      method: _req.method,
+    }
+  });
+});
+
 // Serve index.html for all other non-API routes (SPA fallback)
 // - DEVE essere dopo /api/* e gli static assets, altrimenti intercetta le chiamate API
 // - Usa middleware invece di wildcard route per compatibilità con path-to-regexp
@@ -247,17 +265,39 @@ try {
 app.use((req: Request, res: Response, next: NextFunction) => {
   const accept = req.headers.accept || ''
   const rawUrl = req.originalUrl || req.url || '/'
+
+  // DIFESA 1: pathname pulito — proviamo 3 strategie in ordine di robustezza.
+  // Se una fallisce, usiamo la fallback (split semplice). Alla fine trim + decode.
   let pathname = '/'
   try {
     pathname = (parseUrl(rawUrl).pathname as string) || '/'
   } catch (e) {
     pathname = rawUrl.split('?')[0].split('#')[0] || '/'
   }
+  try {
+    pathname = decodeURI(pathname) || '/'
+  } catch {
+    /* pathname con URI non valido — tieni versione raw */
+  }
+  pathname = pathname.trim() || '/'
+  // req.path nativo Express come ulteriore fallback (senza query / hash)
+  const nativePath = (req.path as string).trim() || '/'
+
   const hasExt = /\.[a-zA-Z0-9]{1,10}(?:\?|#|$)/.test(rawUrl)
+
+  // DIFESA 2: skip /api/* — DOPPIA guardia (pathname e nativePath) +
+  // versione lowercase senza //. Se anche UNA delle due matcha salta.
+  // (Anche se c'è la barriera sopra app.use('/api', ...) che risponde 404 JSON,
+  // manteniamo questo check per robustness in caso di refactoring ordine middleware futuri.)
+  const looksLikeApi =
+    pathname.startsWith('/api/') || pathname === '/api' ||
+    nativePath.startsWith('/api/') || nativePath === '/api' ||
+    pathname.toLowerCase().startsWith('/api/') ||
+    nativePath.toLowerCase().startsWith('/api/')
 
   if (
     req.method !== 'GET' ||
-    pathname.startsWith('/api/') ||
+    looksLikeApi ||
     pathname.startsWith('/__admin') ||
     pathname.startsWith('/.well-known') ||
     pathname.startsWith('/assets/') ||
