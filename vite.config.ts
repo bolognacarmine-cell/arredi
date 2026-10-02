@@ -69,6 +69,7 @@ export default defineConfig(({ mode }) => {
           skipWaiting: true,
           clientsClaim: true,
           globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,avif}'],
+          navigateFallbackDenylist: [/^\/api\//, /^\/__admin/, /^\/\.well-known/],
           runtimeCaching: [
             {
               urlPattern: /^https:\/\/res\.cloudinary\.com\/.*/i,

@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
+import { useEffect } from "react";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
@@ -75,15 +76,58 @@ export default function App() {
               </Route>
             </Route>
 
-            {/* RETE DI SICUREZZA: path /api/* non deve finire in React Router (può capitare se
-                la SPA fallback del server prende per sbaglio un URL API.
-                Redirige a /admin invece di mostrare "No routes matched" + pagina vuota. */}
-            <Route path="/api/*" element={<Navigate to="/admin" replace />} />
+            {/* RETE DI SICUREZZA /api/*: se per qualunque motivo (SW vecchio, fallback SPA
+                disallineato, cache CDN) il browser carica index.html su un URL /api/*
+                invece della risposta JSON, REACT ROUTER NON DEVE redirigere a /admin
+                (che nascondeva il sintomo e creava loop "pagina bianca → admin").
+                Invece forziamo un hard reload full-page (window.location.reload())
+                che bypassa il navigation route del SW e raggiunge il server →
+                le guardie /api/* L1/L2/L3 rispondono JSON 404 come da specifica. */}
+            <Route path="/api/*" element={
+              <div className="min-h-screen flex items-center justify-center text-sm text-[#888580] bg-[var(--background)] p-4">
+                <span className="w-4 h-4 border-2 border-[#1B4332]/30 border-t-[#1B4332] rounded-full animate-spin mr-3 inline-block align-middle" />
+                <ApiFallbackForceReload />
+              </div>
+            } />
           </Routes>
           <Footer />
           <CookieBanner />
         </AdminAuthProvider>
       </BrowserRouter>
     </HelmetProvider>
+  )
+}
+
+/** Fallback /api/*: se React Router intercetta un URL API per SW/fallback disallineato,
+ *  forza window.location.reload() una sola volta con cache: no-store → la richiesta passa
+ *  attraverso la rete, arriva al server, e le guardie JSON /api/* L1/L2/L3 entrano in funzione.
+ *  Protezione anti-loop: dopo 1 reload la variabile localStorage blocca un secondo tentativo
+ *  e mostra un messaggio chiaro invece di ricaricare all'infinito. */
+function ApiFallbackForceReload() {
+  useEffect(() => {
+    const KEY = "__api_fallback_reload_attempted"
+    if (typeof window === "undefined") return
+    try {
+      const already = window.sessionStorage.getItem(KEY) === "1"
+      if (!already) {
+        window.sessionStorage.setItem(KEY, "1")
+        window.setTimeout(() => {
+          window.location.reload()
+        }, 150)
+        return
+      }
+    } catch {
+      /* sessionStorage non disponibile */
+    }
+  }, [])
+  return (
+    <span>
+      Caricamento risorsa API… se la pagina non si aggiorna entro 2 secondi,
+      premi <button
+        type="button"
+        onClick={() => { try { window.sessionStorage.removeItem("__api_fallback_reload_attempted") } catch {}; window.location.reload() }}
+        className="underline decoration-dotted underline-offset-4 hover:text-[#1B4332]"
+      >qui per forzare il ricaricamento</button>.
+    </span>
   )
 }
