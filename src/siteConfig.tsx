@@ -31,6 +31,24 @@ const SITE_SETTINGS_STORAGE_KEY = "farcom-site-settings"
 const SITE_SETTINGS_EVENT = "farcom-site-settings-updated"
 const SITE_SETTINGS_API_PATH = "/__admin/site-settings"
 
+// React 19 Error #300 guard: queueMicrotask + batch dei dispatchEvent
+// per evitare cross-component setState durante il render loop.
+let _pendingSiteDispatch = false
+function _batchedSiteSettingsDispatch() {
+  if (_pendingSiteDispatch) return
+  _pendingSiteDispatch = true
+  queueMicrotask(() => {
+    _pendingSiteDispatch = false
+    try {
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent(SITE_SETTINGS_EVENT))
+      }
+    } catch {
+      /* cross-context dispatch may throw, ignore */
+    }
+  })
+}
+
 export const fallbackSiteSettings: SiteSettings = {
   brandName: "Farcom Arredi",
   legalName: "Farcom Srl",
@@ -118,14 +136,14 @@ export function saveSiteSettings(settings: SiteSettings) {
   if (typeof window === "undefined") return
 
   window.localStorage.setItem(SITE_SETTINGS_STORAGE_KEY, JSON.stringify(settings))
-  window.dispatchEvent(new CustomEvent(SITE_SETTINGS_EVENT))
+  _batchedSiteSettingsDispatch()
 }
 
 export function resetSiteSettings() {
   if (typeof window === "undefined") return
 
   window.localStorage.removeItem(SITE_SETTINGS_STORAGE_KEY)
-  window.dispatchEvent(new CustomEvent(SITE_SETTINGS_EVENT))
+  _batchedSiteSettingsDispatch()
 }
 
 export async function saveSiteSettingsToProject(settings: SiteSettings) {
@@ -154,7 +172,9 @@ export function useSiteSettings() {
   const [settings, setSettings] = useState<SiteSettings>(() => readSiteSettings())
 
   useEffect(() => {
-    const syncSettings = () => setSettings(readSiteSettings())
+    // React 19 #300: setState consumer protetto con queueMicrotask
+    // per evitare l'innesco durante il render di un altro componente.
+    const syncSettings = () => queueMicrotask(() => setSettings(readSiteSettings()))
 
     window.addEventListener(SITE_SETTINGS_EVENT, syncSettings)
     window.addEventListener("storage", syncSettings)

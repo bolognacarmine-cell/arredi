@@ -34,7 +34,15 @@ export default function ProductsList() {
         if (Array.isArray(products)) {
           try {
             window.localStorage.setItem("farcom-showroom-products-v2", JSON.stringify(products))
-            window.dispatchEvent(new CustomEvent("farcom-showroom2-updated", { detail: { k: "farcom-showroom-products-v2" } }))
+            // queueMicrotask: evita dispatch sincrono che possa scatenare
+            // React error #300 (cross-component setState durante render loop).
+            queueMicrotask(() => {
+              try {
+                window.dispatchEvent(new CustomEvent("farcom-showroom2-updated", { detail: { k: "farcom-showroom-products-v2" } }))
+              } catch {
+                /* ignore */
+              }
+            })
           } catch (e) {
             console.error("Error updating localStorage:", e)
           }

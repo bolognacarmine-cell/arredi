@@ -79,17 +79,23 @@ Il listener (`syncFromEvent` in `useProjectsDetailed`) è già stato aggiunto ne
 ## Stato di avanzamento
 - [x] Audit statico 100% completato
 - [x] Generazione 5 ipotesi falsificabili
-- [x] **PASSO 2 — Strumentazione**: Aggiunta
-  - ✅ P1: `projectStore.saveProjects / resetProjects → dispatchEvent` → **`queueMicrotask + _batchedProjectsDispatch()` (batching anti-#300)**
-  - ✅ P2: `useProjectsDetailed → syncFromEvent / onStorage` → **`queueMicrotask(...)` prima di ogni `setProjects(...)` (doppia protezione)**
-  - ✅ P3: `AdminAuthProvider.checkAuth` → **`useCallback` stabile + incluso in useMemo deps (no re-render finti)**
-  - ✅ Debug counter consumer: `_consumerCounter`, tracce `console.debug('[useProjectsDetailed]', consumerId, 'mounted|unmounted|refresh')`
-- [x] **PASSO 5 — Fix H1+H2+H3 (ad alta confidenza dalla memoria della sessione precedente)**
-- [x] Build frontend + TypeScript server: **exit code 0**
+- [x] **EVIDENZA POST-1ST-PATCH**
+  - Il 1° deploy (fix solo projectStore) NON ha risolto #300.
+  - Evidenza utente: `[Auth Check] Fetching from: /api/admin/me` → `Uncaught React #300` → `[Auth Check] Response status: 200`
+  - Conclusione: la causa NON è nel solo `projectStore`. È in **QUALSIASI store con dispatchEvent sincrono** che reagisce all'inizio della auth o al routing.
+- [x] **H2-H3 CONFERMATE dalle evidenze**: esistono ALTRI 3 store con CustomEvent sync + consumer multipli montati contemporaneamente:
+  - ✅ `quoteStore.tsx` (Dashboard usa `useQuotes()` contemporaneamente a `useProjects()`)
+  - ✅ `siteConfig.tsx` (Footer + pagine pubbliche usano `useSiteSettings()`)
+  - ✅ `services/showroomApi.ts` (Homepage Showroom + Admin ProductsList con `useProductsAdmin`)
+  - ✅ `ProductsList.tsx` (dispatch diretto bypassando showroomApi.write)
+- [x] **PASSO 2 — Strumentazione estesa a TUTTI i 4 store**: pattern `queueMicrotask` + batching DOPPIO lato dispatch + lato consumer setState.
+- [x] **PASSO 5 — Fix patch 360° anti-React #300**:
+  - Fix su **7 file** applicati: projectStore + quoteStore + siteConfig + showroomApi + ProductsList + useAdminAuth (useCallback stabili)
+- [x] Build frontend + TypeScript server: **exit code 0 (2.54s / 488 moduli)**
 - [ ] **PASSO 7A — Deploy a Render da parte dell'utente**
-- [ ] PASSO 3/4 successiva: Riproduzione bug in produzione **dopo fix** (conferma H1 o nuova evidenza)
+- [ ] PASSO 3/4: Riproduzione bug in produzione **dopo fix** (conferma H1+H2+H3)
 - [ ] PASSO 6 — Confronto pre vs post
-- [ ] PASSO 7B — Verifica utente finale (A OK, B persiste) / cleanup strumenti
+- [ ] PASSO 7B — Verifica utente finale (A OK / B persiste) + cleanup strumenti debug
 
 ---
 

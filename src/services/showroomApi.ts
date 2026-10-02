@@ -5,6 +5,27 @@ import { SECTORS, furnitureTypesFor } from "../constants/showroomSectors"
 import * as productsApi from "../api/productsApi"
 
 const P_KEY = "farcom-showroom-products-v2"
+const SHOWROOM_EVENT = "farcom-showroom2-updated"
+
+// React 19 Error #300 guard: queueMicrotask + dedup batch dei dispatchEvent
+// (cross-store sync dispatches accodavano setState cross-component durante
+// la workloop di React 19, scatenando l'errore #300 all'avvio auth).
+let _pendingShowroomDispatch: null | { k: string } = null
+function _batchedShowroomDispatch(k: string) {
+  _pendingShowroomDispatch = { k }
+  queueMicrotask(() => {
+    const detail = _pendingShowroomDispatch
+    _pendingShowroomDispatch = null
+    if (!detail) return
+    try {
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent(SHOWROOM_EVENT, { detail }))
+      }
+    } catch {
+      /* cross-context dispatch may throw, ignore */
+    }
+  })
+}
 
 export const slugify = (s: string) =>
   s
@@ -25,19 +46,13 @@ export const promoBadge = (type: PromoDiscountType, value: number) =>
 export function write<T>(k: string, v: T) {
   try {
     window.localStorage.setItem(k, JSON.stringify(v))
-    window.dispatchEvent(
-      new CustomEvent("farcom-showroom2-updated", { detail: { k } }),
-    )
+    _batchedShowroomDispatch(k)
   } catch {}
 }
 // L'admin e le pagine pubbliche leggono dall'API: dopo una scrittura le liste
 // montate vanno rilette anche quando non e' passato nulla da localStorage.
 function notifyShowroomUpdated() {
-  try {
-    window.dispatchEvent(
-      new CustomEvent("farcom-showroom2-updated", { detail: { k: "api" } }),
-    )
-  } catch {}
+  _batchedShowroomDispatch("api")
 }
 
 export async function getProducts(): Promise<Product[]> {

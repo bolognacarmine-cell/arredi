@@ -60,6 +60,25 @@ const QUOTES_EVENT = "farcom-quotes-updated"
 
 const defaultQuotes: QuoteRecord[] = []
 
+// React 19 Error #300 guard: batching + queueMicrotask dei dispatchEvent
+// per evitare che listener setState in consumer DIVERSO venga invocato
+// durante la fase di render di un altro componente (cross-component setState).
+let _pendingQuotesDispatch = false
+function _batchedQuotesDispatch() {
+  if (_pendingQuotesDispatch) return
+  _pendingQuotesDispatch = true
+  queueMicrotask(() => {
+    _pendingQuotesDispatch = false
+    try {
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent(QUOTES_EVENT))
+      }
+    } catch {
+      /* cross-context dispatch may throw, ignore */
+    }
+  })
+}
+
 export function readQuotes(): QuoteRecord[] {
   if (typeof window === "undefined") return []
 
@@ -80,14 +99,14 @@ export function saveQuotes(quotes: QuoteRecord[]) {
   if (typeof window === "undefined") return
 
   window.localStorage.setItem(QUOTES_STORAGE_KEY, JSON.stringify(quotes))
-  window.dispatchEvent(new CustomEvent(QUOTES_EVENT))
+  _batchedQuotesDispatch()
 }
 
 export function resetQuotes() {
   if (typeof window === "undefined") return
 
   window.localStorage.removeItem(QUOTES_STORAGE_KEY)
-  window.dispatchEvent(new CustomEvent(QUOTES_EVENT))
+  _batchedQuotesDispatch()
 }
 
 export async function deleteQuote(quoteId: string): Promise<void> {
@@ -103,7 +122,9 @@ export function useQuotes() {
   const [quotes, setQuotes] = useState<QuoteRecord[]>(() => readQuotes())
 
   useEffect(() => {
-    const syncQuotes = () => setQuotes(readQuotes())
+    // queueMicrotask previene #300: il dispatch globale arriva in un microtask
+    // successivo a qualsiasi render, non DURANTE il workloop di React corrente.
+    const syncQuotes = () => queueMicrotask(() => setQuotes(readQuotes()))
 
     window.addEventListener(QUOTES_EVENT, syncQuotes)
     window.addEventListener("storage", syncQuotes)
