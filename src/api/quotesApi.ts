@@ -59,7 +59,9 @@ export interface Quote {
 }
 
 const getApiUrl = (path: string) => {
-  if (API_BASE_URL) {
+  // Only use absolute URL if VITE_API_BASE_URL is explicitly set to a non-empty value
+  // If undefined or empty string, use relative path for same-origin
+  if (API_BASE_URL && API_BASE_URL.trim() !== '') {
     return `${API_BASE_URL.replace(/\/+$/, '')}${path}`
   }
   return path // Use relative path for same-origin

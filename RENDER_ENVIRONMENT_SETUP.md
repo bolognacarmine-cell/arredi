@@ -24,9 +24,9 @@ FRONTEND_ORIGIN=https://arredi.onrender.com
 
 ### Frontend Configuration
 ```
-VITE_API_BASE_URL=
+(DO NOT SET VITE_API_BASE_URL on Render - leave it unset for same-origin deployment)
 ```
-(Leave empty for same-origin deployment)
+Note: If VITE_API_BASE_URL is not set, the frontend automatically uses relative paths (same-origin).
 
 ### 🔥 CRITICAL: Cloudinary Configuration (REQUIRED for Image Uploads)
 ```
@@ -106,7 +106,7 @@ VITE_API_BASE_URL=http://localhost:3002
 ```
 VITE_CLOUDINARY_CLOUD_NAME=qz1f1z6t
 VITE_CLOUDINARY_UPLOAD_PRESET=farcom-uploads
-VITE_API_BASE_URL=
+# VITE_API_BASE_URL - DO NOT SET on Render (leave unset for same-origin)
 ```
 
 ## Security Notes

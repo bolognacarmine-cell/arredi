@@ -1,6 +1,6 @@
 // Su Render il backend non è disponibile, disabilitiamo le chiamate API
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ""
-const isApiAvailable = !!API_BASE_URL
+const isApiAvailable = !!(API_BASE_URL && API_BASE_URL.trim() !== '')
 
 export interface SocialLinks {
   facebook?: string
@@ -27,7 +27,9 @@ export interface SiteConfig {
 }
 
 const getApiUrl = (path: string) => {
-  if (API_BASE_URL) {
+  // Only use absolute URL if VITE_API_BASE_URL is explicitly set to a non-empty value
+  // If undefined or empty string, use relative path for same-origin
+  if (API_BASE_URL && API_BASE_URL.trim() !== '') {
     return `${API_BASE_URL.replace(/\/+$/, '')}${path}`
   }
   return path

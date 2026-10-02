@@ -1,6 +1,6 @@
 // Su Render il backend non è disponibile, disabilitiamo le chiamate API
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ""
-const isApiAvailable = !!API_BASE_URL
+const isApiAvailable = !!(API_BASE_URL && API_BASE_URL.trim() !== '')
 
 export interface Media {
   _id: string

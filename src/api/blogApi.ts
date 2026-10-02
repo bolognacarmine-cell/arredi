@@ -26,14 +26,16 @@
 // Get API base URL - use relative paths in same-origin, absolute when VITE_API_BASE_URL is set
 const getApiUrl = (path: string) => {
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
-  if (apiBaseUrl) {
+  // Only use absolute URL if VITE_API_BASE_URL is explicitly set to a non-empty value
+  // If undefined or empty string, use relative path for same-origin
+  if (apiBaseUrl && apiBaseUrl.trim() !== '') {
     return `${apiBaseUrl.replace(/\/+$/, '')}${path}`
   }
   return path // Use relative path for same-origin
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3002"
-const hasApiConfigured = !!import.meta.env.VITE_API_BASE_URL
+const hasApiConfigured = !!(import.meta.env.VITE_API_BASE_URL && import.meta.env.VITE_API_BASE_URL.trim() !== '')
 
 // Static data for fallback (GitHub Pages and API failures)
 import staticBlogPosts from '../data/blogPosts.json'

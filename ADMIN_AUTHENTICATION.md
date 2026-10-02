@@ -201,8 +201,9 @@ All admin API calls are protected by the `requireAdmin` middleware.
 
 ### CORS Errors
 
-1. Ensure `VITE_API_BASE_URL` points to correct domain
+1. Ensure `VITE_API_BASE_URL` is NOT set on Render (leave unset for same-origin)
 2. In production, should be same domain (e.g., `https://arredi.onrender.com`)
+3. The frontend now checks if `VITE_API_BASE_URL` is set to a non-empty value; if undefined or empty, it uses relative paths
 
 ## Password Management
 

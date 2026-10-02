@@ -24,7 +24,9 @@ const AC = createContext<Ctx | null>(null)
 // Get API base URL - use relative paths in same-origin, absolute when VITE_API_BASE_URL is set
 const getApiUrl = (path: string) => {
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
-  if (apiBaseUrl) {
+  // Only use absolute URL if VITE_API_BASE_URL is explicitly set to a non-empty value
+  // If undefined or empty string, use relative path for same-origin
+  if (apiBaseUrl && apiBaseUrl.trim() !== '') {
     return `${apiBaseUrl.replace(/\/+$/, '')}${path}`
   }
   return path // Use relative path for same-origin
@@ -37,15 +39,22 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 
   const checkAuth = async () => {
     try {
-      const response = await fetch(getApiUrl('/api/admin/me'), {
+      const apiUrl = getApiUrl('/api/admin/me')
+      console.log('[Auth Check] Fetching from:', apiUrl)
+      console.log('[Auth Check] VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL)
+
+      const response = await fetch(apiUrl, {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
       })
 
+      console.log('[Auth Check] Response status:', response.status)
+
       // Handle 401 Unauthorized explicitly
       if (response.status === 401) {
+        console.log('[Auth Check] User not authenticated (401)')
         setUser(null)
         return
       }
@@ -73,7 +82,11 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch(getApiUrl('/api/admin/login'), {
+      const apiUrl = getApiUrl('/api/admin/login')
+      console.log('[Login] Attempting login to:', apiUrl)
+      console.log('[Login] VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL)
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -82,7 +95,9 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ email, password }),
       })
 
+      console.log('[Login] Response status:', response.status)
       const data = await response.json()
+      console.log('[Login] Response data:', data)
 
       if (data.success) {
         setUser({

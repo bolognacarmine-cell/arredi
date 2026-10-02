@@ -40,6 +40,8 @@ ELSE (VITE_API_BASE_URL not set):
 | GitHub Pages (with API) | Set to Render URL | Tries API first, falls back to static |
 | Local development | Not set | Uses static data directly |
 | Local development (with API) | Set to localhost:3002 | Tries API first, falls back to static |
+| Render (same-origin) | Not set or empty string | Uses relative paths (same-origin) |
+| Render (cross-origin) | Set to backend URL | Uses absolute URL (cross-origin) |
 
 ## Configuration
 
@@ -73,6 +75,8 @@ VITE_API_BASE_URL=http://localhost:3002
 Or use the default (no .env file needed) to use static data.
 
 **Note**: `.env` is in `.gitignore` for security. Never commit `.env` with real API URLs.
+
+**Important**: The frontend now checks if `VITE_API_BASE_URL` is set to a non-empty value. If the variable is undefined or an empty string, it automatically uses relative paths for same-origin requests. This works around Render's limitation of not allowing empty environment variables.
 
 ## API Functions
 
