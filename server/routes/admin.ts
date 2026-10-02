@@ -182,19 +182,22 @@ router.get('/me', async (req: Request, res: Response) => {
       });
     }
 
-    // Only log in development for debugging
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[AUTH CHECK] Method:', req.method, 'URL:', req.url);
-      console.log('[AUTH CHECK] Session object exists:', !!req.session);
-      console.log('[AUTH CHECK] User ID in session:', req.session?.userId ? 'present' : 'missing');
-      console.log('[AUTH CHECK] User role in session:', req.session?.userRole || 'missing');
-      console.log('[AUTH CHECK] Response status:', req.session?.userId ? '200' : '401');
-    }
+    // Log for debugging - TEMPORARY for production debugging
+    console.log('[AUTH CHECK] === AUTH CHECK START ===');
+    console.log('[AUTH CHECK] Method:', req.method, 'URL:', req.url);
+    console.log('[AUTH CHECK] Origin:', req.headers.origin);
+    console.log('[AUTH CHECK] Referer:', req.headers.referer);
+    console.log('[AUTH CHECK] Session object exists:', !!req.session);
+    console.log('[AUTH CHECK] Session ID:', req.sessionID);
+    console.log('[AUTH CHECK] User ID in session:', req.session?.userId ? 'present' : 'missing');
+    console.log('[AUTH CHECK] User role in session:', req.session?.userRole || 'missing');
+    console.log('[AUTH CHECK] Cookies:', Object.keys(req.cookies || {}));
+    console.log('[AUTH CHECK] Cookie farcom.sid exists:', !!req.cookies?.['farcom.sid']);
+    console.log('[AUTH CHECK] NODE_ENV:', process.env.NODE_ENV);
 
     if (!req.session || !req.session.userId) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[AUTH CHECK] Returning 401 - No valid session');
-      }
+      console.log('[AUTH CHECK] Returning 401 - No valid session');
+      console.log('[AUTH CHECK] === AUTH CHECK END (401) ===');
       return res.status(401).json({
         success: false,
         message: 'Not authenticated'
@@ -204,18 +207,16 @@ router.get('/me', async (req: Request, res: Response) => {
     // Fetch user details from database to get email and name
     const user = await UserModel.findById(req.session.userId);
     if (!user) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[AUTH CHECK] User not found in database');
-      }
+      console.log('[AUTH CHECK] User not found in database');
+      console.log('[AUTH CHECK] === AUTH CHECK END (401) ===');
       return res.status(401).json({
         success: false,
         message: 'User not found'
       });
     }
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[AUTH CHECK] Auth check successful');
-    }
+    console.log('[AUTH CHECK] Auth check successful for user:', user.email);
+    console.log('[AUTH CHECK] === AUTH CHECK END (200) ===');
     res.json({
       success: true,
       user: {

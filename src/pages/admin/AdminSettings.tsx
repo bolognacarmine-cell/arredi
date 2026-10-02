@@ -9,6 +9,7 @@ import {
 } from "../../siteConfig"
 import * as usersApi from "../../api/usersApi"
 import { useAdminAuth } from "../../hooks/useAdminAuth"
+import { getApiUrl } from "../../lib/apiConfig"
 
 const roleColor: Record<string, string> = {
   admin: "bg-[#1B4332] text-white",
@@ -163,7 +164,9 @@ function EmailSettingsTab() {
   useEffect(() => {
     async function loadSmtpConfig() {
       try {
-        const response = await fetch('/api/site-config/smtp')
+        const response = await fetch(getApiUrl('/api/site-config/smtp'), {
+          credentials: 'include',
+        })
         if (response.ok) {
           const config = await response.json()
           setSmtpConfig({
@@ -212,11 +215,12 @@ function EmailSettingsTab() {
     }
     
     try {
-      const response = await fetch('/api/site-config/smtp', {
+      const response = await fetch(getApiUrl('/api/site-config/smtp'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(smtpConfig),
       })
 
@@ -226,7 +230,9 @@ function EmailSettingsTab() {
       }
 
       // Reload configuration after successful save to verify persistence
-      const reloadResponse = await fetch('/api/site-config/smtp')
+      const reloadResponse = await fetch(getApiUrl('/api/site-config/smtp'), {
+        credentials: 'include',
+      })
       if (reloadResponse.ok) {
         const config = await reloadResponse.json()
         setSmtpConfig({
@@ -254,11 +260,12 @@ function EmailSettingsTab() {
     setError('')
     
     try {
-      const response = await fetch('/api/site-config/test-email', {
+      const response = await fetch(getApiUrl('/api/site-config/test-email'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
       })
 
       if (!response.ok) {
@@ -295,7 +302,9 @@ function EmailSettingsTab() {
     setError('')
     
     try {
-      const response = await fetch('/api/site-config/smtp/debug')
+      const response = await fetch(getApiUrl('/api/site-config/smtp/debug'), {
+        credentials: 'include',
+      })
       if (response.ok) {
         const data = await response.json()
         setDebugInfo(data)

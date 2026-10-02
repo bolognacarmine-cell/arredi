@@ -540,6 +540,7 @@ export default function AdminMedia() {
       const resp = await fetch(getApiUrl("/api/assign-public-id"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: 'include',
         body: JSON.stringify({
           collection: autoAssign.collection,
           id: autoAssign.id,

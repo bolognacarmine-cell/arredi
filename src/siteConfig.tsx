@@ -134,6 +134,7 @@ export async function saveSiteSettingsToProject(settings: SiteSettings) {
     headers: {
       "Content-Type": "application/json",
     },
+    credentials: 'include',
     body: JSON.stringify(settings),
   })
 
