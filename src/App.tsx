@@ -74,6 +74,11 @@ export default function App() {
                 <Route path="products" element={<ShowroomProducts />} />
               </Route>
             </Route>
+
+            {/* RETE DI SICUREZZA: path /api/* non deve finire in React Router (può capitare se
+                la SPA fallback del server prende per sbaglio un URL API.
+                Redirige a /admin invece di mostrare "No routes matched" + pagina vuota. */}
+            <Route path="/api/*" element={<Navigate to="/admin" replace />} />
           </Routes>
           <Footer />
           <CookieBanner />

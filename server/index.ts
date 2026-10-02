@@ -217,20 +217,23 @@ if (process.env.NODE_ENV !== 'production') {
 // Serve index.html for all other non-API routes (SPA fallback)
 // - DEVE essere dopo /api/* e gli static assets, altrimenti intercetta le chiamate API
 // - Usa middleware invece di wildcard route per compatibilità con path-to-regexp
+// - Usa require("url").parse per estrarre il PATHNAME (strip di ?query e #hash)
+//   altrimenti /api/admin/me?x=1 matchava male e finiva nel fallback
 app.use((req: Request, res: Response, next: NextFunction) => {
   const accept = req.headers.accept || ''
-  const url = req.originalUrl || req.url || '/'
-  const hasExt = /\.[a-zA-Z0-9]{1,10}(?:\?|#|$)/.test(url)
+  const rawUrl = req.originalUrl || req.url || '/'
+  const pathname = require('url').parse(rawUrl).pathname || '/'
+  const hasExt = /\.[a-zA-Z0-9]{1,10}(?:\?|#|$)/.test(rawUrl)
 
   if (
     req.method !== 'GET' ||
-    url.startsWith('/api/') ||
-    url.startsWith('/__admin') ||
-    url.startsWith('/.well-known') ||
-    url.startsWith('/assets/') ||
-    url.startsWith('/videos/') ||
-    url.startsWith('/images/') ||
-    (hasExt && !url.endsWith('.html'))
+    pathname.startsWith('/api/') ||
+    pathname.startsWith('/__admin') ||
+    pathname.startsWith('/.well-known') ||
+    pathname.startsWith('/assets/') ||
+    pathname.startsWith('/videos/') ||
+    pathname.startsWith('/images/') ||
+    (hasExt && !pathname.endsWith('.html'))
   ) {
     return next()
   }
