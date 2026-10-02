@@ -195,6 +195,7 @@ router.get('/me', async (req: Request, res: Response) => {
     console.log('[AUTH CHECK] Cookie farcom.sid exists:', !!req.cookies?.['farcom.sid']);
     console.log('[AUTH CHECK] NODE_ENV:', process.env.NODE_ENV);
 
+    // 401 — Nessuna sessione / userId
     if (!req.session || !req.session.userId) {
       console.log('[AUTH CHECK] Returning 401 - No valid session');
       console.log('[AUTH CHECK] === AUTH CHECK END (401) ===');
@@ -206,12 +207,36 @@ router.get('/me', async (req: Request, res: Response) => {
 
     // Fetch user details from database to get email and name
     const user = await UserModel.findById(req.session.userId);
+
+    // 401 — Utente non trovato (sessione orfana: distruggi sessione e pulisci cookie)
     if (!user) {
+      console.log('[AUTH CHECK] User not found - destroying orphan session');
+      try {
+        if (req.session) {
+          req.session.destroy((err) => {
+            if (err) console.error('[AUTH CHECK] Error destroying orphan session:', err);
+          });
+        }
+        res.clearCookie('farcom.sid');
+      } catch (destroyErr) {
+        console.error('[AUTH CHECK] Fatal error cleaning orphan session:', destroyErr);
+      }
       console.log('[AUTH CHECK] User not found in database');
       console.log('[AUTH CHECK] === AUTH CHECK END (401) ===');
       return res.status(401).json({
         success: false,
         message: 'User not found'
+      });
+    }
+
+    // 403 — Utente trovato ma ruolo non admin
+    if (user.role !== 'admin') {
+      console.log('[AUTH CHECK] User exists but role is not admin:', user.role, '- returning 403');
+      console.log('[AUTH CHECK] === AUTH CHECK END (403) ===');
+      return res.status(403).json({
+        success: false,
+        message: 'Admin access required',
+        error: { code: 'FORBIDDEN_ROLE', receivedRole: user.role }
       });
     }
 
@@ -227,10 +252,14 @@ router.get('/me', async (req: Request, res: Response) => {
       }
     });
   } catch (error) {
+    // 500 — Solo errori imprevisti, con JSON strutturato (dettagli solo in dev)
     console.error('❌ Error getting user info:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development'
+        ? { name: (error as any)?.name, message: (error as any)?.message }
+        : undefined
     });
   }
 });

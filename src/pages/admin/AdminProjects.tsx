@@ -150,8 +150,6 @@ export default function AdminProjects() {
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
-  const [statusMessage, setStatusMessage] = useState("")
-  const [statusTone, setStatusTone] = useState<"success" | "warning">("success")
   const [draggedId, setDraggedId] = useState<string | null>(null)
   const [form, setForm] = useState<FormState>(emptyForm)
   const [isSaving, setIsSaving] = useState(false)
@@ -281,11 +279,6 @@ export default function AdminProjects() {
     setDraggedId(null)
   }
 
-  const showStatus = (message: string, tone: "success" | "warning") => {
-    setStatusMessage(message)
-    setStatusTone(tone)
-  }
-
   const openCreateForm = () => {
     setEditingId(null)
     setForm(emptyForm)
@@ -309,21 +302,11 @@ export default function AdminProjects() {
     try {
       await saveProjectsToProject(nextProjects)
       saveProjects(nextProjects)
-      showStatus(successMessage, "success")
+      showToast(successMessage)
     } catch (error) {
       console.error('Error saving projects:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Errore sconosciuto'
-      
-      // Show specific error message based on error type
-      if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
-        showStatus('Sessione scaduta. Effettua nuovamente il login.', 'warning')
-      } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
-        showStatus('Errore di connessione al server. Salvataggio locale effettuato.', 'warning')
-      } else {
-        showStatus(`${fallbackMessage} (${errorMessage})`, 'warning')
-      }
-      
       saveProjects(nextProjects)
+      showError(error, `${fallbackMessage} (dati salvati solo nel browser)`)
     }
 
     showSavedState()
@@ -382,13 +365,10 @@ export default function AdminProjects() {
     try {
       await saveProjectsToProject(defaultProjects)
       resetProjects()
-      showStatus("Archivio progetti ripristinato nel database.", "success")
-    } catch {
+      showToast("Archivio progetti ripristinato nel database")
+    } catch (error) {
       saveProjects(defaultProjects)
-      showStatus(
-        "Ripristino applicato solo nel browser corrente.",
-        "warning",
-      )
+      showError(error, "Ripristino applicato solo nel browser corrente")
     }
 
     showSavedState()
@@ -457,11 +437,6 @@ export default function AdminProjects() {
           <div>Clicca <strong>"+ Nuovo progetto"</strong> per iniziare.</div>
         </div>
       )}
-
-      <div className="mb-6 border border-[#DDD9D0] bg-[#F7F5F0] p-4 text-sm text-[#4A4A46]">
-        I progetti vengono salvati nel database MongoDB. Se il database non è disponibile,
-        il pannello usa il fallback nel browser locale.
-      </div>
 
       {showForm && (
         <div className="mb-8 border border-[#DDD9D0] bg-white p-6 animate-fade-in">
@@ -761,16 +736,6 @@ export default function AdminProjects() {
               Annulla
             </button>
           </div>
-        </div>
-      )}
-
-      {statusMessage && (
-        <div
-          className={`mb-5 text-sm ${
-            statusTone === "success" ? "text-[#1B4332]" : "text-amber-700"
-          }`}
-        >
-          {statusMessage}
         </div>
       )}
 

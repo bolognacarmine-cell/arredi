@@ -147,7 +147,7 @@ export async function deleteProject(id: string): Promise<void> {
       credentials: 'include',
     })
     if (response.status === 401 || response.status === 403) throw new Error(AUTH_EXPIRED)
-    const result = await response.json().catch(() => null)
+    const result = await readJson(response).catch(() => null)
     if (!response.ok && result?.error) {
       throw new Error(result.error.message || "Failed to delete project")
     }
