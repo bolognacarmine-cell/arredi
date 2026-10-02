@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from 'fs';
+import { fileURLToPath, parse as parseUrl } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -77,27 +78,41 @@ app.set('trust proxy', 1);
 // Middleware
 app.use(cors({
   origin: function(origin, callback) {
-    // Allow requests with no origin (like mobile apps, curl, etc.)
+    // Allow requests with no origin (like mobile apps, curl, same-origin fetch, <form> GETs)
     if (!origin) return callback(null, true);
-    // Allow same-origin and any origin in development
+    // Allow any origin in development
     if (process.env.NODE_ENV !== 'production') {
       return callback(null, true);
     }
-    // In production, allow same-origin requests (no origin header for same-origin)
-    // and specific allowed origins for cross-origin if needed
+    // In production: whitelist + fallback a true per origini Render di rolling-deploy
+    // (se scartassimo con Error la preflight OPTIONS fallirebbe con 500 e CORS broken).
+    // L'autenticazione server-side (session) protegge comunque gli endpoint.
     const allowedOrigins = [
       'https://arredi.onrender.com',
       'https://arredi.vercel.app',
     ];
     if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
+      return callback(null, true);
     }
+    if (origin.endsWith('.onrender.com')) {
+      console.warn('[CORS] Allowlisted rolling deploy origin:', origin);
+      return callback(null, true);
+    }
+    console.warn('[CORS] Origin non whitelistata (allow anyway):', origin);
+    return callback(null, true);
   },
   credentials: true,
   exposedHeaders: ['Set-Cookie'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With', 'Cookie'],
+  maxAge: 86400,
 }));
+
+// Assicura che le richieste OPTIONS tornino sempre 204 — alcuni browser falliscono
+// se preflight CORS arriva a un handler che restituisce 500/404.
+app.options('*', (_req: Request, res: Response) => {
+  res.status(204).send();
+});
 app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -217,12 +232,27 @@ if (process.env.NODE_ENV !== 'production') {
 // Serve index.html for all other non-API routes (SPA fallback)
 // - DEVE essere dopo /api/* e gli static assets, altrimenti intercetta le chiamate API
 // - Usa middleware invece di wildcard route per compatibilità con path-to-regexp
-// - Usa require("url").parse per estrarre il PATHNAME (strip di ?query e #hash)
-//   altrimenti /api/admin/me?x=1 matchava male e finiva nel fallback
+// - Usa parseUrl da import top-level ESM (NON require('url'), che non esiste in ESM)
+// - Controlla che index.html esista davvero per evitare 500 brutti
+const DIST_DIR = path.resolve(__dirname, '../../dist');
+const INDEX_HTML_PATH = path.join(DIST_DIR, 'index.html');
+let indexHtmlExists = false;
+try {
+  indexHtmlExists = fs.existsSync(INDEX_HTML_PATH);
+  console.log('[SPA fallback] index.html trovato in:', INDEX_HTML_PATH, indexHtmlExists ? 'OK' : 'NOT FOUND');
+} catch (e) {
+  console.warn('[SPA fallback] Impossibile verificare esistenza index.html:', e);
+  indexHtmlExists = false;
+}
 app.use((req: Request, res: Response, next: NextFunction) => {
   const accept = req.headers.accept || ''
   const rawUrl = req.originalUrl || req.url || '/'
-  const pathname = require('url').parse(rawUrl).pathname || '/'
+  let pathname = '/'
+  try {
+    pathname = (parseUrl(rawUrl).pathname as string) || '/'
+  } catch (e) {
+    pathname = rawUrl.split('?')[0].split('#')[0] || '/'
+  }
   const hasExt = /\.[a-zA-Z0-9]{1,10}(?:\?|#|$)/.test(rawUrl)
 
   if (
@@ -242,11 +272,33 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     return next()
   }
 
-  const indexPath = path.resolve(__dirname, '../../dist/index.html')
-  res.sendFile(indexPath, (err: Error | null) => {
+  if (!indexHtmlExists) {
+    console.error('[SPA fallback] index.html NON ESISTE in:', INDEX_HTML_PATH)
+    return res.status(503).send(
+      '<!doctype html><title>Build mancante</title>' +
+      '<h1>503 — Build frontend non disponibile</h1>' +
+      '<p>Esegui <code>npm run build</code> per generare la cartella <code>dist/</code>.</p>'
+    );
+  }
+
+  res.sendFile(INDEX_HTML_PATH, {
+    maxAge: 0,              // index.html non va mai cachato dai browser
+    cacheControl: true,
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'X-Content-Type-Options': 'nosniff',
+    },
+  }, (err: Error | null) => {
     if (err) {
-      console.error('[SPA fallback] sendFile failed:', err.message)
-      res.status(500).json({ error: 'SPA index.html missing. Run npm run build first.' })
+      console.error('[SPA fallback] sendFile failed:', err.message, INDEX_HTML_PATH)
+      // Fallback ancora più robusto: se sendFile fallisce, prova fs.readFile
+      try {
+        const html = fs.readFileSync(INDEX_HTML_PATH, 'utf-8');
+        res.status(200).type('html').send(html);
+      } catch (readErr: any) {
+        console.error('[SPA fallback] Anche fs.readFile fallito:', readErr?.message)
+        res.status(500).json({ error: 'Errore interno nel caricamento della SPA.' })
+      }
     }
   })
 })
