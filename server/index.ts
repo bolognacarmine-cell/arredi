@@ -72,6 +72,34 @@ app.get('/health', async (req: Request, res: Response) => {
   }
 });
 
+// 🛡️ GUARDIA /api LIVELLO 1 — PRIMA DI TUTTO (dopo /health).
+// NON consuma la risposta: marca soltanto che si tratta di una richiesta API
+// e garantisce che nessun middleware successivo (CORS, static, session) la
+// possa trasformare in HTML. Le rotte /api/* vere (montate dopo) continuano
+// a funzionare normalmente con next().
+//
+// Contemporaneamente wrappa express.static in basso per salvare le API da
+// qualunque file statico omonimo in dist/ (es. dist/api/admin/index.html).
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const rawUrl = req.originalUrl || req.url || '/'
+  let pathname = '/'
+  try { pathname = (parseUrl(rawUrl).pathname as string) || '/' } catch { pathname = rawUrl.split('?')[0].split('#')[0] || '/' }
+  try { pathname = decodeURI(pathname) || '/' } catch { /* keep raw */ }
+  pathname = pathname.trim() || '/'
+  const nativePath = (req.path as string).trim() || '/'
+
+  const looksLikeApi =
+    pathname.startsWith('/api/') || pathname === '/api' ||
+    nativePath.startsWith('/api/') || nativePath === '/api' ||
+    pathname.toLowerCase().startsWith('/api/') ||
+    nativePath.toLowerCase().startsWith('/api/')
+
+  if (looksLikeApi) {
+    (res as Response & { locals: Record<string, unknown> }).locals.isApiRequest = true
+  }
+  next()
+});
+
 // Trust proxy for Render and other reverse proxies
 app.set('trust proxy', 1);
 
@@ -198,9 +226,19 @@ app.use(session({
   rolling: true,
 }));
 
-// Serve static files from dist/ (parent directory of server/dist)
+// Serve static files from dist/ (parent directory of server/dist).
+// WRAPPER: salta express.static per le richieste marcate come API
+// (GUARDIA LIVELLO 1 — res.locals.isApiRequest). Anche se per assurdo
+// qualcuno crea un file dist/api/admin/index.html, non verrà MAI servito
+// su /api/admin/me — la richiesta passa oltre e arriva alla guardia L2/L3.
 const staticPath = path.resolve(__dirname, '../../dist');
-app.use(express.static(staticPath));
+const staticMiddleware = express.static(staticPath);
+app.use((req: Request, res: Response, next: NextFunction) => {
+  if ((res as Response & { locals: Record<string, unknown> }).locals.isApiRequest) {
+    return next()
+  }
+  return staticMiddleware(req, res, next)
+});
 
 // API Routes
 app.use('/api/media', mediaRoutes);
@@ -342,6 +380,28 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     }
   })
 })
+
+// 🛡️ GUARDIA /api LIVELLO 3 — ULTIMA CHANCE, DOPO SPA FALLBACK.
+// Se anche L1 (marcatore) + L2 (dopo rotte API) + gli skip interni del
+// fallback SPA non sono stati sufficienti — o un errore ha fatto next() —
+// e la richiesta è ancora in sospeso MARCATA come API, questa barriera
+// risponde incondizionatamente 404 JSON. È l'ultimo muro PRIMA degli
+// error handler globali. Nessuna possibilità di HTML qui.
+app.use((req: Request, res: Response, next: NextFunction) => {
+  if (res.headersSent) return next()
+  const isApi = (res as Response & { locals: Record<string, unknown> }).locals.isApiRequest === true
+  if (!isApi) return next()
+  const nativePath = (req.path as string).trim() || '/'
+  return res.status(404).json({
+    success: false,
+    message: 'API endpoint non trovato',
+    error: {
+      code: 'API_ENDPOINT_NOT_FOUND',
+      path: nativePath,
+      method: req.method,
+    }
+  });
+});
 
 // Body parser errors (payload troppo grande, JSON malformato) devono tornare JSON:
 // il client fa response.json() e con l'HTML di default fallisce con un errore opaco.
