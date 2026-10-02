@@ -100,11 +100,12 @@ router.post('/login', loginRateLimiter as any, async (req: Request, res: Respons
     if (req.session) {
       req.session.userId = user._id.toString();
       req.session.userRole = user.role;
-      console.log('[LOGIN] Session set for user:', user.email);
-      console.log('[LOGIN] Session ID:', req.sessionID);
-      console.log('[LOGIN] Session data:', { userId: req.session.userId, userRole: req.session.userRole });
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[LOGIN] Session set for user:', user.email);
+        console.log('[LOGIN] Session ID:', req.sessionID);
+      }
     } else {
-      console.log('[LOGIN] ERROR: req.session is undefined!');
+      console.error('[LOGIN] ERROR: req.session is undefined!');
     }
 
     res.json({ 
@@ -181,15 +182,14 @@ router.get('/me', async (req: Request, res: Response) => {
       });
     }
 
-    // Always log for debugging - remove in production after fix
-    console.log('[AUTH CHECK] Method:', req.method, 'URL:', req.url);
-    console.log('[AUTH CHECK] Origin:', req.headers.origin);
-    console.log('[AUTH CHECK] Session object exists:', !!req.session);
-    console.log('[AUTH CHECK] Session ID:', req.sessionID);
-    console.log('[AUTH CHECK] User ID in session:', req.session?.userId ? 'present' : 'missing');
-    console.log('[AUTH CHECK] User role in session:', req.session?.userRole || 'missing');
-    console.log('[AUTH CHECK] Cookies:', Object.keys(req.cookies || {}));
-    console.log('[AUTH CHECK] Response status:', req.session?.userId ? '200' : '401');
+    // Only log in development for debugging
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[AUTH CHECK] Method:', req.method, 'URL:', req.url);
+      console.log('[AUTH CHECK] Session object exists:', !!req.session);
+      console.log('[AUTH CHECK] User ID in session:', req.session?.userId ? 'present' : 'missing');
+      console.log('[AUTH CHECK] User role in session:', req.session?.userRole || 'missing');
+      console.log('[AUTH CHECK] Response status:', req.session?.userId ? '200' : '401');
+    }
 
     if (!req.session || !req.session.userId) {
       if (process.env.NODE_ENV === 'development') {

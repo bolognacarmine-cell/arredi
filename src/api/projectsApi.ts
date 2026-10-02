@@ -1,13 +1,10 @@
-// API_BASE_URL opzionale: se non impostato, usa percorsi relativi sullo stesso dominio (es. /api/projects)
-// Funziona in locale (proxy/express) e in produzione (Render con backend + fallback SPA)
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "")
-const hasExplicitBase = !!(import.meta.env.VITE_API_BASE_URL && import.meta.env.VITE_API_BASE_URL.trim() !== '')
+import { getApiUrl, isApiBaseUrlConfigured } from '../lib/apiConfig'
+
+const hasExplicitBase = isApiBaseUrlConfigured()
 const isApiAvailable = true
 
 export function apiUrl(pathname: string): string {
-  const clean = pathname.startsWith("/") ? pathname : `/${pathname}`
-  if (hasExplicitBase) return `${API_BASE_URL}${clean}`
-  return clean
+  return getApiUrl(pathname)
 }
 
 export interface Project {

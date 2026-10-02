@@ -1,6 +1,6 @@
-// Su Render il backend non è disponibile, disabilitiamo le chiamate API
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ""
-const isApiAvailable = !!(API_BASE_URL && API_BASE_URL.trim() !== '')
+import { getApiUrl, isApiBaseUrlConfigured } from '../lib/apiConfig'
+
+const isApiAvailable = isApiBaseUrlConfigured()
 
 export interface Media {
   _id: string
@@ -73,7 +73,8 @@ export async function getMedia(filters?: {
   // Try API first, but fall back to localStorage on any error
   if (isApiAvailable) {
     try {
-      const url = new URL(`${API_BASE_URL}/api/media`)
+      const apiPath = getApiUrl('/api/media')
+      const url = new URL(apiPath.startsWith('http') ? apiPath : window.location.origin + apiPath)
       if (filters?.category) url.searchParams.append("category", filters.category)
       if (filters?.library && filters.library !== "Tutte") url.searchParams.append("library", filters.library)
       if (filters?.search) url.searchParams.append("search", filters.search)
@@ -115,7 +116,7 @@ export async function getMediaById(id: string): Promise<Media> {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/media/${id}`, { credentials: 'include' })
+    const response = await fetch(getApiUrl(`/api/media/${id}`), { credentials: 'include' })
     const result = await response.json()
 
     // Il backend ritorna direttamente l'oggetto media, non { success, data }
@@ -154,7 +155,7 @@ export async function createMedia(data: CreateMediaData): Promise<Media> {
   // Try API first, but always fall back to localStorage on any error
   if (isApiAvailable) {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/media`, {
+      const response = await fetch(getApiUrl('/api/media'), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -207,7 +208,7 @@ export async function updateMedia(id: string, data: Partial<CreateMediaData>): P
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/media/${id}`, {
+    const response = await fetch(getApiUrl(`/api/media/${id}`), {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -253,7 +254,7 @@ export async function deleteMedia(id: string): Promise<void> {
   // Try API first, but fall back to localStorage on any error
   if (isApiAvailable) {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/media/${id}`, {
+      const response = await fetch(getApiUrl(`/api/media/${id}`), {
         method: "DELETE",
         credentials: "include",
       })

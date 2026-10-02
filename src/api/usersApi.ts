@@ -1,5 +1,4 @@
-// Use relative paths for same-origin, absolute when VITE_API_BASE_URL is set for cross-origin
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ""
+import { getApiUrl } from '../lib/apiConfig'
 
 export interface User {
   id: string
@@ -8,15 +7,6 @@ export interface User {
   role: 'user' | 'admin'
   createdAt: string
   updatedAt: string
-}
-
-const getApiUrl = (path: string) => {
-  // Only use absolute URL if VITE_API_BASE_URL is explicitly set to a non-empty value
-  // If undefined or empty string, use relative path for same-origin
-  if (API_BASE_URL && API_BASE_URL.trim() !== '') {
-    return `${API_BASE_URL.replace(/\/+$/, '')}${path}`
-  }
-  return path // Use relative path for same-origin
 }
 
 export async function getUsers(): Promise<User[]> {

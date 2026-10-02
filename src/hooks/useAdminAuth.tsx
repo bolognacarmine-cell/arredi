@@ -1,6 +1,7 @@
 // Hook reale per autenticazione admin con sessione server-side
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react"
 import { useNavigate } from "react-router-dom"
+import { getApiUrl } from "../lib/apiConfig"
 
 type Role = "admin" | "user" | "guest"
 export interface AdminUser {
@@ -21,17 +22,6 @@ interface Ctx {
 }
 const AC = createContext<Ctx | null>(null)
 
-// Get API base URL - use relative paths in same-origin, absolute when VITE_API_BASE_URL is set
-const getApiUrl = (path: string) => {
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
-  // Only use absolute URL if VITE_API_BASE_URL is explicitly set to a non-empty value
-  // If undefined or empty string, use relative path for same-origin
-  if (apiBaseUrl && apiBaseUrl.trim() !== '') {
-    return `${apiBaseUrl.replace(/\/+$/, '')}${path}`
-  }
-  return path // Use relative path for same-origin
-}
-
 export function AdminAuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AdminUser | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -41,7 +31,6 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     try {
       const apiUrl = getApiUrl('/api/admin/me')
       console.log('[Auth Check] Fetching from:', apiUrl)
-      console.log('[Auth Check] VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL)
 
       const response = await fetch(apiUrl, {
         credentials: 'include',
@@ -84,7 +73,6 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     try {
       const apiUrl = getApiUrl('/api/admin/login')
       console.log('[Login] Attempting login to:', apiUrl)
-      console.log('[Login] VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL)
 
       const response = await fetch(apiUrl, {
         method: 'POST',

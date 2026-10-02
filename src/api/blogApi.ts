@@ -3,14 +3,14 @@
  *
  * This file implements a robust fallback strategy for blog data:
  *
- * 1. If VITE_API_BASE_URL is set:
+ * 1. If VITE_API_BASE_URL is set to a non-empty value:
  *    - Try to fetch from the API first
  *    - If API fails (network error, 5xx, timeout), fallback to static data
  *    - This ensures the blog always works even if the API is down
  *
- * 2. If VITE_API_BASE_URL is NOT set:
- *    - Use static data directly (GitHub Pages case)
- *    - No API calls are attempted
+ * 2. If VITE_API_BASE_URL is NOT set or is empty:
+ *    - Use relative paths for same-origin requests
+ *    - Fallback to static data if API fails
  *
  * 3. Development environment:
  *    - Set VITE_API_BASE_URL to use local API (e.g., http://localhost:3002)
@@ -21,21 +21,13 @@
  * To configure API URL in production:
  * - Set VITE_API_BASE_URL in GitHub Actions secrets or deployment config
  * - Example: VITE_API_BASE_URL=https://your-api.onrender.com
+ * - IMPORTANT: On Render, DO NOT set VITE_API_BASE_URL for same-origin deployment
  */
 
-// Get API base URL - use relative paths in same-origin, absolute when VITE_API_BASE_URL is set
-const getApiUrl = (path: string) => {
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
-  // Only use absolute URL if VITE_API_BASE_URL is explicitly set to a non-empty value
-  // If undefined or empty string, use relative path for same-origin
-  if (apiBaseUrl && apiBaseUrl.trim() !== '') {
-    return `${apiBaseUrl.replace(/\/+$/, '')}${path}`
-  }
-  return path // Use relative path for same-origin
-}
+import { getApiUrl, getApiBaseUrl, isApiBaseUrlConfigured } from '../lib/apiConfig'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3002"
-const hasApiConfigured = !!(import.meta.env.VITE_API_BASE_URL && import.meta.env.VITE_API_BASE_URL.trim() !== '')
+const API_BASE_URL = getApiBaseUrl()
+const hasApiConfigured = isApiBaseUrlConfigured()
 
 // Static data for fallback (GitHub Pages and API failures)
 import staticBlogPosts from '../data/blogPosts.json'

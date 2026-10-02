@@ -14,17 +14,7 @@ import {
   type UploadCategory,
 } from "../../lib/mediaRecent"
 import { getMedia, createMedia, deleteMedia, type Media } from "../../api/mediaApi"
-
-// Get API base URL - use relative paths in same-origin, absolute when VITE_API_BASE_URL is set
-const getApiUrl = (path: string) => {
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
-  // Only use absolute URL if VITE_API_BASE_URL is explicitly set to a non-empty value
-  // If undefined or empty string, use relative path for same-origin
-  if (apiBaseUrl && apiBaseUrl.trim() !== '') {
-    return `${apiBaseUrl.replace(/\/+$/, '')}${path}`
-  }
-  return path // Use relative path for same-origin
-}
+import { getApiUrl } from "../../lib/apiConfig"
 
 const categoryConfig: Record<
   UploadCategory,

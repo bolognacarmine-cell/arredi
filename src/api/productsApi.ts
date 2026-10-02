@@ -1,15 +1,6 @@
-// Get API base URL - use relative paths in same-origin, absolute when VITE_API_BASE_URL is set
-const getApiUrl = (path: string) => {
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
-  // Only use absolute URL if VITE_API_BASE_URL is explicitly set to a non-empty value
-  // If undefined or empty string, use relative path for same-origin
-  if (apiBaseUrl && apiBaseUrl.trim() !== '') {
-    return `${apiBaseUrl.replace(/\/+$/, '')}${path}`
-  }
-  return path // Use relative path for same-origin
-}
+import { getApiUrl, getApiBaseUrl } from '../lib/apiConfig'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3002"
+const API_BASE_URL = getApiBaseUrl()
 
 const AUTH_EXPIRED = "Sessione admin scaduta: esegui di nuovo il login e riprova"
 

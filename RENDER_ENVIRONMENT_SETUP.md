@@ -28,6 +28,8 @@ FRONTEND_ORIGIN=https://arredi.onrender.com
 ```
 Note: If VITE_API_BASE_URL is not set, the frontend automatically uses relative paths (same-origin).
 
+**For detailed configuration instructions, see [docs/ENV_SETUP.md](docs/ENV_SETUP.md).**
+
 ### 🔥 CRITICAL: Cloudinary Configuration (REQUIRED for Image Uploads)
 ```
 VITE_CLOUDINARY_CLOUD_NAME=qz1f1z6t
