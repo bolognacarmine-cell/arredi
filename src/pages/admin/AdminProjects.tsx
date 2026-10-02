@@ -398,13 +398,13 @@ export default function AdminProjects() {
         <div className="flex flex-wrap gap-3">
           <button
             onClick={handleReset}
-            className="border border-[#DDD9D0] px-5 py-2.5 text-sm font-medium text-[#4A4A46] transition-colors hover:border-[#1B4332] hover:text-[#1B4332]"
+            className="border border-[#DDD9D0] px-5 py-3 text-sm font-medium text-[#4A4A46] transition-colors hover:border-[#1B4332] hover:text-[#1B4332] min-h-[44px]"
           >
             Ripristina archivio base
           </button>
           <button
             onClick={openCreateForm}
-            className="bg-[#1B4332] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#143326]"
+            className="bg-[#1B4332] px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-[#143326] min-h-[44px]"
           >
             + Nuovo progetto
           </button>
@@ -476,7 +476,7 @@ export default function AdminProjects() {
                   type="text"
                   value={form[key]}
                   onChange={(e) => set(key, e.target.value)}
-                  className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
+                  className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-3 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none min-h-[44px]"
                 />
               </div>
             ))}
@@ -516,7 +516,7 @@ export default function AdminProjects() {
               <select
                 value={form.settore}
                 onChange={(e) => set("settore", e.target.value)}
-                className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
+                className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-3 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none min-h-[44px]"
               >
                 <option value="">Seleziona...</option>
                 {SECTORS.map((sector) => (
@@ -535,7 +535,7 @@ export default function AdminProjects() {
                 type="number"
                 value={form.anno}
                 onChange={(e) => set("anno", e.target.value)}
-                className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
+                className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-3 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none min-h-[44px]"
               />
             </div>
 
@@ -548,7 +548,7 @@ export default function AdminProjects() {
                 onChange={(e) =>
                   set("stato", e.target.value as ProjectRecord["status"])
                 }
-                className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
+                className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-3 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none min-h-[44px]"
               >
                 <option value="bozza">Bozza</option>
                 <option value="in lavorazione">In lavorazione</option>
@@ -564,7 +564,7 @@ export default function AdminProjects() {
                 rows={4}
                 value={form.descrizione}
                 onChange={(e) => set("descrizione", e.target.value)}
-                className="w-full resize-none border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
+                className="w-full resize-none border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-3 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none min-h-[44px]"
               />
             </div>
 
@@ -576,7 +576,7 @@ export default function AdminProjects() {
                 type="text"
                 value={form.tagText}
                 onChange={(e) => set("tagText", e.target.value)}
-                className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
+                className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-3 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none min-h-[44px]"
               />
             </div>
 
@@ -608,7 +608,7 @@ export default function AdminProjects() {
 
               {/* Existing gallery items display for drag & drop reordering */}
               {galleryImages.length > 0 && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 mt-3">
+                <div className="grid grid-cols-1 gap-3 mt-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
                   {galleryImages.map((url, i) => (
                     <div
                       key={`${url}-${i}`}
@@ -641,7 +641,7 @@ export default function AdminProjects() {
                           <button
                             type="button"
                             onClick={() => removeFromGallery(i)}
-                            className="bg-red-600 text-white text-[10px] font-semibold px-2 py-1 rounded whitespace-nowrap"
+                            className="bg-red-600 text-white text-[10px] font-semibold px-2 py-1 rounded whitespace-nowrap min-h-[32px]"
                           >
                             ✕ Rimuovi
                           </button>
@@ -665,7 +665,7 @@ export default function AdminProjects() {
                     value={form.seoMetaTitle}
                     onChange={(e) => set("seoMetaTitle", e.target.value)}
                     placeholder="Titolo per SEO (es: The Craft Barbershop - Farcom)"
-                    className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
+                    className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-3 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none min-h-[44px]"
                   />
                 </div>
                 <div>
@@ -675,7 +675,7 @@ export default function AdminProjects() {
                     value={form.seoSlug}
                     onChange={(e) => set("seoSlug", e.target.value)}
                     placeholder="URL slug (es: the-craft-barbershop)"
-                    className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
+                    className="w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-3 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none min-h-[44px]"
                   />
                 </div>
               </div>
@@ -687,7 +687,7 @@ export default function AdminProjects() {
                   onChange={(e) => set("seoMetaDescription", e.target.value)}
                   placeholder="Descrizione per SEO (max 160 caratteri)"
                   maxLength={160}
-                  className="w-full resize-none border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none"
+                  className="w-full resize-none border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-3 text-sm text-[#1A1A18] focus:border-[#1B4332] focus:outline-none min-h-[44px]"
                 />
                 <div className="text-xs text-[#888580] mt-1">
                   {form.seoMetaDescription.length}/160
@@ -701,9 +701,9 @@ export default function AdminProjects() {
                 id="evidenza"
                 checked={form.evidenza}
                 onChange={(e) => set("evidenza", e.target.checked)}
-                className="h-4 w-4 accent-[#1B4332]"
+                className="h-5 w-5 accent-[#1B4332] cursor-pointer"
               />
-              <label htmlFor="evidenza" className="text-sm text-[#4A4A46]">
+              <label htmlFor="evidenza" className="text-sm text-[#4A4A46] cursor-pointer py-2">
                 Mostra in evidenza nella home
               </label>
             </div>
@@ -713,7 +713,7 @@ export default function AdminProjects() {
             <button
               onClick={handleSave}
               disabled={isSaving}
-              className="bg-[#1B4332] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#143326] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="bg-[#1B4332] px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-[#143326] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 min-h-[44px]"
             >
               {isSaving ? (
                 <>
@@ -731,7 +731,7 @@ export default function AdminProjects() {
             <button
               onClick={closeForm}
               disabled={isSaving}
-              className="border border-[#DDD9D0] px-5 py-2.5 text-sm text-[#4A4A46] transition-colors hover:bg-[#EAE7E0] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="border border-[#DDD9D0] px-5 py-3 text-sm text-[#4A4A46] transition-colors hover:bg-[#EAE7E0] disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
             >
               Annulla
             </button>
@@ -743,7 +743,7 @@ export default function AdminProjects() {
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          className="border border-[#DDD9D0] bg-white px-4 py-2 text-sm text-[#4A4A46] focus:border-[#1B4332] focus:outline-none"
+          className="border border-[#DDD9D0] bg-white px-4 py-3 text-sm text-[#4A4A46] focus:border-[#1B4332] focus:outline-none min-h-[44px] flex-1 min-w-[150px]"
         >
           <option value="all">Tutti i settori</option>
           {SECTORS.map((sector) => (
@@ -756,7 +756,7 @@ export default function AdminProjects() {
         <select
           value={stateFilter}
           onChange={(e) => setStateFilter(e.target.value)}
-          className="border border-[#DDD9D0] bg-white px-4 py-2 text-sm text-[#4A4A46] focus:border-[#1B4332] focus:outline-none"
+          className="border border-[#DDD9D0] bg-white px-4 py-3 text-sm text-[#4A4A46] focus:border-[#1B4332] focus:outline-none min-h-[44px] flex-1 min-w-[150px]"
         >
           <option value="all">Tutti gli stati</option>
           <option value="bozza">Bozza</option>
@@ -764,7 +764,7 @@ export default function AdminProjects() {
           <option value="completato">Completato</option>
         </select>
 
-        <span className="self-center text-xs text-[#888580]">
+        <span className="self-center text-xs text-[#888580] py-3">
           {filtered.length} risultati
         </span>
       </div>
@@ -798,7 +798,7 @@ export default function AdminProjects() {
                   draggedId === project.id ? "opacity-50" : ""
                 }`}
               >
-                <td className="px-5 py-3">
+                <td className="px-5 py-3" data-label="Progetto">
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 flex-shrink-0 overflow-hidden bg-[#EAE7E0]">
                       <img
@@ -819,41 +819,41 @@ export default function AdminProjects() {
                     </div>
                   </div>
                 </td>
-                <td className="hidden px-5 py-3 text-xs text-[#4A4A46] md:table-cell">
+                <td className="hidden px-5 py-3 text-xs text-[#4A4A46] md:table-cell" data-label="Settore">
                   {project.sector}
                 </td>
-                <td className="hidden px-5 py-3 text-xs text-[#4A4A46] lg:table-cell">
+                <td className="hidden px-5 py-3 text-xs text-[#4A4A46] lg:table-cell" data-label="Cliente">
                   {project.client || "—"}
                 </td>
-                <td className="hidden px-5 py-3 text-xs text-[#888580] sm:table-cell">
+                <td className="hidden px-5 py-3 text-xs text-[#888580] sm:table-cell" data-label="Anno">
                   {project.year}
                 </td>
-                <td className="px-5 py-3">
+                <td className="px-5 py-3" data-label="Stato">
                   <span
                     className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusColor[project.status]}`}
                   >
                     {project.status}
                   </span>
                 </td>
-                <td className="px-5 py-3">
-                  <div className="flex gap-3">
+                <td className="px-5 py-3" data-label="Azioni">
+                  <div className="flex flex-wrap gap-2 sm:gap-3">
                     <Link
                       to={`/progetti/${project.id}`}
                       target="_blank"
-                      className="text-xs text-[#888580] transition-colors hover:text-[#1B4332]"
+                      className="text-xs text-[#888580] transition-colors hover:text-[#1B4332] py-2 px-2"
                     >
                       Anteprima
                     </Link>
                     <button
                       onClick={() => handleEdit(project)}
-                      className="text-xs text-[#888580] transition-colors hover:text-[#1B4332]"
+                      className="text-xs text-[#888580] transition-colors hover:text-[#1B4332] py-2 px-2"
                     >
                       Modifica
                     </button>
                     <button
                       onClick={() => handleDelete(project.id)}
                       disabled={isDeleting}
-                      className="text-xs text-red-600 transition-colors hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                      className="text-xs text-red-600 transition-colors hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 py-2 px-2"
                     >
                       {isDeleting ? <Loading size="sm" /> : "Elimina"}
                     </button>

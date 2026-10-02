@@ -672,6 +672,105 @@ p, span, div {
 }
 
 /* =========================================================
+   Admin Tables - Responsive Card Layout
+   ========================================================= */
+
+@media (max-width: 600px) {
+  /* Transform table rows into cards on mobile */
+  table,
+  thead,
+  tbody,
+  th,
+  td,
+  tr {
+    display: block;
+  }
+
+  /* Hide table headers */
+  thead tr {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+  }
+
+  tr {
+    margin: 0 0 1rem 0;
+    border: 1px solid #E5E5E7;
+    border-radius: 8px;
+    background: white;
+    padding: 1rem;
+  }
+
+  td {
+    border: none;
+    position: relative;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  /* Show data-label before each cell content */
+  td::before {
+    content: attr(data-label) ": ";
+    font-weight: 600;
+    color: #6B7280;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+
+  /* Adjust layout for project image in card */
+  td[data-label="Progetto"] {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  td[data-label="Progetto"]::before {
+    margin-bottom: 0.5rem;
+  }
+
+  td[data-label="Progetto"] .flex {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  /* Make action buttons full width and stacked */
+  td[data-label="Azioni"] {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  td[data-label="Azioni"]::before {
+    margin-bottom: 0.5rem;
+  }
+
+  td[data-label="Azioni"] .flex {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  td[data-label="Azioni"] a,
+  td[data-label="Azioni"] button {
+    width: 100%;
+    text-align: center;
+    padding: 0.75rem 1rem;
+    background: #F7F5F0;
+    border-radius: 6px;
+    border: 1px solid #DDD9D0;
+  }
+
+  td[data-label="Azioni"] button:hover {
+    background: #EAE7E0;
+  }
+}
+
+/* =========================================================
    Hamburger Menu Animations
    ========================================================= */
 
