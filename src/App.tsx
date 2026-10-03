@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { useEffect } from "react";
 import Navbar from "./components/Navbar";
@@ -34,33 +34,42 @@ import {
 } from "./routes/publicShowroomRoutes";
 import { AdminAuthProvider } from "./hooks/useAdminAuth";
 
+/** Auth admin solo su /admin/* — non montare sul sito pubblico (evita GET /api/admin/me → 401). */
+function AdminAuthScope() {
+  return (
+    <AdminAuthProvider>
+      <Outlet />
+    </AdminAuthProvider>
+  )
+}
+
 export default function App() {
   return (
     <HelmetProvider>
       <BrowserRouter>
-        <AdminAuthProvider>
-          <ScrollToTop />
-          <Navbar />
-          <Routes>
-            {/* PUBLIC */}
-            <Route path="/" element={<Home />} />
-            <Route path="/settori" element={<SettoriList />} />
-            <Route path="/settori/:id" element={<SectorPage />} />
-            <Route path="/progetti" element={<Projects />} />
-            <Route path="/progetti/:id" element={<ProjectDetail />} />
-            <Route path="/showroom" element={<PublicShowroomList />} />
-            <Route path="/showroom/offerte" element={<Navigate to="/showroom" replace />} />
-            <Route path="/showroom/:slug" element={<PublicShowroomDetail />} />
-            <Route path="/preventivo" element={<Quote />} />
-            <Route path="/chi-siamo" element={<About />} />
-            <Route path="/contatti" element={<Contacts />} />
-            <Route path="/privacy" element={<PrivacyPage />} />
-            <Route path="/cookie" element={<CookiePage />} />
-            <Route path="/note-legali" element={<LegalNotesPage />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/blog/:slug" element={<BlogPost />} />
+        <ScrollToTop />
+        <Navbar />
+        <Routes>
+          {/* PUBLIC */}
+          <Route path="/" element={<Home />} />
+          <Route path="/settori" element={<SettoriList />} />
+          <Route path="/settori/:id" element={<SectorPage />} />
+          <Route path="/progetti" element={<Projects />} />
+          <Route path="/progetti/:id" element={<ProjectDetail />} />
+          <Route path="/showroom" element={<PublicShowroomList />} />
+          <Route path="/showroom/offerte" element={<Navigate to="/showroom" replace />} />
+          <Route path="/showroom/:slug" element={<PublicShowroomDetail />} />
+          <Route path="/preventivo" element={<Quote />} />
+          <Route path="/chi-siamo" element={<About />} />
+          <Route path="/contatti" element={<Contacts />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/cookie" element={<CookiePage />} />
+          <Route path="/note-legali" element={<LegalNotesPage />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:slug" element={<BlogPost />} />
 
-            {/* ADMIN */}
+          {/* ADMIN — provider auth solo qui */}
+          <Route element={<AdminAuthScope />}>
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<Dashboard />} />
@@ -75,24 +84,24 @@ export default function App() {
                 <Route path="products" element={<ShowroomProducts />} />
               </Route>
             </Route>
+          </Route>
 
-            {/* RETE DI SICUREZZA /api/*: se per qualunque motivo (SW vecchio, fallback SPA
-                disallineato, cache CDN) il browser carica index.html su un URL /api/*
-                invece della risposta JSON, REACT ROUTER NON DEVE redirigere a /admin
-                (che nascondeva il sintomo e creava loop "pagina bianca → admin").
-                Invece forziamo un hard reload full-page (window.location.reload())
-                che bypassa il navigation route del SW e raggiunge il server →
-                le guardie /api/* L1/L2/L3 rispondono JSON 404 come da specifica. */}
-            <Route path="/api/*" element={
-              <div className="min-h-screen flex items-center justify-center text-sm text-[#888580] bg-[var(--background)] p-4">
-                <span className="w-4 h-4 border-2 border-[#1B4332]/30 border-t-[#1B4332] rounded-full animate-spin mr-3 inline-block align-middle" />
-                <ApiFallbackForceReload />
-              </div>
-            } />
-          </Routes>
-          <Footer />
-          <CookieBanner />
-        </AdminAuthProvider>
+          {/* RETE DI SICUREZZA /api/*: se per qualunque motivo (SW vecchio, fallback SPA
+              disallineato, cache CDN) il browser carica index.html su un URL /api/*
+              invece della risposta JSON, REACT ROUTER NON DEVE redirigere a /admin
+              (che nascondeva il sintomo e creava loop "pagina bianca → admin").
+              Invece forziamo un hard reload full-page (window.location.reload())
+              che bypassa il navigation route del SW e raggiunge il server →
+              le guardie /api/* L1/L2/L3 rispondono JSON 404 come da specifica. */}
+          <Route path="/api/*" element={
+            <div className="min-h-screen flex items-center justify-center text-sm text-[#888580] bg-[var(--background)] p-4">
+              <span className="w-4 h-4 border-2 border-[#1B4332]/30 border-t-[#1B4332] rounded-full animate-spin mr-3 inline-block align-middle" />
+              <ApiFallbackForceReload />
+            </div>
+          } />
+        </Routes>
+        <Footer />
+        <CookieBanner />
       </BrowserRouter>
     </HelmetProvider>
   )
