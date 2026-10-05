@@ -123,6 +123,7 @@ export default function CookiePage() {
       title="Cookie Policy"
       intro="Questa pagina riassume le principali informazioni sull'uso di cookie e tecnologie simili durante la navigazione del sito."
       sections={sections}
+      lastUpdated="2026-09-08"
     />
   )
 }

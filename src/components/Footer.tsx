@@ -383,6 +383,10 @@ export default function Footer() {
                     Cookie
                   </Link>
                   <span className="text-white/30" aria-hidden="true">•</span>
+                  <Link to="/termini-e-condizioni" className="inline-flex items-center min-h-[36px] sm:min-h-[40px] -mx-2 px-2 hover:text-[#E69138] transition-colors rounded-sm">
+                    Termini e Condizioni
+                  </Link>
+                  <span className="text-white/30" aria-hidden="true">•</span>
                   <Link to="/note-legali" className="inline-flex items-center min-h-[36px] sm:min-h-[40px] -mx-2 px-2 hover:text-[#E69138] transition-colors rounded-sm">
                     Note legali
                   </Link>
@@ -530,13 +534,15 @@ export default function Footer() {
                 <Link to="/cookie" className="inline-flex items-center min-h-[36px] sm:min-h-[40px] -mx-2 px-2 hover:text-[#E69138] transition-colors rounded-sm">
                   Cookie
                 </Link>
+                <span className="text-white/30" aria-hidden="true">•</span>
+                <Link to="/termini-e-condizioni" className="inline-flex items-center min-h-[36px] sm:min-h-[40px] -mx-2 px-2 hover:text-[#E69138] transition-colors rounded-sm">
+                  Termini e Condizioni
+                </Link>
+                <span className="text-white/30" aria-hidden="true">•</span>
+                <Link to="/note-legali" className="inline-flex items-center min-h-[36px] sm:min-h-[40px] -mx-2 px-2 hover:text-[#E69138] transition-colors rounded-sm">
+                  Note legali
+                </Link>
               </div>
-              <Link
-                to="/note-legali"
-                className="mt-1 inline-flex items-center min-h-[36px] sm:min-h-[40px] -mx-2 px-2 text-xs sm:text-sm text-white/60 hover:text-[#E69138] transition-colors rounded-sm"
-              >
-                Note legali
-              </Link>
 
               <div className="mt-4 sm:mt-5 md:mt-6 pt-4 sm:pt-5 border-t border-white/10">
                 <a

@@ -324,9 +324,13 @@ export const legalConfig = {
     dpoEmail: "",
     lastUpdated: "2026-09-08",
   },
+  terms: {
+    lastUpdated: "2026-10-05",
+  },
   links: {
     privacyPolicy: "/privacy",
     cookiePolicy: "/cookie",
+    terms: "/termini-e-condizioni",
     legalNotes: "/note-legali",
   },
 } as const

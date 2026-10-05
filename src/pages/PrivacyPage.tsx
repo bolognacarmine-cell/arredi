@@ -84,6 +84,7 @@ export default function PrivacyPage() {
       title="Informativa Privacy"
       intro="Questa informativa descrive in modo sintetico come vengono trattati i dati personali raccolti attraverso il sito e i canali di contatto collegati alle richieste commerciali."
       sections={sections}
+      lastUpdated="2026-09-08"
     />
   )
 }

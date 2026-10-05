@@ -16,6 +16,7 @@ import Contacts from "./pages/Contacts";
 import PrivacyPage from "./pages/PrivacyPage";
 import CookiePage from "./pages/CookiePage";
 import LegalNotesPage from "./pages/LegalNotesPage";
+import TermsPage from "./pages/TermsPage";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -64,6 +65,7 @@ export default function App() {
           <Route path="/contatti" element={<Contacts />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/cookie" element={<CookiePage />} />
+          <Route path="/termini-e-condizioni" element={<TermsPage />} />
           <Route path="/note-legali" element={<LegalNotesPage />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:slug" element={<BlogPost />} />

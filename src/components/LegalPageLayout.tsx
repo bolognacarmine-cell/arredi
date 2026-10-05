@@ -15,6 +15,7 @@ type LegalPageLayoutProps = {
   title: string
   intro: string
   sections: LegalSection[]
+  lastUpdated?: string
 }
 
 export default function LegalPageLayout({
@@ -22,6 +23,7 @@ export default function LegalPageLayout({
   title,
   intro,
   sections,
+  lastUpdated,
 }: LegalPageLayoutProps) {
   return (
     <div className="min-h-screen bg-[#F7F5F0]">
@@ -84,7 +86,7 @@ export default function LegalPageLayout({
         </div>
 
         <div className="mt-12 text-xs text-[#888580]">
-          Ultimo aggiornamento: {legalConfig.privacy.lastUpdated}
+          Ultimo aggiornamento: {lastUpdated || legalConfig.privacy.lastUpdated}
         </div>
       </div>
     </div>

@@ -59,6 +59,7 @@ export default function LegalNotesPage() {
       title="Note Legali"
       intro="Questa sezione raccoglie le principali informazioni relative a contenuti, responsabilita e condizioni generali di utilizzo del sito."
       sections={sections}
+      lastUpdated="2026-09-08"
     />
   )
 }
