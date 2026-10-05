@@ -60,7 +60,7 @@ export const fallbackSiteSettings: SiteSettings = {
     "Progettiamo e realizziamo arredi su misura per barbieri, uffici, negozi, scuole, bar e centri estetici. Seguiamo ogni fase, dal concept iniziale alla consegna finale, con attenzione ai dettagli e alla funzionalità.",
   footerBadges: ["Su misura", "Produzione dedicata", "Supporto diretto"],
   addressLine1: "Via P. Vertaldi, 27",
-  addressLine2: "81050 Macerata Campania (CE)",
+  addressLine2: "81047 Macerata Campania (CE)",
   hoursWeek: "Lun-Ven 9:00-13:00 / 15:00-19:00",
   hoursExtra: "Sabato 9:00-13:00",
   phone: "+39 0823 694427",
@@ -73,7 +73,7 @@ export const fallbackSiteSettings: SiteSettings = {
   instagramHref: "https://www.instagram.com/farcom_arredi/",
   facebookHref: "https://www.facebook.com/p/Farcom-arredi-100054867935352/",
   mapEmbedSrc:
-    "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2377.884846634837!2d14.286448674946657!3d41.05604271648417!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x133a557cd580ba03%3A0x1f2981eb342f4283!2sVia%20P.%20Vertaldi%2C%2027%2C%2081050%20Macerata%20Campania%20CE!5e1!3m2!1sit!2sit!4v1788194375937!5m2!1sit!2sit",
+    "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2377.884846634837!2d14.286448674946657!3d41.05604271648417!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x133a557cd580ba03%3A0x1f2981eb342f4283!2sVia%20P.%20Vertaldi%2C%2027%2C%2081047%20Macerata%20Campania%20CE!5e1!3m2!1sit!2sit!4v1788194375937!5m2!1sit!2sit",
   mapTitle: "Farcom Srl - Via P. Vertaldi, 27 Macerata Campania",
 }
 
@@ -274,6 +274,10 @@ export function getContactInfoCards(settings: SiteSettings) {
       entries: [{ text: settings.email, href: settings.emailHref }],
     },
     {
+      label: "Partita IVA",
+      entries: [{ text: "04970450617" }],
+    },
+    {
       label: "Orari",
       entries: [{ text: settings.hoursWeek }, { text: settings.hoursExtra }],
     },
@@ -306,8 +310,8 @@ export function getSocialLinks(settings: SiteSettings) {
 export const legalConfig = {
   company: {
     name: "Farcom Design s.r.l.",
-    address: "Via P. Vertaldi, 27, 81050 Macerata Campania (CE)",
-    vat: "", // TODO: inserire P.IVA quando disponibile
+    address: "Via P. Vertaldi, 27, 81047 Macerata Campania (CE)",
+    vat: "04970450617",
     email: "farcomsrl@hotmail.com",
     phone: "+39 0823 694427",
     whatsapp: "+39 329 4576079",

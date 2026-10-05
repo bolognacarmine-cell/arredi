@@ -389,6 +389,8 @@ export default function Footer() {
                 </div>
                 <div className="text-[10px] sm:text-xs text-white/45">
                   © {currentYear} {siteConfig.legalName}.
+                  <br />
+                  P.IVA: 04970450617
                 </div>
               </Accordion>
             </div>
@@ -545,6 +547,8 @@ export default function Footer() {
                 </a>
                 <div className="mt-1 sm:mt-1.5 text-[10px] sm:text-xs text-white/45 leading-relaxed" style={{ paddingBottom: "env(safe-area-inset-bottom, 0)" }}>
                   © {currentYear} {siteConfig.legalName}.
+                  <br />
+                  P.IVA: 04970450617
                   <br />
                   {siteConfig.claim}
                 </div>

@@ -91,6 +91,8 @@ const sections = [
     paragraphs: [
       "Per qualsiasi domanda relativa alla presente Cookie Policy o al trattamento dei tuoi dati personali, puoi contattarci ai seguenti recapiti:",
       <div key="contact-info" className="mt-3 p-4 bg-gray-50 rounded-lg space-y-2 text-[#6B7280]">
+        <p><strong className="text-[#1A1A2E]">Titolare del trattamento:</strong> Farcom Design</p>
+        <p><strong className="text-[#1A1A2E]">Partita IVA:</strong> 04970450617</p>
         <p><strong className="text-[#1A1A2E]">Email:</strong> privacy@farcom.it</p>
         <p><strong className="text-[#1A1A2E]">Sito web:</strong> www.farcom.it</p>
       </div>,

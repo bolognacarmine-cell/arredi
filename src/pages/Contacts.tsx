@@ -48,7 +48,7 @@ export default function Contacts() {
             "streetAddress": "Via P. Vertaldi, 27",
             "addressLocality": "Macerata Campania",
             "addressRegion": "CE",
-            "postalCode": "81050",
+            "postalCode": "81047",
             "addressCountry": "IT"
           },
           "geo": {
