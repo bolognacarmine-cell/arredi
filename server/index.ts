@@ -220,7 +220,7 @@ app.use(session({
     sameSite: isProduction ? 'none' : 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 giorni
     path: '/',
-    domain: isProduction ? 'arredi.onrender.com' : undefined,
+    domain: undefined,
   },
   name: 'farcom.sid',
   rolling: true,
