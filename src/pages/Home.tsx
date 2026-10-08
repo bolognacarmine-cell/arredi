@@ -300,13 +300,13 @@ export default function Home() {
       {safeDisplayedProjects.length > 0 && (
       <section id="progetti" className="pt-16 pb-6 sm:py-20 md:py-24 lg:py-28 xl:py-32 bg-gray-50 relative" data-bg="#F9FAFB">
         {/* Separatore visivo */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-indigo-600/30 to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/30 to-transparent" />
 
         <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-5 md:gap-6 mb-5 sm:mb-6 md:mb-8 lg:mb-10">
             <Reveal className="relative" variant="up" duration={800}>
-              <div className="absolute -left-1.5 sm:-left-2 md:-left-4 top-0 w-1 h-full bg-gradient-to-b from-indigo-600 to-transparent" />
-              <span className="text-indigo-600 text-[10px] sm:text-[11px] md:text-xs tracking-[0.16em] sm:tracking-[0.18em] md:tracking-[0.2em] uppercase font-semibold pl-2.5 sm:pl-3 md:pl-4">
+              <div className="absolute -left-1.5 sm:-left-2 md:-left-4 top-0 w-1 h-full bg-gradient-to-b from-[#E69138] to-transparent" />
+              <span className="text-[#E69138] text-[10px] sm:text-[11px] md:text-xs tracking-[0.16em] sm:tracking-[0.18em] md:tracking-[0.2em] uppercase font-semibold pl-2.5 sm:pl-3 md:pl-4">
                 Portfolio
               </span>
               <h2 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mt-1.5 sm:mt-2 pl-2.5 sm:pl-3 md:pl-4 leading-[1.15] sm:leading-tight text-balance">
@@ -317,7 +317,7 @@ export default function Home() {
             <Reveal delay={100}>
               <Link
                 to="/progetti"
-                className="inline-flex items-center self-start min-h-[36px] sm:min-h-[40px] -ml-2 px-2 text-indigo-600 text-xs sm:text-sm font-semibold hover:underline rounded-md"
+                className="inline-flex items-center self-start min-h-[36px] sm:min-h-[40px] -ml-2 px-2 text-[#E69138] text-xs sm:text-sm font-semibold hover:underline rounded-md"
               >
                 Vedi tutti i progetti →
               </Link>
@@ -353,7 +353,7 @@ export default function Home() {
                       decoding="async"
                       className="w-full h-full object-cover card-motion-media"
                     />
-                    <span className="absolute top-4 left-4 z-10 bg-indigo-600 text-white text-[11px] px-2.5 py-1 font-semibold tracking-wide rounded">
+                    <span className="absolute top-4 left-4 z-10 bg-[#E69138] text-white text-[11px] px-2.5 py-1 font-semibold tracking-wide rounded">
                       {p.sectorId ? p.sectorId.charAt(0).toUpperCase() + p.sectorId.slice(1) : ''}
                     </span>
                   </div>
@@ -367,7 +367,7 @@ export default function Home() {
                     <p className="text-gray-700 text-xs sm:text-sm leading-relaxed line-clamp-3">
                       {p.description}
                     </p>
-                    <span className="mt-3 inline-flex items-center min-h-[32px] sm:min-h-[36px] text-indigo-600 text-[10px] sm:text-xs font-semibold tracking-wide card-motion-cta">
+                    <span className="mt-3 inline-flex items-center min-h-[32px] sm:min-h-[36px] text-[#E69138] text-[10px] sm:text-xs font-semibold tracking-wide card-motion-cta">
                       Vedi progetto →
                     </span>
                   </div>

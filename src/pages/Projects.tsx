@@ -83,7 +83,7 @@ function ProjectGridCard({ project: p }: { project: ProjectRecord }) {
             obstacles={obstacles}
           />
         )}
-        <span className="absolute top-4 left-4 z-10 bg-indigo-600 text-white text-[11px] px-2.5 py-1 font-semibold tracking-wide rounded">
+        <span className="absolute top-4 left-4 z-10 bg-[#E69138] text-white text-[11px] px-2.5 py-1 font-semibold tracking-wide rounded">
           {p.sector}
         </span>
       </div>
@@ -93,7 +93,7 @@ function ProjectGridCard({ project: p }: { project: ProjectRecord }) {
           {p.location} · {p.year}
         </p>
         <p className="text-gray-700 text-sm leading-relaxed line-clamp-3">{p.description}</p>
-        <span className="mt-3 inline-block text-indigo-600 text-xs font-semibold tracking-wide group-hover:tracking-widest transition-all">
+        <span className="mt-3 inline-block text-[#E69138] text-xs font-semibold tracking-wide group-hover:tracking-widest transition-all">
           Vedi progetto →
         </span>
       </div>
@@ -133,7 +133,7 @@ export default function Projects() {
       <div className="max-w-7xl mx-auto px-6 lg:px-10">
         {/* Header */}
         <div className="pt-12 pb-14">
-          <span className="text-indigo-600 text-xs tracking-widest uppercase font-semibold">
+          <span className="text-[#E69138] text-xs tracking-widest uppercase font-semibold">
             Portfolio
           </span>
           <h1 className="font-display text-4xl lg:text-5xl font-bold text-gray-900 mt-2 mb-4">
@@ -153,8 +153,8 @@ export default function Projects() {
               onClick={() => setActive(f.id)}
               className={`px-4 py-2 text-sm font-medium transition-all rounded-md ${
                 active === f.id
-                  ? "bg-indigo-600 text-white shadow-sm"
-                  : "bg-white border border-gray-200 text-gray-700 hover:border-indigo-600 hover:text-indigo-600"
+                  ? "bg-[#E69138] text-white shadow-sm"
+                  : "bg-white border border-gray-200 text-gray-700 hover:border-[#E69138] hover:text-[#E69138]"
               }`}
             >
               {f.label}
@@ -168,7 +168,7 @@ export default function Projects() {
             <p className="text-gray-600 text-lg mb-4">Nessun progetto disponibile al momento</p>
             <Link
               to="/preventivo"
-              className="inline-block px-5 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors"
+              className="inline-block px-5 py-2.5 bg-[#E69138] text-white text-sm font-medium rounded-md hover:bg-[#D67F28] transition-colors"
             >
               Richiedi un preventivo →
             </Link>
