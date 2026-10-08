@@ -55,11 +55,11 @@ function ProjectGridCard({ project: p }: { project: ProjectRecord }) {
   return (
     <Link
       to={`/progetti/${p.id}`}
-      className="group block bg-white overflow-hidden border border-[#E5E5E7] hover:shadow-lg transition-shadow"
+      className="group block bg-white overflow-hidden border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow"
     >
       <div
         ref={mediaRef}
-        className="relative aspect-[4/3] overflow-hidden bg-[#E8E8EC]"
+        className="relative aspect-[4/3] overflow-hidden bg-gray-100"
       >
         <img
           src={coverSrc}
@@ -83,17 +83,17 @@ function ProjectGridCard({ project: p }: { project: ProjectRecord }) {
             obstacles={obstacles}
           />
         )}
-        <span className="absolute top-4 left-4 z-10 bg-[#E69138] text-white text-xs px-3 py-1 font-medium">
+        <span className="absolute top-4 left-4 z-10 bg-indigo-600 text-white text-[11px] px-2.5 py-1 font-semibold tracking-wide rounded">
           {p.sector}
         </span>
       </div>
       <div className="p-6">
-        <h3 className="font-display text-xl font-light text-[#1A1A2E] mb-1">{p.title}</h3>
-        <p className="text-[#6B7280] text-xs mb-3">
+        <h3 className="font-display text-lg lg:text-xl font-semibold text-gray-900 mb-1">{p.title}</h3>
+        <p className="text-gray-500 text-xs mb-2">
           {p.location} · {p.year}
         </p>
-        <p className="text-[#4A4A46] text-sm leading-relaxed line-clamp-2">{p.description}</p>
-        <span className="mt-4 inline-block text-[#E69138] text-xs font-semibold tracking-wide group-hover:tracking-widest transition-all">
+        <p className="text-gray-700 text-sm leading-relaxed line-clamp-3">{p.description}</p>
+        <span className="mt-3 inline-block text-indigo-600 text-xs font-semibold tracking-wide group-hover:tracking-widest transition-all">
           Vedi progetto →
         </span>
       </div>
@@ -129,32 +129,32 @@ export default function Projects() {
         : []
 
   return (
-    <div className="bg-[#FAFAFA] min-h-screen pt-24">
+    <div className="bg-gray-50 min-h-screen pt-24">
       <div className="max-w-7xl mx-auto px-6 lg:px-10">
         {/* Header */}
         <div className="pt-12 pb-14">
-          <span className="text-[#6B7280] text-xs tracking-widest uppercase font-semibold">
+          <span className="text-indigo-600 text-xs tracking-widest uppercase font-semibold">
             Portfolio
           </span>
-          <h1 className="font-display text-5xl lg:text-6xl font-light text-[#1A1A2E] mt-2 mb-6">
+          <h1 className="font-display text-4xl lg:text-5xl font-bold text-gray-900 mt-2 mb-4">
             I nostri progetti
           </h1>
-          <p className="text-[#6B7280] max-w-xl leading-relaxed">
+          <p className="text-gray-600 max-w-xl leading-relaxed">
             Oltre 500 realizzazioni in tutta Italia. Ogni progetto è unico, ogni spazio ha una
             storia da raccontare.
           </p>
         </div>
 
         {/* Filters */}
-        <div className="flex flex-wrap gap-2 mb-12 border-b border-[#E5E5E7] pb-6">
+        <div className="flex flex-wrap gap-2 mb-10 border-b border-gray-200 pb-4">
           {filters.map((f) => (
             <button
               key={f.id}
               onClick={() => setActive(f.id)}
-              className={`px-5 py-2 text-sm font-medium transition-all ${
+              className={`px-4 py-2 text-sm font-medium transition-all rounded-md ${
                 active === f.id
-                  ? "bg-[#E69138] text-white"
-                  : "bg-white border border-[#E5E5E7] text-[#4A4A46] hover:border-[#E69138] hover:text-[#E69138]"
+                  ? "bg-indigo-600 text-white shadow-sm"
+                  : "bg-white border border-gray-200 text-gray-700 hover:border-indigo-600 hover:text-indigo-600"
               }`}
             >
               {f.label}
@@ -165,10 +165,10 @@ export default function Projects() {
         {/* Grid */}
         {visible.length === 0 ? (
           <div className="text-center py-24">
-            <p className="text-[#6B7280] text-lg mb-4">Nessun progetto disponibile al momento</p>
+            <p className="text-gray-600 text-lg mb-4">Nessun progetto disponibile al momento</p>
             <Link
               to="/preventivo"
-              className="inline-block px-6 py-3 bg-[#E69138] text-white rounded-lg hover:bg-[#D67F28] transition-colors"
+              className="inline-block px-5 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors"
             >
               Richiedi un preventivo →
             </Link>
