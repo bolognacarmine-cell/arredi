@@ -126,6 +126,9 @@ export default function Footer() {
   // Stato hover desktop per numeri telefono
   const [phoneHoverOpen, setPhoneHoverOpen] = useState(false)
 
+  // Stato accordion desktop "Note legali" (col 4 md+)
+  const [legalOpen, setLegalOpen] = useState(true)
+
   const toggle = (col: "col1" | "col2", key: SectionKey) => {
     setOpen((prev) => ({ ...prev, [col]: prev[col] === key ? null : key }))
   }
@@ -531,23 +534,81 @@ export default function Footer() {
                 ))}
               </div>
 
-              <SectionTitle>Note legali</SectionTitle>
-              <div className="mt-3 sm:mt-4 md:mt-5 flex flex-wrap items-center gap-x-1 gap-y-1 text-xs sm:text-sm text-white/60">
-                <Link to="/privacy" className="inline-flex items-center min-h-[36px] sm:min-h-[40px] -mx-2 px-2 hover:text-[#E69138] transition-colors rounded-sm">
-                  Privacy
-                </Link>
-                <span className="text-white/30" aria-hidden="true">•</span>
-                <Link to="/cookie" className="inline-flex items-center min-h-[36px] sm:min-h-[40px] -mx-2 px-2 hover:text-[#E69138] transition-colors rounded-sm">
-                  Cookie
-                </Link>
-                <span className="text-white/30" aria-hidden="true">•</span>
-                <Link to="/termini-e-condizioni" className="inline-flex items-center min-h-[36px] sm:min-h-[40px] -mx-2 px-2 hover:text-[#E69138] transition-colors rounded-sm">
-                  Termini e Condizioni
-                </Link>
-                <span className="text-white/30" aria-hidden="true">•</span>
-                <Link to="/note-legali" className="inline-flex items-center min-h-[36px] sm:min-h-[40px] -mx-2 px-2 hover:text-[#E69138] transition-colors rounded-sm">
-                  Note legali
-                </Link>
+              {/* Accordion desktop Note legali (a cascata con triangolino) */}
+              <div className="mt-1">
+                <button
+                  type="button"
+                  onClick={() => setLegalOpen((v) => !v)}
+                  aria-expanded={legalOpen}
+                  aria-controls="footer-desktop-legal"
+                  className="group w-full inline-flex items-center justify-between min-h-[32px] sm:min-h-[36px] -mx-2 px-2 text-left hover:text-[#E69138] transition-colors"
+                >
+                  <span className="inline-flex items-center gap-2">
+                    <ChevronDown open={legalOpen} />
+                    <span className="text-[10px] sm:text-[11px] md:text-xs font-semibold uppercase tracking-[0.18em] sm:tracking-[0.2em] md:tracking-[0.22em] text-white/42 group-hover:text-[#E69138]/90 transition-colors">
+                      Note legali
+                    </span>
+                  </span>
+                </button>
+                <div
+                  id="footer-desktop-legal"
+                  role="region"
+                  aria-labelledby="footer-desktop-legal-header"
+                  className={`grid transition-all duration-300 ease-out ${
+                    legalOpen
+                      ? "grid-rows-[1fr] opacity-100 mt-1 sm:mt-2 mb-1"
+                      : "grid-rows-[0fr] opacity-0 mt-0 mb-0"
+                  }`}
+                >
+                  <div className="overflow-hidden">
+                    <ul className="flex flex-col gap-0.5 sm:gap-1 pl-1">
+                      <li>
+                        <Link
+                          to="/privacy"
+                          className="group/item inline-flex items-center gap-2 min-h-[34px] sm:min-h-[38px] -mx-2 px-2 text-xs sm:text-sm text-white/60 hover:text-[#E69138] transition-colors rounded-sm"
+                        >
+                          <span aria-hidden="true" className="text-[#E69138]/70 text-[10px] leading-none group-hover/item:text-[#E69138] group-hover/item:translate-x-0.5 transition-all">
+                            ›
+                          </span>
+                          Privacy
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          to="/cookie"
+                          className="group/item inline-flex items-center gap-2 min-h-[34px] sm:min-h-[38px] -mx-2 px-2 text-xs sm:text-sm text-white/60 hover:text-[#E69138] transition-colors rounded-sm"
+                        >
+                          <span aria-hidden="true" className="text-[#E69138]/70 text-[10px] leading-none group-hover/item:text-[#E69138] group-hover/item:translate-x-0.5 transition-all">
+                            ›
+                          </span>
+                          Cookie
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          to="/termini-e-condizioni"
+                          className="group/item inline-flex items-center gap-2 min-h-[34px] sm:min-h-[38px] -mx-2 px-2 text-xs sm:text-sm text-white/60 hover:text-[#E69138] transition-colors rounded-sm"
+                        >
+                          <span aria-hidden="true" className="text-[#E69138]/70 text-[10px] leading-none group-hover/item:text-[#E69138] group-hover/item:translate-x-0.5 transition-all">
+                            ›
+                          </span>
+                          Termini e Condizioni
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          to="/note-legali"
+                          className="group/item inline-flex items-center gap-2 min-h-[34px] sm:min-h-[38px] -mx-2 px-2 text-xs sm:text-sm text-white/60 hover:text-[#E69138] transition-colors rounded-sm"
+                        >
+                          <span aria-hidden="true" className="text-[#E69138]/70 text-[10px] leading-none group-hover/item:text-[#E69138] group-hover/item:translate-x-0.5 transition-all">
+                            ›
+                          </span>
+                          Note legali
+                        </Link>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
               </div>
 
               <div className="mt-4 sm:mt-5 md:mt-6 pt-4 sm:pt-5 border-t border-white/10">
