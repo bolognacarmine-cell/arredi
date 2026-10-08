@@ -178,7 +178,13 @@ export default function Footer() {
   }
 
   return (
-    <footer className="relative overflow-hidden bg-[#000] text-white">
+    <footer data-bg="#1A1A2E" className="relative overflow-hidden bg-[#1A1A2E] text-white">
+      {/* Soft ambient glow decorativo (wow effect) */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-[520px] opacity-[0.35]">
+        <div className="absolute left-1/2 -translate-x-1/2 top-0 w-[1100px] h-[520px] rounded-full blur-[120px] bg-gradient-to-b from-[#E69138]/40 via-[#E69138]/10 to-transparent" />
+      </div>
+      <div aria-hidden="true" className="pointer-events-none absolute bottom-0 left-0 w-[600px] h-[400px] rounded-full blur-[140px] opacity-20 bg-[#1A1A2E]" />
+      <div aria-hidden="true" className="pointer-events-none absolute bottom-0 right-0 w-[500px] h-[380px] rounded-full blur-[130px] opacity-15 bg-[#E69138]" />
       {/* Banda CTA superiore */}
       <div className="relative border-b border-white/10">
         <Reveal

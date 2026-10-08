@@ -102,6 +102,13 @@ export default function App() {
             </div>
           } />
         </Routes>
+        {/* Buffer di transizione cromatica tra ultimo contenuto e Footer (bianco → scuro) */}
+        <div aria-hidden="true" className="relative overflow-hidden -mb-px">
+          <div className="h-16 sm:h-24 md:h-32 bg-gradient-to-b from-white via-[#FAFAF9] to-[#1A1A2E]" />
+          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-24">
+            <div className="absolute left-1/2 -translate-x-1/2 w-[900px] h-24 blur-[60px] opacity-25 bg-gradient-to-t from-[#E69138]/50 to-transparent" />
+          </div>
+        </div>
         <Footer />
         <CookieBanner />
       </BrowserRouter>

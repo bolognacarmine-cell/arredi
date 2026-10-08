@@ -94,7 +94,7 @@ function StarRow() {
 
 export default function ReviewsSection() {
   return (
-    <section className="pt-4 pb-4 sm:py-10 md:py-12 lg:py-16 xl:py-20 bg-gray-50 relative">
+    <section data-bg="#F9FAFB" className="pt-4 pb-4 sm:py-10 md:py-12 lg:py-16 xl:py-20 bg-gray-50 relative">
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/20 to-transparent" />
 
       <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16">

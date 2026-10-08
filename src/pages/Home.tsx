@@ -262,8 +262,15 @@ export default function Home() {
       />
       <CustomCursor />
       {/* HERO */}
-      <section id="hero" data-bg="#1A1A2E">
+      <section id="hero" data-bg="#1A1A2E" className="relative overflow-hidden">
+        {/* Soft ambient glow hero (wow effect) */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+          <div className="absolute top-[-10%] left-[-5%] w-[700px] h-[700px] rounded-full blur-[140px] opacity-20 bg-[#E69138]" />
+          <div className="absolute bottom-[-5%] right-[-5%] w-[600px] h-[600px] rounded-full blur-[130px] opacity-[0.08] bg-[#1A2A5E]" />
+        </div>
         <Hero />
+        {/* Dissolvenza scuro → bianco verso Settori */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-20 sm:h-28 md:h-36 bg-gradient-to-b from-transparent via-[#1A1A2E]/30 to-white" />
       </section>
 
       {/* SECTORS */}
@@ -380,7 +387,7 @@ export default function Home() {
       )}
 
       {/* SHOWROOM HERO: video senza watermark; CTA sopra video/gradient */}
-      <section className="relative h-[70vh] sm:h-[80vh] overflow-hidden">
+      <section className="relative h-[70vh] sm:h-[80vh] overflow-hidden" data-bg="#1A1A2E">
         <HeroBackgroundVideo
           className="z-0"
           basePath="/videos/showroom"
@@ -390,6 +397,11 @@ export default function Home() {
         />
 
         <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
+
+        {/* Dissolvenza top: sezione prima → video */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-24 sm:h-32 z-[1] bg-gradient-to-b from-[#F9FAFB] via-[#F9FAFB]/40 to-transparent" />
+        {/* Dissolvenza bottom: video → showroom crema */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-28 sm:h-36 md:h-44 z-[1] bg-gradient-to-t from-[#FAFAF7] via-[#FAFAF7]/30 to-transparent" />
 
         <div className="absolute inset-0 z-10 flex items-center justify-center">
           <div className="max-w-7xl mx-auto px-6 md:px-8 lg:px-16 text-center">
@@ -533,11 +545,23 @@ export default function Home() {
       </section>
 
       {/* WHY US */}
-      <section className="py-16 sm:py-20 md:py-24 lg:py-28 xl:py-32 bg-[#1A1A2E] relative" data-bg="#1A1A2E">
-        {/* Separatore visivo */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/30 to-transparent" />
+      <section className="py-16 sm:py-20 md:py-24 lg:py-28 xl:py-32 bg-[#1A1A2E] relative overflow-hidden" data-bg="#1A1A2E">
+        {/* Ambient glow decorativo (wow effect) */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+          <div className="absolute top-[-10%] left-[5%] w-[550px] h-[550px] rounded-full blur-[120px] opacity-[0.18] bg-[#E69138]" />
+          <div className="absolute top-[10%] right-[-5%] w-[500px] h-[500px] rounded-full blur-[130px] opacity-[0.12] bg-[#1A2A5E]" />
+          <div className="absolute bottom-[-15%] left-1/2 -translate-x-1/2 w-[700px] h-[500px] rounded-full blur-[140px] opacity-[0.1] bg-[#E69138]" />
+        </div>
 
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16">
+        {/* Dissolvenza top: Servizi (bianco) → Why Us (blu) */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-28 sm:h-36 md:h-44 bg-gradient-to-b from-white via-white/40 to-transparent" />
+        {/* Dissolvenza bottom: Why Us (blu) → Stats (bianco) */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-28 sm:h-36 md:h-44 bg-gradient-to-t from-white via-white/35 to-transparent" />
+
+        {/* Separatore visivo */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/30 to-transparent z-[1]" />
+
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 relative z-[1]">
           <Reveal className="text-center mb-5 sm:mb-6 md:mb-8 lg:mb-10">
             <span className="text-[#E69138] text-[10px] sm:text-[11px] md:text-xs tracking-[0.16em] sm:tracking-[0.18em] md:tracking-[0.2em] uppercase font-semibold">
               Perché sceglierci
@@ -566,12 +590,16 @@ export default function Home() {
       </section>
 
       {/* STATS BAND */}
-      <section className="py-12 sm:py-16 md:py-20 lg:py-24 xl:py-28 bg-white relative" data-bg="#FFFFFF">
+      <section className="py-12 sm:py-16 md:py-20 lg:py-24 xl:py-28 bg-white relative overflow-hidden" data-bg="#FFFFFF">
+        {/* Soft glow accent: eco dal Why Us blu */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-64 sm:h-80">
+          <div className="absolute left-1/2 -translate-x-1/2 top-0 w-[1000px] h-64 blur-[100px] opacity-[0.12] bg-[#E69138]" />
+        </div>
         {/* Separatore visivo */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/30 to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/30 to-transparent z-[1]" />
 
         <Stagger
-          className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6 text-center"
+          className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6 text-center relative z-[1]"
           step={90}
           variant="scale"
           duration={650}
@@ -596,11 +624,15 @@ export default function Home() {
       </section>
 
       {/* CTA BAND */}
-      <section className="py-12 sm:py-16 md:py-20 lg:py-24 xl:py-28 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 sm:gap-5 md:gap-6 lg:gap-8 relative bg-white" data-bg="#FFFFFF">
+      <section className="py-12 sm:py-16 md:py-20 lg:py-24 xl:py-28 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 sm:gap-5 md:gap-6 lg:gap-8 relative bg-white overflow-hidden" data-bg="#FFFFFF">
+        {/* Soft glow accent verso il Footer (wow exit) */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-72 sm:h-80 md:h-96">
+          <div className="absolute left-1/2 -translate-x-1/2 bottom-0 w-[1000px] h-72 blur-[110px] opacity-[0.18] bg-gradient-to-t from-[#E69138] via-[#E69138]/40 to-transparent" />
+        </div>
         {/* Separatore visivo */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/30 to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/30 to-transparent z-[1]" />
 
-        <Reveal className="w-full lg:w-auto">
+        <Reveal className="w-full lg:w-auto relative z-[1]">
           <h2 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-[#1A1A2E] max-w-xl leading-[1.15] sm:leading-tight">
             Hai un'idea per il tuo spazio?
             <br />
@@ -608,7 +640,7 @@ export default function Home() {
           </h2>
           <MotionLine className="mt-4" width="5rem" thickness={3} delay={100} />
         </Reveal>
-        <Reveal delay={120} className="flex flex-col sm:flex-row gap-2 sm:gap-3 md:gap-4 w-full sm:w-auto">
+        <Reveal delay={120} className="flex flex-col sm:flex-row gap-2 sm:gap-3 md:gap-4 w-full sm:w-auto relative z-[1]">
           <Magnetic strength={10}>
             <Link
               to="/preventivo"
