@@ -383,23 +383,53 @@ export default function Footer() {
                     </a>
                   ))}
                 </div>
-                <div className="flex flex-wrap items-center gap-x-1 gap-y-1 text-xs sm:text-sm text-white/60 mb-2 sm:mb-3">
-                  <Link to="/privacy" className="inline-flex items-center min-h-[36px] sm:min-h-[40px] -mx-2 px-2 hover:text-[#E69138] transition-colors rounded-sm">
-                    Privacy
-                  </Link>
-                  <span className="text-white/30" aria-hidden="true">•</span>
-                  <Link to="/cookie" className="inline-flex items-center min-h-[36px] sm:min-h-[40px] -mx-2 px-2 hover:text-[#E69138] transition-colors rounded-sm">
-                    Cookie
-                  </Link>
-                  <span className="text-white/30" aria-hidden="true">•</span>
-                  <Link to="/termini-e-condizioni" className="inline-flex items-center min-h-[36px] sm:min-h-[40px] -mx-2 px-2 hover:text-[#E69138] transition-colors rounded-sm">
-                    Termini e Condizioni
-                  </Link>
-                  <span className="text-white/30" aria-hidden="true">•</span>
-                  <Link to="/note-legali" className="inline-flex items-center min-h-[36px] sm:min-h-[40px] -mx-2 px-2 hover:text-[#E69138] transition-colors rounded-sm">
-                    Note legali
-                  </Link>
-                </div>
+                {/* Links legali a cascata (stesso stile della versione desktop) */}
+                <ul className="flex flex-col gap-0.5 sm:gap-1 mb-2 sm:mb-3 pl-1">
+                  <li>
+                    <Link
+                      to="/privacy"
+                      className="group/item inline-flex items-center gap-2 min-h-[36px] sm:min-h-[40px] -mx-2 px-2 text-xs sm:text-sm text-white/60 hover:text-[#E69138] transition-colors rounded-sm"
+                    >
+                      <span aria-hidden="true" className="text-[#E69138]/70 text-[10px] leading-none group-hover/item:text-[#E69138] group-hover/item:translate-x-0.5 transition-all">
+                        ›
+                      </span>
+                      Privacy
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/cookie"
+                      className="group/item inline-flex items-center gap-2 min-h-[36px] sm:min-h-[40px] -mx-2 px-2 text-xs sm:text-sm text-white/60 hover:text-[#E69138] transition-colors rounded-sm"
+                    >
+                      <span aria-hidden="true" className="text-[#E69138]/70 text-[10px] leading-none group-hover/item:text-[#E69138] group-hover/item:translate-x-0.5 transition-all">
+                        ›
+                      </span>
+                      Cookie
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/termini-e-condizioni"
+                      className="group/item inline-flex items-center gap-2 min-h-[36px] sm:min-h-[40px] -mx-2 px-2 text-xs sm:text-sm text-white/60 hover:text-[#E69138] transition-colors rounded-sm"
+                    >
+                      <span aria-hidden="true" className="text-[#E69138]/70 text-[10px] leading-none group-hover/item:text-[#E69138] group-hover/item:translate-x-0.5 transition-all">
+                        ›
+                      </span>
+                      Termini e Condizioni
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/note-legali"
+                      className="group/item inline-flex items-center gap-2 min-h-[36px] sm:min-h-[40px] -mx-2 px-2 text-xs sm:text-sm text-white/60 hover:text-[#E69138] transition-colors rounded-sm"
+                    >
+                      <span aria-hidden="true" className="text-[#E69138]/70 text-[10px] leading-none group-hover/item:text-[#E69138] group-hover/item:translate-x-0.5 transition-all">
+                        ›
+                      </span>
+                      Note legali
+                    </Link>
+                  </li>
+                </ul>
                 <div className="text-[10px] sm:text-xs text-white/45">
                   © {currentYear} {siteConfig.legalName}.
                   <br />

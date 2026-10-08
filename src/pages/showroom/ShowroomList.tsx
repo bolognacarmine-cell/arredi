@@ -121,7 +121,7 @@ export default function ShowroomList() {
       />
 
       {/* Hero Video Section — nessun watermark sul video; CTA sopra video/gradient */}
-      <section className="relative h-[70vh] sm:h-[80vh] overflow-hidden">
+      <section className="relative min-h-[70vh] sm:min-h-[80vh] overflow-hidden">
         {!prefersReducedMotion ? (
           <HeroBackgroundVideo
             className="z-0"
@@ -147,24 +147,25 @@ export default function ShowroomList() {
         {/* Gradient sotto i controlli/CTA */}
         <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
 
-        {/* Hero Content Overlay */}
-        <div className="absolute inset-0 z-10 flex items-center justify-center">
+        {/* Hero Content Overlay — RELATIVE + min-h invece di absolute inset-0:
+            su schermi piccoli NON sfora e non taglia, la section si allunga */}
+        <div className="relative z-10 min-h-[70vh] sm:min-h-[80vh] flex items-center justify-center py-16 sm:py-24 md:py-32">
           <Reveal
             className="max-w-7xl mx-auto px-6 md:px-8 lg:px-16 text-center"
             duration={800}
             rootMargin="0px"
           >
-            <div className="inline-flex items-center gap-3 px-4 py-1.5 mb-6 border border-[var(--accent)]/30 bg-white/90 backdrop-blur-sm">
+            <div className="inline-flex items-center gap-3 px-4 py-1.5 mb-4 sm:mb-6 border border-[var(--accent)]/30 bg-white/90 backdrop-blur-sm">
               <span className="h-px w-8 bg-[var(--accent)]" />
               <span className="text-[11px] uppercase tracking-[0.18em] font-medium text-[var(--accent)]">
                 Catalogo
               </span>
             </div>
-            <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-light text-white leading-tight max-w-4xl mb-6 drop-shadow-lg">
+            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light text-white leading-tight max-w-4xl mb-4 sm:mb-6 drop-shadow-lg">
               Showroom Arredamento Campania
             </h1>
-            <MotionLine className="mx-auto mb-6" width="4.5rem" thickness={3} origin="center" delay={100} />
-            <p className="text-base md:text-lg text-white/90 max-w-2xl leading-relaxed mb-8 drop-shadow-md mx-auto">
+            <MotionLine className="mx-auto mb-4 sm:mb-6" width="4.5rem" thickness={3} origin="center" delay={100} />
+            <p className="text-sm sm:text-base md:text-lg text-white/90 max-w-2xl leading-relaxed mb-6 sm:mb-8 drop-shadow-md mx-auto">
               Showroom arredamento Campania a Macerata Campania: arredi professionali su misura per barberie, parrucchieri, uffici, scuole e attività speciali. Qualità artigianale Made in Italy con servizio in tutta Italia.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
