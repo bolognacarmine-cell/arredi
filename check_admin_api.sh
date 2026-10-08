@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+BASE_URL="https://www.farcomarredi.it"
+LOGIN_URL="${BASE_URL}/api/admin/login"
+ME_URL="${BASE_URL}/api/admin/me"
+
+EMAIL="admin@farcom.local"
+PASSWORD="Farcom2026"
+
+TMP_DIR=$(mktemp -d)
+COOKIES_FILE="${TMP_DIR}/cookies.txt"
+trap 'rm -rf "${TMP_DIR}"' EXIT
+
+# 1) Login
+HTTP_CODE_LOGIN=$(curl -s -o /dev/null -w "%{http_code}" \
+  -c "${COOKIES_FILE}" \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -d "{\"email\":\"${EMAIL}\",\"password\":\"${PASSWORD}\"}" \
+  "${LOGIN_URL}")
+
+if [ "${HTTP_CODE_LOGIN}" != "200" ]; then
+  echo "❌ LOGIN FAILED: HTTP ${HTTP_CODE_LOGIN}"
+  exit 1
+fi
+
+# 2) Controllo presenza cookie farcom.sid
+if ! grep -q "farcom.sid" "${COOKIES_FILE}"; then
+  echo "❌ LOGIN OK ma cookie farcom.sid assente"
+  exit 1
+fi
+
+# 3) Chiamata a /api/admin/me
+RESPONSE_ME=$(curl -s -b "${COOKIES_FILE}" "${ME_URL}")
+HTTP_CODE_ME=$(curl -s -o /dev/null -w "%{http_code}" -b "${COOKIES_FILE}" "${ME_URL}")
+
+if [ "${HTTP_CODE_ME}" != "200" ]; then
+  echo "❌ /api/admin/me FAILED: HTTP ${HTTP_CODE_ME}"
+  echo "Response: ${RESPONSE_ME}"
+  exit 1
+fi
+
+# 4) Controllo struttura risposta (presenza di user.email)
+if echo "${RESPONSE_ME}" | grep -q '"email".*"admin@farcom.local"'; then
+  echo "✅ ADMIN API OK: login + /api/admin/me funzionanti"
+  exit 0
+else
+  echo "⚠️ /api/admin/me HTTP 200 ma dati utente inaspettati"
+  echo "Response: ${RESPONSE_ME}"
+  exit 1
+fi

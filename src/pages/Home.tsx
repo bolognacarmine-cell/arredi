@@ -353,21 +353,21 @@ export default function Home() {
                       decoding="async"
                       className="w-full h-full object-cover card-motion-media"
                     />
-                    <span className="absolute top-4 left-4 z-10 bg-[#E69138] text-white text-[11px] px-2.5 py-1 font-semibold tracking-wide rounded">
+                    <span className="absolute top-4 left-4 z-10 bg-[#E69138] text-[#1A1A2E] text-xs px-3 py-1 font-semibold tracking-wide">
                       {p.sectorId ? p.sectorId.charAt(0).toUpperCase() + p.sectorId.slice(1) : ''}
                     </span>
                   </div>
                   <div className="p-4 sm:p-5 md:p-6">
-                    <h3 className="font-display text-lg lg:text-xl font-semibold text-gray-900 mb-1 leading-snug">
+                    <h3 className="font-display text-base sm:text-lg md:text-xl font-bold text-gray-900 mb-1 leading-snug">
                       {p.title}
                     </h3>
-                    <p className="text-gray-500 text-[11px] sm:text-xs mb-2">
+                    <p className="text-gray-600 text-xs sm:text-sm font-medium mb-2 sm:mb-2.5">
                       {p.location} · {p.year}
                     </p>
-                    <p className="text-gray-700 text-xs sm:text-sm leading-relaxed line-clamp-3">
+                    <p className="text-gray-700 text-sm sm:text-base leading-relaxed line-clamp-3">
                       {p.description}
                     </p>
-                    <span className="mt-3 inline-flex items-center min-h-[32px] sm:min-h-[36px] text-[#E69138] text-[10px] sm:text-xs font-semibold tracking-wide card-motion-cta">
+                    <span className="mt-3 sm:mt-4 inline-flex items-center min-h-[32px] sm:min-h-[36px] text-[#E69138] text-xs sm:text-sm font-semibold tracking-wide card-motion-cta">
                       Vedi progetto →
                     </span>
                   </div>

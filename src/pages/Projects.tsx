@@ -83,17 +83,17 @@ function ProjectGridCard({ project: p }: { project: ProjectRecord }) {
             obstacles={obstacles}
           />
         )}
-        <span className="absolute top-4 left-4 z-10 bg-[#E69138] text-white text-[11px] px-2.5 py-1 font-semibold tracking-wide rounded">
+        <span className="absolute top-4 left-4 z-10 bg-[#E69138] text-[#1A1A2E] text-xs px-3 py-1 font-semibold tracking-wide">
           {p.sector}
         </span>
       </div>
       <div className="p-6">
-        <h3 className="font-display text-lg lg:text-xl font-semibold text-gray-900 mb-1">{p.title}</h3>
-        <p className="text-gray-500 text-xs mb-2">
+        <h3 className="font-display text-lg lg:text-xl font-bold text-gray-900 mb-1">{p.title}</h3>
+        <p className="text-gray-600 text-xs sm:text-sm font-medium mb-2">
           {p.location} · {p.year}
         </p>
-        <p className="text-gray-700 text-sm leading-relaxed line-clamp-3">{p.description}</p>
-        <span className="mt-3 inline-block text-[#E69138] text-xs font-semibold tracking-wide group-hover:tracking-widest transition-all">
+        <p className="text-gray-700 text-sm sm:text-base leading-relaxed line-clamp-3">{p.description}</p>
+        <span className="mt-3 sm:mt-4 inline-block text-[#E69138] text-xs sm:text-sm font-semibold tracking-wide group-hover:tracking-widest transition-all">
           Vedi progetto →
         </span>
       </div>
