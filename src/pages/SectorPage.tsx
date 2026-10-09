@@ -4,6 +4,7 @@ import { resolveImageUrl } from "../lib/cloudinary";
 import { SECTORS } from "../data";
 import { useProjects } from "../projectStore";
 import { getParentPath } from "../utils/navigation";
+import SEOHead from "../components/SEOHead";
 
 const steps = [
   {
@@ -67,8 +68,53 @@ export default function SectorPage() {
 
   const sectorProjects = Array.isArray(projects) ? projects.filter((p) => p.sectorId === id) : []
 
+  const heroImage = resolveImageUrl(
+    {
+      src: sector.heroImage,
+      publicId: sector.heroImageCloudinaryPublicId ?? null,
+    },
+    { width: 1200, height: 630, objectFit: "cover", gravity: "auto" },
+  )
+
   return (
     <div className="bg-[#F7F5F0]">
+      <SEOHead
+        title={`Arredi per ${sector.label} | Progettazione e Realizzazione | Farcom Srl`}
+        description={`${sector.description} Scopri i progetti realizzati da Farcom Srl per ${sector.label}: soluzioni su misura, progettazione 3D, realizzazione artigianale in laboratorio a Macerata Campania e installazione chiavi in mano in tutta Italia.`}
+        canonical={`https://www.farcomarredi.it/settori/${sector.id}`}
+        ogImage={heroImage}
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "Service",
+          "name": `Arredamento per ${sector.label} | Farcom Srl`,
+          "serviceType": sector.longTitle || `Arredamento per ${sector.label}`,
+          "description": `${sector.description} Soluzioni su misura con progettazione 3D, produzione artigianale e installazione in tutta Italia.`,
+          "provider": {
+            "@type": "Organization",
+            "name": "Farcom Srl",
+            "url": "https://www.farcomarredi.it/"
+          },
+          "areaServed": {
+            "@type": "Country",
+            "name": "Italia"
+          },
+          "url": `https://www.farcomarredi.it/settori/${sector.id}`,
+          "inLanguage": "it-IT",
+          "hasOfferCatalog": sectorProjects.length > 0 ? {
+            "@type": "OfferCatalog",
+            "name": `Progetti realizzati per ${sector.label}`,
+            "itemListElement": sectorProjects.slice(0, 6).map((p) => ({
+              "@type": "ListItem",
+              "position": p.id,
+              "item": {
+                "@type": "CreativeWork",
+                "name": p.title,
+                "url": `https://www.farcomarredi.it/progetti/${p.id}`
+              }
+            }))
+          } : undefined
+        }}
+      />
       {/* HERO */}
       <section className="relative h-[70vh] flex items-end pb-16 overflow-hidden">
         <div className="absolute inset-0">

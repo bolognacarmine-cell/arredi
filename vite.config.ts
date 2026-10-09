@@ -148,7 +148,7 @@ export default defineConfig(({ mode }) => {
 
       port: parseInt(process.env.PORT || "8443"),
 
-      allowedHosts: ["arredi.onrender.com"],
+      allowedHosts: ["www.farcomarredi.it", "farcomarredi.it", "arredi.onrender.com"],
       headers: {
         'X-Frame-Options': 'SAMEORIGIN',
         'Content-Security-Policy': "frame-ancestors 'self';",

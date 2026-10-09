@@ -5,4 +5,4 @@ Allow: /
 Allow: /llms.txt
 
 # Sitemap
-Sitemap: https://farcomarredi.it/sitemap.xml
+Sitemap: https://www.farcomarredi.it/sitemap.xml

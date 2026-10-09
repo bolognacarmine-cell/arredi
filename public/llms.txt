@@ -9,16 +9,18 @@ Farcom Srl è un'azienda di arredamento e progettazione interni attiva dal 2003,
 - **Sede**: Via P. Vertaldi, 27, 81047 Macerata Campania (CE), Italia
 - **Telefono**: +39 0823 694427
 - **Email**: farcomsrl@hotmail.com
-- **Sito Web**: https://arredi.onrender.com
+- **Sito Web**: https://www.farcomarredi.it
 
 ## Settori di Attività
 
-Farcom Srl opera in quattro settori principali:
+Farcom Srl opera in sei settori principali:
 
 1. **Barberie e Parrucchieri** - Arredamento specifico per saloni di bellezza e barber shop
 2. **Uffici** - Mobili da ufficio su misura, scrivanie, archivi
 3. **Negozi** - Allestimenti commerciali, vetrine, espositori
 4. **Scuole** - Arredamento scolastico, aule, laboratori
+5. **Bar e Locali** - Arredamento per bar, pub, ristoranti e locali commerciali
+6. **Centri Estetici** - Arredamento per centri estetici, SPA e centri benessere
 
 ## Servizi Offerti
 
@@ -34,7 +36,7 @@ Farcom Srl opera in quattro settori principali:
 ### Pagine Principali
 
 - **Home** (`/`) - Homepage con presentazione azienda e settori
-- **Settori** (`/settori`) - Overview dei quattro settori di attività
+- **Settori** (`/settori`) - Overview dei sei settori di attività
 - **Progetti** (`/progetti`) - Portfolio di realizzazioni
 - **Showroom** (`/showroom`) - Catalogo prodotti pronti
 - **Blog** (`/blog`) - Articoli su arredamento e progettazione
@@ -48,6 +50,8 @@ Farcom Srl opera in quattro settori principali:
 - `/settori/uffici` - Arredamento per uffici
 - `/settori/negozi` - Allestimenti per negozi
 - `/settori/scuole` - Arredamento scolastico
+- `/settori/bar` - Arredamento per bar, pub e locali
+- `/settori/centri-estetici` - Arredamento per centri estetici e SPA
 
 ### Pagine Dettaglio
 

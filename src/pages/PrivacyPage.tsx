@@ -1,6 +1,7 @@
 import { useEffect } from "react"
 import LegalPageLayout from "../components/LegalPageLayout"
 import LegalInfoCard from "../components/legal/LegalInfoCard"
+import SEOHead from "../components/SEOHead"
 
 const sections = [
   {
@@ -79,12 +80,33 @@ export default function PrivacyPage() {
   }, [])
 
   return (
-    <LegalPageLayout
-      eyebrow="Privacy"
-      title="Informativa Privacy"
-      intro="Questa informativa descrive in modo sintetico come vengono trattati i dati personali raccolti attraverso il sito e i canali di contatto collegati alle richieste commerciali."
-      sections={sections}
-      lastUpdated="2026-09-08"
-    />
+    <>
+      <SEOHead
+        title="Informativa Privacy | Farcom Srl - Macerata Campania"
+        description="Informativa sulla privacy di Farcom Srl: come raccogliamo, trattiamo e proteggiamo i dati personali degli utenti del sito farcomarredi.it. Diritti dell'interessato e modalità di contatto."
+        canonical="https://www.farcomarredi.it/privacy"
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          "name": "Informativa Privacy | Farcom Srl",
+          "description": "Informativa sul trattamento dei dati personali per il sito Farcom Srl (farcomarredi.it).",
+          "url": "https://www.farcomarredi.it/privacy",
+          "inLanguage": "it-IT",
+          "lastReviewed": "2026-09-08",
+          "mainEntity": {
+            "@type": "Organization",
+            "name": "Farcom Srl",
+            "url": "https://www.farcomarredi.it/"
+          }
+        }}
+      />
+      <LegalPageLayout
+        eyebrow="Privacy"
+        title="Informativa Privacy"
+        intro="Questa informativa descrive in modo sintetico come vengono trattati i dati personali raccolti attraverso il sito e i canali di contatto collegati alle richieste commerciali."
+        sections={sections}
+        lastUpdated="2026-09-08"
+      />
+    </>
   )
 }

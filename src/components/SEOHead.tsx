@@ -25,14 +25,14 @@ export default function SEOHead({ title, description, canonical, ogImage, schema
       <meta property="og:description" content={description} />
       <meta property="og:type" content="website" />
       {canonical && <meta property="og:url" content={canonical} />}
-      <meta property="og:image" content={ogImage || 'https://arredi.onrender.com/og-image.jpg'} />
+      <meta property="og:image" content={ogImage || 'https://www.farcomarredi.it/og-image.jpg'} />
       <meta property="og:locale" content="it_IT" />
       
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
-      <meta name="twitter:image" content={ogImage || 'https://arredi.onrender.com/og-image.jpg'} />
+      <meta name="twitter:image" content={ogImage || 'https://www.farcomarredi.it/og-image.jpg'} />
       
       {/* Structured Data */}
       {schema && (

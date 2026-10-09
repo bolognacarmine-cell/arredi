@@ -11,7 +11,7 @@ const sections = [
   {
     title: "Oggetto e ambito di applicazione",
     paragraphs: [
-      "I presenti Termini e Condizioni disciplinano l'utilizzo del sito web di Farcom Design, accessibile all'indirizzo www.farcom.it e ai suoi sottodomini.",
+      "I presenti Termini e Condizioni disciplinano l'utilizzo del sito web di Farcom Srl, accessibile all'indirizzo www.farcomarredi.it e ai suoi sottodomini.",
       "Il sito ha finalità informative e commerciali relative ai servizi di progettazione e realizzazione di arredi su misura per spazi professionali (barbieri, uffici, negozi, scuole, bar, centri estetici e altri settori).",
       "L'accesso e la navigazione sul sito implicano l'accettazione integrale dei presenti Termini e Condizioni. Qualora l'utente non intenda accettare tali termini, è invitato a non utilizzare il sito.",
     ],
@@ -104,7 +104,7 @@ export default function TermsPage() {
       <SEOHead
         title="Termini e Condizioni | Farcom Design"
         description="Termini e Condizioni di utilizzo del sito web di Farcom Design. Informazioni su diritti, proprietà intellettuale, responsabilità e condizioni generali di servizio."
-        canonical="https://arredi.onrender.com/termini-e-condizioni"
+        canonical="https://www.farcomarredi.it/termini-e-condizioni"
       />
       <LegalPageLayout
         eyebrow="Termini"

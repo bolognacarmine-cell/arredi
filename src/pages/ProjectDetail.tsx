@@ -2,6 +2,7 @@ import { useParams, Link } from "react-router-dom"
 import { useProjects } from "../projectStore"
 import ImageCarousel from "../components/ImageCarousel"
 import FarcomImageWatermark, { productImageSrc } from "../components/FarcomImageWatermark"
+import SEOHead from "../components/SEOHead"
 
 const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1497366216548-37526070297c?w=2400&h=1350&fit=crop"
@@ -52,8 +53,37 @@ export default function ProjectDetail() {
     ? projects.filter((p) => p.sectorId === project.sectorId && p.id !== project.id).slice(0, 3)
     : []
 
+  const cover = projectCoverUrl(project)
+
   return (
     <div className="bg-[#F7F5F0] min-h-screen pt-24">
+      <SEOHead
+        title={`${project.title} | ${project.sector} - Progetto Farcom Srl`}
+        description={`${project.description} Realizzazione di arredamento per ${project.sector} a ${project.location} (${project.year}). Progetto di Farcom Srl: progettazione, realizzazione e installazione arredi su misura.`}
+        canonical={`https://www.farcomarredi.it/progetti/${project.id}`}
+        ogImage={cover}
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "CreativeWork",
+          "name": project.title,
+          "headline": project.title,
+          "description": project.description,
+          "dateCreated": String(project.year),
+          "creator": {
+            "@type": "Organization",
+            "name": "Farcom Srl",
+            "url": "https://www.farcomarredi.it/"
+          },
+          "image": cover,
+          "url": `https://www.farcomarredi.it/progetti/${project.id}`,
+          "inLanguage": "it-IT",
+          "about": {
+            "@type": "Place",
+            "name": project.location
+          },
+          "keywords": Array.isArray(tags) ? tags.join(", ") : ""
+        }}
+      />
       <div className="max-w-7xl mx-auto px-6 lg:px-10">
         <div className="pt-8 pb-6">
           <Link

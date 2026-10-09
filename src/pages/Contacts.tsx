@@ -34,13 +34,13 @@ export default function Contacts() {
       <SEOHead
         title="Contatti - Farcom Srl | Showroom Macerata Campania"
         description="Contatta Farcom Srl: showroom arredamento a Macerata Campania, Via P. Vertaldi 27. Telefono +39 0823 694427, WhatsApp +39 329 4576079. Arredamento su misura in tutta Italia."
-        canonical="https://arredi.onrender.com/contatti"
+        canonical="https://www.farcomarredi.it/contatti"
         schema={{
           "@context": "https://schema.org",
           "@type": "LocalBusiness",
           "name": "Farcom Srl",
           "description": "Showroom arredamento a Macerata Campania. Arredi su misura per barberie, uffici, negozi e attività professionali con servizio in tutta Italia.",
-          "url": "https://arredi.onrender.com/",
+          "url": "https://www.farcomarredi.it/",
           "telephone": "+39 0823 694427",
           "email": "farcomsrl@hotmail.com",
           "address": {

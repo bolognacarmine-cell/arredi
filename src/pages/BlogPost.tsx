@@ -57,14 +57,14 @@ export default function BlogPost() {
         "name": "Farcom Srl",
         "logo": {
           "@type": "ImageObject",
-          "url": "https://arredi.onrender.com/logo.png"
+          "url": "https://www.farcomarredi.it/logo.png"
         }
       },
       "datePublished": post.publishedAt,
       "dateModified": post.updatedAt,
       "mainEntityOfPage": {
         "@type": "WebPage",
-        "@id": `https://arredi.onrender.com/blog/${post.slug}`
+        "@id": `https://www.farcomarredi.it/blog/${post.slug}`
       }
     }
   }
@@ -96,9 +96,39 @@ export default function BlogPost() {
         <SEOHead
           title={post.seoTitle || post.title}
           description={post.seoDescription || post.excerpt}
-          canonical={`https://arredi.onrender.com/blog/${post.slug}`}
+          canonical={`https://www.farcomarredi.it/blog/${post.slug}`}
           ogImage={post.coverImage}
           schema={getSchemaOrgData()}
+        />
+      )}
+      {post && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "BreadcrumbList",
+              "itemListElement": [
+                {
+                  "@type": "ListItem",
+                  "position": 1,
+                  "name": "Home",
+                  "item": "https://www.farcomarredi.it/"
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 2,
+                  "name": "Blog",
+                  "item": "https://www.farcomarredi.it/blog"
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 3,
+                  "name": post.title
+                }
+              ]
+            })
+          }}
         />
       )}
       

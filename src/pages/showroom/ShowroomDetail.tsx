@@ -57,7 +57,7 @@ const getProductSchema = (product: Product, effectivePrice: ReturnType<typeof co
       "price": finalPrice,
       "priceCurrency": "EUR",
       "availability": !product.isSold ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-      "url": `https://arredi.onrender.com/showroom/${product.slug}`,
+      "url": `https://www.farcomarredi.it/showroom/${product.slug}`,
       "seller": {
         "@type": "Organization",
         "name": "Farcom Srl",
@@ -217,8 +217,36 @@ export default function ShowroomDetail() {
       <SEOHead
         title={`${p.name} - Arredamento ${displaySector(p.activitySector, p.activitySectorOther)} | Farcom`}
         description={`${p.description} Scopri questo arredo professionale ${displaySector(p.activitySector, p.activitySectorOther)} nel showroom Farcom a Macerata Campania. Qualità artigianale Made in Italy con servizio in tutta Italia.`}
-        canonical={`https://arredi.onrender.com/showroom/${p.slug}`}
+        canonical={`https://www.farcomarredi.it/showroom/${p.slug}`}
         schema={getProductSchema(p, eff)}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://www.farcomarredi.it/"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Showroom",
+                "item": "https://www.farcomarredi.it/showroom"
+              },
+              {
+                "@type": "ListItem",
+                "position": 3,
+                "name": p.name
+              }
+            ]
+          })
+        }}
       />
       <div className="max-w-7xl mx-auto px-6 md:px-8 lg:px-16">
         <div className="mb-6">

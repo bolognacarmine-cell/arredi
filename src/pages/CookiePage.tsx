@@ -1,6 +1,7 @@
 import { useEffect } from "react"
 import LegalPageLayout from "../components/LegalPageLayout"
 import { resetCookieConsent } from "../components/CookieBanner"
+import SEOHead from "../components/SEOHead"
 
 const sections = [
   {
@@ -94,7 +95,7 @@ const sections = [
         <p><strong className="text-[#1A1A2E]">Titolare del trattamento:</strong> Farcom Design</p>
         <p><strong className="text-[#1A1A2E]">Partita IVA:</strong> 04970450617</p>
         <p><strong className="text-[#1A1A2E]">Email:</strong> privacy@farcom.it</p>
-        <p><strong className="text-[#1A1A2E]">Sito web:</strong> www.farcom.it</p>
+        <p><strong className="text-[#1A1A2E]">Sito web:</strong> www.farcomarredi.it</p>
       </div>,
     ],
   },
@@ -118,12 +119,28 @@ export default function CookiePage() {
   }, [])
 
   return (
-    <LegalPageLayout
-      eyebrow="Cookie"
-      title="Cookie Policy"
-      intro="Questa pagina riassume le principali informazioni sull'uso di cookie e tecnologie simili durante la navigazione del sito."
-      sections={sections}
-      lastUpdated="2026-09-08"
-    />
+    <>
+      <SEOHead
+        title="Cookie Policy | Farcom Srl - farcomarredi.it"
+        description="Cookie Policy di Farcom Srl: tipologie di cookie utilizzati, finalità, durata e modalità per gestire le preferenze. Informazioni chiare sui cookie tecnici e strumenti terzi sul sito farcomarredi.it."
+        canonical="https://www.farcomarredi.it/cookie"
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          "name": "Cookie Policy | Farcom Srl",
+          "description": "Informazioni complete sull'uso dei cookie nel sito Farcom Srl.",
+          "url": "https://www.farcomarredi.it/cookie",
+          "inLanguage": "it-IT",
+          "lastReviewed": "2026-09-08"
+        }}
+      />
+      <LegalPageLayout
+        eyebrow="Cookie"
+        title="Cookie Policy"
+        intro="Questa pagina riassume le principali informazioni sull'uso di cookie e tecnologie simili durante la navigazione del sito."
+        sections={sections}
+        lastUpdated="2026-09-08"
+      />
+    </>
   )
 }

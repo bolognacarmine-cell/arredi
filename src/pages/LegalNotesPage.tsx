@@ -1,6 +1,7 @@
 import { useEffect } from "react"
 import LegalPageLayout from "../components/LegalPageLayout"
 import LegalInfoCard from "../components/legal/LegalInfoCard"
+import SEOHead from "../components/SEOHead"
 
 const sections = [
   {
@@ -54,12 +55,28 @@ export default function LegalNotesPage() {
   }, [])
 
   return (
-    <LegalPageLayout
-      eyebrow="Note legali"
-      title="Note Legali"
-      intro="Questa sezione raccoglie le principali informazioni relative a contenuti, responsabilita e condizioni generali di utilizzo del sito."
-      sections={sections}
-      lastUpdated="2026-09-08"
-    />
+    <>
+      <SEOHead
+        title="Note Legali | Farcom Srl - farcomarredi.it"
+        description="Note legali del sito farcomarredi.it di Farcom Srl: proprietà dei contenuti, limitazione di responsabilità, link esterni e dichiarazione sull'uso dell'intelligenza artificiale nei contenuti."
+        canonical="https://www.farcomarredi.it/note-legali"
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          "name": "Note Legali | Farcom Srl",
+          "description": "Informazioni legali generali relative al sito Farcom Srl farcomarredi.it.",
+          "url": "https://www.farcomarredi.it/note-legali",
+          "inLanguage": "it-IT",
+          "lastReviewed": "2026-09-08"
+        }}
+      />
+      <LegalPageLayout
+        eyebrow="Note legali"
+        title="Note Legali"
+        intro="Questa sezione raccoglie le principali informazioni relative a contenuti, responsabilita e condizioni generali di utilizzo del sito."
+        sections={sections}
+        lastUpdated="2026-09-08"
+      />
+    </>
   )
 }

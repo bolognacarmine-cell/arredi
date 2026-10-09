@@ -65,7 +65,7 @@ const services = [
 
   {
     title: "Realizzazione",
-    desc: "Produzione artigianale nel nostro laboratorio a Bologna, con materiali selezionati e lavorazioni a regola d'arte.",
+    desc: "Produzione artigianale nel nostro laboratorio a Macerata Campania, con materiali selezionati e lavorazioni a regola d'arte.",
     icon: "◈",
   },
 
@@ -84,14 +84,14 @@ const services = [
 
 const whys = [
   {
-    label: "25 anni di esperienza",
-    value: "Dal 1999 realizziamo arredi per professionisti esigenti.",
+    label: "23 anni di esperienza",
+    value: "Dal 2003 realizziamo arredi per professionisti esigenti.",
   },
 
   {
     label: "100% made in Italy",
     value:
-      "Ogni pezzo è progettato e costruito nel nostro laboratorio di Bologna.",
+      "Ogni pezzo è progettato e costruito nel nostro laboratorio di Macerata Campania.",
   },
 
   {
@@ -105,6 +105,33 @@ const whys = [
     value:
       "Consegnamo nei tempi pattuiti. Sempre. È una questione di rispetto.",
   },
+]
+
+const faqHome = [
+  {
+    q: "Quali servizi offre Farcom per l'arredamento?",
+    a: "Farcom offre 4 servizi principali: progettazione tecnica con render 3D e disegni costruttivi, realizzazione artigianale nel laboratorio di Macerata Campania, installazione e posa in opera da parte del team interno, e assistenza post-vendita nel tempo."
+  },
+  {
+    q: "In quali settori realizzate arredi su misura?",
+    a: "Lavoriamo in 6 settori principali: barbieri e parrucchieri, uffici, negozi, scuole, bar e locali commerciali, centri estetici e SPA. Ogni settore ha soluzioni progettuali studiate sulle specifiche esigenze."
+  },
+  {
+    q: "Offrite preventivi gratuiti e senza impegno?",
+    a: "Sì. Ogni progetto parte da un sopralluogo e da un preventivo gratuito e senza impegno. Puoi richiederlo compilando il modulo nella pagina Preventivo, telefonicamente o via WhatsApp."
+  },
+  {
+    q: "Quali materiali utilizzate per la produzione?",
+    a: "Usiamo esclusivamente materiali certificati: legni FSC, vernici a bassa emissione, ferramenta di qualità superiore. Ogni pezzo è 100% made in Italy, progettato e costruito nel nostro laboratorio."
+  },
+  {
+    q: "In quale zona operate e viaggiate per i sopralluoghi?",
+    a: "Abbiamo sede a Macerata Campania (Caserta) in Campania, ma offriamo servizio di arredamento e progettazione in tutta Italia. I sopralluoghi sono disponibili per progetti in Campania e su richiesta per altre regioni."
+  },
+  {
+    q: "Quanto dura in media la realizzazione di un progetto?",
+    a: "I tempi dipendono dalla complessità e dalle dimensioni dello spazio. In fase di preventivo definiamo sempre tempistiche precise. La nostra regola: consegnamo nei tempi pattuiti, sempre."
+  }
 ]
 
 export default function Home() {
@@ -193,13 +220,13 @@ export default function Home() {
       <SEOHead
         title="Farcom Srl - Arredamento e Progettazione Interni a Macerata Campania e in tutta Italia"
         description="Farcom Srl: arredamento su misura e progettazione interni a Macerata Campania, Caserta e in tutta Italia. Showroom arredi professionali, preventivi gratuiti e sopralluogo. Richiedi un preventivo!"
-        canonical="https://arredi.onrender.com/"
+        canonical="https://www.farcomarredi.it/"
         schema={{
           "@context": "https://schema.org",
           "@type": "HomeAndConstructionBusiness",
           "name": "Farcom Srl",
           "description": "Azienda di arredamento e progettazione interni a Macerata Campania. Servizio in tutta Italia con showroom arredi professionali, preventivi gratuiti e sopralluogo.",
-          "url": "https://arredi.onrender.com/",
+          "url": "https://www.farcomarredi.it/",
           "telephone": "+39 0823 694427",
           "email": "farcomsrl@hotmail.com",
           "address": {
@@ -258,6 +285,23 @@ export default function Home() {
             "https://www.instagram.com/farcom_arredi/",
             "https://www.facebook.com/p/Farcom-arredi-100054867935352/"
           ]
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": faqHome.map((f) => ({
+              "@type": "Question",
+              "name": f.q,
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": f.a
+              }
+            }))
+          })
         }}
       />
       <CustomCursor />
@@ -607,7 +651,7 @@ export default function Home() {
           {[
             ["500+", "Progetti realizzati"],
 
-            ["25", "Anni di attività"],
+            ["23", "Anni di attività"],
 
             ["6", "Settori serviti"],
 
@@ -621,6 +665,34 @@ export default function Home() {
             </div>
           ))}
         </Stagger>
+      </section>
+
+      {/* FAQ — AEO: risposte dirette alle domande più frequenti */}
+      <section className="py-16 sm:py-20 md:py-24 lg:py-28 xl:py-32 bg-[#FAFAFA] relative overflow-hidden" data-bg="#FAFAFA">
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#E69138]/30 to-transparent" />
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 relative">
+          <Reveal className="text-center mb-8 sm:mb-10 md:mb-12 lg:mb-16">
+            <span className="text-[#6B7280] text-[10px] sm:text-[11px] md:text-xs tracking-[0.16em] sm:tracking-[0.18em] md:tracking-[0.2em] uppercase font-semibold">
+              Domande frequenti
+            </span>
+            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-[#1A1A2E] mt-1.5 sm:mt-2 leading-[1.15] sm:leading-tight text-balance">
+              Le risposte che cercavi
+            </h2>
+            <MotionLine className="mx-auto mt-4" width="4rem" thickness={3} origin="center" delay={120} />
+          </Reveal>
+          <Stagger className="max-w-3xl mx-auto grid grid-cols-1 gap-4 sm:gap-5 md:gap-6" step={90} duration={700}>
+            {faqHome.map((faq, i) => (
+              <div key={i} className="bg-white border border-[#E5E5E7] p-5 sm:p-6 md:p-7 hover:border-[#E69138]/40 transition-colors">
+                <h3 className="font-display text-base sm:text-lg md:text-xl font-semibold text-[#1A1A2E] mb-2 sm:mb-3 leading-snug">
+                  {faq.q}
+                </h3>
+                <p className="text-[#4A4A46] text-xs sm:text-sm md:text-[0.95rem] leading-[1.65] sm:leading-relaxed">
+                  {faq.a}
+                </p>
+              </div>
+            ))}
+          </Stagger>
+        </div>
       </section>
 
       {/* CTA BAND */}

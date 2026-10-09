@@ -116,6 +116,8 @@ app.use(cors({
     // (se scartassimo con Error la preflight OPTIONS fallirebbe con 500 e CORS broken).
     // L'autenticazione server-side (session) protegge comunque gli endpoint.
     const allowedOrigins = [
+      'https://www.farcomarredi.it',
+      'https://farcomarredi.it',
       'https://arredi.onrender.com',
       'https://arredi.vercel.app',
     ];

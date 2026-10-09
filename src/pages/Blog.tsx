@@ -61,19 +61,19 @@ export default function Blog() {
       <SEOHead
         title="Blog Arredamento e Progettazione Interni - Farcom Srl"
         description="Blog Farcom Srl: idee, guide e consigli per arredare spazi professionali a Macerata Campania e in tutta Italia. Tendenze arredamento, progettazione interni e design italiano."
-        canonical="https://arredi.onrender.com/blog"
+        canonical="https://www.farcomarredi.it/blog"
         schema={{
           "@context": "https://schema.org",
           "@type": "Blog",
           "name": "Blog Farcom Srl - Arredamento e Progettazione Interni",
           "description": "Blog dedicato all'arredamento e progettazione interni con articoli su tendenze, consigli e guide per spazi professionali e residenziali.",
-          "url": "https://arredi.onrender.com/blog",
+          "url": "https://www.farcomarredi.it/blog",
           "publisher": {
             "@type": "Organization",
             "name": "Farcom Srl",
             "logo": {
               "@type": "ImageObject",
-              "url": "https://arredi.onrender.com/logo.png"
+              "url": "https://www.farcomarredi.it/logo.png"
             }
           }
         }}

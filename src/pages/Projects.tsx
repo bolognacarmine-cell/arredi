@@ -6,6 +6,7 @@ import FarcomImageWatermark, { productImageSrc } from "../components/FarcomImage
 import type { Rect } from "../lib/cloudinary/watermark"
 import { isWatermarkContainerTooSmall } from "../lib/cloudinary/watermark"
 import type { ProjectRecord } from "../projectStore"
+import SEOHead from "../components/SEOHead"
 
 const filters = [
   { id: "all", label: "Tutti" },
@@ -130,6 +131,25 @@ export default function Projects() {
 
   return (
     <div className="bg-gray-50 min-h-screen pt-24">
+      <SEOHead
+        title="Progetti e Realizzazioni di Arredamento | Farcom Srl"
+        description="Oltre 500 progetti di arredamento realizzati da Farcom Srl in tutta Italia: uffici, negozi, scuole, barberie, bar, locali e centri estetici. Esempi di arredamenti su misura e allestimenti realizzati a Macerata Campania, Caserta e Campania."
+        canonical="https://www.farcomarredi.it/progetti"
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          "name": "Progetti e Realizzazioni di Arredamento | Farcom Srl",
+          "description": "Portfolio con oltre 500 realizzazioni di arredamento su misura per attività commerciali e professionali in tutta Italia.",
+          "url": "https://www.farcomarredi.it/progetti",
+          "inLanguage": "it-IT",
+          "hasPart": Array.isArray(projects) ? projects.slice(0, 12).map((p: ProjectRecord) => ({
+            "@type": "CreativeWork",
+            "name": p.title,
+            "url": `https://www.farcomarredi.it/progetti/${p.id}`,
+            "image": projectCoverUrl(p)
+          })) : []
+        }}
+      />
       <div className="max-w-7xl mx-auto px-6 lg:px-10">
         {/* Header */}
         <div className="pt-12 pb-14">

@@ -66,13 +66,13 @@ export default function ShowroomList() {
       <SEOHead
         title="Showroom Arredamento Campania - Arredi Professionali Farcom Srl"
         description="Showroom arredamento Campania: arredi professionali su misura per barberie, parrucchieri, uffici, scuole. Visita il nostro showroom a Macerata Campania o richiedi un preventivo in tutta Italia."
-        canonical="https://arredi.onrender.com/showroom"
+        canonical="https://www.farcomarredi.it/showroom"
         schema={{
           "@context": "https://schema.org",
           "@type": "Store",
           "name": "Farcom Srl Showroom",
           "description": "Showroom arredamento Campania con arredi professionali su misura per barberie, parrucchieri, uffici, scuole e attività speciali.",
-          "url": "https://arredi.onrender.com/showroom",
+          "url": "https://www.farcomarredi.it/showroom",
           "telephone": "+39 0823 694427",
           "address": {
             "@type": "PostalAddress",

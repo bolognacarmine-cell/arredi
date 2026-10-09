@@ -2,6 +2,25 @@ import { useEffect } from "react"
 import { Link } from "react-router-dom"
 import SEOHead from "../components/SEOHead"
 
+const faqAbout = [
+  {
+    q: "Quando è stata fondata Farcom e dove ha sede?",
+    a: "Farcom S.r.l. è stata fondata nel 2003 a Macerata Campania (Caserta). La sede operativa e il laboratorio di produzione si trovano in Via P. Vertaldi, 27 - 81047 Macerata Campania CE."
+  },
+  {
+    q: "Quali sono i punti di forza dell'azienda?",
+    a: "Farcom si distingue per 3 punti chiave: innovazione e design all'avanguardia, qualità dei materiali certificati e selezionati, servizio completamente personalizzato con assistenza post-vendita dedicata ad ogni cliente."
+  },
+  {
+    q: "Posso visitare il laboratorio o incontrare un consulente?",
+    a: "Sì. Ti consigliamo di fissare un appuntamento per garantire la presenza di un consulente dedicato. Ci trovi in Via P. Vertaldi 27 a Macerata Campania, oppure possiamo organizzare un sopralluogo direttamente nel tuo spazio."
+  },
+  {
+    q: "Che tipo di assistenza offrite dopo la consegna?",
+    a: "Offriamo assistenza post-vendita completa. Gli arredi su misura meritano cura nel tempo: siamo disponibili per manutenzioni, ritocchi, sostituzioni e supporto tecnico anche dopo la fine dell'installazione."
+  }
+]
+
 export default function About() {
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -24,14 +43,14 @@ export default function About() {
       <SEOHead
         title="Chi Siamo - Farcom Srl | Arredamento Macerata Campania dal 2003"
         description="Farcom Srl: dal 2003 arredamento e progettazione interni a Macerata Campania e in tutta Italia. Specializzati in arredi per barberie, uffici, negozi e attività professionali. Qualità artigianale Made in Italy."
-        canonical="https://arredi.onrender.com/chi-siamo"
+        canonical="https://www.farcomarredi.it/chi-siamo"
         schema={{
           "@context": "https://schema.org",
           "@type": "Organization",
           "name": "Farcom Srl",
           "legalName": "Farcom S.r.l.",
           "description": "Azienda di arredamento e progettazione interni a Macerata Campania, attiva dal 2003. Specializzata in arredi per barberie, uffici, negozi, scuole e attività professionali con servizio in tutta Italia.",
-          "url": "https://arredi.onrender.com/",
+          "url": "https://www.farcomarredi.it/",
           "foundingDate": "2003",
           "address": {
             "@type": "PostalAddress",
@@ -52,6 +71,23 @@ export default function About() {
             "https://www.instagram.com/farcom_arredi/",
             "https://www.facebook.com/p/Farcom-arredi-100054867935352/"
           ]
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": faqAbout.map((f) => ({
+              "@type": "Question",
+              "name": f.q,
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": f.a
+              }
+            }))
+          })
         }}
       />
       {/* Header */}
@@ -166,6 +202,32 @@ export default function About() {
                 il settore.
               </p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ About — AEO: risposte su storia, sede, assistenza */}
+      <section className="py-20 bg-[#F7F5F0]">
+        <div className="max-w-7xl mx-auto px-6 lg:px-10">
+          <div className="text-center mb-12">
+            <span className="text-[#888580] text-xs tracking-widest uppercase font-semibold">
+              Domande frequenti
+            </span>
+            <h2 className="font-display text-3xl lg:text-4xl font-light text-[#1A1A18] mt-2 mb-4">
+              Conosciamoci meglio
+            </h2>
+          </div>
+          <div className="max-w-3xl mx-auto grid grid-cols-1 gap-6">
+            {faqAbout.map((faq, i) => (
+              <div key={i} className="bg-white border border-[#E5E5E7] p-6">
+                <h3 className="font-display text-lg font-medium text-[#1A1A18] mb-3">
+                  {faq.q}
+                </h3>
+                <p className="text-[#4A4A46] text-sm leading-relaxed">
+                  {faq.a}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </section>

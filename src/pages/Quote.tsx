@@ -347,7 +347,7 @@ export default function Quote() {
       <SEOHead
         title="Preventivo Arredamento Gratuito - Farcom Srl Macerata Campania e Italia"
         description="Richiedi un preventivo gratuito per arredamento su misura a Macerata Campania, Caserta e in tutta Italia. Sopralluogo gratuito e consulenza senza impegno. Arredatore di interni esperti."
-        canonical="https://arredi.onrender.com/preventivo"
+        canonical="https://www.farcomarredi.it/preventivo"
         schema={{
           "@context": "https://schema.org",
           "@type": "FAQPage",
