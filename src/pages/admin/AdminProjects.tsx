@@ -315,9 +315,9 @@ export default function AdminProjects() {
       console.error("Cannot edit project: missing id", project);
       return;
     }
-    setEditingId(project.id);
-    setForm(projectToForm(project));
-    setShowForm(true);
+    // Naviga verso la route di modifica: l'useEffect caricherà form,
+    // coverImages e galleryImages dal progetto selezionato.
+    navigate(`/admin/progetti/${project.id}`);
   };
 
   const handleDelete = async (projectId: string) => {
@@ -667,128 +667,132 @@ export default function AdminProjects() {
         </div>
       )}
 
-      <div className="mb-5 flex flex-wrap gap-3">
-        <select
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="border border-[#DDD9D0] bg-white px-4 py-3 text-sm text-[#4A4A46] focus:border-[#1B4332] focus:outline-none min-h-[44px] flex-1 min-w-[150px]"
-        >
-          <option value="all">Tutti i settori</option>
-          {SECTORS.map((sector) => (
-            <option key={sector.id} value={sector.id}>
-              {sector.label}
-            </option>
-          ))}
-        </select>
+      {!showForm && (
+        <>
+          <div className="mb-5 flex flex-wrap gap-3">
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="border border-[#DDD9D0] bg-white px-4 py-3 text-sm text-[#4A4A46] focus:border-[#1B4332] focus:outline-none min-h-[44px] flex-1 min-w-[150px]"
+            >
+              <option value="all">Tutti i settori</option>
+              {SECTORS.map((sector) => (
+                <option key={sector.id} value={sector.id}>
+                  {sector.label}
+                </option>
+              ))}
+            </select>
 
-        <select
-          value={stateFilter}
-          onChange={(e) => setStateFilter(e.target.value)}
-          className="border border-[#DDD9D0] bg-white px-4 py-3 text-sm text-[#4A4A46] focus:border-[#1B4332] focus:outline-none min-h-[44px] flex-1 min-w-[150px]"
-        >
-          <option value="all">Tutti gli stati</option>
-          <option value="bozza">Bozza</option>
-          <option value="in lavorazione">In lavorazione</option>
-          <option value="completato">Completato</option>
-        </select>
+            <select
+              value={stateFilter}
+              onChange={(e) => setStateFilter(e.target.value)}
+              className="border border-[#DDD9D0] bg-white px-4 py-3 text-sm text-[#4A4A46] focus:border-[#1B4332] focus:outline-none min-h-[44px] flex-1 min-w-[150px]"
+            >
+              <option value="all">Tutti gli stati</option>
+              <option value="bozza">Bozza</option>
+              <option value="in lavorazione">In lavorazione</option>
+              <option value="completato">Completato</option>
+            </select>
 
-        <span className="self-center text-xs text-[#888580] py-3">{filtered.length} risultati</span>
-      </div>
+            <span className="self-center text-xs text-[#888580] py-3">{filtered.length} risultati</span>
+          </div>
 
-      <div className="overflow-hidden border border-[#DDD9D0] bg-white">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-[#DDD9D0] bg-[#F7F5F0] text-xs uppercase tracking-wide text-[#888580]">
-              <th className="px-5 py-3 text-left">Progetto</th>
-              <th className="hidden px-5 py-3 text-left md:table-cell">Settore</th>
-              <th className="hidden px-5 py-3 text-left lg:table-cell">Cliente</th>
-              <th className="hidden px-5 py-3 text-left sm:table-cell">Anno</th>
-              <th className="px-5 py-3 text-left">Stato</th>
-              <th className="px-5 py-3 text-left">Azioni</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((project) => (
-              <tr
-                key={project.id}
-                draggable
-                onDragStart={(e) => handleDragStart(e, project.id)}
-                onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, project.id)}
-                onDragEnd={handleDragEnd}
-                className={`border-t border-[#EAE7E0] transition-colors hover:bg-[#F7F5F0] cursor-move ${
-                  draggedId === project.id ? "opacity-50" : ""
-                }`}
-              >
-                <td className="px-5 py-3" data-label="Progetto">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 flex-shrink-0 overflow-hidden bg-[#EAE7E0]">
-                      <img src={project.image} alt="" className="h-full w-full object-cover" />
-                    </div>
-                    <div>
-                      <span className="block font-medium text-[#1A1A18]">{project.title}</span>
-                      {project.featured && (
-                        <span className="text-[11px] uppercase tracking-wide text-[#1B4332]">
-                          In evidenza
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </td>
-                <td
-                  className="hidden px-5 py-3 text-xs text-[#4A4A46] md:table-cell"
-                  data-label="Settore"
-                >
-                  {project.sector}
-                </td>
-                <td
-                  className="hidden px-5 py-3 text-xs text-[#4A4A46] lg:table-cell"
-                  data-label="Cliente"
-                >
-                  {project.client || "—"}
-                </td>
-                <td
-                  className="hidden px-5 py-3 text-xs text-[#888580] sm:table-cell"
-                  data-label="Anno"
-                >
-                  {project.year}
-                </td>
-                <td className="px-5 py-3" data-label="Stato">
-                  <span
-                    className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusColor[project.status]}`}
+          <div className="overflow-hidden border border-[#DDD9D0] bg-white">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-[#DDD9D0] bg-[#F7F5F0] text-xs uppercase tracking-wide text-[#888580]">
+                  <th className="px-5 py-3 text-left">Progetto</th>
+                  <th className="hidden px-5 py-3 text-left md:table-cell">Settore</th>
+                  <th className="hidden px-5 py-3 text-left lg:table-cell">Cliente</th>
+                  <th className="hidden px-5 py-3 text-left sm:table-cell">Anno</th>
+                  <th className="px-5 py-3 text-left">Stato</th>
+                  <th className="px-5 py-3 text-left">Azioni</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((project) => (
+                  <tr
+                    key={project.id}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, project.id)}
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDrop(e, project.id)}
+                    onDragEnd={handleDragEnd}
+                    className={`border-t border-[#EAE7E0] transition-colors hover:bg-[#F7F5F0] cursor-move ${
+                      draggedId === project.id ? "opacity-50" : ""
+                    }`}
                   >
-                    {project.status}
-                  </span>
-                </td>
-                <td className="px-5 py-3" data-label="Azioni">
-                  <div className="flex flex-wrap gap-2 sm:gap-3">
-                    <Link
-                      to={`/progetti/${project.id}`}
-                      target="_blank"
-                      className="text-xs text-[#888580] transition-colors hover:text-[#1B4332] py-2 px-2"
+                    <td className="px-5 py-3" data-label="Progetto">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 flex-shrink-0 overflow-hidden bg-[#EAE7E0]">
+                          <img src={project.image} alt="" className="h-full w-full object-cover" />
+                        </div>
+                        <div>
+                          <span className="block font-medium text-[#1A1A18]">{project.title}</span>
+                          {project.featured && (
+                            <span className="text-[11px] uppercase tracking-wide text-[#1B4332]">
+                              In evidenza
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td
+                      className="hidden px-5 py-3 text-xs text-[#4A4A46] md:table-cell"
+                      data-label="Settore"
                     >
-                      Anteprima
-                    </Link>
-                    <button
-                      onClick={() => handleEdit(project)}
-                      className="text-xs text-[#888580] transition-colors hover:text-[#1B4332] py-2 px-2"
+                      {project.sector}
+                    </td>
+                    <td
+                      className="hidden px-5 py-3 text-xs text-[#4A4A46] lg:table-cell"
+                      data-label="Cliente"
                     >
-                      Modifica
-                    </button>
-                    <button
-                      onClick={() => handleDelete(project.id)}
-                      disabled={isDeleting}
-                      className="text-xs text-red-600 transition-colors hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 py-2 px-2"
+                      {project.client || "—"}
+                    </td>
+                    <td
+                      className="hidden px-5 py-3 text-xs text-[#888580] sm:table-cell"
+                      data-label="Anno"
                     >
-                      {isDeleting ? <Loading size="sm" /> : "Elimina"}
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                      {project.year}
+                    </td>
+                    <td className="px-5 py-3" data-label="Stato">
+                      <span
+                        className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusColor[project.status]}`}
+                      >
+                        {project.status}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3" data-label="Azioni">
+                      <div className="flex flex-wrap gap-2 sm:gap-3">
+                        <Link
+                          to={`/progetti/${project.id}`}
+                          target="_blank"
+                          className="text-xs text-[#888580] transition-colors hover:text-[#1B4332] py-2 px-2"
+                        >
+                          Anteprima
+                        </Link>
+                        <button
+                          onClick={() => handleEdit(project)}
+                          className="text-xs text-[#888580] transition-colors hover:text-[#1B4332] py-2 px-2"
+                        >
+                          Modifica
+                        </button>
+                        <button
+                          onClick={() => handleDelete(project.id)}
+                          disabled={isDeleting}
+                          className="text-xs text-red-600 transition-colors hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 py-2 px-2"
+                        >
+                          {isDeleting ? <Loading size="sm" /> : "Elimina"}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
 
       {toast && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] bg-[#1A1A18] text-white text-sm px-5 py-2.5 shadow-2xl animate-fade-in">
