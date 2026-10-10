@@ -2,8 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { SECTORS } from "../../data";
 import {
-  defaultProjects,
-  resetProjects,
   saveProjects,
   saveProjectsToProject,
   useProjectsDetailed,
@@ -336,22 +334,6 @@ export default function AdminProjects() {
     setIsDeleting(false);
   };
 
-  const handleReset = async () => {
-    if (!window.confirm("Ripristinare l'archivio progetti di base?")) return;
-
-    try {
-      await saveProjectsToProject(defaultProjects);
-      resetProjects();
-      showToast("Archivio progetti ripristinato nel database");
-    } catch (error) {
-      saveProjects(defaultProjects);
-      showError(error, "Ripristino applicato solo nel browser corrente");
-    }
-
-    showSavedState();
-    closeForm();
-  };
-
   return (
     <div>
       <div className="mb-6 flex items-center justify-between flex-wrap gap-3">
@@ -371,12 +353,6 @@ export default function AdminProjects() {
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <button
-            onClick={handleReset}
-            className="border border-[#DDD9D0] px-5 py-3 text-sm font-medium text-[#4A4A46] transition-colors hover:border-[#1B4332] hover:text-[#1B4332] min-h-[44px]"
-          >
-            Ripristina archivio base
-          </button>
           <button
             onClick={openCreateForm}
             className="bg-[#1B4332] px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-[#143326] min-h-[44px]"
