@@ -1,6 +1,7 @@
 import { useEffect } from "react"
 import LegalPageLayout from "../components/LegalPageLayout"
 import { resetCookieConsent } from "../components/CookieBanner"
+import { legalConfig } from "../siteConfig"
 import SEOHead from "../components/SEOHead"
 
 const sections = [
@@ -92,9 +93,9 @@ const sections = [
     paragraphs: [
       "Per qualsiasi domanda relativa alla presente Cookie Policy o al trattamento dei tuoi dati personali, puoi contattarci ai seguenti recapiti:",
       <div key="contact-info" className="mt-3 p-4 bg-gray-50 rounded-lg space-y-2 text-[#6B7280]">
-        <p><strong className="text-[#1A1A2E]">Titolare del trattamento:</strong> Farcom Design</p>
+        <p><strong className="text-[#1A1A2E]">Titolare del trattamento:</strong> Farcom Design s.r.l.</p>
         <p><strong className="text-[#1A1A2E]">Partita IVA:</strong> 04970450617</p>
-        <p><strong className="text-[#1A1A2E]">Email:</strong> privacy@farcom.it</p>
+        <p><strong className="text-[#1A1A2E]">Email:</strong> <a href={`mailto:${legalConfig.privacy.email}`} className="text-[#1B4332] underline">{legalConfig.privacy.email}</a></p>
         <p><strong className="text-[#1A1A2E]">Sito web:</strong> www.farcomarredi.it</p>
       </div>,
     ],
@@ -121,14 +122,14 @@ export default function CookiePage() {
   return (
     <>
       <SEOHead
-        title="Cookie Policy | Farcom Srl - farcomarredi.it"
-        description="Cookie Policy di Farcom Srl: tipologie di cookie utilizzati, finalità, durata e modalità per gestire le preferenze. Informazioni chiare sui cookie tecnici e strumenti terzi sul sito farcomarredi.it."
+        title="Cookie Policy | Farcom Design s.r.l. - farcomarredi.it"
+        description="Cookie Policy di Farcom Design s.r.l.: tipologie di cookie utilizzati, finalità, durata e modalità per gestire le preferenze. Informazioni chiare sui cookie tecnici e strumenti terzi sul sito farcomarredi.it."
         canonical="https://www.farcomarredi.it/cookie"
         schema={{
           "@context": "https://schema.org",
           "@type": "WebPage",
-          "name": "Cookie Policy | Farcom Srl",
-          "description": "Informazioni complete sull'uso dei cookie nel sito Farcom Srl.",
+          "name": "Cookie Policy | Farcom Design s.r.l.",
+          "description": "Informazioni complete sull'uso dei cookie nel sito Farcom Design s.r.l.",
           "url": "https://www.farcomarredi.it/cookie",
           "inLanguage": "it-IT",
           "lastReviewed": "2026-09-08"

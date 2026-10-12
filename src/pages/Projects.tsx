@@ -132,13 +132,13 @@ export default function Projects() {
   return (
     <div className="bg-gray-50 min-h-screen pt-24">
       <SEOHead
-        title="Progetti e Realizzazioni di Arredamento | Farcom Srl"
-        description="Oltre 500 progetti di arredamento realizzati da Farcom Srl in tutta Italia: uffici, negozi, scuole, barberie, bar, locali e centri estetici. Esempi di arredamenti su misura e allestimenti realizzati a Macerata Campania, Caserta e Campania."
+        title="Progetti e Realizzazioni di Arredamento | Farcom Design s.r.l."
+        description="Oltre 500 progetti di arredamento realizzati da Farcom Design s.r.l. in tutta Italia: uffici, negozi, scuole, barberie, bar, locali e centri estetici. Esempi di arredamenti su misura e allestimenti realizzati a Macerata Campania, Caserta e Campania."
         canonical="https://www.farcomarredi.it/progetti"
         schema={{
           "@context": "https://schema.org",
           "@type": "CollectionPage",
-          "name": "Progetti e Realizzazioni di Arredamento | Farcom Srl",
+          "name": "Progetti e Realizzazioni di Arredamento | Farcom Design s.r.l.",
           "description": "Portfolio con oltre 500 realizzazioni di arredamento su misura per attività commerciali e professionali in tutta Italia.",
           "url": "https://www.farcomarredi.it/progetti",
           "inLanguage": "it-IT",

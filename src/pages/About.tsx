@@ -5,7 +5,7 @@ import SEOHead from "../components/SEOHead"
 const faqAbout = [
   {
     q: "Quando è stata fondata Farcom e dove ha sede?",
-    a: "Farcom S.r.l. è stata fondata nel 2003 a Macerata Campania (Caserta). La sede operativa e il laboratorio di produzione si trovano in Via P. Vertaldi, 27 - 81047 Macerata Campania CE."
+    a: "Farcom Design s.r.l. è stata fondata nel 2003 a Macerata Campania (Caserta). La sede operativa e il laboratorio di produzione si trovano in Via P. Vertaldi, 27 - 81047 Macerata Campania CE."
   },
   {
     q: "Quali sono i punti di forza dell'azienda?",
@@ -41,14 +41,14 @@ export default function About() {
   return (
     <div className="bg-[#F7F5F0] min-h-screen pt-24">
       <SEOHead
-        title="Chi Siamo - Farcom Srl | Arredamento Macerata Campania dal 2003"
-        description="Farcom Srl: dal 2003 arredamento e progettazione interni a Macerata Campania e in tutta Italia. Specializzati in arredi per barberie, uffici, negozi e attività professionali. Qualità artigianale Made in Italy."
+        title="Chi Siamo - Farcom Design s.r.l. | Arredamento Macerata Campania dal 2003"
+        description="Farcom Design s.r.l.: dal 2003 arredamento e progettazione interni a Macerata Campania e in tutta Italia. Specializzati in arredi per barberie, uffici, negozi e attività professionali. Qualità artigianale Made in Italy."
         canonical="https://www.farcomarredi.it/chi-siamo"
         schema={{
           "@context": "https://schema.org",
           "@type": "Organization",
-          "name": "Farcom Srl",
-          "legalName": "Farcom S.r.l.",
+          "name": "Farcom Design s.r.l.",
+          "legalName": "Farcom Design s.r.l.",
           "description": "Azienda di arredamento e progettazione interni a Macerata Campania, attiva dal 2003. Specializzata in arredi per barberie, uffici, negozi, scuole e attività professionali con servizio in tutta Italia.",
           "url": "https://www.farcomarredi.it/",
           "foundingDate": "2003",
@@ -98,12 +98,12 @@ export default function About() {
               Chi siamo
             </span>
             <h1 className="font-display text-5xl lg:text-6xl font-light text-[#1A1A18] mt-2 mb-6 leading-tight">
-              Farcom S.r.l.
+              Farcom Design s.r.l.
               <br />
               <em className="text-[#1B4332]">dal 2003</em>
             </h1>
             <p className="text-[#4A4A46] leading-relaxed mb-6 text-base">
-              Farcom S.r.l. è un punto di riferimento nel settore degli arredi
+              Farcom Design s.r.l. è un punto di riferimento nel settore degli arredi
               per attività commerciali e professionali. Dal 2003 operiamo a
               Macerata Campania e in tutta Italia, specializzandoci in soluzioni
               per barbieri, uffici, negozi, scuole, bar e centri estetici.
@@ -129,7 +129,7 @@ export default function About() {
           <div className="relative aspect-[7/8]">
             <img
               src="https://images.unsplash.com/photo-1547609434-b732edfee020?w=700&h=800&fit=crop&auto=format"
-              alt="Laboratorio artigianale Farcom Srl - Produzione arredi su misura Macerata Campania"
+              alt="Laboratorio artigianale Farcom Design s.r.l. - Produzione arredi su misura Macerata Campania"
               width="700"
               height="800"
               loading="lazy"
@@ -197,7 +197,7 @@ export default function About() {
               </div>
               <div className="text-[#888580] text-sm mb-3">Fondazione</div>
               <p className="text-[#4A4A46] leading-relaxed">
-                Farcom S.r.l. viene fondata a Macerata Campania con l'obiettivo
+                Farcom Design s.r.l. viene fondata a Macerata Campania con l'obiettivo
                 di fornire arredi di alta qualità e soluzioni personalizzate per
                 il settore.
               </p>

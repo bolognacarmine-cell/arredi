@@ -46,6 +46,13 @@ const sections = [
     ],
   },
   {
+    title: "Servizi di terze parti",
+    paragraphs: [
+      "Il sito può avvalersi di fornitori tecnici (hosting, distribuzione immagini e contenuti, gestione delle email) che trattano i dati per conto del Titolare in qualità di responsabili del trattamento.",
+      "La pagina Contatti include una mappa interattiva fornita da Google, caricata solo dopo un'azione esplicita dell'utente. Al momento del caricamento, Google può trattare dati come l'indirizzo IP secondo la propria informativa privacy.",
+    ],
+  },
+  {
     title: "Conservazione e sicurezza",
     paragraphs: [
       "I dati vengono conservati per il tempo strettamente necessario alla gestione delle richieste e degli obblighi amministrativi o legali applicabili.",
@@ -82,20 +89,20 @@ export default function PrivacyPage() {
   return (
     <>
       <SEOHead
-        title="Informativa Privacy | Farcom Srl - Macerata Campania"
-        description="Informativa sulla privacy di Farcom Srl: come raccogliamo, trattiamo e proteggiamo i dati personali degli utenti del sito farcomarredi.it. Diritti dell'interessato e modalità di contatto."
+        title="Informativa Privacy | Farcom Design s.r.l. - Macerata Campania"
+        description="Informativa sulla privacy di Farcom Design s.r.l.: come raccogliamo, trattiamo e proteggiamo i dati personali degli utenti del sito farcomarredi.it. Diritti dell'interessato e modalità di contatto."
         canonical="https://www.farcomarredi.it/privacy"
         schema={{
           "@context": "https://schema.org",
           "@type": "WebPage",
-          "name": "Informativa Privacy | Farcom Srl",
-          "description": "Informativa sul trattamento dei dati personali per il sito Farcom Srl (farcomarredi.it).",
+          "name": "Informativa Privacy | Farcom Design s.r.l.",
+          "description": "Informativa sul trattamento dei dati personali per il sito Farcom Design s.r.l. (farcomarredi.it).",
           "url": "https://www.farcomarredi.it/privacy",
           "inLanguage": "it-IT",
           "lastReviewed": "2026-09-08",
           "mainEntity": {
             "@type": "Organization",
-            "name": "Farcom Srl",
+            "name": "Farcom Design s.r.l.",
             "url": "https://www.farcomarredi.it/"
           }
         }}

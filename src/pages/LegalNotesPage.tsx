@@ -57,14 +57,14 @@ export default function LegalNotesPage() {
   return (
     <>
       <SEOHead
-        title="Note Legali | Farcom Srl - farcomarredi.it"
-        description="Note legali del sito farcomarredi.it di Farcom Srl: proprietà dei contenuti, limitazione di responsabilità, link esterni e dichiarazione sull'uso dell'intelligenza artificiale nei contenuti."
+        title="Note Legali | Farcom Design s.r.l. - farcomarredi.it"
+        description="Note legali del sito farcomarredi.it di Farcom Design s.r.l.: proprietà dei contenuti, limitazione di responsabilità, link esterni e dichiarazione sull'uso dell'intelligenza artificiale nei contenuti."
         canonical="https://www.farcomarredi.it/note-legali"
         schema={{
           "@context": "https://schema.org",
           "@type": "WebPage",
-          "name": "Note Legali | Farcom Srl",
-          "description": "Informazioni legali generali relative al sito Farcom Srl farcomarredi.it.",
+          "name": "Note Legali | Farcom Design s.r.l.",
+          "description": "Informazioni legali generali relative al sito Farcom Design s.r.l. farcomarredi.it.",
           "url": "https://www.farcomarredi.it/note-legali",
           "inLanguage": "it-IT",
           "lastReviewed": "2026-09-08"

@@ -345,7 +345,7 @@ export default function Quote() {
   return (
     <div className="bg-[var(--background)] min-h-screen pt-24">
       <SEOHead
-        title="Preventivo Arredamento Gratuito - Farcom Srl Macerata Campania e Italia"
+        title="Preventivo Arredamento Gratuito - Farcom Design s.r.l. Macerata Campania e Italia"
         description="Richiedi un preventivo gratuito per arredamento su misura a Macerata Campania, Caserta e in tutta Italia. Sopralluogo gratuito e consulenza senza impegno. Arredatore di interni esperti."
         canonical="https://www.farcomarredi.it/preventivo"
         schema={{
@@ -373,7 +373,7 @@ export default function Quote() {
               "name": "Farcom lavora solo in Campania o anche in altre regioni?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Farcom Srl ha sede a Macerata Campania ma offre servizio di arredamento e progettazione interni in tutta Italia. Operiamo a livello nazionale con la stessa qualità artigianale."
+                "text": "Farcom Design s.r.l. ha sede a Macerata Campania ma offre servizio di arredamento e progettazione interni in tutta Italia. Operiamo a livello nazionale con la stessa qualità artigianale."
               }
             },
             {
@@ -710,7 +710,7 @@ export default function Quote() {
             <div className="border border-[var(--border)] bg-white p-6 rounded-lg">
               <h3 className="font-semibold text-[var(--foreground)] mb-2">Farcom lavora solo in Campania o anche in altre regioni?</h3>
               <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">
-                Farcom Srl ha sede a Macerata Campania ma offre servizio di arredamento e progettazione interni in tutta Italia. Operiamo a livello nazionale con la stessa qualità artigianale.
+                Farcom Design s.r.l. ha sede a Macerata Campania ma offre servizio di arredamento e progettazione interni in tutta Italia. Operiamo a livello nazionale con la stessa qualità artigianale.
               </p>
             </div>
             <div className="border border-[var(--border)] bg-white p-6 rounded-lg">

@@ -11,7 +11,7 @@ const sections = [
   {
     title: "Oggetto e ambito di applicazione",
     paragraphs: [
-      "I presenti Termini e Condizioni disciplinano l'utilizzo del sito web di Farcom Srl, accessibile all'indirizzo www.farcomarredi.it e ai suoi sottodomini.",
+      "I presenti Termini e Condizioni disciplinano l'utilizzo del sito web di Farcom Design s.r.l., accessibile all'indirizzo www.farcomarredi.it e ai suoi sottodomini.",
       "Il sito ha finalità informative e commerciali relative ai servizi di progettazione e realizzazione di arredi su misura per spazi professionali (barbieri, uffici, negozi, scuole, bar, centri estetici e altri settori).",
       "L'accesso e la navigazione sul sito implicano l'accettazione integrale dei presenti Termini e Condizioni. Qualora l'utente non intenda accettare tali termini, è invitato a non utilizzare il sito.",
     ],

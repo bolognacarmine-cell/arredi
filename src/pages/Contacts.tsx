@@ -24,6 +24,7 @@ export default function Contacts() {
   }, [])
 
   const [form, setForm] = useState({ nome: "", email: "", telefono: "", messaggio: "" })
+  const [mapLoaded, setMapLoaded] = useState(false)
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }))
   const siteConfig = useSiteSettings()
   const contactInfoCards = getContactInfoCards(siteConfig)
@@ -32,13 +33,13 @@ export default function Contacts() {
   return (
     <div className="bg-[#FAFAFA] min-h-screen pt-24">
       <SEOHead
-        title="Contatti - Farcom Srl | Showroom Macerata Campania"
-        description="Contatta Farcom Srl: showroom arredamento a Macerata Campania, Via P. Vertaldi 27. Telefono +39 0823 694427, WhatsApp +39 329 4576079. Arredamento su misura in tutta Italia."
+        title="Contatti - Farcom Design s.r.l. | Showroom Macerata Campania"
+        description="Contatta Farcom Design s.r.l.: showroom arredamento a Macerata Campania, Via P. Vertaldi 27. Telefono +39 0823 694427, WhatsApp +39 329 4576079. Arredamento su misura in tutta Italia."
         canonical="https://www.farcomarredi.it/contatti"
         schema={{
           "@context": "https://schema.org",
           "@type": "LocalBusiness",
-          "name": "Farcom Srl",
+          "name": "Farcom Design s.r.l.",
           "description": "Showroom arredamento a Macerata Campania. Arredi su misura per barberie, uffici, negozi e attività professionali con servizio in tutta Italia.",
           "url": "https://www.farcomarredi.it/",
           "telephone": "+39 0823 694427",
@@ -120,7 +121,7 @@ export default function Contacts() {
                 "name": "Farcom lavora solo in Campania o anche in altre regioni?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Farcom Srl ha sede a Macerata Campania ma offre servizio di arredamento e progettazione interni in tutta Italia. Operiamo a livello nazionale con la stessa qualità artigianale."
+                  "text": "Farcom Design s.r.l. ha sede a Macerata Campania ma offre servizio di arredamento e progettazione interni in tutta Italia. Operiamo a livello nazionale con la stessa qualità artigianale."
                 }
               },
               {
@@ -189,18 +190,45 @@ export default function Contacts() {
               ))}
             </div>
 
-            {/* Google Maps */}
+            {/* Google Maps — iframe caricato solo dopo consenso esplicito (GDPR) */}
             <div className="relative bg-[#E8E8EC] h-80 sm:h-96 overflow-hidden">
-              <iframe
-                src={siteConfig.mapEmbedSrc}
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="strict-origin-when-cross-origin"
-                title={siteConfig.mapTitle}
-              />
+              {mapLoaded ? (
+                <iframe
+                  src={siteConfig.mapEmbedSrc}
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  title={siteConfig.mapTitle}
+                />
+              ) : (
+                <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
+                  <p className="max-w-md text-sm leading-relaxed text-[#4A4A46]">
+                    La mappa interattiva è fornita da Google. Caricandola, Google
+                    potrà trattare i tuoi dati (es. indirizzo IP) secondo la propria
+                    informativa privacy.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setMapLoaded(true)}
+                    className="inline-flex min-h-[44px] items-center justify-center border border-[#E69138] bg-[#E69138] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#f0a14b]"
+                  >
+                    Carica la mappa
+                  </button>
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                      `${siteConfig.addressLine1}, ${siteConfig.addressLine2}`,
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-[#4A4A46] underline underline-offset-2 transition-colors hover:text-[#E69138]"
+                  >
+                    Apri in Google Maps
+                  </a>
+                </div>
+              )}
             </div>
 
             {/* Social */}
@@ -334,7 +362,7 @@ ${form.messaggio}`
                 },
                 {
                   q: "Farcom lavora solo in Campania o anche in altre regioni?",
-                  a: "Farcom Srl ha sede a Macerata Campania ma offre servizio di arredamento e progettazione interni in tutta Italia. Operiamo a livello nazionale con la stessa qualità artigianale."
+                  a: "Farcom Design s.r.l. ha sede a Macerata Campania ma offre servizio di arredamento e progettazione interni in tutta Italia. Operiamo a livello nazionale con la stessa qualità artigianale."
                 },
                 {
                   q: "Posso visitare il showroom senza appuntamento?",

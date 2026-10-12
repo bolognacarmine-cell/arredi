@@ -54,7 +54,7 @@ export default function BlogPost() {
       },
       "publisher": {
         "@type": "Organization",
-        "name": "Farcom Srl",
+        "name": "Farcom Design s.r.l.",
         "logo": {
           "@type": "ImageObject",
           "url": "https://www.farcomarredi.it/logo.png"

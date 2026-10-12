@@ -58,8 +58,8 @@ export default function ProjectDetail() {
   return (
     <div className="bg-[#F7F5F0] min-h-screen pt-24">
       <SEOHead
-        title={`${project.title} | ${project.sector} - Progetto Farcom Srl`}
-        description={`${project.description} Realizzazione di arredamento per ${project.sector} a ${project.location} (${project.year}). Progetto di Farcom Srl: progettazione, realizzazione e installazione arredi su misura.`}
+        title={`${project.title} | ${project.sector} - Progetto Farcom Design s.r.l.`}
+        description={`${project.description} Realizzazione di arredamento per ${project.sector} a ${project.location} (${project.year}). Progetto di Farcom Design s.r.l.: progettazione, realizzazione e installazione arredi su misura.`}
         canonical={`https://www.farcomarredi.it/progetti/${project.id}`}
         ogImage={cover}
         schema={{
@@ -71,7 +71,7 @@ export default function ProjectDetail() {
           "dateCreated": String(project.year),
           "creator": {
             "@type": "Organization",
-            "name": "Farcom Srl",
+            "name": "Farcom Design s.r.l.",
             "url": "https://www.farcomarredi.it/"
           },
           "image": cover,

@@ -218,13 +218,13 @@ export default function Home() {
   return (
     <div className="bg-[#FAFAFA]">
       <SEOHead
-        title="Farcom Srl - Arredamento e Progettazione Interni a Macerata Campania e in tutta Italia"
-        description="Farcom Srl: arredamento su misura e progettazione interni a Macerata Campania, Caserta e in tutta Italia. Showroom arredi professionali, preventivi gratuiti e sopralluogo. Richiedi un preventivo!"
+        title="Farcom Design s.r.l. - Arredamento e Progettazione Interni a Macerata Campania e in tutta Italia"
+        description="Farcom Design s.r.l.: arredamento su misura e progettazione interni a Macerata Campania, Caserta e in tutta Italia. Showroom arredi professionali, preventivi gratuiti e sopralluogo. Richiedi un preventivo!"
         canonical="https://www.farcomarredi.it/"
         schema={{
           "@context": "https://schema.org",
           "@type": "HomeAndConstructionBusiness",
-          "name": "Farcom Srl",
+          "name": "Farcom Design s.r.l.",
           "description": "Azienda di arredamento e progettazione interni a Macerata Campania. Servizio in tutta Italia con showroom arredi professionali, preventivi gratuiti e sopralluogo.",
           "url": "https://www.farcomarredi.it/",
           "telephone": "+39 0823 694427",
@@ -396,7 +396,7 @@ export default function Home() {
                           gravity: "auto",
                         },
                       )}
-                      alt={`${p.title} - Progetto arredamento ${p.location} Farcom Srl`}
+                      alt={`${p.title} - Progetto arredamento ${p.location} Farcom Design s.r.l.`}
                       width="1200"
                       height="900"
                       loading="lazy"

@@ -32,14 +32,14 @@ export default function SettoriList() {
   return (
     <div className="bg-[#FAFAFA] min-h-screen">
       <SEOHead
-        title="Settori di Arredamento | Farcom Srl - 6 Specializzazioni"
-        description="Farcom Srl progetta e realizza arredi su misura per 6 settori: barbieri e parrucchieri, uffici, negozi, scuole, bar e locali, centri estetici. Soluzioni specializzate per ogni attività."
+        title="Settori di Arredamento | Farcom Design s.r.l. - 6 Specializzazioni"
+        description="Farcom Design s.r.l. progetta e realizza arredi su misura per 6 settori: barbieri e parrucchieri, uffici, negozi, scuole, bar e locali, centri estetici. Soluzioni specializzate per ogni attività."
         canonical="https://www.farcomarredi.it/settori"
         schema={{
           "@context": "https://schema.org",
           "@type": "CollectionPage",
-          "name": "Settori di Arredamento | Farcom Srl",
-          "description": "Panoramica dei sei settori di arredamento specializzati di Farcom Srl: barbieri, uffici, negozi, scuole, bar e centri estetici.",
+          "name": "Settori di Arredamento | Farcom Design s.r.l.",
+          "description": "Panoramica dei sei settori di arredamento specializzati di Farcom Design s.r.l.: barbieri, uffici, negozi, scuole, bar e centri estetici.",
           "url": "https://www.farcomarredi.it/settori",
           "inLanguage": "it-IT",
           "hasPart": SECTORS.map((s) => ({

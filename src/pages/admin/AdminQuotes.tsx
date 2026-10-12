@@ -211,7 +211,7 @@ export default function AdminQuotes() {
     const cleanPhone = quote.telefono.replace(/[\s\-\(\)]/g, '')
     
     // Generate message
-    const message = `Ciao ${quote.nome}, sono Farcom Srl. Ho ricevuto il tuo preventivo per ${quote.arredo || 'i tuoi arredi'}. Possiamo sentirci per approfondire. Fammi sapere quando sei disponibile.`
+    const message = `Ciao ${quote.nome}, sono Farcom Design s.r.l. Ho ricevuto il tuo preventivo per ${quote.arredo || 'i tuoi arredi'}. Possiamo sentirci per approfondire. Fammi sapere quando sei disponibile.`
     
     // Encode message for URL
     const encodedMessage = encodeURIComponent(message)

@@ -51,8 +51,8 @@ function _batchedSiteSettingsDispatch() {
 
 export const fallbackSiteSettings: SiteSettings = {
   brandName: "Farcom Arredi",
-  legalName: "Farcom Srl",
-  logoAlt: "Farcom Società Cooperativa",
+  legalName: "Farcom Design s.r.l.",
+  logoAlt: "Farcom Arredi",
   claim: "Arredi su misura per spazi professionali",
   footerIntro:
     "Ti aiutiamo a trasformare l'idea in uno spazio su misura, funzionale e riconoscibile per il tuo business.",
@@ -74,7 +74,7 @@ export const fallbackSiteSettings: SiteSettings = {
   facebookHref: "https://www.facebook.com/p/Farcom-arredi-100054867935352/",
   mapEmbedSrc:
     "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2377.884846634837!2d14.286448674946657!3d41.05604271648417!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x133a557cd580ba03%3A0x1f2981eb342f4283!2sVia%20P.%20Vertaldi%2C%2027%2C%2081047%20Macerata%20Campania%20CE!5e1!3m2!1sit!2sit!4v1788194375937!5m2!1sit!2sit",
-  mapTitle: "Farcom Srl - Via P. Vertaldi, 27 Macerata Campania",
+  mapTitle: "Farcom Design s.r.l. - Via P. Vertaldi, 27 Macerata Campania",
 }
 
 // Dicitura superata rimasta nelle impostazioni salvate dai browser.

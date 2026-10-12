@@ -79,19 +79,19 @@ export default function SectorPage() {
   return (
     <div className="bg-[#F7F5F0]">
       <SEOHead
-        title={`Arredi per ${sector.label} | Progettazione e Realizzazione | Farcom Srl`}
-        description={`${sector.description} Scopri i progetti realizzati da Farcom Srl per ${sector.label}: soluzioni su misura, progettazione 3D, realizzazione artigianale in laboratorio a Macerata Campania e installazione chiavi in mano in tutta Italia.`}
+        title={`Arredi per ${sector.label} | Progettazione e Realizzazione | Farcom Design s.r.l.`}
+        description={`${sector.description} Scopri i progetti realizzati da Farcom Design s.r.l. per ${sector.label}: soluzioni su misura, progettazione 3D, realizzazione artigianale in laboratorio a Macerata Campania e installazione chiavi in mano in tutta Italia.`}
         canonical={`https://www.farcomarredi.it/settori/${sector.id}`}
         ogImage={heroImage}
         schema={{
           "@context": "https://schema.org",
           "@type": "Service",
-          "name": `Arredamento per ${sector.label} | Farcom Srl`,
+          "name": `Arredamento per ${sector.label} | Farcom Design s.r.l.`,
           "serviceType": sector.longTitle || `Arredamento per ${sector.label}`,
           "description": `${sector.description} Soluzioni su misura con progettazione 3D, produzione artigianale e installazione in tutta Italia.`,
           "provider": {
             "@type": "Organization",
-            "name": "Farcom Srl",
+            "name": "Farcom Design s.r.l.",
             "url": "https://www.farcomarredi.it/"
           },
           "areaServed": {

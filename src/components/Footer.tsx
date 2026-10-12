@@ -5,6 +5,7 @@ import {
   companyLinks,
   getFooterContactLinks,
   getSocialLinks,
+  legalConfig,
   sectorLinks,
   useSiteSettings,
 } from "../siteConfig"
@@ -430,13 +431,15 @@ export default function Footer() {
                     </Link>
                   </li>
                 </ul>
-                <div className="text-[10px] sm:text-xs text-white/45">
-                  © {currentYear} {siteConfig.legalName}.
-                  <br />
-                  P.IVA: 04970450617
-                </div>
               </Accordion>
             </div>
+          </div>
+
+          {/* Riga legale sempre visibile su mobile (identificazione titolare GDPR) */}
+          <div className="md:hidden mt-6 pt-4 border-t border-white/10 text-[10px] sm:text-xs text-white/45">
+            © {currentYear} {legalConfig.company.name}.
+            <br />
+            P.IVA: 04970450617
           </div>
 
           {/* ===== DESKTOP md+: 5 colonne sempre espanso ===== */}
@@ -649,7 +652,7 @@ export default function Footer() {
                   {siteConfig.email}
                 </a>
                 <div className="mt-1 sm:mt-1.5 text-[10px] sm:text-xs text-white/45 leading-relaxed" style={{ paddingBottom: "env(safe-area-inset-bottom, 0)" }}>
-                  © {currentYear} {siteConfig.legalName}.
+                  © {currentYear} {legalConfig.company.name}.
                   <br />
                   P.IVA: 04970450617
                   <br />

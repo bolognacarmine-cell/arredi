@@ -50,7 +50,7 @@ const getProductSchema = (product: Product, effectivePrice: ReturnType<typeof co
     },
     "manufacturer": {
       "@type": "Organization",
-      "name": "Farcom Srl"
+      "name": "Farcom Design s.r.l."
     },
     "offers": {
       "@type": "Offer",
@@ -60,7 +60,7 @@ const getProductSchema = (product: Product, effectivePrice: ReturnType<typeof co
       "url": `https://www.farcomarredi.it/showroom/${product.slug}`,
       "seller": {
         "@type": "Organization",
-        "name": "Farcom Srl",
+        "name": "Farcom Design s.r.l.",
         "address": {
           "@type": "PostalAddress",
           "streetAddress": "Via P. Vertaldi, 27",

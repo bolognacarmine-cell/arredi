@@ -247,7 +247,7 @@ export default function Navbar() {
           >
             <img
               src="/logo-farcom.png"
-              alt="Farcom Società Cooperativa"
+              alt="Farcom Arredi"
               width="120"
               height="40"
               loading="eager"

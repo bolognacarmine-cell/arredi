@@ -69,8 +69,7 @@ export default function CookieBanner() {
       }}
     >
       <p style={{ margin: 0, fontSize: 14, lineHeight: 1.6, textAlign: 'center', color: '#cbd5e1' }}>
-        Questo sito utilizza i cookie per migliorare la tua esperienza.
-        Continuando a navigare o cliccando su "Accetta", acconsenti all'uso dei cookie.
+        Questo sito utilizza soltanto cookie tecnici necessari al funzionamento. I contenuti di terze parti (es. la mappa di Google) vengono caricati solo previo tuo consenso.
         {' '}
         <a href="/cookie" style={{ color: '#4fc3f7', textDecoration: 'none', borderBottom: '1px solid transparent' }}>
           Cookie Policy
