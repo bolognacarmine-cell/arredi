@@ -291,16 +291,20 @@ export default function Hero() {
 
               <div className="relative bg-white/6 backdrop-blur-md border border-white/12 rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 lg:p-8">
                 <div className="flex items-center gap-2 sm:gap-3">
-                  <img
-                    src="/logo-farcom.png"
-                    alt=""
-                    aria-hidden="true"
-                    width="120"
-                    height="40"
-                    loading="eager"
-                    fetchpriority="high"
-                    className="h-6 sm:h-7 md:h-8 w-auto opacity-90"
-                  />
+                  <picture>
+                    <source srcSet="/logo-farcom.avif" type="image/avif" />
+                    <source srcSet="/logo-farcom.webp" type="image/webp" />
+                    <img
+                      src="/logo-farcom.png"
+                      alt=""
+                      aria-hidden="true"
+                      width="120"
+                      height="40"
+                      loading="eager"
+                      fetchpriority="high"
+                      className="h-6 sm:h-7 md:h-8 w-auto opacity-90"
+                    />
+                  </picture>
                   <div className="h-px flex-1 bg-gradient-to-r from-white/15 to-transparent" />
                 </div>
 

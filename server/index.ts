@@ -20,6 +20,7 @@ for (const envPath of envCandidates) {
   }
 }
 import express, { Request, Response, NextFunction } from 'express';
+import compression from 'compression';
 import cors from 'cors';
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
@@ -38,6 +39,10 @@ import { adminApiRateLimiter } from './middleware/rateLimiter.js';
 
 const app = express();
 const PORT = process.env.PORT || 3002;
+
+// Compressione HTTP (gzip/deflate) per tutti i payload testuali: HTML, CSS, JS, JSON.
+// Riduce di ~70% il peso trasferito del bundle. Non altera la logica delle risposte.
+app.use(compression());
 
 // Health check endpoint
 app.get('/health', async (req: Request, res: Response) => {

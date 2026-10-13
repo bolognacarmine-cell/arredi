@@ -245,15 +245,19 @@ export default function Navbar() {
             to="/"
             className="flex items-center overflow-visible focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 rounded"
           >
-            <img
-              src="/logo-farcom.png"
-              alt="Farcom Arredi"
-              width="120"
-              height="40"
-              loading="eager"
-              fetchpriority="high"
-              className="h-8 sm:h-10 md:h-10 lg:h-12 w-auto object-contain overflow-visible"
-            />
+            <picture>
+              <source srcSet="/logo-farcom.avif" type="image/avif" />
+              <source srcSet="/logo-farcom.webp" type="image/webp" />
+              <img
+                src="/logo-farcom.png"
+                alt="Farcom Arredi"
+                width="120"
+                height="40"
+                loading="eager"
+                fetchpriority="high"
+                className="h-8 sm:h-10 md:h-10 lg:h-12 w-auto object-contain overflow-visible"
+              />
+            </picture>
           </Link>
 
           <ul className="hidden lg:flex items-center gap-7 xl:gap-8 ml-6">

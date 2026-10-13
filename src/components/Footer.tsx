@@ -235,11 +235,15 @@ export default function Footer() {
           <div className="mb-8 sm:mb-10 md:mb-12 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-5 sm:gap-6">
             <div className="flex flex-col gap-3">
               <Link to="/" className="inline-flex items-center min-h-[44px] -ml-1">
-                <img
-                  src="/logo-farcom.png"
-                  alt={siteConfig.logoAlt}
-                  className="h-10 sm:h-12 w-auto object-contain"
-                />
+                <picture>
+                  <source srcSet="/logo-farcom.avif" type="image/avif" />
+                  <source srcSet="/logo-farcom.webp" type="image/webp" />
+                  <img
+                    src="/logo-farcom.png"
+                    alt={siteConfig.logoAlt}
+                    className="h-10 sm:h-12 w-auto object-contain"
+                  />
+                </picture>
               </Link>
               <p className="text-sm sm:text-[15px] leading-[1.6] text-white/68 max-w-xl">
                 {siteConfig.footerDescription}

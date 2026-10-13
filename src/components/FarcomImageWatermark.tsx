@@ -114,24 +114,28 @@ export default function FarcomImageWatermark({
       className={`pointer-events-none absolute inset-0 z-[5] ${className}`}
       aria-hidden="true"
     >
-      <img
-        ref={imgRef}
-        src={LOGO_SRC}
-        alt=""
-        draggable={false}
-        decoding="async"
-        onLoad={onLogoLoad}
-        style={{
-          position: "absolute",
-          ...corner,
-          width: show ? layout.width : 0,
-          height: show ? layout.height : 0,
-          objectFit: "contain",
-          opacity: show ? (opacity ?? layout.opacity) : 0,
-          visibility: show ? "visible" : "hidden",
-          pointerEvents: "none",
-        }}
-      />
+      <picture>
+        <source srcSet="/logo-farcom.avif" type="image/avif" />
+        <source srcSet="/logo-farcom.webp" type="image/webp" />
+        <img
+          ref={imgRef}
+          src={LOGO_SRC}
+          alt=""
+          draggable={false}
+          decoding="async"
+          onLoad={onLogoLoad}
+          style={{
+            position: "absolute",
+            ...corner,
+            width: show ? layout.width : 0,
+            height: show ? layout.height : 0,
+            objectFit: "contain",
+            opacity: show ? (opacity ?? layout.opacity) : 0,
+            visibility: show ? "visible" : "hidden",
+            pointerEvents: "none",
+          }}
+        />
+      </picture>
     </div>
   )
 }

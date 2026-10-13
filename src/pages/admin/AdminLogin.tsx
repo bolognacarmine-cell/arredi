@@ -35,11 +35,15 @@ export default function AdminLogin() {
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <Link to="/" className="inline-block mb-4">
-            <img
-              src="/logo-farcom.png"
-              alt="Farcom"
-              className="h-12 w-auto mx-auto"
-            />
+            <picture>
+              <source srcSet="/logo-farcom.avif" type="image/avif" />
+              <source srcSet="/logo-farcom.webp" type="image/webp" />
+              <img
+                src="/logo-farcom.png"
+                alt="Farcom"
+                className="h-12 w-auto mx-auto"
+              />
+            </picture>
           </Link>
           <h1 className="font-display text-2xl font-light text-[#1A1A18] mb-2">
             Admin Access
