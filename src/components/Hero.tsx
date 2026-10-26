@@ -104,6 +104,8 @@ export default function Hero() {
         className="z-0 max-lg:[&_video]:brightness-[1.08] max-lg:[&_img]:brightness-[1.08]"
         basePath="/videos/farcom-hero"
         poster="/barber-farcom.jpg"
+        posterAvif="/images-optimized/barber-farcom-1200.avif"
+        posterWebp="/images-optimized/barber-farcom-1200.webp"
         fallbackImg="/barber-farcom.jpg"
         // Video HERO — sempre sopra la piega → priority=true per caricare SUBITO
         // (non vogliamo lazy: l'utente vede subito il poster se usa preload=none, non il video)

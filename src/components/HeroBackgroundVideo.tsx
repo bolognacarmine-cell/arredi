@@ -20,6 +20,10 @@ type Props = {
 
   poster?: string
 
+  posterAvif?: string
+
+  posterWebp?: string
+
   fallbackImg?: string
 
   className?: string
@@ -49,6 +53,10 @@ export default function HeroBackgroundVideo({
 
   poster = "https://images.unsplash.com/photo-1547609434-b732edfee020?w=1920&h=1080&fit=crop&auto=format",
 
+  posterAvif,
+
+  posterWebp,
+
   fallbackImg = "https://images.unsplash.com/photo-1547609434-b732edfee020?w=1920&h=1080&fit=crop&auto=format",
 
   className = "",
@@ -65,6 +73,8 @@ export default function HeroBackgroundVideo({
   const containerRef = useRef<HTMLDivElement | null>(null)
 
   const [showFallback, setShowFallback] = useState(false)
+
+  const [hasVideoStarted, setHasVideoStarted] = useState(false)
 
   const ioRef = useRef<IntersectionObserver | null>(null)
 
@@ -234,6 +244,7 @@ export default function HeroBackgroundVideo({
 
   const onVideoError = () => {
     setShowFallback(true)
+    setHasVideoStarted(false)
 
     if (videoRef.current) videoRef.current.style.display = "none"
   }
@@ -253,16 +264,32 @@ export default function HeroBackgroundVideo({
           : "inset-0"
       }`}
     >
-      {/* Fallback IMG se nessun video è supportato o errore MP4 */}
-      <img
-        src={fallbackImg}
-        alt=""
-        aria-hidden="true"
-        className={`absolute inset-0 w-full h-full object-cover ${
-          showFallback ? "block" : "hidden"
-        }`}
-        decoding="async"
-      />
+      {posterAvif && posterWebp ? (
+        <picture
+          className={`absolute inset-0 z-10 ${hasVideoStarted ? "hidden" : "block"}`}
+        >
+          <source srcSet={posterAvif} type="image/avif" />
+          <source srcSet={posterWebp} type="image/webp" />
+          <img
+            src={poster}
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 w-full h-full object-cover"
+            decoding="async"
+            fetchPriority="high"
+          />
+        </picture>
+      ) : (
+        <img
+          src={fallbackImg}
+          alt=""
+          aria-hidden="true"
+          className={`absolute inset-0 w-full h-full object-cover ${
+            showFallback ? "block" : "hidden"
+          }`}
+          decoding="async"
+        />
+      )}
       {loadVideo ? (
         <div
           className={`absolute inset-0 overflow-hidden ${showFallback ? "hidden" : "block"} ${
@@ -286,8 +313,9 @@ export default function HeroBackgroundVideo({
             disablePictureInPicture
             controls={false}
             preload={priority ? "metadata" : "none"}
-            poster={poster}
+            poster={posterAvif && posterWebp ? undefined : poster}
             onError={onVideoError}
+            onPlaying={() => setHasVideoStarted(true)}
             style={{
               imageRendering: "auto",
               transform: ENABLE_EXPERIMENTAL_HERO ? undefined : "translateZ(0)",
@@ -297,15 +325,15 @@ export default function HeroBackgroundVideo({
           </video>
         </div>
       ) : (
-        // Poster placeholder finché non entra in viewport (lazy)
-
-        <img
-          src={poster}
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover block"
-          decoding="async"
-        />
+        posterAvif && posterWebp ? null : (
+          <img
+            src={poster}
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 w-full h-full object-cover block"
+            decoding="async"
+          />
+        )
       )}
     </div>
   )

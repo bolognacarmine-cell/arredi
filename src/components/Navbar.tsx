@@ -246,10 +246,10 @@ export default function Navbar() {
             className="flex items-center overflow-visible focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 rounded"
           >
             <picture>
-              <source srcSet="/logo-farcom.avif" type="image/avif" />
-              <source srcSet="/logo-farcom.webp" type="image/webp" />
+              <source srcSet="/images-optimized/logo-farcom-360.avif" type="image/avif" />
+              <source srcSet="/images-optimized/logo-farcom-360.webp" type="image/webp" />
               <img
-                src="/logo-farcom.png"
+                src="/images-optimized/logo-farcom-360.png"
                 alt="Farcom Arredi"
                 width="120"
                 height="40"

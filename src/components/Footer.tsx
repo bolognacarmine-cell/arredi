@@ -236,10 +236,10 @@ export default function Footer() {
             <div className="flex flex-col gap-3">
               <Link to="/" className="inline-flex items-center min-h-[44px] -ml-1">
                 <picture>
-                  <source srcSet="/logo-farcom.avif" type="image/avif" />
-                  <source srcSet="/logo-farcom.webp" type="image/webp" />
+                  <source srcSet="/images-optimized/logo-farcom-360.avif" type="image/avif" />
+                  <source srcSet="/images-optimized/logo-farcom-360.webp" type="image/webp" />
                   <img
-                    src="/logo-farcom.png"
+                    src="/images-optimized/logo-farcom-360.png"
                     alt={siteConfig.logoAlt}
                     className="h-10 sm:h-12 w-auto object-contain"
                   />

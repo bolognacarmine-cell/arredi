@@ -36,10 +36,10 @@ export default function AdminLogin() {
         <div className="text-center mb-8">
           <Link to="/" className="inline-block mb-4">
             <picture>
-              <source srcSet="/logo-farcom.avif" type="image/avif" />
-              <source srcSet="/logo-farcom.webp" type="image/webp" />
+              <source srcSet="/images-optimized/logo-farcom-360.avif" type="image/avif" />
+              <source srcSet="/images-optimized/logo-farcom-360.webp" type="image/webp" />
               <img
-                src="/logo-farcom.png"
+                src="/images-optimized/logo-farcom-360.png"
                 alt="Farcom"
                 className="h-12 w-auto mx-auto"
               />

@@ -9,7 +9,7 @@ import {
   type WatermarkLayout,
 } from "../lib/cloudinary/watermark"
 
-const LOGO_SRC = "/logo-farcom.png"
+const LOGO_SRC = "/images-optimized/logo-farcom-360.png"
 
 type Props = {
   /** Opacità override (default dal layout: 0.8) */
@@ -115,8 +115,8 @@ export default function FarcomImageWatermark({
       aria-hidden="true"
     >
       <picture>
-        <source srcSet="/logo-farcom.avif" type="image/avif" />
-        <source srcSet="/logo-farcom.webp" type="image/webp" />
+        <source srcSet="/images-optimized/logo-farcom-360.avif" type="image/avif" />
+        <source srcSet="/images-optimized/logo-farcom-360.webp" type="image/webp" />
         <img
           ref={imgRef}
           src={LOGO_SRC}
