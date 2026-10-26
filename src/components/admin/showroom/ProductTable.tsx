@@ -164,11 +164,13 @@ export default function ProductTable({
                           {eur(p.basePrice)}
                         </div>
                         <div className="font-semibold text-[#1B4332]">
-                          {eur(eff.finalPrice)}
+                          {eff.finalPrice > 0 ? `A partire da ${eur(eff.finalPrice)}` : eur(eff.finalPrice)}
                         </div>
                       </div>
                     ) : (
-                      <div className="font-medium">{eur(p.basePrice)}</div>
+                      <div className="font-medium">
+                        {p.basePrice > 0 ? `A partire da ${eur(p.basePrice)}` : eur(p.basePrice)}
+                      </div>
                     )}
                   </td>
                   <td className="px-4 py-3 text-center">
@@ -250,7 +252,7 @@ export default function ProductTable({
                             {eur(p.basePrice)}
                           </span>
                           <span className="font-semibold text-[#1B4332]">
-                            {eur(eff.finalPrice)}
+                            {eff.finalPrice > 0 ? `A partire da ${eur(eff.finalPrice)}` : eur(eff.finalPrice)}
                           </span>
                           {eff.badge && (
                             <span className="ml-2 px-2 py-0.5 rounded-full bg-[#B5965A]/15 text-[#8B6F3A] text-[10px] font-semibold">
@@ -259,7 +261,9 @@ export default function ProductTable({
                           )}
                         </>
                       ) : (
-                        <span className="font-medium">{eur(p.basePrice)}</span>
+                        <span className="font-medium">
+                          {p.basePrice > 0 ? `A partire da ${eur(p.basePrice)}` : eur(p.basePrice)}
+                        </span>
                       )}
                     </div>
                   </div>

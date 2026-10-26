@@ -328,7 +328,7 @@ export default function ProductForm({ initial, onCancel, onSave, busy }: Props) 
           </div>
 
           <div>
-            <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">Prezzo base (€) *</label>
+            <label className="mb-1 block text-xs uppercase tracking-wide text-[#888580]">A partire da — Prezzo base (€) *</label>
             <input
               type="number"
               min={0}

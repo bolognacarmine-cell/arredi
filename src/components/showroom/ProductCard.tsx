@@ -176,7 +176,7 @@ export default function ProductCard({ product }: Props) {
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="font-semibold text-[var(--primary)] text-lg leading-tight">
-                    {formatPrice(eff.finalPrice)}
+                    {eff.finalPrice > 0 ? `A partire da ${formatPrice(eff.finalPrice)}` : formatPrice(eff.finalPrice)}
                   </div>
                   <span className="text-[10px] font-bold text-[var(--accent)] bg-[var(--accent)]/10 px-1.5 py-0.5 rounded">
                     -{Math.round((eff.savings / product.basePrice) * 100)}%
@@ -185,7 +185,7 @@ export default function ProductCard({ product }: Props) {
               </div>
             ) : (
               <div className="font-semibold text-[var(--foreground)] text-lg">
-                {formatPrice(product.basePrice)}
+                {product.basePrice > 0 ? `A partire da ${formatPrice(product.basePrice)}` : formatPrice(product.basePrice)}
               </div>
             )}
           </div>

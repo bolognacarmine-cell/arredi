@@ -327,12 +327,12 @@ export default function ShowroomDetail() {
                       {formatPrice(p.basePrice)}
                     </span>
                     <span className="font-display text-3xl font-semibold text-[var(--primary)]">
-                      {formatPrice(eff.finalPrice)}
+                      {eff.finalPrice > 0 ? `A partire da ${formatPrice(eff.finalPrice)}` : formatPrice(eff.finalPrice)}
                     </span>
                   </div>
                 ) : (
                   <span className="font-display text-3xl font-semibold text-[var(--foreground)]">
-                    {formatPrice(p.basePrice)}
+                    {p.basePrice > 0 ? `A partire da ${formatPrice(p.basePrice)}` : formatPrice(p.basePrice)}
                   </span>
                 )}
                 {eff?.savings ? (
