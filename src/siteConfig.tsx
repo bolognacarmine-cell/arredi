@@ -115,6 +115,7 @@ export const companyLinks = [
   { label: "Chi siamo", to: "/chi-siamo" },
   { label: "Progetti", to: "/progetti" },
   { label: "Preventivo", to: "/preventivo" },
+  { label: "Resto al Sud 2.0", to: "/resto-al-sud-2-0" },
   { label: "Contatti", to: "/contatti" },
 ] as const
 

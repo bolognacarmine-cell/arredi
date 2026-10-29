@@ -9,6 +9,7 @@ const links = [
   { label: "Progetti", to: "/progetti" },
   { label: "Showroom", to: "/showroom" },
   { label: "Blog", to: "/blog" },
+  { label: "Resto al Sud 2.0", to: "/resto-al-sud-2-0" },
   { label: "Chi siamo", to: "/chi-siamo" },
   { label: "Contatti", to: "/contatti" },
 ]
@@ -260,12 +261,12 @@ export default function Navbar() {
             </picture>
           </Link>
 
-          <ul className="hidden lg:flex items-center gap-7 xl:gap-8 ml-6">
+          <ul className="hidden lg:flex items-center gap-4 xl:gap-6 ml-6">
             {links.map((l) => (
               <li key={l.to}>
                 <Link
                   to={l.to}
-                  className={`text-base font-semibold relative group focus-visible:ring-2 focus-visible:ring-[#E69138] focus-visible:ring-offset-2 rounded ${transitionClasses} ${getLinkClass(l)}`}
+                  className={`text-sm xl:text-base font-semibold relative group whitespace-nowrap focus-visible:ring-2 focus-visible:ring-[#E69138] focus-visible:ring-offset-2 rounded ${transitionClasses} ${getLinkClass(l)}`}
                   aria-current={location.pathname === l.to ? "page" : undefined}
                 >
                   {l.label}
@@ -282,7 +283,7 @@ export default function Navbar() {
           <Link
             to="/preventivo"
             translate="no"
-            className={`hidden lg:inline-flex items-center gap-2 text-sm font-semibold px-4 lg:px-5 py-2.5 rounded ml-6 ${transitionClasses} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E69138] focus-visible:ring-offset-2 ${
+            className={`hidden lg:inline-flex items-center gap-2 text-xs xl:text-sm font-semibold px-3 xl:px-4 py-2.5 rounded ml-4 xl:ml-6 ${transitionClasses} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E69138] focus-visible:ring-offset-2 ${
               heroContrast && !usePillLayout
                 ? "bg-white text-[#1A1A2E] hover:bg-[#E69138] hover:text-[#1A1A2E]"
                 : "bg-[#E69138] text-[#1A1A2E] hover:bg-[#D67F28] hover:shadow-lg hover:shadow-[#E69138]/30"

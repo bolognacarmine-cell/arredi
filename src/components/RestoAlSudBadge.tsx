@@ -51,7 +51,7 @@ export default function RestoAlSudBadge() {
         "hover:-translate-y-0.5 hover:border-[#E69138]/60 hover:shadow-[0_8px_26px_rgba(26,26,46,0.18)]",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E69138] focus-visible:ring-offset-2",
         cookieBannerVisible
-          ? "bottom-64 sm:bottom-52 xl:bottom-6"
+          ? "bottom-80 sm:bottom-52 xl:bottom-6"
           : "bottom-3 sm:bottom-5 xl:right-6",
       ].join(" ")}
     >

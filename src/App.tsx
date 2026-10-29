@@ -24,6 +24,7 @@ const LegalNotesPage = lazy(() => import("./pages/LegalNotesPage"));
 const TermsPage = lazy(() => import("./pages/TermsPage"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
+const RestoAlSud = lazy(() => import("./pages/RestoAlSud"));
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
 const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
@@ -78,6 +79,7 @@ export default function App() {
               <Route path="/note-legali" element={<LegalNotesPage />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPost />} />
+              <Route path="/resto-al-sud-2-0" element={<RestoAlSud />} />
 
               {/* ADMIN — provider auth solo qui */}
               <Route element={<AdminAuthScope />}>
