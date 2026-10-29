@@ -5,6 +5,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
 import CookieBanner from "./components/CookieBanner";
+import RestoAlSudBadge from "./components/RestoAlSudBadge";
 import { AdminAuthProvider } from "./hooks/useAdminAuth";
 
 // Code-splitting: ogni pagina è caricata on-demand in un chunk separato.
@@ -113,6 +114,7 @@ export default function App() {
           </div>
         </div>
         <Footer />
+        <RestoAlSudBadge />
         <CookieBanner />
       </BrowserRouter>
     </HelmetProvider>

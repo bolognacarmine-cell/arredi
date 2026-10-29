@@ -37,11 +37,13 @@ export default function CookieBanner() {
   const handleAccept = () => {
     acceptCookies();
     setShowBanner(false);
+    window.dispatchEvent(new CustomEvent('farcom:cookie-consent'));
   };
 
   const handleReject = () => {
     rejectCookies();
     setShowBanner(false);
+    window.dispatchEvent(new CustomEvent('farcom:cookie-consent'));
   };
 
   if (!showBanner) return null;
