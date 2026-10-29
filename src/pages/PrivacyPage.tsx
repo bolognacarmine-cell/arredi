@@ -22,6 +22,7 @@ const sections = [
       "I dati vengono trattati per rispondere a richieste di contatto, formulare preventivi, organizzare sopralluoghi, gestire comunicazioni commerciali richieste e migliorare i servizi offerti.",
       "Il conferimento dei dati e facoltativo, ma la mancata comunicazione delle informazioni essenziali puo impedire la gestione della richiesta.",
       "Le finalità principali sono: gestione delle richieste commerciali, elaborazione di preventivi, rapporti commerciali e customer service.",
+      "Per le richieste di primo contatto relative a incentivi e misure agevolative, i dati possono essere trattati anche per l'eventuale inoltro a un commercialista dedicato.",
     ],
   },
   {
@@ -34,8 +35,9 @@ const sections = [
   {
     title: "Destinatari e responsabili",
     paragraphs: [
-      "I dati possono essere condivisi con provider di servizi tecnici, hosting, gestione email e altri soggetti necessari per l'erogazione dei servizi.",
+      "I dati possono essere condivisi con provider di servizi tecnici, hosting, gestione email, servizi di notifica e altri soggetti necessari per l'erogazione dei servizi.",
       "I destinatari sono individuati tra personale autorizzato, partner commerciali e fornitori di servizi tecnicamente necessari.",
+      "Se necessario, i dati possono essere inoltrati a un commercialista dedicato per la consulenza richiesta.",
     ],
   },
   {
@@ -99,7 +101,7 @@ export default function PrivacyPage() {
           "description": "Informativa sul trattamento dei dati personali per il sito Farcom Design s.r.l. (farcomarredi.it).",
           "url": "https://www.farcomarredi.it/privacy",
           "inLanguage": "it-IT",
-          "lastReviewed": "2026-09-08",
+          "lastReviewed": "2026-10-29",
           "mainEntity": {
             "@type": "Organization",
             "name": "Farcom Design s.r.l.",
@@ -112,7 +114,7 @@ export default function PrivacyPage() {
         title="Informativa Privacy"
         intro="Questa informativa descrive in modo sintetico come vengono trattati i dati personali raccolti attraverso il sito e i canali di contatto collegati alle richieste commerciali."
         sections={sections}
-        lastUpdated="2026-09-08"
+        lastUpdated="2026-10-29"
       />
     </>
   )

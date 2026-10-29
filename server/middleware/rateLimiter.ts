@@ -24,6 +24,18 @@ export const quoteRateLimiter = rateLimit({
   legacyHeaders: false,
 }) as any;
 
+// Rate limiter per il primo contatto Resto al Sud 2.0 - 5 richieste per ora per IP
+export const contactRequestRateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  message: {
+    success: false,
+    message: 'Troppe richieste inviate. Riprova tra un\'ora.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+}) as any;
+
 // Rate limiter per API admin generali - 100 richieste per 15 minuti
 export const adminApiRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minuti

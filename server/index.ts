@@ -32,6 +32,7 @@ import mediaRoutes from './routes/media.js';
 import productRoutes from './routes/products.js';
 import projectRoutes from './routes/projects.js';
 import quoteRoutes from './routes/quotes.js';
+import restoSudContactRoutes from './routes/restoSudContact.js';
 import siteConfigRoutes from './routes/siteConfig.js';
 import blogRoutes from './routes/blog.js';
 import adminRoutes from './routes/admin.js';
@@ -252,6 +253,7 @@ app.use('/api/media', mediaRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/quotes', quoteRoutes);
+app.use('/api/resto-sud-contact', restoSudContactRoutes);
 app.use('/api/site-config', siteConfigRoutes);
 app.use('/api/blog', blogRoutes);
 // @ts-ignore - TypeScript version conflict between project and server folder

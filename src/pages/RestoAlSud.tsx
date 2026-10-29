@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
+import RestoSudContactForm from "../components/RestoSudContactForm";
 import SEOHead from "../components/SEOHead";
 
 const INVITALIA_URL =
@@ -606,30 +607,27 @@ export default function RestoAlSud() {
       </section>
 
       <section className="bg-[#1B4332] py-16 sm:py-20">
-        <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 md:px-8 lg:px-10">
-          <h2 className="font-display text-3xl font-light text-white sm:text-4xl">
-            Hai un’idea? Parliamone.
-          </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-white/70 sm:text-base">
-            Prenota una consulenza con Farcom per valutare la tua idea e capire
-            come affrontare la pratica Resto al Sud 2.0.
-          </p>
-          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link
-              to="/contatti"
-              className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 bg-[#E69138] px-7 py-3 text-sm font-semibold text-[#1A1A2E] transition-colors hover:bg-[#D67F28] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1B4332] sm:w-auto"
-            >
-              Richiedi una consulenza
-              <ArrowUpRight />
-            </Link>
-            <a
-              href={INVITALIA_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 border border-white/25 px-7 py-3 text-sm font-semibold text-white transition-colors hover:border-white/50 hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1B4332] sm:w-auto"
-            >
-              Pagina ufficiale Invitalia
-            </a>
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 md:px-8 lg:px-10">
+          <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-start lg:gap-14">
+            <div>
+              <h2 className="font-display text-3xl font-light text-white sm:text-4xl">
+                Hai un’idea? Parliamone.
+              </h2>
+              <p className="mt-4 max-w-2xl text-sm leading-relaxed text-white/70 sm:text-base">
+                Prenota una consulenza con Farcom per valutare la tua idea e
+                capire come affrontare la pratica Resto al Sud 2.0.
+              </p>
+              <a
+                href={INVITALIA_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-white/80 underline decoration-[#E69138] decoration-2 underline-offset-4 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1B4332]"
+              >
+                Pagina ufficiale Invitalia
+                <ArrowUpRight />
+              </a>
+            </div>
+            <RestoSudContactForm />
           </div>
         </div>
       </section>
