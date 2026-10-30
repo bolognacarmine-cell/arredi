@@ -78,6 +78,12 @@ app.get('/health', async (req: Request, res: Response) => {
   }
 });
 
+// Endpoint keep-alive opzionale: risponde sempre 200 { ok: true },
+// senza interrogare MongoDB, Cloudinary, SMTP o Telegram, senza rate limiting e senza autenticazione.
+app.get('/api/keep-alive', (_req: Request, res: Response) => {
+  res.status(200).json({ ok: true });
+});
+
 // 🛡️ GUARDIA /api LIVELLO 1 — PRIMA DI TUTTO (dopo /health).
 // NON consuma la risposta: marca soltanto che si tratta di una richiesta API
 // e garantisce che nessun middleware successivo (CORS, static, session) la
