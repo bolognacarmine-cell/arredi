@@ -2,8 +2,11 @@ import { Router, Request, Response } from 'express';
 import { RestoSudContact } from '../models/RestoSudContact.js';
 import { contactRequestRateLimiter } from '../middleware/rateLimiter.js';
 import { sendTelegramMessage } from '../utils/telegram.js';
+import { sendEmail } from '../utils/email.js';
 
 const router = Router();
+
+const NOTIFICATION_EMAIL = 'farcomsrl@hotmail.com';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_PATTERN = /^[+()\d\s.\-]{6,50}$/;
@@ -80,6 +83,52 @@ router.post('/', contactRequestRateLimiter as any, async (req: Request, res: Res
       message,
       privacyConsent: true,
     });
+
+    const safeFullName = fullName.replace(/[\r\n]+/g, ' ');
+    const emailSubject = `Nuova richiesta Resto al Sud 2.0 - ${safeFullName}`;
+    const emailText = [
+      'Nuova richiesta Resto al Sud 2.0',
+      '',
+      `Nome e cognome: ${fullName}`,
+      email ? `Email: ${email}` : '',
+      phone ? `Telefono: ${phone}` : '',
+      message ? `Messaggio: ${message}` : '',
+      '',
+      'Consenso privacy espresso',
+    ]
+      .filter(Boolean)
+      .join('\n');
+
+    const emailHtml = [
+      '<h2>Nuova richiesta Resto al Sud 2.0</h2>',
+      '<ul>',
+      `<li><strong>Nome e cognome:</strong> ${escapeHtml(fullName)}</li>`,
+      email ? `<li><strong>Email:</strong> ${escapeHtml(email)}</li>` : '',
+      phone ? `<li><strong>Telefono:</strong> ${escapeHtml(phone)}</li>` : '',
+      '</ul>',
+      message ? `<h3>Messaggio</h3><p>${escapeHtml(message).replace(/\n/g, '<br>')}</p>` : '',
+      '<p><em>Consenso privacy espresso.</em></p>',
+    ]
+      .filter(Boolean)
+      .join('\n');
+
+    void sendEmail({
+      to: NOTIFICATION_EMAIL,
+      subject: emailSubject,
+      text: emailText,
+      html: emailHtml,
+    })
+      .then((result) => {
+        if (!result.success) {
+          console.error('[RestoSudContact] Email notification failed:', result.error || 'unknown error');
+        }
+      })
+      .catch((error) => {
+        console.error(
+          '[RestoSudContact] Email notification error:',
+          error instanceof Error ? error.message : String(error),
+        );
+      });
 
     const notification = [
       '🔔 <b>Nuova richiesta Resto al Sud 2.0</b>',
