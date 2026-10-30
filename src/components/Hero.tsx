@@ -32,7 +32,6 @@ export default function Hero() {
   const [videoReady, setVideoReady] = useState(false)
   const [videoDuration, setVideoDuration] = useState<number | null>(null)
   const [showText, setShowText] = useState(false)
-  const [isMuted, setIsMuted] = useState(true)
 
   // Handle video ready callback
   const handleVideoReady = (durationSeconds?: number) => {
@@ -41,28 +40,6 @@ export default function Hero() {
       setVideoDuration(durationSeconds)
     }
   }
-
-  // Handle audio toggle
-  const toggleAudio = () => {
-    const newMutedState = !isMuted
-    setIsMuted(newMutedState)
-  }
-
-  // Sync video element with muted state
-  useEffect(() => {
-    const videoElement = document.querySelector('video')
-    if (videoElement) {
-      videoElement.muted = isMuted
-      // Se attiviamo l'audio, proviamo a fare play se il video è in pausa
-      if (!isMuted && (videoElement as HTMLVideoElement).paused) {
-        videoElement.play().catch(() => {
-          // Se fallisce, rimettiamo il muto
-          videoElement.muted = true
-          setIsMuted(true)
-        })
-      }
-    }
-  }, [isMuted])
 
   // Delay text appearance after video is ready
   useEffect(() => {
@@ -111,7 +88,7 @@ export default function Hero() {
         // (non vogliamo lazy: l'utente vede subito il poster se usa preload=none, non il video)
         priority={true}
         onVideoReady={handleVideoReady}
-        isMuted={isMuted}
+        isMuted={true}
         framed
       />
 
@@ -137,15 +114,6 @@ export default function Hero() {
           animation: reducedMotion ? undefined : "heroGlowDrift 8s ease-in-out infinite",
         }}
       />
-
-      {/* Audio Toggle Button - positioned above all overlays */}
-      <button
-        onClick={toggleAudio}
-        className="absolute bottom-4 right-4 z-[9999] bg-black/30 hover:bg-black/50 backdrop-blur-sm text-white px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 border border-white/10 hover:border-white/30 cursor-pointer"
-        aria-label={isMuted ? "Attiva audio" : "Disattiva audio"}
-      >
-        {isMuted ? "🔇" : "🔊"}
-      </button>
 
       <div
         ref={ref}
