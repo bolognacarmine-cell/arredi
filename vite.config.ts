@@ -43,7 +43,7 @@ export default defineConfig(({ mode }) => {
 
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['favicon.ico', 'robots.txt', 'sitemap.xml', 'llms.txt'],
+        includeAssets: ['favicon.ico', 'robots.txt', 'llms.txt'],
         manifest: {
           name: 'Farcom Srl - Arredamento e Progettazione Interni',
           short_name: 'Farcom Arredi',
@@ -69,7 +69,7 @@ export default defineConfig(({ mode }) => {
           skipWaiting: true,
           clientsClaim: true,
           globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,avif}'],
-          navigateFallbackDenylist: [/^\/api\//, /^\/__admin/, /^\/\.well-known/],
+          navigateFallbackDenylist: [/^\/api\//, /^\/__admin/, /^\/\.well-known/, /^\/sitemap(_index|-index)?\.xml$/, /^\/robots\.txt$/, /^\/llms\.txt$/],
           runtimeCaching: [
             {
               urlPattern: /^https:\/\/res\.cloudinary\.com\/.*/i,

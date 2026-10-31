@@ -36,6 +36,7 @@ import restoSudContactRoutes from './routes/restoSudContact.js';
 import siteConfigRoutes from './routes/siteConfig.js';
 import blogRoutes from './routes/blog.js';
 import adminRoutes from './routes/admin.js';
+import sitemapRoutes from './routes/sitemap.js';
 import { adminApiRateLimiter } from './middleware/rateLimiter.js';
 
 const app = express();
@@ -239,6 +240,11 @@ app.use(session({
   name: 'farcom.sid',
   rolling: true,
 }));
+
+// Sitemap XML: route esplicita PRIMA di express.static e del fallback SPA.
+// Garantisce Content-Type application/xml e impedisce che una sitemap mancante
+// venga servita come index.html (errore "Sitemap is HTML" in Search Console).
+app.use(sitemapRoutes);
 
 // Serve static files from dist/ (parent directory of server/dist).
 // WRAPPER: salta express.static per le richieste marcate come API
