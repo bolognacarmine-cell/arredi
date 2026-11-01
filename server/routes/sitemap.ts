@@ -1,153 +1,207 @@
-import { Router, Request, Response } from 'express';
-import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { Router, type Request, type Response } from 'express';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import mongoose from 'mongoose';
+import { Project } from '../models/Project.js';
+import { Product } from '../models/Product.js';
 import Post from '../models/Post.js';
 
-// Il server è ESM ("type": "module"): __dirname non esiste a runtime.
-// Stesso shim usato in index.ts.
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-const router = Router();
-
 const SITE_URL = 'https://www.farcomarredi.it';
-/** Cache in memoria: il crawler non deve colpire Mongo a ogni richiesta. */
-const CACHE_TTL_MS = 10 * 60 * 1000;
+const CACHE_TTL_MS = 30 * 60 * 1000;
 
-interface SitemapCache {
-  xml: string;
-  at: number;
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const STATIC_SITEMAP_CANDIDATES = [
+  path.resolve(process.cwd(), 'dist', 'sitemap.xml'),
+  path.resolve(__dirname, '../../../dist', 'sitemap.xml'),
+  path.resolve(__dirname, '../../dist', 'sitemap.xml'),
+];
+
+export type SitemapEntry = {
+  loc: string;
+  lastmod?: string;
+  changefreq?: string;
+  priority?: string;
+};
+
+const STATIC_PAGES: SitemapEntry[] = [
+  { loc: '/', changefreq: 'weekly', priority: '1.0' },
+  { loc: '/settori', changefreq: 'weekly', priority: '0.9' },
+  { loc: '/progetti', changefreq: 'weekly', priority: '0.9' },
+  { loc: '/showroom', changefreq: 'daily', priority: '0.8' },
+  { loc: '/blog', changefreq: 'weekly', priority: '0.7' },
+  { loc: '/chi-siamo', changefreq: 'monthly', priority: '0.6' },
+  { loc: '/contatti', changefreq: 'monthly', priority: '0.6' },
+  { loc: '/preventivo', changefreq: 'monthly', priority: '0.8' },
+  { loc: '/resto-al-sud-2-0', changefreq: 'monthly', priority: '0.7' },
+  { loc: '/privacy', changefreq: 'yearly', priority: '0.3' },
+  { loc: '/cookie', changefreq: 'yearly', priority: '0.3' },
+  { loc: '/termini-e-condizioni', changefreq: 'yearly', priority: '0.3' },
+  { loc: '/note-legali', changefreq: 'yearly', priority: '0.3' },
+];
+
+const SECTOR_IDS = ['barbieri', 'uffici', 'negozi', 'scuole', 'bar', 'centri-estetici'];
+
+let cache: { xml: string; expiresAt: number } | null = null;
+
+function escapeXml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
 }
 
-let cache: SitemapCache | null = null;
+function toIsoDate(value: unknown): string | undefined {
+  if (!value) return undefined;
+  const date = new Date(value as string | number | Date);
+  if (Number.isNaN(date.getTime())) return undefined;
+  return date.toISOString().slice(0, 10);
+}
 
-/** Ritorna la sitemap statica (pagine non-blog) copiata in dist/ a build time. */
+/**
+ * Composizione dell'XML (funzione PURA, testabile senza Mongo):
+ * deduplica le URL e le rende con lastmod/changefreq/priority.
+ */
+export function renderSitemap(entries: SitemapEntry[]): string {
+  const seen = new Set<string>();
+  const urls: string[] = [];
+
+  for (const entry of entries) {
+    if (seen.has(entry.loc)) continue;
+    seen.add(entry.loc);
+
+    const lines = [`    <loc>${escapeXml(`${SITE_URL}${entry.loc}`)}</loc>`];
+    if (entry.lastmod) lines.push(`    <lastmod>${entry.lastmod}</lastmod>`);
+    if (entry.changefreq) lines.push(`    <changefreq>${entry.changefreq}</changefreq>`);
+    if (entry.priority) lines.push(`    <priority>${entry.priority}</priority>`);
+
+    urls.push(`  <url>\n${lines.join('\n')}\n  </url>`);
+  }
+
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    ...urls,
+    '</urlset>',
+    '',
+  ].join('\n');
+}
+
 function readStaticSitemap(): string | null {
-  const candidates = [
-    // sviluppo: server/routes/sitemap.ts → ../../dist
-    path.resolve(__dirname, '../../dist/sitemap.xml'),
-    // produzione: server/dist/routes/sitemap.js → ../../../dist
-    path.resolve(__dirname, '../../../dist/sitemap.xml'),
-    // cwd = root del progetto (comando avviato da lì)
-    path.resolve(process.cwd(), 'dist/sitemap.xml'),
-  ];
-
-  for (const candidate of candidates) {
+  for (const candidate of STATIC_SITEMAP_CANDIDATES) {
     try {
-      if (fs.existsSync(candidate)) return fs.readFileSync(candidate, 'utf8');
+      return fs.readFileSync(candidate, 'utf8');
     } catch {
-      /* prossimo candidato */
+      // prova il percorso successivo
     }
   }
   return null;
 }
 
-function toIsoDate(value: unknown, fallback: string): string {
-  if (value === undefined || value === null || value === '') return fallback;
-  const date = new Date(value as string | number | Date);
-  if (Number.isNaN(date.getTime())) return fallback;
-  return date.toISOString().slice(0, 10);
-}
-
-/** Pagine statiche di fallback quando dist/sitemap.xml non è ancora presente. */
-const FALLBACK_URLS = ['/', '/blog', '/settori', '/progetti', '/showroom', '/contatti', '/preventivo'];
-
-function urlEntry(loc: string, lastmod: string, priority: string, changefreq = 'monthly'): string {
-  return [
-    '  <url>',
-    `    <loc>${loc}</loc>`,
-    `    <lastmod>${lastmod}</lastmod>`,
-    `    <changefreq>${changefreq}</changefreq>`,
-    `    <priority>${priority}</priority>`,
-    '  </url>',
-  ].join('\n');
-}
-
-export interface SitemapPost {
-  slug: string;
-  publishedAt?: unknown;
-  updatedAt?: unknown;
-}
-
-/**
- * Composizione dell'XML (funzione PURA, testabile senza Mongo):
- * inietta gli articoli nella sitemap statica, o genera un urlset di fallback.
- */
-export function renderSitemap(
-  staticXml: string | null,
-  posts: SitemapPost[],
-  today = new Date().toISOString().slice(0, 10)
-): string {
-  const postUrls = posts
-    .map((post) =>
-      urlEntry(
-        `${SITE_URL}/blog/${post.slug}`,
-        toIsoDate(post.updatedAt, toIsoDate(post.publishedAt, today)),
-        '0.7',
-        'weekly'
-      )
-    )
-    .join('\n');
-
-  if (staticXml && staticXml.includes('</urlset>')) {
-    // Inietta gli articoli prima della chiusura del urlset statico
-    return staticXml.replace('</urlset>', `${postUrls}\n</urlset>`);
-  }
-
-  const fallbackUrls = FALLBACK_URLS.map((p, index) =>
-    urlEntry(`${SITE_URL}${p}`, today, index === 0 ? '1.0' : '0.8', index === 0 ? 'daily' : 'monthly')
-  ).join('\n');
-
-  return [
-    '<?xml version="1.0" encoding="UTF-8"?>',
-    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-    fallbackUrls,
-    postUrls,
-    '</urlset>',
-  ]
-    .filter(Boolean)
-    .join('\n');
-}
-
 async function buildSitemap(): Promise<string> {
-  const posts = await Post.find({ isPublished: true })
-    .select('slug publishedAt updatedAt')
-    .sort({ publishedAt: -1 })
-    .lean();
+  if (mongoose.connection.readyState !== 1) {
+    throw new Error('MongoDB non connesso');
+  }
 
-  return renderSitemap(readStaticSitemap(), posts as unknown as SitemapPost[]);
+  const [projects, posts, products] = await Promise.all([
+    Project.find({ status: { $ne: 'bozza' } }).select('id updatedAt').lean(),
+    Post.find({ isPublished: true }).select('slug updatedAt').lean(),
+    Product.find({ $or: [{ isSold: false }, { showSoldInFrontend: true }] })
+      .select('slug updatedAt')
+      .lean(),
+  ]);
+
+  const entries: SitemapEntry[] = [
+    ...STATIC_PAGES,
+    ...SECTOR_IDS.map((id) => ({
+      loc: `/settori/${id}`,
+      changefreq: 'monthly',
+      priority: '0.7',
+    })),
+  ];
+
+  for (const project of projects as Array<Record<string, unknown>>) {
+    if (typeof project.id !== 'string') continue;
+    entries.push({
+      loc: `/progetti/${project.id}`,
+      lastmod: toIsoDate(project.updatedAt),
+      changefreq: 'monthly',
+      priority: '0.7',
+    });
+  }
+
+  for (const post of posts as Array<Record<string, unknown>>) {
+    if (typeof post.slug !== 'string') continue;
+    entries.push({
+      loc: `/blog/${post.slug}`,
+      lastmod: toIsoDate(post.updatedAt),
+      changefreq: 'monthly',
+      priority: '0.6',
+    });
+  }
+
+  for (const product of products as Array<Record<string, unknown>>) {
+    if (typeof product.slug !== 'string') continue;
+    entries.push({
+      loc: `/showroom/${product.slug}`,
+      lastmod: toIsoDate(product.updatedAt),
+      changefreq: 'weekly',
+      priority: '0.6',
+    });
+  }
+
+  return renderSitemap(entries);
+}
+
+async function getSitemapXml(): Promise<string> {
+  const now = Date.now();
+  if (cache && cache.expiresAt > now) return cache.xml;
+
+  try {
+    const xml = await buildSitemap();
+    cache = { xml, expiresAt: now + CACHE_TTL_MS };
+    return xml;
+  } catch (error) {
+    const fallback = readStaticSitemap();
+    if (fallback) {
+      console.warn(
+        '[sitemap] generazione dinamica non disponibile, uso dist/sitemap.xml:',
+        error instanceof Error ? error.message : error,
+      );
+      return fallback;
+    }
+    throw error;
+  }
 }
 
 /**
- * Sitemap XML dinamica: pagine statiche (da dist/sitemap.xml) + tutti gli
- * articoli pubblicati. Le bozze non compaiono mai.
- *
- * Montata in server/index.ts PRIMA di express.static, così prevale sul file
- * statico.
+ * Svuota la cache: chiamata dalle route del blog dopo create/update/delete,
+ * così un articolo appena pubblicato compare subito nella sitemap.
  */
-router.get('/sitemap.xml', async (_req: Request, res: Response) => {
-  try {
-    if (cache && Date.now() - cache.at < CACHE_TTL_MS) {
-      res.type('application/xml').setHeader('Cache-Control', 'public, max-age=3600').send(cache.xml);
-      return;
-    }
-
-    const xml = await buildSitemap();
-    cache = { xml, at: Date.now() };
-
-    res
-      .type('application/xml')
-      .setHeader('Cache-Control', 'public, max-age=3600, s-maxage=3600')
-      .send(xml);
-  } catch (error) {
-    console.error('[sitemap] Errore nella generazione:', error);
-    res.status(500).type('text/plain').send('Sitemap non disponibile');
-  }
-});
-
-/** Svuota la cache dopo ogni scrittura su un articolo (chiamato dalle route blog). */
 export function invalidateSitemapCache(): void {
   cache = null;
 }
+
+async function sendSitemap(_req: Request, res: Response): Promise<void> {
+  try {
+    const xml = await getSitemapXml();
+    res.status(200);
+    res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=1800');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.send(xml);
+  } catch (error) {
+    console.error('[sitemap] impossibile servire la sitemap:', error);
+    res.status(500).type('text/plain; charset=utf-8').send('Sitemap non disponibile');
+  }
+}
+
+const router = Router();
+
+router.get('/sitemap.xml', sendSitemap);
+router.get('/sitemap_index.xml', sendSitemap);
+router.get('/sitemap-index.xml', sendSitemap);
 
 export default router;

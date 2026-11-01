@@ -1,85 +1,82 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { renderSitemap } from './sitemap.js';
+import { renderSitemap, type SitemapEntry } from './sitemap.js';
 
-const STATIC_SITEMAP = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://www.farcomarredi.it/</loc>
-    <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>https://www.farcomarredi.it/settori</loc>
-    <priority>0.8</priority>
-  </url>
-</urlset>`;
-
-const POSTS = [
+const ENTRIES: SitemapEntry[] = [
+  { loc: '/', changefreq: 'weekly', priority: '1.0' },
+  { loc: '/settori', changefreq: 'weekly', priority: '0.9' },
   {
-    slug: 'arredamento-barbieri-caserta',
-    publishedAt: '2026-01-10T10:00:00.000Z',
-    updatedAt: '2026-02-01T09:00:00.000Z',
+    loc: '/blog/arredamento-barbieri-caserta',
+    lastmod: '2026-02-01',
+    changefreq: 'monthly',
+    priority: '0.6',
   },
-  { slug: 'arredamento-su-misura-caserta' }, // senza date: deve usare il fallback
+  { loc: '/blog/arredamento-su-misura-caserta', priority: '0.6' },
 ];
 
 describe('renderSitemap — composizione XML', () => {
-  it('inietta gli articoli pubblicati nella sitemap statica', () => {
-    const xml = renderSitemap(STATIC_SITEMAP, POSTS, '2026-03-01');
+  it('genera un urlset valido con tutte le URL', () => {
+    const xml = renderSitemap(ENTRIES);
 
     assert.ok(xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>'));
+    assert.ok(xml.includes('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'));
     assert.ok(xml.trimEnd().endsWith('</urlset>'));
-    // le pagine statiche restano presenti
-    assert.ok(xml.includes('https://www.farcomarredi.it/'));
-    assert.ok(xml.includes('https://www.farcomarredi.it/settori'));
-    // gli articoli vengono aggiunti
-    assert.ok(xml.includes('https://www.farcomarredi.it/blog/arredamento-barbieri-caserta'));
-    assert.ok(xml.includes('https://www.farcomarredi.it/blog/arredamento-su-misura-caserta'));
+    assert.equal(xml.split('</urlset>').length - 1, 1);
   });
 
-  it('usa updatedAt come lastmod quando disponibile', () => {
-    const xml = renderSitemap(STATIC_SITEMAP, POSTS, '2026-03-01');
+  it('compone URL assolute sul dominio del sito', () => {
+    const xml = renderSitemap(ENTRIES);
+
+    assert.ok(xml.includes('<loc>https://www.farcomarredi.it/</loc>'));
+    assert.ok(xml.includes('<loc>https://www.farcomarredi.it/settori</loc>'));
+    assert.ok(xml.includes('<loc>https://www.farcomarredi.it/blog/arredamento-barbieri-caserta</loc>'));
+  });
+
+  it('include lastmod, changefreq e priority quando presenti', () => {
+    const xml = renderSitemap(ENTRIES);
+
     assert.ok(xml.includes('<lastmod>2026-02-01</lastmod>'));
+    assert.ok(xml.includes('<changefreq>weekly</changefreq>'));
+    assert.ok(xml.includes('<priority>1.0</priority>'));
   });
 
-  it('usa la data corrente come fallback quando le date mancano', () => {
-    const xml = renderSitemap(STATIC_SITEMAP, POSTS, '2026-03-01');
-    assert.ok(xml.includes('<lastmod>2026-03-01</lastmod>'));
+  it('omette i tag opzionali quando il campo manca', () => {
+    const xml = renderSitemap([{ loc: '/blog/senza-data' }]);
+
+    assert.ok(xml.includes('<loc>https://www.farcomarredi.it/blog/senza-data</loc>'));
+    assert.ok(!xml.includes('<lastmod>'));
+    assert.ok(!xml.includes('<changefreq>'));
+    assert.ok(!xml.includes('<priority>'));
   });
 
-  it('non duplica la chiusura del urlset', () => {
-    const xml = renderSitemap(STATIC_SITEMAP, POSTS, '2026-03-01');
-    const closingTags = xml.split('</urlset>').length - 1;
-    assert.equal(closingTags, 1);
+  it('deduplica le URL ripetute', () => {
+    const xml = renderSitemap([
+      { loc: '/blog', priority: '0.7' },
+      { loc: '/blog', priority: '0.9' },
+    ]);
+
+    assert.equal(xml.split('<loc>https://www.farcomarredi.it/blog</loc>').length - 1, 1);
+    assert.ok(xml.includes('<priority>0.7</priority>'));
+    assert.ok(!xml.includes('<priority>0.9</priority>'));
   });
 
-  it('genera un urlset di fallback quando la sitemap statica non esiste', () => {
-    const xml = renderSitemap(null, POSTS, '2026-03-01');
+  it('genera una sitemap valida anche senza voci', () => {
+    const xml = renderSitemap([]);
 
     assert.ok(xml.includes('<?xml version="1.0" encoding="UTF-8"?>'));
-    assert.ok(xml.includes('https://www.farcomarredi.it/</loc>'));
-    assert.ok(xml.includes('https://www.farcomarredi.it/blog</loc>'));
-    assert.ok(xml.includes('https://www.farcomarredi.it/blog/arredamento-barbieri-caserta'));
-  });
-
-  it('genera la sitemap anche senza articoli', () => {
-    const xml = renderSitemap(STATIC_SITEMAP, [], '2026-03-01');
-    assert.ok(!xml.includes('/blog/'));
     assert.ok(xml.trimEnd().endsWith('</urlset>'));
-  });
-
-  it('assegna priorità e frequenza di aggiornamento ai post', () => {
-    const xml = renderSitemap(null, POSTS, '2026-03-01');
-    assert.ok(xml.includes('<priority>0.7</priority>'));
-    assert.ok(xml.includes('<changefreq>weekly</changefreq>'));
+    assert.ok(!xml.includes('<url>'));
   });
 });
 
 describe('renderSitemap — sicurezza XML', () => {
-  it('produce XML valido anche per slug con caratteri normali di uno slug', () => {
-    const xml = renderSitemap(null, [{ slug: 'cucine-2026' }], '2026-03-01');
-    assert.ok(xml.includes('https://www.farcomarredi.it/blog/cucine-2026'));
+  it('esegue l\'escape dei caratteri speciali nelle URL', () => {
+    const xml = renderSitemap([{ loc: '/blog?tag=cucine&bagni=<x>' }]);
+
+    assert.ok(xml.includes('&amp;'));
+    assert.ok(xml.includes('&lt;x&gt;'));
+    assert.ok(!xml.includes('<x>'));
     assert.ok(!xml.includes('<<'));
   });
 });

@@ -241,9 +241,11 @@ app.use(session({
   rolling: true,
 }));
 
-// Sitemap XML dinamica: inietta gli articoli pubblicati nella sitemap statica.
-// DEVE essere montata PRIMA di express.static, altrimenti il file dist/sitemap.xml
-// (che non conosce gli articoli) risponderebbe per primo.
+// Sitemap XML: route esplicita PRIMA di express.static e del fallback SPA.
+// Garantisce Content-Type application/xml, include pagine statiche, settori,
+// progetti, prodotti e articoli pubblicati, e impedisce che una sitemap
+// mancante venga servita come index.html (errore "Sitemap is HTML" in
+// Search Console). La cache viene invalidata a ogni scrittura sul blog.
 app.use(sitemapRoutes);
 
 // Serve static files from dist/ (parent directory of server/dist).
