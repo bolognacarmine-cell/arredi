@@ -4,6 +4,7 @@ import BlogCard from "../../blog/BlogCard"
 import BlogBreadcrumb from "../../blog/BlogBreadcrumb"
 import BlogFaq from "../../blog/BlogFaq"
 import { formatPostDate, estimateReadingMinutes } from "../../../api/blogApi"
+import { formatContent, sanitizeHtml } from "../../../lib/markdown"
 import { labelCls, inputCls } from "../blog/blogStyles"
 
 export interface PreviewDraft {
@@ -155,11 +156,16 @@ export default function PostPreviews({ draft, sectorLabel, isDirty }: PostPrevie
                   <h2 className="mb-2 font-display text-lg font-bold text-[#1A1A2E]">
                     Anteprima del contenuto
                   </h2>
-                  <div className="line-clamp-4 text-sm leading-relaxed text-[var(--muted-foreground)]">
-                    {draft.content
-                      ? draft.content.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()
-                      : "Il contenuto dell'articolo apparirà in questa zona."}
-                  </div>
+                  {draft.content ? (
+                    <div
+                      className="blog-content max-h-64 overflow-auto text-sm"
+                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(formatContent(draft.content)) }}
+                    />
+                  ) : (
+                    <p className="text-sm leading-relaxed text-[var(--muted-foreground)]">
+                      Il contenuto dell'articolo apparirà in questa zona.
+                    </p>
+                  )}
                   {(draft.faq || []).length > 0 && (
                     <p className="mt-3 text-xs text-[#888580]">
                       {(draft.faq || []).length} domande FAQ verranno mostrate in fondo.

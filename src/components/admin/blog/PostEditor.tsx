@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+
+import {
+  clearFormatting,
+  formatContent,
+  looksLikeHtml,
+  looksLikeMarkdown,
+} from "../../../lib/markdown"
 
 interface PostEditorProps {
   value: string
@@ -23,7 +30,7 @@ const TOOLS: Array<{ id: Tool; label: string; title: string }> = [
   { id: "table", label: "▦ Tabella", title: "Inserisci tabella" },
   { id: "image", label: "🖼", title: "Immagine con alt text" },
   { id: "video", label: "▶", title: "Video (embed opzionale)" },
-  { id: "clear", label: "Tx", title: "Rimuovi formattazione" },
+  { id: "clear", label: "Tx", title: "Rimuovi formattazione dalla selezione" },
   { id: "undo", label: "↩", title: "Annulla" },
 ]
 
@@ -55,12 +62,21 @@ function embedFromUrl(url: string): string | null {
  * Implementato con contenteditable + document.execCommand: nessuna dipendenza
  * esterna (vincolo "non introdurre librerie inutili"). Fornisce inoltre la
  * modalità "Sorgente HTML" per il controllo diretto del markup.
+ *
+ * Incollando un articolo in Markdown il contenuto viene convertito in HTML
+ * automaticamente (`src/lib/markdown.ts`); gli stessi pulsanti "Formatta
+ * automaticamente" e "Pulisci formattazione" permettono di rifarlo a mano.
  */
 export default function PostEditor({ value, onChange, error }: PostEditorProps) {
   const editableRef = useRef<HTMLDivElement | null>(null)
   // "" iniziale: il primo passaggio dell'effect scrive il valore di partenza nel DOM
   const lastEmitted = useRef<string>("")
   const [sourceMode, setSourceMode] = useState(false)
+  const [showPreview, setShowPreview] = useState(true)
+
+  // Anteprima live: `formatContent` è idempotente, quindi mostra il risultato
+  // già formattato sia per l'HTML sia per il Markdown non ancora convertito.
+  const previewHtml = useMemo(() => formatContent(value), [value])
 
   // Sync esterno → DOM (solo quando il valore cambia davvero fuori dall'editor,
   // così non si perde la posizione del cursore mentre si scrive).
@@ -95,12 +111,77 @@ export default function PostEditor({ value, onChange, error }: PostEditorProps) 
 
   const insertHtml = useCallback(
     (html: string) => {
+      if (!html) return
       editableRef.current?.focus()
       document.execCommand("insertHTML", false, html)
       emit()
     },
     [emit]
   )
+
+  /** Sostituisce l'intero contenuto (funziona sia nell'editor visivo sia nel sorgente). */
+  const replaceContent = useCallback(
+    (html: string) => {
+      const el = editableRef.current
+      if (el) {
+        el.innerHTML = html
+        lastEmitted.current = html
+      } else {
+        lastEmitted.current = ""
+      }
+      onChange(html)
+    },
+    [onChange]
+  )
+
+  /**
+   * Incolla: se il testo è Markdown viene convertito in HTML, se è HTML viene
+   * ripulito, altrimenti resta testo semplice (comportamento nativo).
+   */
+  const handlePaste = useCallback(
+    (event: React.ClipboardEvent<HTMLDivElement>) => {
+      const data = event.clipboardData
+      if (!data) return
+
+      const html = data.getData("text/html")
+      const text = data.getData("text/plain")
+      if (!html && !text) return
+
+      // HTML "ricco" (pagina web, Word, Google Docs): ripulito e inserito
+      if (html) {
+        event.preventDefault()
+        insertHtml(formatContent(html))
+        return
+      }
+
+      // Markdown o HTML incollato come testo
+      if (looksLikeMarkdown(text) || looksLikeHtml(text)) {
+        event.preventDefault()
+        insertHtml(formatContent(text))
+        return
+      }
+
+      // Testo semplice: lascia fare al browser (mantiene il contesto inline)
+      event.preventDefault()
+      document.execCommand("insertText", false, text)
+      emit()
+    },
+    [emit, insertHtml]
+  )
+
+  const handleAutoFormat = useCallback(() => {
+    replaceContent(formatContent(value))
+  }, [replaceContent, value])
+
+  const handleClearFormatting = useCallback(() => {
+    const plain = clearFormatting(value)
+    if (plain === value) return
+    const confirmed = window.confirm(
+      "Rimuovere tutta la formattazione dal contenuto? Titoli, elenchi, link e grassetti diventeranno testo semplice. L'operazione non è annullabile."
+    )
+    if (!confirmed) return
+    replaceContent(plain)
+  }, [replaceContent, value])
 
   const runTool = (tool: Tool) => {
     switch (tool) {
@@ -169,33 +250,83 @@ export default function PostEditor({ value, onChange, error }: PostEditorProps) 
     }
   }
 
+  /** Anteprima condivisa tra modalità visiva e sorgente HTML. */
+  const previewPanel = (
+    <div className="border border-[#DDD9D0] bg-white">
+      <div className="flex items-center justify-between gap-3 border-b border-[#DDD9D0] bg-[#F7F5F0] px-3 py-2">
+        <span className="text-xs uppercase tracking-wide text-[#888580]">Anteprima live</span>
+        <button
+          type="button"
+          onClick={() => setShowPreview((current) => !current)}
+          aria-expanded={showPreview}
+          className="min-h-[32px] text-xs font-medium text-[#1B4332] underline underline-offset-2"
+        >
+          {showPreview ? "Nascondi anteprima" : "Mostra anteprima"}
+        </button>
+      </div>
+      {showPreview &&
+        (previewHtml ? (
+          <div
+            className="blog-content max-h-[420px] overflow-auto px-4 py-4"
+            // HTML già passato da sanitizeHtml dentro formatContent
+            dangerouslySetInnerHTML={{ __html: previewHtml }}
+          />
+        ) : (
+          <p className="px-4 py-4 text-sm text-[#888580]">
+            L'anteprima dell'articolo formattato apparirà qui mentre scrivi o incolli il contenuto.
+          </p>
+        ))}
+    </div>
+  )
+
   if (sourceMode) {
     return (
       <div>
-        <div className="mb-2 flex items-center justify-between">
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
           <span className="text-xs uppercase tracking-wide text-[#888580]">Sorgente HTML</span>
-          <button
-            type="button"
-            onClick={() => {
-              // L'area visiva verrà rimontata vuota: forza la riscrittura del contenuto
-              lastEmitted.current = ""
-              setSourceMode(false)
-            }}
-            className="text-xs font-medium text-[#1B4332] underline underline-offset-2 min-h-[32px]"
-          >
-            Torna all'editor visivo
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={handleAutoFormat}
+              title="Converti il Markdown in HTML e ripulisci il codice"
+              className="min-h-[32px] rounded border border-[#DDD9D0] bg-white px-2 py-1 text-xs font-medium text-[#4A4A46] transition-colors hover:bg-[#EAE7E0]"
+            >
+              Formatta automaticamente
+            </button>
+            <button
+              type="button"
+              onClick={handleClearFormatting}
+              title="Rimuove titoli, elenchi, link e grassetti lasciando il testo"
+              className="min-h-[32px] rounded border border-[#DDD9D0] bg-white px-2 py-1 text-xs font-medium text-[#4A4A46] transition-colors hover:bg-[#EAE7E0]"
+            >
+              Pulisci formattazione
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                // L'area visiva verrà rimontata vuota: forza la riscrittura del contenuto
+                lastEmitted.current = ""
+                setSourceMode(false)
+              }}
+              className="min-h-[32px] text-xs font-medium text-[#1B4332] underline underline-offset-2"
+            >
+              Torna all'editor visivo
+            </button>
+          </div>
         </div>
-        <textarea
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          spellCheck={false}
-          aria-label="Sorgente HTML dell'articolo"
-          className={`w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-3 font-mono text-xs text-[#1A1A18] focus:border-[#1B4332] focus:outline-none ${
-            error ? "border-red-400" : ""
-          }`}
-          style={{ minHeight: "420px" }}
-        />
+        <div className="grid gap-4 lg:grid-cols-2">
+          <textarea
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            spellCheck={false}
+            aria-label="Sorgente HTML dell'articolo"
+            className={`w-full border border-[#DDD9D0] bg-[#F7F5F0] px-3 py-3 font-mono text-xs text-[#1A1A18] focus:border-[#1B4332] focus:outline-none ${
+              error ? "border-red-400" : ""
+            }`}
+            style={{ minHeight: "420px" }}
+          />
+          {previewPanel}
+        </div>
         {error && <span className="mt-1 block text-xs text-red-600">{error}</span>}
       </div>
     )
@@ -228,6 +359,25 @@ export default function PostEditor({ value, onChange, error }: PostEditorProps) 
         <span aria-hidden="true" className="mx-1 self-stretch border-l border-[#DDD9D0]" />
         <button
           type="button"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={handleAutoFormat}
+          title="Rileva il Markdown incollato, lo converte in HTML e ripulisce il codice"
+          className="min-h-[34px] rounded border border-[#DDD9D0] bg-white px-2 py-1 text-xs font-medium text-[#1B4332] transition-colors hover:bg-[#EAE7E0]"
+        >
+          ✨ Formatta automaticamente
+        </button>
+        <button
+          type="button"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={handleClearFormatting}
+          title="Rimuove titoli, elenchi, link e grassetti lasciando il testo"
+          className="min-h-[34px] rounded border border-[#DDD9D0] bg-white px-2 py-1 text-xs font-medium text-[#4A4A46] transition-colors hover:bg-[#EAE7E0]"
+        >
+          Pulisci formattazione
+        </button>
+        <span aria-hidden="true" className="mx-1 self-stretch border-l border-[#DDD9D0]" />
+        <button
+          type="button"
           onClick={() => setSourceMode(true)}
           title="Modifica il codice HTML"
           className="min-h-[34px] rounded border border-[#DDD9D0] bg-white px-2 py-1 text-xs font-medium text-[#4A4A46] transition-colors hover:bg-[#EAE7E0]"
@@ -236,25 +386,32 @@ export default function PostEditor({ value, onChange, error }: PostEditorProps) 
         </button>
       </div>
 
-      {/* Area di scrittura: DOM controllato via ref (niente dangerouslySetInnerHTML,
-          altrimenti React resettrebbe l'HTML a ogni tasto e perderebbe il cursore) */}
-      <div
-        ref={editableRef}
-        contentEditable
-        suppressContentEditableWarning
-        role="textbox"
-        aria-multiline="true"
-        aria-label="Contenuto completo dell'articolo"
-        onInput={emit}
-        onBlur={emit}
-        data-placeholder="Scrivi qui l'articolo: usa H2 e H3 per le sezioni…"
-        className={`blog-editor blog-content min-h-[420px] border bg-white px-4 py-4 focus:outline-none ${
-          error ? "border-red-400" : "border-[#DDD9D0] focus:border-[#1B4332]"
-        }`}
-      />
+      {/* Editor + anteprima live */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        {/* Area di scrittura: DOM controllato via ref (niente dangerouslySetInnerHTML,
+            altrimenti React resettrebbe l'HTML a ogni tasto e perderebbe il cursore) */}
+        <div
+          ref={editableRef}
+          contentEditable
+          suppressContentEditableWarning
+          role="textbox"
+          aria-multiline="true"
+          aria-label="Contenuto completo dell'articolo"
+          onInput={emit}
+          onBlur={emit}
+          onPaste={handlePaste}
+          data-placeholder="Scrivi qui l'articolo oppure incolla Markdown/HTML: usa H2 e H3 per le sezioni…"
+          className={`blog-editor blog-content min-h-[420px] border bg-white px-4 py-4 focus:outline-none ${
+            error ? "border-red-400" : "border-[#DDD9D0] focus:border-[#1B4332]"
+          }`}
+        />
+        {previewPanel}
+      </div>
+
       <div className="mt-1 flex items-start justify-between gap-3">
         <span className="text-xs text-[#888580]">
-          H2/H3 per le sezioni, tabelle e citazioni dalla barra in alto.
+          Incolla un articolo in Markdown (## titoli, - elenchi, **grassetto**) e viene convertito
+          automaticamente. H2/H3, tabelle e citazioni anche dalla barra in alto.
         </span>
         {error ? (
           <span className="text-xs text-red-600">{error}</span>

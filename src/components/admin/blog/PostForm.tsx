@@ -10,6 +10,7 @@ import {
   type InternalLink,
 } from "../../../api/blogApi"
 import { validatePostForm, LIMITS, type ValidationMessages } from "../../../lib/blogValidation"
+import { formatContent } from "../../../lib/markdown"
 import PostEditor from "./PostEditor"
 import FaqEditor from "./FaqEditor"
 import InternalLinksEditor from "./InternalLinksEditor"
@@ -187,12 +188,12 @@ export default function PostForm({ post }: PostFormProps) {
     patch(changes)
   }
 
-  const buildPayload = (isPublished: boolean): PostInput => ({
+  const buildPayload = (isPublished: boolean, content: string): PostInput => ({
     title: draft.title.trim(),
     slug: draft.slug.trim(),
     sectorSlug: draft.sectorSlug.trim(),
     excerpt: draft.excerpt.trim(),
-    content: draft.content,
+    content,
     coverImage: draft.coverImage.trim(),
     coverImageAlt: draft.coverImageAlt.trim(),
     seoTitle: draft.seoTitle.trim(),
@@ -225,7 +226,11 @@ export default function PostForm({ post }: PostFormProps) {
 
     setSaving(true)
     try {
-      const payload = buildPayload(nextPublishedState)
+      // Il contenuto viene salvato già convertito in HTML pulito: se l'utente
+      // ha scritto/incollato Markdown senza premere "Formatta automaticamente",
+      // la conversione avviene comunque qui.
+      const normalizedContent = formatContent(draft.content)
+      const payload = buildPayload(nextPublishedState, normalizedContent)
 
       if (isNew) {
         await createPost(payload)
@@ -233,8 +238,16 @@ export default function PostForm({ post }: PostFormProps) {
         await updatePost(post._id, payload)
       }
 
-      baselineRef.current = JSON.stringify({ ...draft, isPublished: nextPublishedState })
-      setDraft((prev) => ({ ...prev, isPublished: nextPublishedState }))
+      baselineRef.current = JSON.stringify({
+        ...draft,
+        content: normalizedContent,
+        isPublished: nextPublishedState,
+      })
+      setDraft((prev) => ({
+        ...prev,
+        content: normalizedContent,
+        isPublished: nextPublishedState,
+      }))
       setSavedLabel(successMessage)
       window.setTimeout(() => setSavedLabel(null), 2200)
       showToast(successMessage)
