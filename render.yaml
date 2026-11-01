@@ -2,6 +2,10 @@ services:
   - type: web
     name: arredi
     runtime: node
-    buildCommand: npm install && npm run build
+    # npm ci: installa ESATTAMENTE il package-lock.json e fallisce subito se
+    # package.json e lock sono disallineati (invece del crash opaco di
+    # arborist "Cannot read properties of null (reading 'edgesOut')").
+    # --include=dev: la build (vite, typescript, tsx) usa devDependencies.
+    buildCommand: npm ci --include=dev && npm run build
     startCommand: npm start
     healthCheckPath: /health
