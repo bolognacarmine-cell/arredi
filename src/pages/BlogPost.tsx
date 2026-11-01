@@ -1,7 +1,42 @@
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useParams, Link } from "react-router-dom"
-import { getPostBySlug, getPosts, type Post } from "../api/blogApi"
+import {
+  getPostBySlug,
+  getPosts,
+  formatPostDate,
+  estimateReadingMinutes,
+  type Post,
+} from "../api/blogApi"
 import SEOHead from "../components/SEOHead"
+import BlogBreadcrumb from "../components/blog/BlogBreadcrumb"
+import BlogFaq from "../components/blog/BlogFaq"
+import BlogCard from "../components/blog/BlogCard"
+import {
+  SITE_URL,
+  buildArticleSchema,
+  buildFaqSchema,
+  buildBreadcrumbSchema,
+  postBreadcrumb,
+} from "../lib/blogSchema"
+
+/** Settori che corrispondono a una pagina di servizio reale del sito. */
+const SECTOR_PAGE_IDS = ["barbieri", "uffici", "negozi", "scuole", "bar", "centri-estetici"]
+
+const SECTOR_LABELS: Record<string, string> = {
+  barbieri: "Barbieri e parrucchieri",
+  uffici: "Uffici",
+  negozi: "Negozi",
+  scuole: "Scuole",
+  bar: "Bar",
+  "centri-estetici": "Centri estetici",
+}
+
+function absoluteUrl(value?: string): string | undefined {
+  if (!value || !value.trim()) return undefined
+  const trimmed = value.trim()
+  if (trimmed.startsWith("/")) return `${SITE_URL}${trimmed}`
+  return trimmed
+}
 
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>()
@@ -10,79 +45,65 @@ export default function BlogPost() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    let cancelled = false
+
     async function loadPost() {
       setLoading(true)
       try {
         const postData = await getPostBySlug(slug || "")
+        if (cancelled) return
+
         if (postData) {
           setPost(postData)
-          // Load related posts from same sector
+          // Articoli correlati: stesso settore, escludendo quello corrente
           const related = await getPosts({ sectorSlug: postData.sectorSlug, limit: 4 })
-          setRelatedPosts(related.data.filter(p => p._id !== postData._id).slice(0, 3))
+          if (!cancelled) {
+            setRelatedPosts(related.data.filter((p) => p._id !== postData._id).slice(0, 3))
+          }
+        } else {
+          setPost(null)
         }
       } catch (error) {
         console.error("Error loading post:", error)
+        if (!cancelled) setPost(null)
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
+
     loadPost()
-  }, [slug])
-
-
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('it-IT', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric'
-    })
-  }
-
-  // Schema.org JSON-LD
-  const getSchemaOrgData = () => {
-    if (!post) return null
-    return {
-      "@context": "https://schema.org",
-      "@type": "Article",
-      "headline": post.title,
-      "description": post.seoDescription || post.excerpt,
-      "image": post.coverImage,
-      "author": {
-        "@type": "Person",
-        "name": post.author.name,
-      },
-      "publisher": {
-        "@type": "Organization",
-        "name": "Farcom Design s.r.l.",
-        "logo": {
-          "@type": "ImageObject",
-          "url": "https://www.farcomarredi.it/logo.png"
-        }
-      },
-      "datePublished": post.publishedAt,
-      "dateModified": post.updatedAt,
-      "mainEntityOfPage": {
-        "@type": "WebPage",
-        "@id": `https://www.farcomarredi.it/blog/${post.slug}`
-      }
+    return () => {
+      cancelled = true
     }
-  }
+  }, [slug])
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F0EDE6] flex items-center justify-center">
-        <div className="text-[#888580]">Caricamento...</div>
+      <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
+        <span
+          className="w-6 h-6 border-2 border-[var(--border)] border-t-[var(--accent)] rounded-full animate-spin"
+          role="status"
+          aria-label="Caricamento articolo"
+        />
       </div>
     )
   }
 
   if (!post) {
     return (
-      <div className="min-h-screen bg-[#F0EDE6] flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-display font-medium text-[#1A1A18] mb-4">Articolo non trovato</h1>
-          <Link to="/blog" className="text-[#B5965A] hover:underline">
+      <div className="min-h-screen bg-[var(--background)] flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <p className="text-sm uppercase tracking-[0.2em] text-[var(--accent)] mb-3">Errore 404</p>
+          <h1 className="text-2xl sm:text-3xl font-display font-bold text-[var(--foreground)] mb-4">
+            Articolo non trovato
+          </h1>
+          <p className="text-sm text-[var(--muted-foreground)] mb-6">
+            L'articolo che cerchi non esiste più oppure non è ancora stato pubblicato.
+          </p>
+          <Link
+            to="/blog"
+            className="inline-flex min-h-[44px] items-center rounded-lg bg-[var(--accent)] px-6 py-3 text-sm font-semibold text-white transition-colors hover:brightness-95"
+          >
             Torna al blog
           </Link>
         </div>
@@ -90,132 +111,165 @@ export default function BlogPost() {
     )
   }
 
+  const sectorLabel = SECTOR_LABELS[post.sectorSlug] || post.sectorSlug
+  const readingMinutes = estimateReadingMinutes(post.content)
+  const canonical = absoluteUrl(post.canonicalUrl) || `${SITE_URL}/blog/${post.slug}`
+  const ogImage = absoluteUrl(post.ogImage) || absoluteUrl(post.coverImage)
+  const faqSchema = buildFaqSchema(post)
+
+  // Link interni: quelli inseriti in admin, in alternativa la pagina settore
+  const sectorHref = SECTOR_PAGE_IDS.includes(post.sectorSlug) ? `/settori/${post.sectorSlug}` : null
+  const internalLinks =
+    post.internalLinks && post.internalLinks.length > 0
+      ? post.internalLinks
+      : sectorHref
+        ? [{ label: `Arredi su misura per ${sectorLabel}`, url: sectorHref }]
+        : []
+
   return (
     <>
-      {post && (
-        <SEOHead
-          title={post.seoTitle || post.title}
-          description={post.seoDescription || post.excerpt}
-          canonical={`https://www.farcomarredi.it/blog/${post.slug}`}
-          ogImage={post.coverImage}
-          schema={getSchemaOrgData()}
-        />
-      )}
-      {post && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "BreadcrumbList",
-              "itemListElement": [
-                {
-                  "@type": "ListItem",
-                  "position": 1,
-                  "name": "Home",
-                  "item": "https://www.farcomarredi.it/"
-                },
-                {
-                  "@type": "ListItem",
-                  "position": 2,
-                  "name": "Blog",
-                  "item": "https://www.farcomarredi.it/blog"
-                },
-                {
-                  "@type": "ListItem",
-                  "position": 3,
-                  "name": post.title
-                }
-              ]
-            })
-          }}
-        />
-      )}
-      
-      <article className="min-h-screen bg-[#F0EDE6]">
-        {/* Breadcrumb */}
-        <nav className="bg-white border-b border-[#DDD9D0]">
-          <div className="max-w-4xl mx-auto px-6 py-4">
-            <ol className="flex items-center gap-2 text-sm text-[#888580]">
-              <li><Link to="/" className="hover:text-[#B5965A]">Home</Link></li>
-              <li>/</li>
-              <li><Link to="/blog" className="hover:text-[#B5965A]">Blog</Link></li>
-              <li>/</li>
-              <li className="text-[#1A1A18] truncate max-w-[200px]">{post.title}</li>
-            </ol>
-          </div>
-        </nav>
+      <SEOHead
+        title={post.seoTitle || post.title}
+        description={post.seoDescription || post.excerpt}
+        canonical={canonical}
+        ogImage={ogImage}
+        ogType="article"
+        schema={[
+          buildArticleSchema(post),
+          faqSchema,
+          buildBreadcrumbSchema(postBreadcrumb(post)),
+        ]}
+      />
+
+      <article className="min-h-screen bg-[var(--background)]">
+        <BlogBreadcrumb items={[{ name: "Home", href: "/" }, { name: "Blog", href: "/blog" }, { name: post.title }]} />
 
         {/* Header */}
-        <div className="bg-white border-b border-[#DDD9D0]">
-          <div className="max-w-4xl mx-auto px-6 py-12">
-            <div className="flex items-center gap-2 mb-4">
-              <span className="text-sm font-medium text-[#B5965A] uppercase tracking-wide">
-                {post.sectorSlug}
-              </span>
-              <span className="text-sm text-[#888580]">•</span>
-              <span className="text-sm text-[#888580]">{formatDate(post.publishedAt)}</span>
+        <header className="border-b border-[var(--border)] bg-white">
+          <div className="mx-auto max-w-4xl px-4 sm:px-6 py-10 sm:py-12">
+            <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
+              <Link
+                to={sectorHref || "/blog"}
+                className="font-semibold uppercase tracking-wide text-[#E69138] hover:underline"
+              >
+                {sectorLabel}
+              </Link>
+              <span aria-hidden="true" className="text-[var(--muted-foreground)]">•</span>
+              <time dateTime={post.publishedAt} className="text-[var(--muted-foreground)]">
+                {formatPostDate(post.publishedAt)}
+              </time>
+              <span aria-hidden="true" className="text-[var(--muted-foreground)]">•</span>
+              <span className="text-[var(--muted-foreground)]">{readingMinutes} min di lettura</span>
             </div>
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-medium text-[#1A1A18] mb-6">
+
+            <h1 className="mb-5 font-display text-3xl md:text-4xl lg:text-5xl font-bold leading-[1.12] text-[var(--foreground)] text-balance">
               {post.title}
             </h1>
-            <p className="text-lg text-[#888580] mb-8">{post.excerpt}</p>
-            
-            {/* Author */}
-            <div className="flex items-center gap-4">
-              {post.author.avatar && (
+
+            <p className="mb-8 text-lg leading-relaxed text-[var(--muted-foreground)]">{post.excerpt}</p>
+
+            <div className="flex items-center gap-3">
+              {post.author?.avatar && (
                 <img
                   src={post.author.avatar}
                   alt={post.author.name}
-                  width="48"
-                  height="48"
+                  width={48}
+                  height={48}
                   loading="lazy"
-                  fetchpriority="low"
                   decoding="async"
                   className="w-12 h-12 rounded-full object-cover"
                 />
               )}
               <div>
-                <p className="font-medium text-[#1A1A18]">{post.author.name}</p>
-                <p className="text-sm text-[#888580]">{post.author.role}</p>
+                <p className="font-medium text-[var(--foreground)]">{post.author?.name}</p>
+                <p className="text-sm text-[var(--muted-foreground)]">{post.author?.role}</p>
               </div>
             </div>
           </div>
-        </div>
+        </header>
 
-        {/* Cover Image */}
+        {/* Copertina */}
         {post.coverImage && (
-          <div className="max-w-4xl mx-auto px-6 py-8">
+          <div className="mx-auto max-w-4xl px-4 sm:px-6 pt-8">
             <img
               src={post.coverImage}
-              alt={`${post.title} - Articolo blog arredamento e progettazione interni Farcom`}
-              width="1200"
-              height="675"
+              alt={post.coverImageAlt?.trim() || `${post.title} — Farcom Arredi`}
+              width={1200}
+              height={675}
               loading="lazy"
-              fetchpriority="low"
               decoding="async"
-              className="w-full rounded-lg"
+              className="w-full rounded-lg border border-[var(--border)]"
             />
           </div>
         )}
 
-        {/* Content */}
-        <div className="max-w-4xl mx-auto px-6 py-8">
-          <div 
-            className="prose prose-lg max-w-none prose-headings:font-display prose-headings:font-medium prose-h2:text-2xl prose-h3:text-xl prose-p:text-[#1A1A18] prose-a:text-[#B5965A] prose-a:no-underline hover:prose-a:underline"
+        {/* Contenuto */}
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 py-8 sm:py-10">
+          <div
+            className="blog-content"
             dangerouslySetInnerHTML={{ __html: post.content }}
           />
 
-          {/* Tags */}
+          {/* FAQ (contenuto visibile = requisito per il JSON-LD FAQPage) */}
+          <BlogFaq faq={post.faq} />
+
+          {/* Link interni a pagine di servizio */}
+          {internalLinks.length > 0 && (
+            <section className="mt-10 rounded-lg border border-[var(--border)] bg-white p-5 sm:p-6">
+              <h2 className="mb-4 font-display text-lg font-bold text-[var(--foreground)]">
+                Approfondisci
+              </h2>
+              <ul className="space-y-2">
+                {internalLinks.map((link, index) => (
+                  <li key={index}>
+                    <Link
+                      to={link.url}
+                      className="inline-flex min-h-[36px] items-center gap-2 text-sm font-medium text-[#E69138] hover:underline"
+                    >
+                      <span aria-hidden="true">→</span>
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {/* CTA finale */}
+          <section className="mt-10 overflow-hidden rounded-xl bg-[var(--foreground)] px-6 py-8 sm:px-8">
+            <h2 className="mb-2 font-display text-xl sm:text-2xl font-bold text-white">
+              Vuoi lo stesso per il tuo locale?
+            </h2>
+            <p className="mb-6 max-w-xl text-sm leading-relaxed text-white/70">
+              Sopralluogo, progettazione 3D, render, disegni esecutivi, produzione Made in Italy
+              e installazione. Raccontaci il tuo spazio: ti rispondiamo con un preventivo.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                to="/preventivo"
+                className="btn-primary-motion inline-flex min-h-[44px] items-center rounded-lg bg-[#E69138] px-6 py-3 text-sm font-semibold text-white transition-colors hover:brightness-95"
+              >
+                Richiedi un preventivo
+              </Link>
+              <Link
+                to="/contatti"
+                className="inline-flex min-h-[44px] items-center rounded-lg border border-white/30 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+              >
+                Contatta Farcom Arredi
+              </Link>
+            </div>
+          </section>
+
+          {/* Tag */}
           {post.tags.length > 0 && (
-            <div className="mt-12 pt-8 border-t border-[#DDD9D0]">
-              <h3 className="text-sm font-medium text-[#888580] mb-4">TAG</h3>
+            <div className="mt-10 pt-8 border-t border-[var(--border)]">
+              <h2 className="text-sm font-medium text-[var(--muted-foreground)] mb-4">Tag</h2>
               <div className="flex flex-wrap gap-2">
                 {post.tags.map((tag) => (
                   <Link
                     key={tag}
-                    to={`/blog?tag=${tag}`}
-                    className="px-3 py-1 bg-white rounded-full text-sm text-[#1A1A18] hover:bg-[#B5965A] hover:text-white transition-colors"
+                    to={`/blog?tag=${encodeURIComponent(tag)}`}
+                    className="min-h-[36px] inline-flex items-center rounded-full border border-[var(--border)] bg-white px-3 py-1 text-sm text-[var(--foreground)] transition-colors hover:border-[#E69138] hover:bg-[#E69138] hover:text-white"
                   >
                     {tag}
                   </Link>
@@ -223,63 +277,25 @@ export default function BlogPost() {
               </div>
             </div>
           )}
-
-          {/* Related Products CTA */}
-          {post.relatedProductSlugs && post.relatedProductSlugs.length > 0 && post.sectorSlug && (
-            <div className="mt-12 p-8 bg-[#1A1A18] rounded-lg">
-              <h3 className="text-2xl font-display font-medium text-white mb-4">
-                Scopri le soluzioni per {post.sectorSlug.charAt(0).toUpperCase() + post.sectorSlug.slice(1)}
-              </h3>
-              <p className="text-white/80 mb-6">
-                Trova l'arredamento ideale per il tuo spazio professionale
-              </p>
-              <Link
-                to="/settori"
-                className="inline-block px-6 py-3 bg-[#B5965A] text-white rounded-lg hover:bg-[#9A7F4D] transition-colors"
-              >
-                Esplora i settori →
-              </Link>
-            </div>
-          )}
         </div>
 
-        {/* Related Posts */}
+        {/* Articoli correlati */}
         {relatedPosts.length > 0 && (
-          <div className="max-w-4xl mx-auto px-6 py-12">
-            <h2 className="text-2xl font-display font-medium text-[#1A1A18] mb-8">
+          <section className="mx-auto max-w-4xl px-4 sm:px-6 pb-14">
+            <h2 className="mb-6 font-display text-2xl font-bold text-[var(--foreground)]">
               Leggi anche
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {relatedPosts.map((relatedPost) => (
-                <Link
+                <BlogCard
                   key={relatedPost._id}
-                  to={`/blog/${relatedPost.slug}`}
-                  className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow group"
-                >
-                  {relatedPost.coverImage && (
-                    <div className="aspect-[16/10] overflow-hidden">
-                      <img
-                        src={relatedPost.coverImage}
-                        alt={`${relatedPost.title} - Articolo blog arredamento Farcom`}
-                        width="1600"
-                        height="1000"
-                        loading="lazy"
-                        fetchpriority="low"
-                        decoding="async"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-                  )}
-                  <div className="p-4">
-                    <h3 className="font-display font-medium text-[#1A1A18] mb-2 line-clamp-2 group-hover:text-[#B5965A] transition-colors">
-                      {relatedPost.title}
-                    </h3>
-                    <p className="text-sm text-[#888580] line-clamp-2">{relatedPost.excerpt}</p>
-                  </div>
-                </Link>
+                  post={relatedPost}
+                  sectorLabel={SECTOR_LABELS[relatedPost.sectorSlug] || relatedPost.sectorSlug}
+                  compact
+                />
               ))}
             </div>
-          </div>
+          </section>
         )}
       </article>
     </>

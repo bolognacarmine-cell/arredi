@@ -7,6 +7,7 @@ const nav = [
   { to: "/admin/progetti", label: "Progetti", icon: "◫" },
   { to: "/admin/showroom/products", label: "Showroom Prodotti", icon: "▧" },
   { to: "/admin/preventivi", label: "Preventivi", icon: "◱" },
+  { to: "/admin/blog", label: "Blog", icon: "✎" },
   { to: "/admin/impostazioni", label: "Impostazioni", icon: "⚙" },
 ]
 

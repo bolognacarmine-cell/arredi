@@ -8,7 +8,7 @@ const MediaSchema = new Schema({
   title: { type: String, default: '' },
   category: { 
     type: String, 
-    enum: ['hero', 'sector', 'project', 'gallery'],
+    enum: ['hero', 'sector', 'project', 'gallery', 'blog'],
     default: 'project' 
   },
   library: { 

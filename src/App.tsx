@@ -30,6 +30,7 @@ const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
 const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
 const AdminProjects = lazy(() => import("./pages/admin/AdminProjects"));
 const AdminQuotes = lazy(() => import("./pages/admin/AdminQuotes"));
+const AdminBlog = lazy(() => import("./pages/admin/AdminBlog"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
 const ShowroomIndexRedirect = lazy(() =>
   import("./routes/adminShowroomRoutes").then((m) => ({ default: m.ShowroomIndexRedirect })),
@@ -90,6 +91,10 @@ export default function App() {
                   <Route path="progetti/nuovo" element={<AdminProjects />} />
                   <Route path="progetti/:id" element={<AdminProjects />} />
                   <Route path="preventivi" element={<AdminQuotes />} />
+                  {/* Blog: elenco, nuovo articolo e modifica (stesso componente) */}
+                  <Route path="blog" element={<AdminBlog />} />
+                  <Route path="blog/nuovo" element={<AdminBlog />} />
+                  <Route path="blog/:id" element={<AdminBlog />} />
                   {/* <Route path="media" element={<AdminMedia />} /> Removed: Media page no longer accessible from menu */}
                   <Route path="impostazioni" element={<AdminSettings />} />
                   <Route path="showroom">

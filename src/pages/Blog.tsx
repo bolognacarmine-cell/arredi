@@ -1,233 +1,369 @@
-import { useState, useEffect } from "react"
-import { Link } from "react-router-dom"
-import { getPosts, getSectors, type Post, type BlogSector } from "../api/blogApi"
-import HorzDragScroll from "../components/HorzDragScroll"
+import { useEffect, useMemo, useRef, useState } from "react"
+import { Link, useSearchParams } from "react-router-dom"
+import {
+  getPosts,
+  getSectors,
+  type Post,
+  type BlogSector,
+} from "../api/blogApi"
+import BlogCard, { BlogCardSkeleton } from "../components/blog/BlogCard"
 import SEOHead from "../components/SEOHead"
+import {
+  buildBlogIndexSchema,
+  buildBreadcrumbSchema,
+} from "../lib/blogSchema"
+
+/** Filtri richiesti dalla spec, presenti anche se il settore non ha articoli. */
+const FIXED_SECTORS: Array<{ slug: string; label: string }> = [
+  { slug: "barbieri", label: "Barbieri e parrucchieri" },
+  { slug: "uffici", label: "Uffici" },
+  { slug: "negozi", label: "Negozi" },
+  { slug: "scuole", label: "Scuole" },
+  { slug: "bar", label: "Bar" },
+  { slug: "centri-estetici", label: "Centri estetici" },
+]
+
+const PAGE_SIZE = 9
+
+const META_TITLE = "Blog Farcom Arredi: arredo contract e progettazione interni"
+const META_DESCRIPTION =
+  "Guide su arredo contract, arredi su misura e progettazione interni per barbieri, negozi, uffici, bar e centri estetici. Idee e consigli da Farcom Arredi."
 
 export default function Blog() {
-  useEffect(() => {
-    window.scrollTo(0, 0)
-    document.documentElement.scrollTop = 0
-    document.body.scrollTop = 0
-    setTimeout(() => {
-      window.scrollTo(0, 0)
-      document.documentElement.scrollTop = 0
-      document.body.scrollTop = 0
-    }, 100)
-    setTimeout(() => {
-      window.scrollTo(0, 0)
-      document.documentElement.scrollTop = 0
-      document.body.scrollTop = 0
-    }, 300)
-  }, [])
+  const [searchParams] = useSearchParams()
+  // /blog?tag=... arriva dai tag in fondo all'articolo: la trattiamo come ricerca
+  const initialSearch = searchParams.get("tag") || searchParams.get("search") || ""
 
   const [posts, setPosts] = useState<Post[]>([])
   const [sectors, setSectors] = useState<BlogSector[]>([])
   const [selectedSector, setSelectedSector] = useState<string | null>(null)
+  const [searchInput, setSearchInput] = useState(initialSearch)
+  const [appliedSearch, setAppliedSearch] = useState(initialSearch)
   const [loading, setLoading] = useState(true)
-  const [currentPage, setCurrentPage] = useState(1)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const debounceRef = useRef<number | null>(null)
 
+  // Reset dello scroll (stesso pattern usato nelle altre pagine)
   useEffect(() => {
+    window.scrollTo(0, 0)
+    document.documentElement.scrollTop = 0
+    document.body.scrollTop = 0
+    setTimeout(() => window.scrollTo(0, 0), 100)
+    setTimeout(() => window.scrollTo(0, 0), 300)
+  }, [])
+
+  // Settori: caricati una sola volta
+  useEffect(() => {
+    let cancelled = false
+    getSectors()
+      .then((data) => {
+        if (!cancelled) setSectors(data)
+      })
+      .catch(() => {
+        /* i filtri fissi restano comunque disponibili */
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  // Ricerca con debounce
+  useEffect(() => {
+    if (debounceRef.current) window.clearTimeout(debounceRef.current)
+    debounceRef.current = window.setTimeout(() => {
+      setAppliedSearch(searchInput.trim())
+      setPage(1)
+    }, 350)
+    return () => {
+      if (debounceRef.current) window.clearTimeout(debounceRef.current)
+    }
+  }, [searchInput])
+
+  // Caricamento articoli (prima pagina → sostituisci, pagine successive → append)
+  useEffect(() => {
+    let cancelled = false
+
     async function loadData() {
-      setLoading(true)
+      if (page === 1) setLoading(true)
+      else setLoadingMore(true)
+      setError(null)
+
       try {
-        const [postsData, sectorsData] = await Promise.all([
-          getPosts({ sectorSlug: selectedSector || undefined, page: currentPage, limit: 12 }),
-          getSectors(),
-        ])
-        setPosts(postsData.data)
-        setTotalPages(postsData.pagination.totalPages)
-        setSectors(sectorsData)
-      } catch (error) {
-        console.error("Error loading blog data:", error)
+        const result = await getPosts({
+          sectorSlug: selectedSector || undefined,
+          search: appliedSearch || undefined,
+          page,
+          limit: PAGE_SIZE,
+        })
+        if (cancelled) return
+
+        setTotalPages(result.pagination.totalPages)
+        setPosts((prev) => {
+          if (page === 1) return result.data
+          const known = new Set(prev.map((p) => p._id))
+          return [...prev, ...result.data.filter((p) => !known.has(p._id))]
+        })
+      } catch (err) {
+        if (cancelled) return
+        console.error("Error loading blog data:", err)
+        setError("Non riuscito a caricare gli articoli. Riprova tra qualche istante.")
       } finally {
-        setLoading(false)
+        if (!cancelled) {
+          setLoading(false)
+          setLoadingMore(false)
+        }
       }
     }
-    loadData()
-  }, [selectedSector, currentPage])
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('it-IT', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric'
-    })
+    loadData()
+    return () => {
+      cancelled = true
+    }
+  }, [selectedSector, appliedSearch, page])
+
+  /** Etichette: i filtri fissi prima, poi eventuali settori tornati dall'API. */
+  const sectorFilters = useMemo(() => {
+    const known = new Set(FIXED_SECTORS.map((s) => s.slug))
+    const extra = sectors
+      .filter((s) => !known.has(s.slug))
+      .map((s) => ({ slug: s.slug, label: s.title }))
+    return [...FIXED_SECTORS, ...extra]
+  }, [sectors])
+
+  const sectorLabel = (slug: string) =>
+    sectorFilters.find((s) => s.slug === slug)?.label ||
+    sectors.find((s) => s.slug === slug)?.title ||
+    slug
+
+  const selectSector = (slug: string | null) => {
+    setSelectedSector(slug)
+    setPage(1)
   }
+
+  const hasFilters = Boolean(selectedSector || appliedSearch)
+  const hasMore = page < totalPages
 
   return (
     <div className="min-h-screen bg-[var(--background)]">
       <SEOHead
-        title="Blog Arredamento e Progettazione Interni - Farcom Design s.r.l."
-        description="Blog Farcom Design s.r.l.: idee, guide e consigli per arredare spazi professionali a Macerata Campania e in tutta Italia. Tendenze arredamento, progettazione interni e design italiano."
+        title={META_TITLE}
+        description={META_DESCRIPTION}
         canonical="https://www.farcomarredi.it/blog"
-        schema={{
-          "@context": "https://schema.org",
-          "@type": "Blog",
-          "name": "Blog Farcom Design s.r.l. - Arredamento e Progettazione Interni",
-          "description": "Blog dedicato all'arredamento e progettazione interni con articoli su tendenze, consigli e guide per spazi professionali e residenziali.",
-          "url": "https://www.farcomarredi.it/blog",
-          "publisher": {
-            "@type": "Organization",
-            "name": "Farcom Design s.r.l.",
-            "logo": {
-              "@type": "ImageObject",
-              "url": "https://www.farcomarredi.it/logo.png"
-            }
-          }
-        }}
+        schema={[
+          buildBlogIndexSchema(),
+          buildBreadcrumbSchema([
+            { name: "Home", item: "https://www.farcomarredi.it/" },
+            { name: "Blog" },
+          ]),
+        ]}
       />
+
       {/* Header */}
-      <div className="bg-[var(--foreground)] text-white py-16">
-        <div className="max-w-7xl mx-auto px-6">
-          <h1 className="text-4xl md:text-5xl font-display font-medium mb-4">Blog Arredamento e Progettazione Interni</h1>
-          <p className="text-lg text-white/70 max-w-2xl">
-            Idee, guide e consigli per arredare spazi professionali a Macerata Campania, Caserta e in tutta Italia. Tendenze arredamento, progettazione interni e design italiano.
+      <header className="bg-[var(--foreground)] py-14 sm:py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <span className="mb-3 block pl-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#E69138]">
+            Guide e consigli
+          </span>
+          <h1 className="mb-4 font-display text-3xl font-bold leading-tight text-white sm:text-4xl md:text-5xl">
+            Blog Farcom Arredi
+          </h1>
+          <p className="max-w-2xl text-base leading-relaxed text-white/70 sm:text-lg">
+            Arredo contract, mobili su misura e progettazione interni per barbieri, negozi,
+            uffici, bar, scuole e centri estetici.
           </p>
         </div>
-      </div>
+      </header>
 
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        {/* Sector Filters */}
-        <div className="mb-8 flex flex-wrap gap-3">
-          <button
-            onClick={() => setSelectedSector(null)}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-              selectedSector === null
-                ? "bg-[var(--accent)] text-white"
-                : "bg-white text-[var(--foreground)] hover:bg-[var(--accent)] hover:text-white"
-            }`}
-          >
-            Tutti gli articoli
-          </button>
-          {sectors.map((sector) => (
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10 sm:py-12">
+        {/* Filtri settore + ricerca */}
+        <div className="mb-8 space-y-5">
+          <div className="flex flex-wrap gap-2 sm:gap-3" role="group" aria-label="Filtra per settore">
             <button
-              key={sector.slug}
-              onClick={() => setSelectedSector(sector.slug)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                selectedSector === sector.slug
+              type="button"
+              onClick={() => selectSector(null)}
+              aria-pressed={selectedSector === null}
+              className={`min-h-[40px] rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                selectedSector === null
                   ? "bg-[var(--accent)] text-white"
-                  : "bg-white text-[var(--foreground)] hover:bg-[var(--accent)] hover:text-white"
+                  : "border border-[var(--border)] bg-white text-[var(--foreground)] hover:border-[var(--accent)] hover:bg-[var(--accent)] hover:text-white"
               }`}
             >
-              {sector.title}
+              Tutti
             </button>
-          ))}
+            {sectorFilters.map((sector) => (
+              <button
+                key={sector.slug}
+                type="button"
+                onClick={() => selectSector(sector.slug)}
+                aria-pressed={selectedSector === sector.slug}
+                className={`min-h-[40px] rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                  selectedSector === sector.slug
+                    ? "bg-[var(--accent)] text-white"
+                    : "border border-[var(--border)] bg-white text-[var(--foreground)] hover:border-[var(--accent)] hover:bg-[var(--accent)] hover:text-white"
+                }`}
+              >
+                {sector.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="relative max-w-md">
+            <label htmlFor="blog-search" className="sr-only">
+              Cerca nel blog
+            </label>
+            <span aria-hidden="true" className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-[var(--muted-foreground)]">
+              🔎
+            </span>
+            <input
+              id="blog-search"
+              type="search"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="Cerca per titolo o keyword…"
+              className="min-h-[44px] w-full rounded-lg border border-[var(--border)] bg-white py-3 pl-10 pr-3 text-sm text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/25"
+            />
+          </div>
         </div>
 
-        {/* Loading State */}
+        {/* Risultati */}
         {loading ? (
-          <HorzDragScroll
-            aria-label="Caricamento articoli"
-            bleedClassName="-mx-6"
-            padClassName="px-6"
-          >
-            {[...Array(6)].map((_, i) => (
-              <div
-                key={i}
-                className="shrink-0 grow-0 w-[min(80vw,20rem)] sm:w-[280px] md:w-[300px] bg-white rounded-lg overflow-hidden animate-pulse"
-              >
-                <div className="h-48 bg-gray-200" />
-                <div className="p-6">
-                  <div className="h-4 bg-gray-200 rounded mb-3" />
-                  <div className="h-6 bg-gray-200 rounded mb-3" />
-                  <div className="h-4 bg-gray-200 rounded w-2/3" />
-                </div>
-              </div>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-busy="true">
+            {Array.from({ length: PAGE_SIZE }).map((_, i) => (
+              <BlogCardSkeleton key={i} />
             ))}
-          </HorzDragScroll>
+          </div>
+        ) : error ? (
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-6 text-center">
+            <p className="mb-4 text-sm text-red-700">{error}</p>
+            <button
+              type="button"
+              onClick={() => setPage(1)}
+              className="min-h-[44px] rounded-lg bg-[var(--foreground)] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-black"
+            >
+              Riprova
+            </button>
+          </div>
         ) : posts.length === 0 ? (
-          <div className="text-center py-16">
-            <p className="text-[var(--muted-foreground)] text-lg">Nessun articolo disponibile</p>
+          <div className="rounded-lg border border-[var(--border)] bg-white px-6 py-16 text-center">
+            <p className="mb-2 font-display text-lg font-bold text-[var(--foreground)]">
+              Nessun articolo trovato
+            </p>
+            <p className="mb-6 text-sm text-[var(--muted-foreground)]">
+              {hasFilters
+                ? "Prova con un'altra keyword o torna a tutti gli articoli."
+                : "Gli articoli non sono ancora disponibili."}
+            </p>
+            {hasFilters && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedSector(null)
+                  setSearchInput("")
+                  setAppliedSearch("")
+                  setPage(1)
+                }}
+                className="min-h-[44px] rounded-lg border border-[var(--border)] px-5 py-2.5 text-sm text-[var(--foreground)] transition-colors hover:bg-[var(--secondary)]"
+              >
+                Azzera i filtri
+              </button>
+            )}
           </div>
         ) : (
           <>
-            {/* Posts — strip orizzontale drag/swipe */}
-            <HorzDragScroll
-              aria-label="Scorri gli articoli del blog"
-              bleedClassName="-mx-6"
-              padClassName="px-6"
-            >
-              {posts.map((post) => (
-                <Link
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {posts.map((post, index) => (
+                <BlogCard
                   key={post._id}
-                  to={`/blog/${post.slug}`}
-                  draggable={false}
-                  className={[
-                    "shrink-0 grow-0 bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow group",
-                    "w-[min(80vw,20rem)] sm:w-[280px] md:w-[300px]",
-                  ].join(" ")}
-                >
-                  {post.coverImage && (
-                    <div className="aspect-[16/10] overflow-hidden">
-                      <img
-                        src={post.coverImage}
-                        alt={post.title}
-                        width="1600"
-                        height="1000"
-                        loading="lazy"
-                        fetchPriority="low"
-                        decoding="async"
-                        draggable={false}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none"
-                      />
-                    </div>
-                  )}
-                  <div className="p-6">
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="text-xs font-medium text-[var(--accent)] uppercase tracking-wide">
-                        {sectors.find(s => s.slug === post.sectorSlug)?.title || post.sectorSlug}
-                      </span>
-                      <span className="text-xs text-[var(--muted-foreground)]">•</span>
-                      <span className="text-xs text-[var(--muted-foreground)]">{formatDate(post.publishedAt)}</span>
-                    </div>
-                    <h3 className="text-xl font-display font-medium text-[var(--foreground)] mb-3 line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
-                      {post.title}
-                    </h3>
-                    <p className="text-[var(--muted-foreground)] text-sm line-clamp-2 mb-4">{post.excerpt}</p>
-                    <span className="text-sm font-medium text-[var(--accent)] group-hover:underline">
-                      Leggi articolo →
-                    </span>
-                  </div>
-                </Link>
+                  post={post}
+                  sectorLabel={sectorLabel(post.sectorSlug)}
+                  eager={index < 3}
+                />
               ))}
-            </HorzDragScroll>
+            </div>
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex justify-center gap-2 mt-12">
+            {/* Carica altri + paginazione di ripiego */}
+            <div className="mt-12 flex flex-col items-center gap-6">
+              {hasMore && (
                 <button
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  className="px-4 py-2 bg-white rounded-lg text-[var(--foreground)] hover:bg-[var(--accent)] hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  type="button"
+                  onClick={() => setPage((p) => p + 1)}
+                  disabled={loadingMore}
+                  className="min-h-[44px] rounded-lg bg-[var(--accent)] px-6 py-3 text-sm font-medium text-white transition-colors hover:brightness-95 disabled:opacity-60"
                 >
-                  Precedente
+                  {loadingMore ? "Caricamento…" : "Carica altri articoli"}
                 </button>
-                {[...Array(totalPages)].map((_, i) => (
+              )}
+
+              {totalPages > 1 && (
+                <nav aria-label="Paginazione" className="flex flex-wrap justify-center gap-2">
                   <button
-                    key={i + 1}
-                    onClick={() => setCurrentPage(i + 1)}
-                    className={`px-4 py-2 rounded-lg transition-colors ${
-                      currentPage === i + 1
-                        ? "bg-[var(--accent)] text-white"
-                        : "bg-white text-[var(--foreground)] hover:bg-[var(--accent)] hover:text-white"
-                    }`}
+                    type="button"
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    className="min-h-[40px] rounded-lg border border-[var(--border)] bg-white px-4 py-2 text-sm text-[var(--foreground)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {i + 1}
+                    Precedente
                   </button>
-                ))}
-                <button
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                  className="px-4 py-2 bg-white rounded-lg text-[var(--foreground)] hover:bg-[var(--accent)] hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  Successiva
-                </button>
-              </div>
-            )}
+                  {Array.from({ length: totalPages }).map((_, i) => (
+                    <button
+                      key={i + 1}
+                      type="button"
+                      onClick={() => setPage(i + 1)}
+                      aria-current={page === i + 1 ? "page" : undefined}
+                      className={`min-h-[40px] rounded-lg px-4 py-2 text-sm transition-colors ${
+                        page === i + 1
+                          ? "bg-[var(--accent)] text-white"
+                          : "border border-[var(--border)] bg-white text-[var(--foreground)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={page === totalPages}
+                    className="min-h-[40px] rounded-lg border border-[var(--border)] bg-white px-4 py-2 text-sm text-[var(--foreground)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Successiva
+                  </button>
+                </nav>
+              )}
+            </div>
           </>
         )}
+
+        {/* CTA */}
+        <section className="mt-16 overflow-hidden rounded-xl bg-[var(--foreground)] px-6 py-10 sm:px-10 sm:py-12">
+          <div className="flex flex-col items-start gap-6 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 className="mb-2 font-display text-2xl font-bold text-white sm:text-3xl">
+                Hai un locale da arredare?
+              </h2>
+              <p className="max-w-xl text-sm leading-relaxed text-white/70 sm:text-base">
+                Sopralluogo, progettazione 3D, produzione su misura e installazione:
+                raccontaci il tuo spazio e ti rispondiamo con un preventivo.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                to="/preventivo"
+                className="btn-primary-motion inline-flex min-h-[44px] items-center rounded-lg bg-[#E69138] px-6 py-3 text-sm font-semibold text-white transition-colors hover:brightness-95"
+              >
+                Richiedi un preventivo
+              </Link>
+              <Link
+                to="/contatti"
+                className="inline-flex min-h-[44px] items-center rounded-lg border border-white/30 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+              >
+                Contattaci
+              </Link>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   )

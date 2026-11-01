@@ -7,7 +7,7 @@ export interface Media {
   cloudinaryUrl: string
   cloudinaryPublicId: string
   title?: string
-  category: "hero" | "sector" | "project" | "gallery"
+  category: "hero" | "sector" | "project" | "gallery" | "blog"
   library?: "Tutte" | "Prodotti" | "BANNER" | "SFONDI" | "trasporto"
   tags?: string[]
   usedInProjects?: string[]
@@ -23,7 +23,7 @@ export interface CreateMediaData {
   cloudinaryUrl: string
   cloudinaryPublicId: string
   title?: string
-  category: "hero" | "sector" | "project" | "gallery"
+  category: "hero" | "sector" | "project" | "gallery" | "blog"
   library?: "Tutte" | "Prodotti" | "BANNER" | "SFONDI" | "trasporto"
   width?: number
   height?: number

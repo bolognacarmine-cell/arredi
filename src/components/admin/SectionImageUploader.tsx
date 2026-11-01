@@ -15,7 +15,7 @@ interface SectionImageUploaderProps {
   maxFiles?: number;
   maxSizeMB?: number;
   acceptedTypes?: string;
-  category?: "hero" | "sector" | "project" | "gallery";
+  category?: "hero" | "sector" | "project" | "gallery" | "blog";
   library?: "Tutte" | "Prodotti" | "BANNER" | "SFONDI" | "trasporto";
   onError?: (msg: string) => void;
   disabled?: boolean;

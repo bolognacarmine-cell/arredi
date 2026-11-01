@@ -8,6 +8,8 @@ export default function Loading({ size = "md" }: { size?: "sm" | "md" | "lg" }) 
   return (
     <div className="flex items-center justify-center">
       <div
+        role="status"
+        aria-label="Caricamento"
         className={`${sizeClasses[size]} border-[var(--border)] border-t-[var(--primary)] rounded-full animate-spin`}
       />
     </div>

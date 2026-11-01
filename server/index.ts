@@ -35,6 +35,7 @@ import quoteRoutes from './routes/quotes.js';
 import restoSudContactRoutes from './routes/restoSudContact.js';
 import siteConfigRoutes from './routes/siteConfig.js';
 import blogRoutes from './routes/blog.js';
+import sitemapRoutes from './routes/sitemap.js';
 import adminRoutes from './routes/admin.js';
 import { adminApiRateLimiter } from './middleware/rateLimiter.js';
 
@@ -239,6 +240,11 @@ app.use(session({
   name: 'farcom.sid',
   rolling: true,
 }));
+
+// Sitemap XML dinamica: inietta gli articoli pubblicati nella sitemap statica.
+// DEVE essere montata PRIMA di express.static, altrimenti il file dist/sitemap.xml
+// (che non conosce gli articoli) risponderebbe per primo.
+app.use(sitemapRoutes);
 
 // Serve static files from dist/ (parent directory of server/dist).
 // WRAPPER: salta express.static per le richieste marcate come API
