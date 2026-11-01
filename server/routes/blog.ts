@@ -135,7 +135,11 @@ function pickPostPayload(body: Record<string, unknown>): Record<string, unknown>
     );
   }
   if (typeof payload.slug === 'string') payload.slug = payload.slug.trim().toLowerCase();
-  if (typeof payload.sectorSlug === 'string') payload.sectorSlug = payload.sectorSlug.trim().toLowerCase();
+  // La categoria può essere "Altro" + testo libero: si conserva la
+  // capitalizzazione scelta dall'utente e si normalizzano solo gli spazi.
+  if (typeof payload.sectorSlug === 'string') {
+    payload.sectorSlug = payload.sectorSlug.trim().replace(/\s+/g, ' ');
+  }
   if (typeof payload.publishedAt === 'string' && payload.publishedAt === '') delete payload.publishedAt;
 
   return payload;

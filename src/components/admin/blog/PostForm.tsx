@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import {
   createPost,
@@ -38,10 +38,17 @@ const SECTORS: Array<{ value: string; label: string }> = [
   { value: "centri-estetici", label: "Centri estetici" },
 ]
 
+/** Valore sentinella della voce "Altro": non viene mai salvato nel database. */
+const OTHER_SECTOR_VALUE = "__altro__"
+
+const isKnownSector = (value: string) => SECTORS.some((sector) => sector.value === value)
+
 interface DraftState {
   title: string
   slug: string
   sectorSlug: string
+  /** true = voce "Altro" selezionata, la categoria si scrive a mano in sectorSlug */
+  sectorCustom: boolean
   excerpt: string
   content: string
   coverImage: string
@@ -63,6 +70,7 @@ const EMPTY_DRAFT: DraftState = {
   title: "",
   slug: "",
   sectorSlug: "",
+  sectorCustom: false,
   excerpt: "",
   content: "",
   coverImage: "",
@@ -95,6 +103,7 @@ function postToDraft(post: Post | null): DraftState {
     title: post.title,
     slug: post.slug,
     sectorSlug: post.sectorSlug,
+    sectorCustom: Boolean(post.sectorSlug) && !isKnownSector(post.sectorSlug),
     excerpt: post.excerpt,
     content: post.content,
     coverImage: post.coverImage || "",
@@ -157,16 +166,11 @@ export default function PostForm({ post }: PostFormProps) {
     setDraft((prev) => ({ ...prev, ...changes }))
   }, [])
 
-  const sectorOptions = useMemo(() => {
-    const known = new Set(SECTORS.map((s) => s.value))
-    if (draft.sectorSlug && !known.has(draft.sectorSlug)) {
-      return [...SECTORS, { value: draft.sectorSlug, label: draft.sectorSlug }]
-    }
-    return SECTORS
-  }, [draft.sectorSlug])
-
-  const sectorLabel =
-    sectorOptions.find((s) => s.value === draft.sectorSlug)?.label || draft.sectorSlug || "Settore"
+  const sectorLabel = draft.sectorCustom
+    ? draft.sectorSlug.trim() || "Settore"
+    : SECTORS.find((s) => s.value === draft.sectorSlug)?.label ||
+      draft.sectorSlug ||
+      "Settore"
 
   const isDirty = JSON.stringify(draft) !== baselineRef.current
 
@@ -364,20 +368,49 @@ export default function PostForm({ post }: PostFormProps) {
                 </label>
                 <select
                   id="post-sector"
-                  value={draft.sectorSlug}
-                  onChange={(e) => patch({ sectorSlug: e.target.value })}
+                  value={draft.sectorCustom ? OTHER_SECTOR_VALUE : draft.sectorSlug}
+                  onChange={(e) => {
+                    const value = e.target.value
+                    if (value === OTHER_SECTOR_VALUE) {
+                      // "Altro" è solo una scelta di interfaccia: il valore salvato
+                      // sarà il testo scritto nel campo personalizzato.
+                      patch({ sectorCustom: true, sectorSlug: "" })
+                    } else {
+                      patch({ sectorCustom: false, sectorSlug: value })
+                    }
+                  }}
                   aria-invalid={Boolean(messages.errors.sectorSlug)}
                   className={selectCls}
                 >
                   <option value="">Seleziona un settore…</option>
-                  {sectorOptions.map((sector) => (
+                  {SECTORS.map((sector) => (
                     <option key={sector.value} value={sector.value}>
                       {sector.label}
                     </option>
                   ))}
+                  <option value={OTHER_SECTOR_VALUE}>Altro</option>
                 </select>
+
+                {draft.sectorCustom && (
+                  <div className="mt-3">
+                    <label className={labelCls} htmlFor="post-sector-custom">
+                      Inserisci categoria/settore personalizzata *
+                    </label>
+                    <input
+                      id="post-sector-custom"
+                      type="text"
+                      value={draft.sectorSlug}
+                      onChange={(e) => patch({ sectorSlug: e.target.value })}
+                      maxLength={LIMITS.sector}
+                      placeholder="Es. Ristoranti, Hotel, Studi medici"
+                      aria-invalid={Boolean(messages.errors.sectorSlug)}
+                      className={inputCls}
+                    />
+                  </div>
+                )}
+
                 {messages.errors.sectorSlug && (
-                  <span className="text-xs text-red-600">{messages.errors.sectorSlug}</span>
+                  <span className="block text-xs text-red-600">{messages.errors.sectorSlug}</span>
                 )}
               </div>
 

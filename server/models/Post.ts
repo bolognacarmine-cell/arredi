@@ -89,8 +89,8 @@ const PostSchema = new Schema<Post>(
     sectorSlug: {
       type: String,
       required: true,
-      lowercase: true,
       trim: true,
+      maxlength: 60,
     },
     excerpt: {
       type: String,

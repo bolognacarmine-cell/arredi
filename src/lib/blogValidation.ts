@@ -21,6 +21,8 @@ export const LIMITS = {
   seoDescriptionMin: 140,
   seoDescriptionIdealMax: 155,
   coverImageAlt: 200,
+  /** Allineato al limite del server (server/utils/postValidation.ts). */
+  sector: 60,
 } as const;
 
 export const SLUG_PATTERN = /^[a-z0-9-]+$/;
@@ -50,6 +52,8 @@ export function validatePostForm(
     title?: string;
     slug?: string;
     sectorSlug?: string;
+    /** true quando l'utente ha scelto "Altro" e sta scrivendo la categoria a mano */
+    sectorCustom?: boolean;
     excerpt?: string;
     content?: string;
     seoTitle?: string;
@@ -80,7 +84,15 @@ export function validatePostForm(
     errors.slug = `Massimo ${LIMITS.slug} caratteri`;
   }
 
-  if (!post.sectorSlug || !post.sectorSlug.trim()) {
+  if (post.sectorCustom) {
+    // Categoria personalizzata: "Altro" non è un valore salvabile.
+    const custom = (post.sectorSlug || '').trim();
+    if (!custom || custom.toLowerCase() === 'altro') {
+      errors.sectorSlug = 'Inserisci una categoria/settore personalizzata.';
+    } else if (custom.length > LIMITS.sector) {
+      errors.sectorSlug = `Massimo ${LIMITS.sector} caratteri (attuali: ${custom.length})`;
+    }
+  } else if (!post.sectorSlug || !post.sectorSlug.trim()) {
     errors.sectorSlug = 'Seleziona un settore';
   }
 

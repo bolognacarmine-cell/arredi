@@ -215,6 +215,45 @@ describe("validatePostForm — FAQ e link interni", () => {
   })
 })
 
+describe("validatePostForm — categoria personalizzata (Altro)", () => {
+  it("accetta una categoria esistente senza errori", () => {
+    const { errors } = validatePostForm({ ...validForm, sectorCustom: false }, { isNew: true })
+    expect(errors.sectorSlug).toBeUndefined()
+  })
+
+  it("accetta una categoria personalizzata scritta a mano", () => {
+    const { errors } = validatePostForm(
+      { ...validForm, sectorCustom: true, sectorSlug: "Ristoranti" },
+      { isNew: true }
+    )
+    expect(errors.sectorSlug).toBeUndefined()
+  })
+
+  it("obbliga il testo quando è selezionato Altro", () => {
+    const { errors } = validatePostForm(
+      { ...validForm, sectorCustom: true, sectorSlug: "   " },
+      { isNew: true }
+    )
+    expect(errors.sectorSlug).toBe("Inserisci una categoria/settore personalizzata.")
+  })
+
+  it("rifiuta la parola Altro come categoria personalizzata", () => {
+    const { errors } = validatePostForm(
+      { ...validForm, sectorCustom: true, sectorSlug: "Altro" },
+      { isNew: true }
+    )
+    expect(errors.sectorSlug).toBe("Inserisci una categoria/settore personalizzata.")
+  })
+
+  it("rifiuta una categoria personalizzata oltre 60 caratteri", () => {
+    const { errors } = validatePostForm(
+      { ...validForm, sectorCustom: true, sectorSlug: "a".repeat(61) },
+      { isNew: true }
+    )
+    expect(errors.sectorSlug).toMatch(/Massimo 60/)
+  })
+})
+
 describe("countMessages", () => {
   it("conta errori e avvisi", () => {
     const messages = validatePostForm({}, { isNew: true })
