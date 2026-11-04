@@ -96,100 +96,97 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.farcomarredi.it/progetti/barbieri-russo-marco</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.farcomarredi.it/progetti/barbieri-di-guida-parrucchieri</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.farcomarredi.it/progetti/barbieri-nello-lamberti-barber</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.farcomarredi.it/progetti/barbieri-the-barber</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.farcomarredi.it/progetti/bar-contemporanea</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.farcomarredi.it/progetti/negozi-sapore</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.farcomarredi.it/progetti/centri-estetici-centro-estetico-corvino</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.farcomarredi.it/progetti/barbieri-l-image-hair-fashion</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.farcomarredi.it/progetti/barbieri-empaty-di-tartaro-teresa</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.farcomarredi.it/progetti/negozi-farmacia-sinuessa-via-domitiana-mondragone-ce</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.farcomarredi.it/progetti/centri-estetici-beauty-care</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.farcomarredi.it/progetti/barbieri-compagnia-della-bellezza</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.farcomarredi.it/progetti/barbieri-bottega-barber-street</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://www.farcomarredi.it/progetti/barbieri-grillo-pietro</loc>
+    <lastmod>2026-10-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.farcomarredi.it/progetti/barbieri-de-luxe-parrucchieri</loc>
+    <lastmod>2026-10-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.farcomarredi.it/blog/arredamento-bar-bancone-atmosfera-clienti</loc>
-    <lastmod>2026-09-07</lastmod>
+    <loc>https://www.farcomarredi.it/progetti/barbieri-bottega-barber-street</loc>
+    <lastmod>2026-10-30</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.farcomarredi.it/blog/arredamento-centri-estetici-benessere-relax-clienti</loc>
-    <lastmod>2026-09-07</lastmod>
+    <loc>https://www.farcomarredi.it/progetti/centri-estetici-beauty-care</loc>
+    <lastmod>2026-10-30</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.farcomarredi.it/blog/arredamento-scuole-aule-banche-apprendimento</loc>
-    <lastmod>2026-09-07</lastmod>
+    <loc>https://www.farcomarredi.it/progetti/barbieri-compagnia-della-bellezza</loc>
+    <lastmod>2026-10-30</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.farcomarredi.it/blog/arredamento-negozi-visual-merchandising-vendite</loc>
+    <loc>https://www.farcomarredi.it/progetti/barbieri-empaty-di-tartaro-teresa</loc>
+    <lastmod>2026-10-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.farcomarredi.it/progetti/negozi-farmacia-sinuessa-via-domitiana-mondragone-ce</loc>
+    <lastmod>2026-10-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.farcomarredi.it/progetti/centri-estetici-centro-estetico-corvino</loc>
+    <lastmod>2026-10-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.farcomarredi.it/progetti/barbieri-l-image-hair-fashion</loc>
+    <lastmod>2026-10-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.farcomarredi.it/progetti/negozi-sapore</loc>
+    <lastmod>2026-10-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.farcomarredi.it/progetti/bar-contemporanea</loc>
+    <lastmod>2026-10-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.farcomarredi.it/progetti/barbieri-the-barber</loc>
+    <lastmod>2026-10-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.farcomarredi.it/progetti/barbieri-nello-lamberti-barber</loc>
+    <lastmod>2026-10-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.farcomarredi.it/progetti/barbieri-di-guida-parrucchieri</loc>
+    <lastmod>2026-10-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.farcomarredi.it/progetti/barbieri-russo-marco</loc>
+    <lastmod>2026-10-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.farcomarredi.it/blog/arredamento-barbieri-moderno-salone-successo</loc>
     <lastmod>2026-09-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -201,25 +198,61 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.farcomarredi.it/blog/arredamento-barbieri-moderno-salone-successo</loc>
+    <loc>https://www.farcomarredi.it/blog/arredamento-negozi-visual-merchandising-vendite</loc>
     <lastmod>2026-09-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.farcomarredi.it/showroom/sfera-pistone-carenato-paz0</loc>
-    <lastmod>2026-10-26</lastmod>
+    <loc>https://www.farcomarredi.it/blog/arredamento-scuole-aule-banche-apprendimento</loc>
+    <lastmod>2026-09-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.farcomarredi.it/blog/arredamento-bar-bancone-atmosfera-clienti</loc>
+    <lastmod>2026-11-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.farcomarredi.it/blog/arredamento-centri-estetici-benessere-relax-clienti</loc>
+    <lastmod>2026-09-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.farcomarredi.it/blog/arredamento-misura-macerata-campania</loc>
+    <lastmod>2026-11-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.farcomarredi.it/blog/resto-al-sud-20-aprire-barberia-salone-arredi-misura</loc>
+    <lastmod>2026-11-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.farcomarredi.it/showroom/fammi-sapere-3jcd</loc>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.farcomarredi.it/showroom/marius-vyha</loc>
-    <lastmod>2026-10-26</lastmod>
+    <loc>https://www.farcomarredi.it/showroom/man-cromo-fdcr</loc>
+    <lastmod>2026-10-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.farcomarredi.it/showroom/eros-az9r</loc>
+    <loc>https://www.farcomarredi.it/showroom/man-gold-6xw6</loc>
+    <lastmod>2026-10-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.farcomarredi.it/showroom/grand-hotel-lavatesta-nuva</loc>
     <lastmod>2026-10-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
@@ -231,26 +264,20 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.farcomarredi.it/showroom/grand-hotel-lavatesta-nuva</loc>
+    <loc>https://www.farcomarredi.it/showroom/eros-az9r</loc>
     <lastmod>2026-10-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.farcomarredi.it/showroom/man-gold-6xw6</loc>
-    <lastmod>2026-10-21</lastmod>
+    <loc>https://www.farcomarredi.it/showroom/marius-vyha</loc>
+    <lastmod>2026-10-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.farcomarredi.it/showroom/man-cromo-fdcr</loc>
-    <lastmod>2026-10-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.farcomarredi.it/showroom/fammi-sapere-3jcd</loc>
-    <lastmod>2026-10-20</lastmod>
+    <loc>https://www.farcomarredi.it/showroom/sfera-pistone-carenato-paz0</loc>
+    <lastmod>2026-10-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>

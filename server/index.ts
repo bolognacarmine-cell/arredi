@@ -36,6 +36,7 @@ import restoSudContactRoutes from './routes/restoSudContact.js';
 import siteConfigRoutes from './routes/siteConfig.js';
 import blogRoutes from './routes/blog.js';
 import sitemapRoutes from './routes/sitemap.js';
+import { getSeoHead, injectSeoHead } from './seo.js';
 import adminRoutes from './routes/admin.js';
 import { adminApiRateLimiter } from './middleware/rateLimiter.js';
 
@@ -248,13 +249,23 @@ app.use(session({
 // Search Console). La cache viene invalidata a ogni scrittura sul blog.
 app.use(sitemapRoutes);
 
+app.get(['/index.html', '/index.htm'], (req: Request, res: Response) => {
+  const queryIndex = req.originalUrl.indexOf('?');
+  const query = queryIndex >= 0 ? req.originalUrl.slice(queryIndex) : '';
+  res.redirect(301, `/${query}`);
+});
+
+app.get('/showroom/offerte', (_req: Request, res: Response) => {
+  res.redirect(301, '/showroom');
+});
+
 // Serve static files from dist/ (parent directory of server/dist).
 // WRAPPER: salta express.static per le richieste marcate come API
 // (GUARDIA LIVELLO 1 — res.locals.isApiRequest). Anche se per assurdo
 // qualcuno crea un file dist/api/admin/index.html, non verrà MAI servito
 // su /api/admin/me — la richiesta passa oltre e arriva alla guardia L2/L3.
 const staticPath = path.resolve(__dirname, '../../dist');
-const staticMiddleware = express.static(staticPath);
+const staticMiddleware = express.static(staticPath, { index: false });
 app.use((req: Request, res: Response, next: NextFunction) => {
   if ((res as Response & { locals: Record<string, unknown> }).locals.isApiRequest) {
     return next()
@@ -382,26 +393,19 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     );
   }
 
-  res.sendFile(INDEX_HTML_PATH, {
-    maxAge: 0,              // index.html non va mai cachato dai browser
-    cacheControl: true,
-    headers: {
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
-      'X-Content-Type-Options': 'nosniff',
-    },
-  }, (err: Error | null) => {
-    if (err) {
-      console.error('[SPA fallback] sendFile failed:', err.message, INDEX_HTML_PATH)
-      // Fallback ancora più robusto: se sendFile fallisce, prova fs.readFile
-      try {
-        const html = fs.readFileSync(INDEX_HTML_PATH, 'utf-8');
-        res.status(200).type('html').send(html);
-      } catch (readErr: any) {
-        console.error('[SPA fallback] Anche fs.readFile fallito:', readErr?.message)
-        res.status(500).json({ error: 'Errore interno nel caricamento della SPA.' })
-      }
-    }
-  })
+  const seo = getSeoHead(pathname);
+
+  fs.promises.readFile(INDEX_HTML_PATH, 'utf-8')
+    .then((html) => {
+      res.status(200);
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.type('html').send(injectSeoHead(html, seo));
+    })
+    .catch((err: Error) => {
+      console.error('[SPA fallback] lettura index.html fallita:', err.message, INDEX_HTML_PATH);
+      res.status(500).json({ error: 'Errore interno nel caricamento della SPA.' });
+    })
 })
 
 // 🛡️ GUARDIA /api LIVELLO 3 — ULTIMA CHANCE, DOPO SPA FALLBACK.

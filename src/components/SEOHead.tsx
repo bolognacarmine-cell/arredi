@@ -37,21 +37,24 @@ export default function SEOHead({
       <meta name="description" content={description} />
       {noindex && <meta name="robots" content="noindex, nofollow" />}
       {canonical && <link rel="canonical" href={canonical} />}
+      {canonical && <link rel="alternate" href={canonical} hrefLang="it-IT" />}
+      {canonical && <link rel="alternate" href={canonical} hrefLang="x-default" />}
 
       {/* Open Graph */}
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
       <meta property="og:type" content={ogType} />
       {canonical && <meta property="og:url" content={canonical} />}
-      <meta property="og:image" content={ogImage || 'https://www.farcomarredi.it/og-image.jpg'} />
+      <meta property="og:image" content={ogImage || 'https://www.farcomarredi.it/images-optimized/barber-farcom-social-1200x630.jpg'} />
       <meta property="og:locale" content="it_IT" />
       <meta property="og:site_name" content="Farcom Arredi" />
 
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />
+      {canonical && <meta name="twitter:url" content={canonical} />}
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
-      <meta name="twitter:image" content={ogImage || 'https://www.farcomarredi.it/og-image.jpg'} />
+      <meta name="twitter:image" content={ogImage || 'https://www.farcomarredi.it/images-optimized/barber-farcom-social-1200x630.jpg'} />
 
       {/* Structured Data (JSON-LD) */}
       {schemas.map((item, index) => (
