@@ -1,20 +1,21 @@
 import { Link } from "react-router-dom"
 
-import { useEffect, useState } from "react"
+import { lazy, Suspense, useEffect, useRef, useState } from "react"
 
 import { useProjects } from "../projectStore"
 
 import Hero from "../components/Hero"
-import ReviewsSection from "../components/ReviewsSection"
 import ProductCard from "../components/showroom/ProductCard"
 import Magnetic from "../components/Magnetic"
 import MotionLine from "../components/MotionLine"
 import Reveal from "../components/Reveal"
-import BlogDragStrip from "../components/BlogDragStrip"
-import SectorDragStrip from "../components/SectorDragStrip"
 import Stagger from "../components/Stagger"
 import SEOHead from "../components/SEOHead"
 import HeroBackgroundVideo from "../components/HeroBackgroundVideo"
+
+const BlogDragStrip = lazy(() => import("../components/BlogDragStrip"))
+const SectorDragStrip = lazy(() => import("../components/SectorDragStrip"))
+const ReviewsSectionLazy = lazy(() => import("../components/ReviewsSection"))
 import { getPosts, type Post } from "../api/blogApi"
 import { getProducts, type Product } from "../services/showroomApi"
 import { resolveImageUrl } from "../lib/cloudinary"
@@ -24,43 +25,6 @@ import {
   LOCAL_KEYWORDS_STRING,
   LOCAL_KNOWS_ABOUT,
 } from "../lib/localSeo"
-
-// Custom Cursor Component
-const CustomCursor = () => {
-  const [position, setPosition] = useState({ x: 0, y: 0 })
-  const [trail, setTrail] = useState<Array<{ x: number; y: number }>>([])
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setPosition({ x: e.clientX, y: e.clientY })
-      setTrail((prev) => [{ x: e.clientX, y: e.clientY }, ...prev.slice(0, 5)])
-    }
-
-    window.addEventListener("mousemove", handleMouseMove)
-    return () => window.removeEventListener("mousemove", handleMouseMove)
-  }, [])
-
-  return (
-    <>
-      <div
-        className="fixed pointer-events-none z-[9999] w-6 sm:w-8 h-6 sm:h-8 rounded-full border-2 border-[#E69138] transition-transform duration-75 ease-out hidden md:block"
-        style={{
-          transform: `translate(${position.x - 12}px, ${position.y - 12}px)`,
-        }}
-      />
-      {trail.map((pos, i) => (
-        <div
-          key={i}
-          className="fixed pointer-events-none z-[9998] w-3 sm:w-4 h-3 sm:h-4 rounded-full bg-[#E69138]/20 transition-transform duration-150 ease-out hidden md:block"
-          style={{
-            transform: `translate(${pos.x - 6}px, ${pos.y - 6}px) scale(${1 - i * 0.15})`,
-            opacity: 1 - i * 0.2,
-          }}
-        />
-      ))}
-    </>
-  )
-}
 
 const services = [
   {
@@ -139,6 +103,38 @@ const faqHome = [
     a: "I tempi dipendono dalla complessità e dalle dimensioni dello spazio. In fase di preventivo definiamo sempre tempistiche precise. La nostra regola: consegnamo nei tempi pattuiti, sempre."
   }
 ]
+
+function LazySection({ children }: { children: React.ReactNode }) {
+  const ref = useRef<HTMLDivElement | null>(null)
+  const [ready, setReady] = useState(false)
+
+  useEffect(() => {
+    const node = ref.current
+    if (!node || typeof IntersectionObserver === "undefined") {
+      setReady(true)
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setReady(true)
+          observer.disconnect()
+        }
+      },
+      { rootMargin: "200px 0px" },
+    )
+
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [])
+
+  return (
+    <div ref={ref}>
+      {ready ? <Suspense fallback={<div className="h-[260px] w-full" />}>{children}</Suspense> : <div className="h-[260px] w-full" />}
+    </div>
+  )
+}
 
 export default function Home() {
   const projects = useProjects()
@@ -228,57 +224,79 @@ export default function Home() {
         description="Farcom Design s.r.l.: arredamento su misura e progettazione interni a Macerata Campania, Caserta e in tutta Italia. Showroom arredi professionali, preventivi gratuiti e sopralluogo. Richiedi un preventivo!"
         canonical="https://www.farcomarredi.it/"
         keywords={LOCAL_KEYWORDS_STRING}
-        schema={{
-          "@context": "https://schema.org",
-          "@type": "HomeAndConstructionBusiness",
-          "@id": "https://www.farcomarredi.it/#business",
-          "name": "Farcom Design s.r.l.",
-          "description": "Azienda di arredamento e progettazione interni a Macerata Campania. Servizio in tutta Italia con showroom arredi professionali, preventivi gratuiti e sopralluogo.",
-          "url": "https://www.farcomarredi.it/",
-          "keywords": LOCAL_KEYWORDS.join(', '),
-          "knowsAbout": LOCAL_KNOWS_ABOUT,
-          "telephone": "+39 0823 694427",
-          "email": "farcomsrl@hotmail.com",
-          "address": {
-            "@type": "PostalAddress",
-            "streetAddress": "Via P. Vertaldi, 27",
-            "addressLocality": "Macerata Campania",
-            "addressRegion": "CE",
-            "postalCode": "81047",
-            "addressCountry": "IT"
-          },
-          "geo": {
-            "@type": "GeoCoordinates",
-            "latitude": 41.055439,
-            "longitude": 14.2848
-          },
-          "openingHoursSpecification": [
-            {
-              "@type": "OpeningHoursSpecification",
-              "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-              "opens": "09:00",
-              "closes": "13:00"
+        schema={[
+          {
+            "@context": "https://schema.org",
+            "@type": "HomeAndConstructionBusiness",
+            "@id": "https://www.farcomarredi.it/#business",
+            "name": "Farcom Design s.r.l.",
+            "description": "Azienda di arredamento e progettazione interni a Macerata Campania. Servizio in tutta Italia con showroom arredi professionali, preventivi gratuiti e sopralluogo.",
+            "url": "https://www.farcomarredi.it/",
+            "keywords": LOCAL_KEYWORDS.join(', '),
+            "knowsAbout": LOCAL_KNOWS_ABOUT,
+            "telephone": "+39 0823 694427",
+            "email": "farcomsrl@hotmail.com",
+            "address": {
+              "@type": "PostalAddress",
+              "streetAddress": "Via P. Vertaldi, 27",
+              "addressLocality": "Macerata Campania",
+              "addressRegion": "CE",
+              "postalCode": "81047",
+              "addressCountry": "IT"
             },
-            {
-              "@type": "OpeningHoursSpecification",
-              "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-              "opens": "15:00",
-              "closes": "19:00"
+            "geo": {
+              "@type": "GeoCoordinates",
+              "latitude": 41.055439,
+              "longitude": 14.2848
             },
-            {
-              "@type": "OpeningHoursSpecification",
-              "dayOfWeek": "Saturday",
-              "opens": "09:00",
-              "closes": "13:00"
-            }
-          ],
-          "areaServed": LOCAL_AREA_SERVED,
-          "priceRange": "€€€",
-          "sameAs": [
-            "https://www.instagram.com/farcom_arredi/",
-            "https://www.facebook.com/p/Farcom-arredi-100054867935352/"
-          ]
-        }}
+            "openingHoursSpecification": [
+              {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+                "opens": "09:00",
+                "closes": "13:00"
+              },
+              {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+                "opens": "15:00",
+                "closes": "19:00"
+              },
+              {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": "Saturday",
+                "opens": "09:00",
+                "closes": "13:00"
+              }
+            ],
+            "areaServed": LOCAL_AREA_SERVED,
+            "priceRange": "€€€",
+            "sameAs": [
+              "https://www.instagram.com/farcom_arredi/",
+              "https://www.facebook.com/p/Farcom-arredi-100054867935352/"
+            ]
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "Service",
+            "name": "Arredamento su misura e progettazione interni",
+            "provider": {
+              "@type": "LocalBusiness",
+              "@id": "https://www.farcomarredi.it/#business",
+              "name": "Farcom Design s.r.l."
+            },
+            "areaServed": LOCAL_AREA_SERVED,
+            "serviceType": [
+              "Progettazione interni",
+              "Arredamento negozi",
+              "Arredamento uffici",
+              "Arredo bar e locali",
+              "Arredi per beauty e centri estetici",
+              "Arredi su misura"
+            ],
+            "description": "Progettazione, realizzazione e installazione di arredi su misura per aziende, retail, uffici e attività commerciali in Campania e in tutta Italia."
+          }
+        ]}
       />
       <script
         type="application/ld+json"
@@ -297,7 +315,6 @@ export default function Home() {
           })
         }}
       />
-      <CustomCursor />
       {/* HERO */}
       <section id="hero" data-bg="#1A1A2E" className="relative overflow-hidden">
         {/* Soft ambient glow hero (wow effect) */}
@@ -336,8 +353,10 @@ export default function Home() {
           </Reveal>
         </div>
 
-        {/* Strip orizzontale drag (right↔left), stesso comportamento di /settori */}
-        <SectorDragStrip />
+        {/* Strip orizzontale drag (right↔left), caricato solo quando la section entra in viewport */}
+        <LazySection>
+          <SectorDragStrip />
+        </LazySection>
       </section>
 
       {/* FEATURED PROJECTS: nascosto se non ci sono progetti da mostrare */}
@@ -534,12 +553,16 @@ export default function Home() {
             </Reveal>
           </div>
 
-          <BlogDragStrip posts={blogPosts} />
+          <LazySection>
+            <BlogDragStrip posts={blogPosts} />
+          </LazySection>
         </section>
       )}
 
       {/* RECENSIONI */}
-      <ReviewsSection />
+      <LazySection>
+        <ReviewsSectionLazy />
+      </LazySection>
 
       {/* SERVICES */}
       <section id="servizi" className="pt-6 pb-16 sm:py-20 md:py-24 lg:py-28 xl:py-32 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-16 relative bg-white" data-bg="#FFFFFF">

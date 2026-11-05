@@ -39,8 +39,9 @@ export default function SEOHead({
     <Helmet>
       <title>{title}</title>
       <meta name="description" content={description} />
+      <meta name="author" content="Farcom Design s.r.l." />
+      <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'} />
       {!noindex && keywords && <meta name="keywords" content={keywords} />}
-      {noindex && <meta name="robots" content="noindex, nofollow" />}
       {canonical && <link rel="canonical" href={canonical} />}
       {canonical && <link rel="alternate" href={canonical} hrefLang="it-IT" />}
       {canonical && <link rel="alternate" href={canonical} hrefLang="x-default" />}
