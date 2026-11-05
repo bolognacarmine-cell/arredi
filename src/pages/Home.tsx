@@ -18,6 +18,12 @@ import HeroBackgroundVideo from "../components/HeroBackgroundVideo"
 import { getPosts, type Post } from "../api/blogApi"
 import { getProducts, type Product } from "../services/showroomApi"
 import { resolveImageUrl } from "../lib/cloudinary"
+import {
+  LOCAL_AREA_SERVED,
+  LOCAL_KEYWORDS,
+  LOCAL_KEYWORDS_STRING,
+  LOCAL_KNOWS_ABOUT,
+} from "../lib/localSeo"
 
 // Custom Cursor Component
 const CustomCursor = () => {
@@ -221,12 +227,16 @@ export default function Home() {
         title="Farcom Design s.r.l. - Arredamento e Progettazione Interni a Macerata Campania e in tutta Italia"
         description="Farcom Design s.r.l.: arredamento su misura e progettazione interni a Macerata Campania, Caserta e in tutta Italia. Showroom arredi professionali, preventivi gratuiti e sopralluogo. Richiedi un preventivo!"
         canonical="https://www.farcomarredi.it/"
+        keywords={LOCAL_KEYWORDS_STRING}
         schema={{
           "@context": "https://schema.org",
           "@type": "HomeAndConstructionBusiness",
+          "@id": "https://www.farcomarredi.it/#business",
           "name": "Farcom Design s.r.l.",
           "description": "Azienda di arredamento e progettazione interni a Macerata Campania. Servizio in tutta Italia con showroom arredi professionali, preventivi gratuiti e sopralluogo.",
           "url": "https://www.farcomarredi.it/",
+          "keywords": LOCAL_KEYWORDS.join(', '),
+          "knowsAbout": LOCAL_KNOWS_ABOUT,
           "telephone": "+39 0823 694427",
           "email": "farcomsrl@hotmail.com",
           "address": {
@@ -262,24 +272,7 @@ export default function Home() {
               "closes": "13:00"
             }
           ],
-          "areaServed": [
-            {
-              "@type": "City",
-              "name": "Macerata Campania"
-            },
-            {
-              "@type": "City",
-              "name": "Caserta"
-            },
-            {
-              "@type": "AdministrativeArea",
-              "name": "Campania"
-            },
-            {
-              "@type": "Country",
-              "name": "Italia"
-            }
-          ],
+          "areaServed": LOCAL_AREA_SERVED,
           "priceRange": "€€€",
           "sameAs": [
             "https://www.instagram.com/farcom_arredi/",

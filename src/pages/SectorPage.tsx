@@ -5,6 +5,7 @@ import { SECTORS } from "../data";
 import { useProjects } from "../projectStore";
 import { getParentPath } from "../utils/navigation";
 import SEOHead from "../components/SEOHead";
+import { LOCAL_KEYWORDS_STRING, LOCAL_SECTOR_KEYWORDS } from "../lib/localSeo";
 
 const steps = [
   {
@@ -82,6 +83,11 @@ export default function SectorPage() {
         title={`Arredi per ${sector.label} | Progettazione e Realizzazione | Farcom Design s.r.l.`}
         description={`${sector.description} Scopri i progetti realizzati da Farcom Design s.r.l. per ${sector.label}: soluzioni su misura, progettazione 3D, realizzazione artigianale in laboratorio a Macerata Campania e installazione chiavi in mano in tutta Italia.`}
         canonical={`https://www.farcomarredi.it/settori/${sector.id}`}
+        keywords={
+          LOCAL_SECTOR_KEYWORDS[sector.id]
+            ? `${LOCAL_SECTOR_KEYWORDS[sector.id]}, ${LOCAL_KEYWORDS_STRING}`
+            : LOCAL_KEYWORDS_STRING
+        }
         ogImage={heroImage}
         schema={{
           "@context": "https://schema.org",
@@ -154,6 +160,9 @@ export default function SectorPage() {
             Arredi per
             <br />
             {sector.label}
+            <span className="mt-4 block text-base font-normal text-white/70 sm:text-lg">
+              Arredamento su misura a Macerata Campania, Caserta e provincia
+            </span>
           </h1>
         </div>
       </section>

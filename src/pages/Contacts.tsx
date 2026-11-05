@@ -5,6 +5,12 @@ import {
   useSiteSettings,
 } from "../siteConfig"
 import SEOHead from "../components/SEOHead"
+import {
+  LOCAL_AREA_SERVED,
+  LOCAL_KEYWORDS,
+  LOCAL_KNOWS_ABOUT,
+  LOCAL_PAGE_KEYWORDS,
+} from "../lib/localSeo"
 
 export default function Contacts() {
   useEffect(() => {
@@ -36,12 +42,16 @@ export default function Contacts() {
         title="Contatti - Farcom Design s.r.l. | Showroom Macerata Campania"
         description="Contatta Farcom Design s.r.l.: showroom arredamento a Macerata Campania, Via P. Vertaldi 27. Telefono +39 0823 694427, WhatsApp +39 329 4576079. Arredamento su misura in tutta Italia."
         canonical="https://www.farcomarredi.it/contatti"
+        keywords={LOCAL_PAGE_KEYWORDS.contatti}
         schema={{
           "@context": "https://schema.org",
           "@type": "LocalBusiness",
+          "@id": "https://www.farcomarredi.it/#business",
           "name": "Farcom Design s.r.l.",
           "description": "Showroom arredamento a Macerata Campania. Arredi su misura per barberie, uffici, negozi e attività professionali con servizio in tutta Italia.",
           "url": "https://www.farcomarredi.it/",
+          "keywords": LOCAL_KEYWORDS.join(', '),
+          "knowsAbout": LOCAL_KNOWS_ABOUT,
           "telephone": "+39 0823 694427",
           "email": "farcomsrl@hotmail.com",
           "address": {
@@ -77,24 +87,7 @@ export default function Contacts() {
               "closes": "13:00"
             }
           ],
-          "areaServed": [
-            {
-              "@type": "City",
-              "name": "Macerata Campania"
-            },
-            {
-              "@type": "City",
-              "name": "Caserta"
-            },
-            {
-              "@type": "AdministrativeArea",
-              "name": "Campania"
-            },
-            {
-              "@type": "Country",
-              "name": "Italia"
-            }
-          ],
+          "areaServed": LOCAL_AREA_SERVED,
           "sameAs": [
             "https://www.instagram.com/farcom_arredi/",
             "https://www.facebook.com/p/Farcom-arredi-100054867935352/"

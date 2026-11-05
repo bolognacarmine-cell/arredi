@@ -104,6 +104,16 @@ describe('injectSeoHead', () => {
     assert.ok(result.includes('<meta name="robots" content="noindex, nofollow" data-rh="true" />'));
   });
 
+  it('rimuove le meta keywords statiche e ne inietta una sola', () => {
+    const html =
+      '<html><head><title>Vecchio</title><meta name="keywords" content="statiche" /><!-- SEO_HEAD --></head><body></body></html>';
+    const result = injectSeoHead(html, getSeoHead('/settori/barbieri'));
+
+    assert.equal(result.split('name="keywords"').length - 1, 1);
+    assert.ok(!result.includes('content="statiche"'));
+    assert.ok(result.includes('arredo barberia Macerata Campania'));
+  });
+
   it('esegue l\'escape dei valori HTML', () => {
     const html = '<html><head><title>Vecchio</title><!-- SEO_HEAD --></head><body></body></html>';
     const seo = {

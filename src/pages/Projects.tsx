@@ -7,6 +7,7 @@ import type { Rect } from "../lib/cloudinary/watermark"
 import { isWatermarkContainerTooSmall } from "../lib/cloudinary/watermark"
 import type { ProjectRecord } from "../projectStore"
 import SEOHead from "../components/SEOHead"
+import { LOCAL_PAGE_KEYWORDS } from "../lib/localSeo"
 
 const filters = [
   { id: "all", label: "Tutti" },
@@ -135,6 +136,7 @@ export default function Projects() {
         title="Progetti e Realizzazioni di Arredamento | Farcom Design s.r.l."
         description="Oltre 500 progetti di arredamento realizzati da Farcom Design s.r.l. in tutta Italia: uffici, negozi, scuole, barberie, bar, locali e centri estetici. Esempi di arredamenti su misura e allestimenti realizzati a Macerata Campania, Caserta e Campania."
         canonical="https://www.farcomarredi.it/progetti"
+        keywords={LOCAL_PAGE_KEYWORDS.progetti}
         schema={{
           "@context": "https://schema.org",
           "@type": "CollectionPage",
@@ -157,11 +159,12 @@ export default function Projects() {
             Portfolio
           </span>
           <h1 className="font-display text-4xl lg:text-5xl font-bold text-gray-900 mt-2 mb-4">
-            I nostri progetti
+            I nostri progetti di arredamento
           </h1>
           <p className="text-gray-600 max-w-xl leading-relaxed">
-            Oltre 500 realizzazioni in tutta Italia. Ogni progetto è unico, ogni spazio ha una
-            storia da raccontare.
+            Oltre 500 realizzazioni in tutta Italia, con progetti di arredamento su misura
+            a Macerata Campania, Caserta e provincia. Ogni progetto è unico, ogni spazio
+            ha una storia da raccontare.
           </p>
         </div>
 

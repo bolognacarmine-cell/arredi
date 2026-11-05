@@ -1,6 +1,7 @@
 import { useEffect } from "react"
 import { Link } from "react-router-dom"
 import SEOHead from "../components/SEOHead"
+import { LOCAL_PAGE_KEYWORDS } from "../lib/localSeo"
 
 const faqAbout = [
   {
@@ -44,6 +45,7 @@ export default function About() {
         title="Chi Siamo - Farcom Design s.r.l. | Arredamento Macerata Campania dal 2003"
         description="Farcom Design s.r.l.: dal 2003 arredamento e progettazione interni a Macerata Campania e in tutta Italia. Specializzati in arredi per barberie, uffici, negozi e attività professionali. Qualità artigianale Made in Italy."
         canonical="https://www.farcomarredi.it/chi-siamo"
+        keywords={LOCAL_PAGE_KEYWORDS.chiSiamo}
         schema={{
           "@context": "https://schema.org",
           "@type": "Organization",
@@ -105,7 +107,7 @@ export default function About() {
             <p className="text-[#4A4A46] leading-relaxed mb-6 text-base">
               Farcom Design s.r.l. è un punto di riferimento nel settore degli arredi
               per attività commerciali e professionali. Dal 2003 operiamo a
-              Macerata Campania e in tutta Italia, specializzandoci in soluzioni
+              Macerata Campania, Caserta e in tutta Italia, specializzandoci in soluzioni
               per barbieri, uffici, negozi, scuole, bar e centri estetici.
               Continuiamo a crescere adattandoci alle nuove esigenze del mercato
               con proposte sempre più evolute.

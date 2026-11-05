@@ -3,6 +3,7 @@ import { useProjects } from "../projectStore"
 import ImageCarousel from "../components/ImageCarousel"
 import FarcomImageWatermark, { productImageSrc } from "../components/FarcomImageWatermark"
 import SEOHead from "../components/SEOHead"
+import { LOCAL_KEYWORDS_STRING } from "../lib/localSeo"
 
 const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1497366216548-37526070297c?w=2400&h=1350&fit=crop"
@@ -61,6 +62,7 @@ export default function ProjectDetail() {
         title={`${project.title} | ${project.sector} - Progetto Farcom Design s.r.l.`}
         description={`${project.description} Realizzazione di arredamento per ${project.sector} a ${project.location} (${project.year}). Progetto di Farcom Design s.r.l.: progettazione, realizzazione e installazione arredi su misura.`}
         canonical={`https://www.farcomarredi.it/progetti/${project.id}`}
+        keywords={LOCAL_KEYWORDS_STRING}
         ogImage={cover}
         schema={{
           "@context": "https://schema.org",

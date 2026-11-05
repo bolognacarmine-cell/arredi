@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { Helmet } from 'react-helmet-async'
+import { LOCAL_KEYWORDS_STRING } from '../lib/localSeo'
 
 type Schema = Record<string, any>
 
@@ -7,6 +8,8 @@ interface SEOHeadProps {
   title: string
   description: string
   canonical?: string
+  /** Meta keywords: se omesso usa il set locale generale. */
+  keywords?: string
   ogImage?: string
   /** Singolo oggetto schema.org oppure una lista (Article + FAQPage + BreadcrumbList). */
   schema?: Schema | Array<Schema | null | undefined>
@@ -20,6 +23,7 @@ export default function SEOHead({
   title,
   description,
   canonical,
+  keywords = LOCAL_KEYWORDS_STRING,
   ogImage,
   schema,
   ogType = 'website',
@@ -35,6 +39,7 @@ export default function SEOHead({
     <Helmet>
       <title>{title}</title>
       <meta name="description" content={description} />
+      {!noindex && keywords && <meta name="keywords" content={keywords} />}
       {noindex && <meta name="robots" content="noindex, nofollow" />}
       {canonical && <link rel="canonical" href={canonical} />}
       {canonical && <link rel="alternate" href={canonical} hrefLang="it-IT" />}

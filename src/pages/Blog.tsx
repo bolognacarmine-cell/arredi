@@ -8,6 +8,7 @@ import {
 } from "../api/blogApi"
 import BlogCard, { BlogCardSkeleton } from "../components/blog/BlogCard"
 import SEOHead from "../components/SEOHead"
+import { LOCAL_PAGE_KEYWORDS } from "../lib/localSeo"
 import {
   buildBlogIndexSchema,
   buildBreadcrumbSchema,
@@ -152,6 +153,7 @@ export default function Blog() {
         title={META_TITLE}
         description={META_DESCRIPTION}
         canonical="https://www.farcomarredi.it/blog"
+        keywords={LOCAL_PAGE_KEYWORDS.blog}
         schema={[
           buildBlogIndexSchema(),
           buildBreadcrumbSchema([
