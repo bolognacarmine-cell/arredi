@@ -6,6 +6,25 @@ import { fileURLToPath, parse as parseUrl } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Risolve la cartella `dist/` in modo robusto sia in dev (`tsx server/index.ts`)
+// sia in produzione (`node server/dist/index.js`): in dev `__dirname` è `server/`,
+// in prod `server/dist/`. Preferisce la prima candidata che contiene index.html.
+function resolveDistDir(): string {
+  const candidates = [
+    path.resolve(__dirname, '../../dist'), // prod: server/dist/index.js -> <root>/dist
+    path.resolve(__dirname, '../dist'), // dev: server/index.ts -> <root>/dist
+    path.resolve(process.cwd(), 'dist'), // fallback: cwd del progetto
+  ]
+  for (const dir of candidates) {
+    try {
+      if (fs.existsSync(path.join(dir, 'index.html'))) return dir
+    } catch {
+      /* ignora candidata non leggibile */
+    }
+  }
+  return candidates[0]
+}
+
 // Load environment variables BEFORE importing other modules
 // Prefer root `.server.env`, fallback to `server/server.env` (legacy local path).
 const envCandidates = [
@@ -264,7 +283,7 @@ app.get('/showroom/offerte', (_req: Request, res: Response) => {
 // (GUARDIA LIVELLO 1 — res.locals.isApiRequest). Anche se per assurdo
 // qualcuno crea un file dist/api/admin/index.html, non verrà MAI servito
 // su /api/admin/me — la richiesta passa oltre e arriva alla guardia L2/L3.
-const staticPath = path.resolve(__dirname, '../../dist');
+const staticPath = resolveDistDir();
 const staticMiddleware = express.static(staticPath, { index: false });
 app.use((req: Request, res: Response, next: NextFunction) => {
   if ((res as Response & { locals: Record<string, unknown> }).locals.isApiRequest) {
@@ -324,7 +343,7 @@ app.use('/api', (_req: Request, res: Response) => {
 // - Usa middleware invece di wildcard route per compatibilità con path-to-regexp
 // - Usa parseUrl da import top-level ESM (NON require('url'), che non esiste in ESM)
 // - Controlla che index.html esista davvero per evitare 500 brutti
-const DIST_DIR = path.resolve(__dirname, '../../dist');
+const DIST_DIR = resolveDistDir();
 const INDEX_HTML_PATH = path.join(DIST_DIR, 'index.html');
 let indexHtmlExists = false;
 try {
