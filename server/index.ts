@@ -6,6 +6,25 @@ import { fileURLToPath, parse as parseUrl } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Risolve la cartella `dist/` in modo robusto sia in dev (`tsx server/index.ts`)
+// sia in produzione (`node server/dist/index.js`): in dev `__dirname` è `server/`,
+// in prod `server/dist/`. Preferisce la prima candidata che contiene index.html.
+function resolveDistDir(): string {
+  const candidates = [
+    path.resolve(__dirname, '../../dist'), // prod: server/dist/index.js -> <root>/dist
+    path.resolve(__dirname, '../dist'), // dev: server/index.ts -> <root>/dist
+    path.resolve(process.cwd(), 'dist'), // fallback: cwd del progetto
+  ]
+  for (const dir of candidates) {
+    try {
+      if (fs.existsSync(path.join(dir, 'index.html'))) return dir
+    } catch {
+      /* ignora candidata non leggibile */
+    }
+  }
+  return candidates[0]
+}
+
 // Load environment variables BEFORE importing other modules
 // Prefer root `.server.env`, fallback to `server/server.env` (legacy local path).
 const envCandidates = [
@@ -35,7 +54,8 @@ import quoteRoutes from './routes/quotes.js';
 import restoSudContactRoutes from './routes/restoSudContact.js';
 import siteConfigRoutes from './routes/siteConfig.js';
 import blogRoutes from './routes/blog.js';
-import sitemapRoutes from './routes/sitemap.js';
+import sitemapRoutes, { publishSitemapToCloudflare } from './routes/sitemap.js';
+import { getSeoHead, injectSeoHead } from './seo.js';
 import adminRoutes from './routes/admin.js';
 import { adminApiRateLimiter } from './middleware/rateLimiter.js';
 
@@ -248,13 +268,23 @@ app.use(session({
 // Search Console). La cache viene invalidata a ogni scrittura sul blog.
 app.use(sitemapRoutes);
 
+app.get(['/index.html', '/index.htm'], (req: Request, res: Response) => {
+  const queryIndex = req.originalUrl.indexOf('?');
+  const query = queryIndex >= 0 ? req.originalUrl.slice(queryIndex) : '';
+  res.redirect(301, `/${query}`);
+});
+
+app.get('/showroom/offerte', (_req: Request, res: Response) => {
+  res.redirect(301, '/showroom');
+});
+
 // Serve static files from dist/ (parent directory of server/dist).
 // WRAPPER: salta express.static per le richieste marcate come API
 // (GUARDIA LIVELLO 1 — res.locals.isApiRequest). Anche se per assurdo
 // qualcuno crea un file dist/api/admin/index.html, non verrà MAI servito
 // su /api/admin/me — la richiesta passa oltre e arriva alla guardia L2/L3.
-const staticPath = path.resolve(__dirname, '../../dist');
-const staticMiddleware = express.static(staticPath);
+const staticPath = resolveDistDir();
+const staticMiddleware = express.static(staticPath, { index: false });
 app.use((req: Request, res: Response, next: NextFunction) => {
   if ((res as Response & { locals: Record<string, unknown> }).locals.isApiRequest) {
     return next()
@@ -313,7 +343,7 @@ app.use('/api', (_req: Request, res: Response) => {
 // - Usa middleware invece di wildcard route per compatibilità con path-to-regexp
 // - Usa parseUrl da import top-level ESM (NON require('url'), che non esiste in ESM)
 // - Controlla che index.html esista davvero per evitare 500 brutti
-const DIST_DIR = path.resolve(__dirname, '../../dist');
+const DIST_DIR = resolveDistDir();
 const INDEX_HTML_PATH = path.join(DIST_DIR, 'index.html');
 let indexHtmlExists = false;
 try {
@@ -382,26 +412,19 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     );
   }
 
-  res.sendFile(INDEX_HTML_PATH, {
-    maxAge: 0,              // index.html non va mai cachato dai browser
-    cacheControl: true,
-    headers: {
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
-      'X-Content-Type-Options': 'nosniff',
-    },
-  }, (err: Error | null) => {
-    if (err) {
-      console.error('[SPA fallback] sendFile failed:', err.message, INDEX_HTML_PATH)
-      // Fallback ancora più robusto: se sendFile fallisce, prova fs.readFile
-      try {
-        const html = fs.readFileSync(INDEX_HTML_PATH, 'utf-8');
-        res.status(200).type('html').send(html);
-      } catch (readErr: any) {
-        console.error('[SPA fallback] Anche fs.readFile fallito:', readErr?.message)
-        res.status(500).json({ error: 'Errore interno nel caricamento della SPA.' })
-      }
-    }
-  })
+  const seo = getSeoHead(pathname);
+
+  fs.promises.readFile(INDEX_HTML_PATH, 'utf-8')
+    .then((html) => {
+      res.status(200);
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.type('html').send(injectSeoHead(html, seo));
+    })
+    .catch((err: Error) => {
+      console.error('[SPA fallback] lettura index.html fallita:', err.message, INDEX_HTML_PATH);
+      res.status(500).json({ error: 'Errore interno nel caricamento della SPA.' });
+    })
 })
 
 // 🛡️ GUARDIA /api LIVELLO 3 — ULTIMA CHANCE, DOPO SPA FALLBACK.
@@ -487,5 +510,8 @@ connectDB().then(async () => {
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`📁 Serving static files from ${staticPath}`);
+    void publishSitemapToCloudflare().then((published) => {
+      if (published) console.log('[sitemap] sitemap pubblicata su Cloudflare KV');
+    });
   });
 });

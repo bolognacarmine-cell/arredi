@@ -1,0 +1,31 @@
+name = "farcom-seo-edge"
+main = "src/index.ts"
+compatibility_date = "2026-11-01"
+workers_dev = true
+
+# Route disattivate: farcomarredi.it non è nella zona Cloudflare di questo account.
+# Il cron sotto resta attivo. Riattivare queste route solo dopo aver spostato
+# i nameserver del dominio su Cloudflare.
+# routes = [
+#   { pattern = "www.farcomarredi.it/robots.txt", zone_name = "farcomarredi.it" },
+#   { pattern = "www.farcomarredi.it/sitemap.xml", zone_name = "farcomarredi.it" },
+#   { pattern = "www.farcomarredi.it/sitemap_index.xml", zone_name = "farcomarredi.it" },
+#   { pattern = "www.farcomarredi.it/sitemap-index.xml", zone_name = "farcomarredi.it" },
+#   { pattern = "farcomarredi.it/robots.txt", zone_name = "farcomarredi.it" },
+#   { pattern = "farcomarredi.it/sitemap.xml", zone_name = "farcomarredi.it" },
+#   { pattern = "farcomarredi.it/sitemap_index.xml", zone_name = "farcomarredi.it" },
+#   { pattern = "farcomarredi.it/sitemap-index.xml", zone_name = "farcomarredi.it" },
+# ]
+
+[vars]
+KEEP_ALIVE_URL = "https://arredi.onrender.com/api/keep-alive"
+
+# Sveglia Render ogni 5 minuti dalle 05:00 alle 21:59 UTC
+# (06:00-23:00 in inverno, 07:00-00:00 in estate).
+# Consumo atteso: ~515-535 ore/mese (30-31 giorni).
+[triggers]
+crons = ["*/5 5-21 * * *"]
+
+[[kv_namespaces]]
+binding = "SITEMAP_KV"
+id = "8b511d91142842989eefdefc3c33de9a"

@@ -4,6 +4,7 @@ import { SECTORS } from "../data"
 import * as quotesApi from "../api/quotesApi"
 import Alert from "../components/Alert"
 import SEOHead from "../components/SEOHead"
+import { LOCAL_PAGE_KEYWORDS } from "../lib/localSeo"
 
 export default function Quote() {
   useEffect(() => {
@@ -348,6 +349,7 @@ export default function Quote() {
         title="Preventivo Arredamento Gratuito - Farcom Design s.r.l. Macerata Campania e Italia"
         description="Richiedi un preventivo gratuito per arredamento su misura a Macerata Campania, Caserta e in tutta Italia. Sopralluogo gratuito e consulenza senza impegno. Arredatore di interni esperti."
         canonical="https://www.farcomarredi.it/preventivo"
+        keywords={LOCAL_PAGE_KEYWORDS.preventivo}
         schema={{
           "@context": "https://schema.org",
           "@type": "FAQPage",
@@ -401,10 +403,12 @@ export default function Quote() {
             Sopralluogo gratuito
           </span>
           <h1 className="font-display text-5xl font-light text-[var(--foreground)] mt-2 mb-4">
-            Preventivo Arredamento Gratuito
+            Preventivo Arredamento Gratuito a Macerata Campania e Caserta
           </h1>
           <p className="text-[var(--muted-foreground)] max-w-lg leading-relaxed">
-            Richiedi un preventivo gratuito per arredamento su misura a Macerata Campania, Caserta e in tutta Italia. Il sopralluogo e la prima consulenza sono sempre gratuiti e senza impegno.
+            Richiedi un preventivo gratuito per arredamento su misura a Macerata Campania,
+            Caserta e provincia, con servizio in tutta Italia. Il sopralluogo e la prima
+            consulenza sono sempre gratuiti e senza impegno.
           </p>
         </div>
 

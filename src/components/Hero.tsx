@@ -160,9 +160,10 @@ export default function Hero() {
               style={{ animationDelay: `${HERO_SUBTITLE_DELAY}ms` }}
             >
               <p className="text-white/75 text-[11px] sm:text-[13px] md:text-base lg:text-lg leading-[1.6] sm:leading-[1.65] md:leading-relaxed max-w-xl">
-                Trasformiamo spazi commerciali in ambienti che comunicano fiducia:
-                dal concept 3D ai disegni esecutivi, fino alla posa in opera.
-                Tempi certi, materiali certificati, finiture impeccabili.
+                Arredamento su misura e progettazione interni a Macerata Campania,
+                Caserta e provincia. Trasformiamo spazi commerciali in ambienti che
+                comunicano fiducia: dal concept 3D ai disegni esecutivi, fino alla
+                posa in opera. Tempi certi, materiali certificati, finiture impeccabili.
               </p>
 
             </div>

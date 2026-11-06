@@ -6,6 +6,7 @@ import MotionLine from "../components/MotionLine"
 import Reveal from "../components/Reveal"
 import SectorDragStrip from "../components/SectorDragStrip"
 import SEOHead from "../components/SEOHead"
+import { LOCAL_PAGE_KEYWORDS } from "../lib/localSeo"
 import { SECTORS } from "../data"
 // Per ripristinare la griglia originale: decommenta anche
 // import Stagger from "../components/Stagger"
@@ -35,6 +36,7 @@ export default function SettoriList() {
         title="Settori di Arredamento | Farcom Design s.r.l. - 6 Specializzazioni"
         description="Farcom Design s.r.l. progetta e realizza arredi su misura per 6 settori: barbieri e parrucchieri, uffici, negozi, scuole, bar e locali, centri estetici. Soluzioni specializzate per ogni attività."
         canonical="https://www.farcomarredi.it/settori"
+        keywords={LOCAL_PAGE_KEYWORDS.settori}
         schema={{
           "@context": "https://schema.org",
           "@type": "CollectionPage",
@@ -92,14 +94,15 @@ export default function SettoriList() {
             <h2 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-[#1A1A2E] mt-1.5 sm:mt-2 pl-2.5 sm:pl-3 md:pl-4 leading-[1.15] sm:leading-tight text-balance">
               Scopri le nostre
               <br />
-              <span className="text-[#E69138]">specializzazioni</span>
+              <span className="text-[#E69138]">specializzazioni a Caserta</span>
             </h2>
             <MotionLine className="mt-4 ml-2.5 sm:ml-3 md:ml-4" width="4.5rem" thickness={3} delay={160} />
           </Reveal>
           <Reveal delay={120} className="max-w-xs">
             <p className="text-[#6B7280] text-xs sm:text-sm leading-[1.65] sm:leading-relaxed">
               Sei settori, un'unica filosofia: progettazione attenta,
-              materiali di qualità, esecuzione impeccabile.
+              materiali di qualità, esecuzione impeccabile. Arredi su misura
+              a Macerata Campania, Caserta e provincia.
             </p>
           </Reveal>
         </div>

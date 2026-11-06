@@ -8,6 +8,7 @@ import {
   type Post,
 } from "../api/blogApi"
 import SEOHead from "../components/SEOHead"
+import { LOCAL_KEYWORDS_STRING } from "../lib/localSeo"
 import BlogBreadcrumb from "../components/blog/BlogBreadcrumb"
 import BlogFaq from "../components/blog/BlogFaq"
 import BlogCard from "../components/blog/BlogCard"
@@ -132,6 +133,7 @@ export default function BlogPost() {
         title={post.seoTitle || post.title}
         description={post.seoDescription || post.excerpt}
         canonical={canonical}
+        keywords={LOCAL_KEYWORDS_STRING}
         ogImage={ogImage}
         ogType="article"
         schema={[

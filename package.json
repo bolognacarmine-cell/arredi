@@ -7,6 +7,8 @@
     "dev": "concurrently \"vite\" \"nodemon --exec tsx server/index.ts\"",
     "build": "vite build && node scripts/check-sitemap.mjs && tsc -p server",
     "sitemap:check": "node scripts/check-sitemap.mjs",
+    "sitemap:push": "node scripts/publish-sitemap-kv.mjs",
+    "worker:sync": "node scripts/sync-worker-static.mjs",
     "start": "node server/dist/index.js",
     "postinstall": "cd server && npm ci --include=dev --no-audit --no-fund",
     "convert-images": "node scripts/convert-images.js",

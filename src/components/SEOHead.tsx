@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { Helmet } from 'react-helmet-async'
+import { LOCAL_KEYWORDS_STRING } from '../lib/localSeo'
 
 type Schema = Record<string, any>
 
@@ -7,6 +8,8 @@ interface SEOHeadProps {
   title: string
   description: string
   canonical?: string
+  /** Meta keywords: se omesso usa il set locale generale. */
+  keywords?: string
   ogImage?: string
   /** Singolo oggetto schema.org oppure una lista (Article + FAQPage + BreadcrumbList). */
   schema?: Schema | Array<Schema | null | undefined>
@@ -20,6 +23,7 @@ export default function SEOHead({
   title,
   description,
   canonical,
+  keywords = LOCAL_KEYWORDS_STRING,
   ogImage,
   schema,
   ogType = 'website',
@@ -35,23 +39,28 @@ export default function SEOHead({
     <Helmet>
       <title>{title}</title>
       <meta name="description" content={description} />
-      {noindex && <meta name="robots" content="noindex, nofollow" />}
+      <meta name="author" content="Farcom Design s.r.l." />
+      <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'} />
+      {!noindex && keywords && <meta name="keywords" content={keywords} />}
       {canonical && <link rel="canonical" href={canonical} />}
+      {canonical && <link rel="alternate" href={canonical} hrefLang="it-IT" />}
+      {canonical && <link rel="alternate" href={canonical} hrefLang="x-default" />}
 
       {/* Open Graph */}
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
       <meta property="og:type" content={ogType} />
       {canonical && <meta property="og:url" content={canonical} />}
-      <meta property="og:image" content={ogImage || 'https://www.farcomarredi.it/og-image.jpg'} />
+      <meta property="og:image" content={ogImage || 'https://www.farcomarredi.it/images-optimized/barber-farcom-social-1200x630.jpg'} />
       <meta property="og:locale" content="it_IT" />
       <meta property="og:site_name" content="Farcom Arredi" />
 
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />
+      {canonical && <meta name="twitter:url" content={canonical} />}
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
-      <meta name="twitter:image" content={ogImage || 'https://www.farcomarredi.it/og-image.jpg'} />
+      <meta name="twitter:image" content={ogImage || 'https://www.farcomarredi.it/images-optimized/barber-farcom-social-1200x630.jpg'} />
 
       {/* Structured Data (JSON-LD) */}
       {schemas.map((item, index) => (
