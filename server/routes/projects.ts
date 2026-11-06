@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import mongoose from 'mongoose';
 import { Project } from '../models/Project.js';
 import { requireAdmin } from '../middleware/requireAdmin.js';
+import { invalidateSitemapCache } from './sitemap.js';
 
 const router = Router();
 
@@ -159,6 +160,7 @@ router.post('/', requireAdmin, async (req: Request, res: Response) => {
 
     const project = new Project(cleanedBody);
     await project.save();
+    invalidateSitemapCache();
     res.status(201).json(project.toObject());
   } catch (error: any) {
     console.error('Error creating project:', error);
@@ -197,6 +199,7 @@ router.put('/:id', requireAdmin, async (req: Request, res: Response) => {
     if (!project) {
       return res.status(404).json({ ok: false, error: { code: 'NOT_FOUND', message: 'Project not found' } });
     } else {
+      invalidateSitemapCache();
       res.json(project);
     }
   } catch (error: any) {
@@ -224,6 +227,7 @@ router.delete('/:id', requireAdmin, async (req: Request, res: Response) => {
     if (!project) {
       return res.status(404).json({ ok: false, error: { code: 'NOT_FOUND', message: 'Project not found' } });
     } else {
+      invalidateSitemapCache();
       res.json({ ok: true, message: 'Project deleted' });
     }
   } catch (error: any) {
@@ -289,6 +293,7 @@ async function handleBatchReplace(req: Request, res: Response) {
 
     const updated = await Project.find().sort(defaultSort).lean();
     console.log('[Batch Replace] Operation completed successfully, total projects:', updated.length);
+    invalidateSitemapCache();
 
     res.json({
       ok: true,

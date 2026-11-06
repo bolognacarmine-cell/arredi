@@ -6,6 +6,7 @@ import mongoose from 'mongoose';
 import { Project } from '../models/Project.js';
 import { Product } from '../models/Product.js';
 import Post from '../models/Post.js';
+import { isCloudflareKvConfigured, publishSitemapToKv } from '../cloudflareKv.js';
 
 const SITE_URL = 'https://www.farcomarredi.it';
 const CACHE_TTL_MS = 30 * 60 * 1000;
@@ -43,6 +44,8 @@ const STATIC_PAGES: SitemapEntry[] = [
 const SECTOR_IDS = ['barbieri', 'uffici', 'negozi', 'scuole', 'bar', 'centri-estetici'];
 
 let cache: { xml: string; expiresAt: number } | null = null;
+let publishTimer: NodeJS.Timeout | null = null;
+let kvWarningLogged = false;
 
 function escapeXml(value: string): string {
   return value
@@ -177,11 +180,55 @@ async function getSitemapXml(): Promise<string> {
 }
 
 /**
- * Svuota la cache: chiamata dalle route del blog dopo create/update/delete,
- * così un articolo appena pubblicato compare subito nella sitemap.
+ * Genera la sitemap corrente e la pubblica nel KV di Cloudflare, così il
+ * Worker può servirla anche quando Render è spento.
+ */
+export async function publishSitemapToCloudflare(): Promise<boolean> {
+  if (!isCloudflareKvConfigured()) {
+    if (process.env.NODE_ENV === 'production' && !kvWarningLogged) {
+      kvWarningLogged = true;
+      console.warn(
+        '[sitemap] Cloudflare KV non configurato: la sitemap resta servita da Render',
+      );
+    }
+    return false;
+  }
+
+  try {
+    const xml = await getSitemapXml();
+    return await publishSitemapToKv(xml);
+  } catch (error) {
+    console.warn(
+      '[sitemap] impossibile pubblicare la sitemap su Cloudflare KV:',
+      error instanceof Error ? error.message : error,
+    );
+    return false;
+  }
+}
+
+/**
+ * Pianifica una pubblicazione con debounce: più modifiche ravvicinate
+ * producono una sola scrittura KV.
+ */
+export function scheduleSitemapPublish(delayMs = 5_000): void {
+  if (!isCloudflareKvConfigured()) return;
+  if (publishTimer) clearTimeout(publishTimer);
+
+  publishTimer = setTimeout(() => {
+    publishTimer = null;
+    void publishSitemapToCloudflare();
+  }, delayMs);
+  publishTimer.unref();
+}
+
+/**
+ * Svuota la cache: chiamata dalle route del blog, progetti e prodotti dopo
+ * create/update/delete, così le modifiche compaiono subito nella sitemap e
+ * nel KV servito da Cloudflare.
  */
 export function invalidateSitemapCache(): void {
   cache = null;
+  scheduleSitemapPublish();
 }
 
 async function sendSitemap(_req: Request, res: Response): Promise<void> {

@@ -22,6 +22,18 @@ NODE_ENV=production
 FRONTEND_ORIGIN=https://arredi.onrender.com
 ```
 
+### Cloudflare KV (sitemap servita anche a Render spento)
+Il Worker Cloudflare serve `/robots.txt` e `/sitemap.xml` dal edge. L'app su Render
+pubblica la sitemap aggiornata nel KV a ogni modifica di blog, progetti e prodotti.
+```
+CLOUDFLARE_ACCOUNT_ID=<account id Cloudflare>
+CLOUDFLARE_KV_NAMESPACE_ID=<id namespace KV SITEMAP_KV>
+CLOUDFLARE_API_TOKEN=<token con permesso Account > Workers KV Storage > Edit>
+```
+Il token va creato in Cloudflare → My Profile → API Tokens. Non usare un token
+con permessi più ampi del necessario. Dopo aver aggiunto le variabili, fai un
+nuovo deploy e verifica i log per `[sitemap] sitemap pubblicata su Cloudflare KV`.
+
 ### Frontend Configuration
 ```
 (DO NOT SET VITE_API_BASE_URL on Render - leave it unset for same-origin deployment)

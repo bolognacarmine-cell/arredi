@@ -54,7 +54,7 @@ import quoteRoutes from './routes/quotes.js';
 import restoSudContactRoutes from './routes/restoSudContact.js';
 import siteConfigRoutes from './routes/siteConfig.js';
 import blogRoutes from './routes/blog.js';
-import sitemapRoutes from './routes/sitemap.js';
+import sitemapRoutes, { publishSitemapToCloudflare } from './routes/sitemap.js';
 import { getSeoHead, injectSeoHead } from './seo.js';
 import adminRoutes from './routes/admin.js';
 import { adminApiRateLimiter } from './middleware/rateLimiter.js';
@@ -510,5 +510,8 @@ connectDB().then(async () => {
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`📁 Serving static files from ${staticPath}`);
+    void publishSitemapToCloudflare().then((published) => {
+      if (published) console.log('[sitemap] sitemap pubblicata su Cloudflare KV');
+    });
   });
 });

@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import mongoose from 'mongoose';
 import { Product } from '../models/Product.js';
 import { requireAdmin } from '../middleware/requireAdmin.js';
+import { invalidateSitemapCache } from './sitemap.js';
 
 const router = Router();
 
@@ -171,6 +172,7 @@ router.post('/', requireAdmin, async (req: Request, res: Response) => {
     };
     const product = new Product(productData);
     await product.save();
+    invalidateSitemapCache();
     res.status(201).json({ success: true, data: product.toObject() });
   } catch (error) {
     console.error('Error creating product:', error);
@@ -208,6 +210,7 @@ router.put('/:id', requireAdmin, async (req: Request, res: Response) => {
     if (!product) {
       res.status(404).json({ success: false, message: 'Product not found' });
     } else {
+      invalidateSitemapCache();
       res.json({ success: true, data: product });
     }
   } catch (error) {
@@ -241,6 +244,7 @@ router.delete('/:id', requireAdmin, async (req: Request, res: Response) => {
     if (!product) {
       res.status(404).json({ success: false, message: 'Product not found' });
     } else {
+      invalidateSitemapCache();
       res.json({ success: true, message: 'Product deleted' });
     }
   } catch (error) {
