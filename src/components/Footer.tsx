@@ -666,6 +666,17 @@ export default function Footer() {
             </div>
           </div>
 
+          <div className="mt-6 border-t border-white/10 pt-4">
+            <a
+              href="https://www.vimantek.com/futuro-digitale"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-[40px] items-center text-xs font-medium text-white/72 transition-colors hover:text-[#E69138] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E69138] focus-visible:ring-offset-2 focus-visible:ring-offset-[#1A1A2E] sm:text-sm"
+            >
+              Soluzioni digitali con Vimantek
+            </a>
+          </div>
+
           {/* Safe area su mobile (solo quando nessun accordion lo contiene) */}
           <div className="md:hidden h-px safe-bottom" aria-hidden="true" />
         </div>

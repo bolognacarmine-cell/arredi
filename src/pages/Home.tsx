@@ -15,6 +15,7 @@ import SectorDragStrip from "../components/SectorDragStrip"
 import Stagger from "../components/Stagger"
 import SEOHead from "../components/SEOHead"
 import HeroBackgroundVideo from "../components/HeroBackgroundVideo"
+import DigitalSolutionsCallout from "../components/DigitalSolutionsCallout"
 import { getPosts, type Post } from "../api/blogApi"
 import { getProducts, type Product } from "../services/showroomApi"
 import { resolveImageUrl } from "../lib/cloudinary"
@@ -346,6 +347,8 @@ export default function Home() {
         {/* Strip orizzontale drag (right↔left), stesso comportamento di /settori */}
         <SectorDragStrip />
       </section>
+
+      <DigitalSolutionsCallout />
 
       {/* FEATURED PROJECTS: nascosto se non ci sono progetti da mostrare */}
       {safeDisplayedProjects.length > 0 && (

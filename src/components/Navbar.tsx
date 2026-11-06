@@ -278,6 +278,23 @@ export default function Navbar() {
                 </Link>
               </li>
             ))}
+            <li>
+              <a
+                href="https://www.vimantek.com/futuro-digitale"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Soluzioni digitali con Vimantek (si apre in una nuova scheda)"
+                title="In collaborazione con Vimantek"
+                className={`text-sm xl:text-base font-semibold relative group whitespace-nowrap focus-visible:ring-2 focus-visible:ring-[#E69138] focus-visible:ring-offset-2 rounded ${transitionClasses} ${
+                  heroContrast ? "text-white/85 hover:text-white" : "text-[#6B7280] hover:text-[#1A1A2E]"
+                }`}
+              >
+                Soluzioni digitali
+                <span
+                  className={`absolute bottom-0 left-0 w-0 h-[3px] ${activeUnderline} ${transitionClasses} group-hover:w-full`}
+                />
+              </a>
+            </li>
           </ul>
 
           <Link
@@ -328,6 +345,17 @@ export default function Navbar() {
                 {l.label}
               </Link>
             ))}
+            <a
+              href="https://www.vimantek.com/futuro-digitale"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Soluzioni digitali con Vimantek (si apre in una nuova scheda)"
+              title="In collaborazione con Vimantek"
+              onClick={() => setOpen(false)}
+              className="flex items-center h-10 sm:h-12 px-2 text-sm font-semibold text-[#1A1A2E] hover:text-[#E69138] hover:bg-[#1A1A2E]/4 rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2"
+            >
+              Soluzioni digitali
+            </a>
             <Link
               to="/preventivo"
               translate="no"
