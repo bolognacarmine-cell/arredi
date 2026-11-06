@@ -5,6 +5,7 @@ import { SECTORS } from "../data";
 import { useProjects } from "../projectStore";
 import { getParentPath } from "../utils/navigation";
 import SEOHead from "../components/SEOHead";
+import DigitalSolutionsCallout from "../components/DigitalSolutionsCallout";
 import { LOCAL_KEYWORDS_STRING, LOCAL_SECTOR_KEYWORDS } from "../lib/localSeo";
 
 const steps = [
@@ -68,6 +69,7 @@ export default function SectorPage() {
   }
 
   const sectorProjects = Array.isArray(projects) ? projects.filter((p) => p.sectorId === id) : []
+  const hasDigitalSolutions = ["negozi", "barbieri", "uffici", "centri-estetici"].includes(sector.id)
 
   const heroImage = resolveImageUrl(
     {
@@ -199,6 +201,8 @@ export default function SectorPage() {
           </div>
         </div>
       </section>
+
+      {hasDigitalSolutions && <DigitalSolutionsCallout variant="sector" />}
 
       {/* PROJECTS */}
       {sectorProjects.length > 0 && (

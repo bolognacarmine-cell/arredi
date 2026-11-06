@@ -12,6 +12,7 @@ import Reveal from "../components/Reveal"
 import Stagger from "../components/Stagger"
 import SEOHead from "../components/SEOHead"
 import HeroBackgroundVideo from "../components/HeroBackgroundVideo"
+import DigitalSolutionsCallout from "../components/DigitalSolutionsCallout"
 
 const BlogDragStrip = lazy(() => import("../components/BlogDragStrip"))
 const SectorDragStrip = lazy(() => import("../components/SectorDragStrip"))
@@ -358,6 +359,8 @@ export default function Home() {
           <SectorDragStrip />
         </LazySection>
       </section>
+
+      <DigitalSolutionsCallout />
 
       {/* FEATURED PROJECTS: nascosto se non ci sono progetti da mostrare */}
       {safeDisplayedProjects.length > 0 && (
