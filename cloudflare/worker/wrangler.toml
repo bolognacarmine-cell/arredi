@@ -3,16 +3,19 @@ main = "src/index.ts"
 compatibility_date = "2026-11-01"
 workers_dev = true
 
-routes = [
-  { pattern = "www.farcomarredi.it/robots.txt", zone_name = "farcomarredi.it" },
-  { pattern = "www.farcomarredi.it/sitemap.xml", zone_name = "farcomarredi.it" },
-  { pattern = "www.farcomarredi.it/sitemap_index.xml", zone_name = "farcomarredi.it" },
-  { pattern = "www.farcomarredi.it/sitemap-index.xml", zone_name = "farcomarredi.it" },
-  { pattern = "farcomarredi.it/robots.txt", zone_name = "farcomarredi.it" },
-  { pattern = "farcomarredi.it/sitemap.xml", zone_name = "farcomarredi.it" },
-  { pattern = "farcomarredi.it/sitemap_index.xml", zone_name = "farcomarredi.it" },
-  { pattern = "farcomarredi.it/sitemap-index.xml", zone_name = "farcomarredi.it" },
-]
+# Route disattivate: farcomarredi.it non è nella zona Cloudflare di questo account.
+# Il cron sotto resta attivo. Riattivare queste route solo dopo aver spostato
+# i nameserver del dominio su Cloudflare.
+# routes = [
+#   { pattern = "www.farcomarredi.it/robots.txt", zone_name = "farcomarredi.it" },
+#   { pattern = "www.farcomarredi.it/sitemap.xml", zone_name = "farcomarredi.it" },
+#   { pattern = "www.farcomarredi.it/sitemap_index.xml", zone_name = "farcomarredi.it" },
+#   { pattern = "www.farcomarredi.it/sitemap-index.xml", zone_name = "farcomarredi.it" },
+#   { pattern = "farcomarredi.it/robots.txt", zone_name = "farcomarredi.it" },
+#   { pattern = "farcomarredi.it/sitemap.xml", zone_name = "farcomarredi.it" },
+#   { pattern = "farcomarredi.it/sitemap_index.xml", zone_name = "farcomarredi.it" },
+#   { pattern = "farcomarredi.it/sitemap-index.xml", zone_name = "farcomarredi.it" },
+# ]
 
 [vars]
 KEEP_ALIVE_URL = "https://arredi.onrender.com/api/keep-alive"
