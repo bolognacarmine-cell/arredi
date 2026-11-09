@@ -20,6 +20,7 @@ const ReviewsSectionLazy = lazy(() => import("../components/ReviewsSection"))
 import { getPosts, type Post } from "../api/blogApi"
 import { getProducts, type Product } from "../services/showroomApi"
 import { resolveImageUrl } from "../lib/cloudinary"
+import { SITE_GEO } from "../siteConfig"
 import {
   LOCAL_AREA_SERVED,
   LOCAL_KEYWORDS,
@@ -247,8 +248,8 @@ export default function Home() {
             },
             "geo": {
               "@type": "GeoCoordinates",
-              "latitude": 41.055439,
-              "longitude": 14.2848
+              "latitude": SITE_GEO.latitude,
+              "longitude": SITE_GEO.longitude
             },
             "openingHoursSpecification": [
               {
@@ -271,7 +272,6 @@ export default function Home() {
               }
             ],
             "areaServed": LOCAL_AREA_SERVED,
-            "priceRange": "€€€",
             "sameAs": [
               "https://www.instagram.com/farcom_arredi/",
               "https://www.facebook.com/p/Farcom-arredi-100054867935352/"

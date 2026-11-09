@@ -85,6 +85,14 @@ function decodeSlug(raw: string): string {
   }
 }
 
+/** Converte una data del database in ISO 8601; restituisce undefined se assente o invalida. */
+function toIsoDate(value?: Date | string | null): string | undefined {
+  if (!value) return undefined;
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return undefined;
+  return date.toISOString();
+}
+
 function productSectorLabel(sector?: string, other?: string): string {
   if (sector === 'other') {
     const custom = (other || '').trim();
@@ -122,13 +130,31 @@ export async function resolveSeoHead(pathname: string): Promise<SeoHead> {
       const post = await Post.findOne({ slug }).lean();
 
       if (post) {
-        const seo = buildPostSeo(post as unknown as PostMetaSource, path);
-        const isPublished = (post as unknown as { isPublished?: boolean }).isPublished;
+        const source = post as unknown as {
+          isPublished?: boolean;
+          publishedAt?: Date | string;
+          updatedAt?: Date | string;
+          author?: { name?: string; role?: string };
+        };
 
-        // Le bozze restano fuori dall'indice anche se raggiunte via URL.
+        const seo = buildPostSeo(
+          {
+            ...(post as unknown as PostMetaSource),
+            datePublished: toIsoDate(source.publishedAt),
+            dateModified: toIsoDate(source.updatedAt),
+            authorName: source.author?.name,
+            authorRole: source.author?.role,
+          },
+          path,
+        );
+
+        // Le bozze restano fuori dall'indice anche se raggiunte via URL e non
+        // devono esporre structured data.
         return writeCache(
           path,
-          isPublished === false ? { ...seo, robots: 'noindex, nofollow' } : seo,
+          source.isPublished === false
+            ? { ...seo, robots: 'noindex, nofollow', jsonLd: undefined }
+            : seo,
         );
       }
     }

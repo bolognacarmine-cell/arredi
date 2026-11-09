@@ -4,6 +4,13 @@ import { LOCAL_KEYWORDS_STRING } from '../lib/localSeo'
 
 type Schema = Record<string, any>
 
+/** Percorso del JSON-LD iniettato dal server, se presente nell'HTML iniziale. */
+function getServerJsonLdPath(): string | null {
+  if (typeof document === 'undefined') return null
+  const tag = document.querySelector('script[type="application/ld+json"][data-seo-path]')
+  return tag ? tag.getAttribute('data-seo-path') : null
+}
+
 interface SEOHeadProps {
   title: string
   description: string
@@ -32,6 +39,22 @@ export default function SEOHead({
   useEffect(() => {
     document.title = title
   }, [title])
+
+  // Il server emette già il JSON-LD corretto per questa pagina: il client non
+  // ne aggiunge un secondo. Dopo una navigazione SPA il blocco del server è
+  // riferito a un'altra route, quindi viene rimosso e il client prende il
+  // controllo dei dati strutturati.
+  const pathname = typeof window !== 'undefined' ? window.location.pathname : ''
+  const serverOwnsJsonLd = getServerJsonLdPath() === pathname
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return
+    document
+      .querySelectorAll('script[type="application/ld+json"][data-seo-path]')
+      .forEach((tag) => {
+        if (tag.getAttribute('data-seo-path') !== pathname) tag.remove()
+      })
+  }, [pathname])
 
   const schemas = (Array.isArray(schema) ? schema : [schema]).filter(Boolean) as Schema[]
 
@@ -62,12 +85,14 @@ export default function SEOHead({
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={ogImage || 'https://www.farcomarredi.it/images-optimized/barber-farcom-social-1200x630.jpg'} />
 
-      {/* Structured Data (JSON-LD) */}
-      {schemas.map((item, index) => (
-        <script key={index} type="application/ld+json">
-          {JSON.stringify(item).replace(/</g, '\\u003c')}
-        </script>
-      ))}
+      {/* Structured Data (JSON-LD) — soppresso se il server ha già iniettato
+          il blocco per questa pagina, per non duplicare le entità. */}
+      {!serverOwnsJsonLd &&
+        schemas.map((item, index) => (
+          <script key={index} type="application/ld+json">
+            {JSON.stringify(item).replace(/</g, '\\u003c')}
+          </script>
+        ))}
     </Helmet>
   )
 }

@@ -61,34 +61,44 @@ const SECTOR_IDS = new Set([
 
 // Title e description univoci per le pagine settore: senza questa mappa
 // ereditavano il title/description generico del sito (contenuto duplicato).
-const SECTOR_META: Record<string, { title: string; description: string }> = {
+// `breadcrumbLabel` è il nome reale del settore mostrato nella pagina.
+const SECTOR_META: Record<
+  string,
+  { title: string; description: string; breadcrumbLabel: string }
+> = {
   barbieri: {
     title: 'Arredamento Barberie e Saloni - Farcom Design',
+    breadcrumbLabel: 'Barberie e parrucchieri',
     description:
       'Arredi su misura per barberie e parrucchieri: postazioni taglio, lavatesta, banconi e specchiere. Progettazione e installazione a Caserta e in tutta Italia.',
   },
   uffici: {
     title: 'Arredamento Uffici su Misura - Farcom Design',
+    breadcrumbLabel: 'Uffici',
     description:
       'Arredi per uffici su misura: scrivanie, reception, sale riunioni e pareti divisorie. Progettazione e installazione a Caserta e in tutta Italia.',
   },
   negozi: {
     title: 'Arredamento Negozi e Retail - Farcom Design',
+    breadcrumbLabel: 'Negozi e retail',
     description:
       'Allestimento negozi e arredi commerciali su misura: espositori, banconi e vetrine. Progettazione e installazione a Caserta e in tutta Italia.',
   },
   scuole: {
     title: 'Arredamento Scuole e Aule - Farcom Design',
+    breadcrumbLabel: 'Scuole e istituti',
     description:
       'Arredi scolastici su misura per aule, laboratori e biblioteche. Progettazione e installazione per istituti a Caserta e in tutta Italia.',
   },
   bar: {
     title: 'Arredamento Bar e Ristoranti - Farcom Design',
+    breadcrumbLabel: 'Bar e ristoranti',
     description:
       'Arredi su misura per bar e ristoranti: banconi, tavoli e zone lounge. Progettazione e installazione a Caserta e in tutta Italia.',
   },
   'centri-estetici': {
     title: 'Arredamento Centri Estetici e SPA - Farcom Design',
+    breadcrumbLabel: 'Centri estetici e SPA',
     description:
       'Arredi su misura per centri estetici e SPA: cabine, reception e zone relax. Progettazione e installazione a Caserta e in tutta Italia.',
   },
@@ -179,6 +189,8 @@ const STATIC_PAGE_META: Record<string, PageMeta> = {
   },
 };
 
+export type JsonLdNode = Record<string, unknown>;
+
 /** Esito della risoluzione dei metadati per una route. */
 export type SeoStatus = 'ok' | 'notFound' | 'redirect';
 
@@ -199,6 +211,8 @@ export interface SeoHead {
   /** true quando la route non esiste: il chiamante deve rispondere HTTP 404. */
   notFound?: boolean;
   status: SeoStatus;
+  /** Structured data emessi solo con status "ok" e pagina indicizzabile. */
+  jsonLd?: JsonLdNode[];
 }
 
 export function normalizePathname(pathname: string): string {
@@ -221,6 +235,7 @@ function buildSeoHead(
   meta: PageMeta,
   pathname: string,
   robots: string = INDEX_ROBOTS,
+  jsonLd?: JsonLdNode[],
 ): SeoHead {
   return {
     title: meta.title,
@@ -231,6 +246,7 @@ function buildSeoHead(
     ogImage: DEFAULT_OG_IMAGE,
     ogType: DEFAULT_OG_TYPE,
     status: 'ok',
+    ...(jsonLd && jsonLd.length > 0 ? { jsonLd } : {}),
   };
 }
 
@@ -239,6 +255,161 @@ function defaultMeta(): PageMeta {
     title: DEFAULT_TITLE,
     description: DEFAULT_DESCRIPTION,
     keywords: LOCAL_KEYWORDS,
+  };
+}
+
+/* ------------------------------------------------------------------------- *
+ * Structured data (JSON-LD)
+ *
+ * Solo dati reali: anagrafica aziendale presente nel sito, metadati delle
+ * pagine e record letti dal database. Nessun prezzo, disponibilità o
+ * valutazione inventati.
+ * ------------------------------------------------------------------------- */
+
+export interface BreadcrumbItem {
+  name: string;
+  url: string;
+}
+
+const BUSINESS_ID = `${SITE_URL}/#business`;
+const WEBSITE_ID = `${SITE_URL}/#website`;
+const LOGO_URL = `${SITE_URL}/logo-farcom.png`;
+
+const BUSINESS_ADDRESS = {
+  '@type': 'PostalAddress',
+  streetAddress: 'Via P. Vertaldi, 27',
+  addressLocality: 'Macerata Campania',
+  addressRegion: 'CE',
+  postalCode: '81047',
+  addressCountry: 'IT',
+};
+
+// Città e aree in cui l'azienda dichiara di operare (vedi src/lib/localSeo.ts).
+const BUSINESS_AREA_SERVED = [
+  { '@type': 'City', name: 'Macerata Campania' },
+  { '@type': 'City', name: 'Caserta' },
+  { '@type': 'City', name: 'Marcianise' },
+  { '@type': 'City', name: 'Santa Maria Capua Vetere' },
+  { '@type': 'City', name: 'Capodrise' },
+  { '@type': 'City', name: 'San Nicola la Strada' },
+  { '@type': 'City', name: 'Casagiove' },
+  { '@type': 'City', name: 'Recale' },
+  { '@type': 'City', name: 'Portico di Caserta' },
+  { '@type': 'City', name: 'Maddaloni' },
+  { '@type': 'City', name: 'Aversa' },
+  { '@type': 'AdministrativeArea', name: 'Provincia di Caserta' },
+  { '@type': 'AdministrativeArea', name: 'Campania' },
+  { '@type': 'Country', name: 'Italia' },
+];
+
+const BUSINESS_OPENING_HOURS = [
+  {
+    '@type': 'OpeningHoursSpecification',
+    dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+    opens: '09:00',
+    closes: '13:00',
+  },
+  {
+    '@type': 'OpeningHoursSpecification',
+    dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+    opens: '15:00',
+    closes: '19:00',
+  },
+  {
+    '@type': 'OpeningHoursSpecification',
+    dayOfWeek: 'Saturday',
+    opens: '09:00',
+    closes: '13:00',
+  },
+];
+
+const BUSINESS_SAME_AS = [
+  'https://www.instagram.com/farcom_arredi/',
+  'https://www.facebook.com/p/Farcom-arredi-100054867935352/',
+];
+
+/** Breadcrumb con almeno due livelli; sotto quella soglia non ha senso. */
+export function buildBreadcrumbJsonLd(items: BreadcrumbItem[]): JsonLdNode | null {
+  if (items.length < 2) return null;
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: item.name,
+      item: item.url,
+    })),
+  };
+}
+
+/**
+ * Homepage: identità dell'azienda, sito e servizio.
+ * `LocalBusiness` + `FurnitureStore` perché l'attività è un punto vendita con
+ * showroom fisico e indirizzo verificabile, non un'azienda solo online.
+ */
+export function buildHomeJsonLd(): JsonLdNode[] {
+  return [
+    {
+      '@context': 'https://schema.org',
+      '@type': ['LocalBusiness', 'FurnitureStore'],
+      '@id': BUSINESS_ID,
+      name: 'Farcom Design s.r.l.',
+      alternateName: 'Farcom Arredi',
+      description:
+        'Arredamento su misura e progettazione interni. Showroom a Macerata Campania (Caserta), realizzazione e installazione in tutta Italia.',
+      url: `${SITE_URL}/`,
+      image: DEFAULT_OG_IMAGE,
+      logo: LOGO_URL,
+      telephone: '+39 0823 694427',
+      email: 'farcomsrl@hotmail.com',
+      address: BUSINESS_ADDRESS,
+      openingHoursSpecification: BUSINESS_OPENING_HOURS,
+      areaServed: BUSINESS_AREA_SERVED,
+      sameAs: BUSINESS_SAME_AS,
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      '@id': WEBSITE_ID,
+      url: `${SITE_URL}/`,
+      name: 'Farcom Arredi',
+      alternateName: 'Farcom Design s.r.l.',
+      inLanguage: 'it-IT',
+      publisher: { '@id': BUSINESS_ID },
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Service',
+      name: 'Arredamento su misura e progettazione interni',
+      provider: {
+        '@type': 'LocalBusiness',
+        '@id': BUSINESS_ID,
+        name: 'Farcom Design s.r.l.',
+      },
+      areaServed: BUSINESS_AREA_SERVED,
+      serviceType: [
+        'Progettazione interni',
+        'Arredamento negozi',
+        'Arredamento uffici',
+        'Arredo bar e locali',
+        'Arredi per beauty e centri estetici',
+        'Arredi su misura',
+      ],
+      description:
+        'Progettazione, realizzazione e installazione di arredi su misura per aziende, retail, uffici e attività commerciali in Campania e in tutta Italia.',
+    },
+  ];
+}
+
+export function buildPublisherNode(): JsonLdNode {
+  return {
+    '@type': 'Organization',
+    '@id': BUSINESS_ID,
+    name: 'Farcom Design s.r.l.',
+    url: `${SITE_URL}/`,
+    logo: { '@type': 'ImageObject', url: LOGO_URL },
   };
 }
 
@@ -266,7 +437,12 @@ export function getSeoHead(pathname: string): SeoHead {
 
   const staticMeta = STATIC_PAGE_META[path];
   if (staticMeta) {
-    return buildSeoHead(staticMeta, path);
+    return buildSeoHead(
+      staticMeta,
+      path,
+      INDEX_ROBOTS,
+      path === '/' ? buildHomeJsonLd() : undefined,
+    );
   }
 
   if (path.startsWith('/settori/')) {
@@ -274,6 +450,15 @@ export function getSeoHead(pathname: string): SeoHead {
     if (SECTOR_IDS.has(sector)) {
       const sectorMeta = SECTOR_META[sector];
       const sectorKeywords = SECTOR_KEYWORDS[sector];
+      const breadcrumb = buildBreadcrumbJsonLd([
+        { name: 'Home', url: `${SITE_URL}/` },
+        { name: 'Settori', url: `${SITE_URL}/settori` },
+        {
+          name: sectorMeta?.breadcrumbLabel ?? sectorMeta?.title ?? sector,
+          url: toCanonical(path),
+        },
+      ]);
+
       return buildSeoHead(
         {
           title: sectorMeta?.title ?? DEFAULT_TITLE,
@@ -283,6 +468,8 @@ export function getSeoHead(pathname: string): SeoHead {
             : LOCAL_KEYWORDS,
         },
         path,
+        INDEX_ROBOTS,
+        breadcrumb ? [breadcrumb] : undefined,
       );
     }
   }
@@ -351,6 +538,7 @@ export interface ProjectMetaSource {
 }
 
 export function buildProjectSeo(project: ProjectMetaSource, pathname: string): SeoHead {
+  const canonical = toCanonical(pathname);
   const sector = (project.sector || '').trim();
   const title = sector ? `${project.title} - Arredamento ${sector}` : project.title;
 
@@ -359,16 +547,42 @@ export function buildProjectSeo(project: ProjectMetaSource, pathname: string): S
       ? `Realizzato a ${project.location} nel ${project.year}.`
       : '';
   const description = [project.description, place].filter(Boolean).join(' ');
+  const image = absoluteImage(project.coverImages?.[0] || project.image);
+
+  // CreativeWork descrive fedelmente una realizzazione: titolo, descrizione,
+  // immagine, anno e luogo sono tutti dati presenti nella scheda progetto.
+  const work: JsonLdNode = {
+    '@context': 'https://schema.org',
+    '@type': 'CreativeWork',
+    '@id': `${canonical}#project`,
+    name: project.title,
+    url: canonical,
+    creator: { '@id': BUSINESS_ID },
+    ...(project.description ? { description: project.description } : {}),
+    ...(image !== DEFAULT_OG_IMAGE ? { image } : {}),
+    ...(project.year ? { dateCreated: String(project.year) } : {}),
+    ...(project.location
+      ? { contentLocation: { '@type': 'Place', name: project.location } }
+      : {}),
+    ...(sector ? { genre: sector } : {}),
+  };
+
+  const breadcrumb = buildBreadcrumbJsonLd([
+    { name: 'Home', url: `${SITE_URL}/` },
+    { name: 'Progetti', url: `${SITE_URL}/progetti` },
+    { name: project.title, url: canonical },
+  ]);
 
   return {
     title: truncateMeta(title, META_TITLE_MAX),
     description: truncateMeta(description, META_DESCRIPTION_MAX),
     keywords: LOCAL_KEYWORDS,
-    canonical: toCanonical(pathname),
+    canonical,
     robots: INDEX_ROBOTS,
-    ogImage: absoluteImage(project.coverImages?.[0] || project.image),
+    ogImage: image,
     ogType: 'website',
     status: 'ok',
+    jsonLd: [breadcrumb, work].filter((node): node is JsonLdNode => node !== null),
   };
 }
 
@@ -382,6 +596,7 @@ export interface ProductMetaSource {
 }
 
 export function buildProductSeo(product: ProductMetaSource, pathname: string): SeoHead {
+  const canonical = toCanonical(pathname);
   const sector = (product.sectorLabel || '').trim();
   const title = sector ? `${product.name} - Arredo ${sector} | Farcom` : `${product.name} | Farcom`;
 
@@ -394,15 +609,25 @@ export function buildProductSeo(product: ProductMetaSource, pathname: string): S
     .filter(Boolean)
     .join(' ');
 
+  // Solo breadcrumb: il prezzo mostrato in pagina dipende da promozioni e
+  // sconti calcolati lato client, quindi un `Product`/`Offer` emesso qui
+  // potrebbe non coincidere con il contenuto visibile.
+  const breadcrumb = buildBreadcrumbJsonLd([
+    { name: 'Home', url: `${SITE_URL}/` },
+    { name: 'Showroom', url: `${SITE_URL}/showroom` },
+    { name: product.name, url: canonical },
+  ]);
+
   return {
     title: truncateMeta(title, META_TITLE_MAX),
     description: truncateMeta(description, META_DESCRIPTION_MAX),
     keywords: LOCAL_KEYWORDS,
-    canonical: toCanonical(pathname),
+    canonical,
     robots: INDEX_ROBOTS,
     ogImage: absoluteImage(product.images?.[0]),
     ogType: 'website',
     status: 'ok',
+    jsonLd: breadcrumb ? [breadcrumb] : [],
   };
 }
 
@@ -415,23 +640,61 @@ export interface PostMetaSource {
   canonicalUrl?: string;
   coverImage?: string;
   ogImage?: string;
+  /** Data ISO 8601 (es. 2025-03-14T09:00:00.000Z). */
+  datePublished?: string;
+  dateModified?: string;
+  authorName?: string;
+  authorRole?: string;
 }
 
 export function buildPostSeo(post: PostMetaSource, pathname: string): SeoHead {
   const canonical = (post.canonicalUrl || '').trim() || toCanonical(pathname);
+  const description = truncateMeta(
+    post.seoDescription || post.excerpt || DEFAULT_DESCRIPTION,
+    META_DESCRIPTION_MAX,
+  );
+  const image = absoluteImage(post.ogImage || post.coverImage);
+
+  const article: JsonLdNode = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    '@id': `${canonical}#article`,
+    headline: truncateMeta(post.title, 110),
+    description,
+    url: canonical,
+    mainEntityOfPage: { '@type': 'WebPage', '@id': canonical },
+    inLanguage: 'it-IT',
+    publisher: buildPublisherNode(),
+    ...(image !== DEFAULT_OG_IMAGE ? { image } : {}),
+    ...(post.datePublished ? { datePublished: post.datePublished } : {}),
+    ...(post.dateModified ? { dateModified: post.dateModified } : {}),
+    ...(post.authorName
+      ? {
+          author: {
+            '@type': 'Person',
+            name: post.authorName,
+            ...(post.authorRole ? { jobTitle: post.authorRole } : {}),
+          },
+        }
+      : {}),
+  };
+
+  const breadcrumb = buildBreadcrumbJsonLd([
+    { name: 'Home', url: `${SITE_URL}/` },
+    { name: 'Blog', url: `${SITE_URL}/blog` },
+    { name: post.title, url: canonical },
+  ]);
 
   return {
     title: truncateMeta(post.seoTitle || post.title, META_TITLE_MAX),
-    description: truncateMeta(
-      post.seoDescription || post.excerpt || DEFAULT_DESCRIPTION,
-      META_DESCRIPTION_MAX,
-    ),
+    description,
     keywords: LOCAL_KEYWORDS,
     canonical,
     robots: INDEX_ROBOTS,
-    ogImage: absoluteImage(post.ogImage || post.coverImage),
+    ogImage: image,
     ogType: 'article',
     status: 'ok',
+    jsonLd: [breadcrumb, article].filter((node): node is JsonLdNode => node !== null),
   };
 }
 
@@ -499,14 +762,38 @@ function replaceTitle(html: string, title: string): string {
 const MANAGED_META_TAGS =
   /<meta\s+(?:name|property)=["'](?:description|robots|keywords|author|og:[a-z:_.-]+|twitter:[a-z:_.-]+)["'][^>]*>\s*/gi;
 const MANAGED_LINK_TAGS = /<link\s+rel=["'](?:canonical|alternate)["'][^>]*>\s*/gi;
+// Eventuale JSON-LD statico in index.html: il server emette un solo blocco.
+const MANAGED_JSONLD_SCRIPTS =
+  /<script\b[^>]*type=["']application\/ld\+json["'][^>]*>[\s\S]*?<\/script>\s*/gi;
 
 function stripManagedSeo(html: string): string {
-  return html.replace(MANAGED_META_TAGS, '').replace(MANAGED_LINK_TAGS, '');
+  return html
+    .replace(MANAGED_META_TAGS, '')
+    .replace(MANAGED_LINK_TAGS, '')
+    .replace(MANAGED_JSONLD_SCRIPTS, '');
+}
+
+/**
+ * Serializza gli structured data in un unico <script>, come array.
+ * Restituisce stringa vuota se la pagina non è indicizzabile: 404, redirect,
+ * noindex e pagine senza dati non devono emettere JSON-LD.
+ */
+export function renderJsonLdScript(seo: SeoHead): string {
+  if (seo.status !== 'ok') return '';
+  if (seo.robots.includes('noindex')) return '';
+  if (!seo.jsonLd || seo.jsonLd.length === 0) return '';
+
+  const path = seo.canonical ? new URL(seo.canonical).pathname : '/';
+  // `\u003c` impedisce la chiusura anticipata del tag se un testo contiene "</script>".
+  const payload = JSON.stringify(seo.jsonLd).replace(/</g, '\\u003c');
+
+  return `<script type="application/ld+json" data-seo-path="${escapeHtml(path)}">${payload}</script>`;
 }
 
 export function injectSeoHead(html: string, seo: SeoHead): string {
   const result = replaceTitle(stripManagedSeo(html), seo.title);
-  const block = renderSeoTags(seo);
+  const jsonLdScript = renderJsonLdScript(seo);
+  const block = [renderSeoTags(seo), jsonLdScript].filter(Boolean).join('\n    ');
 
   if (result.includes('<!-- SEO_HEAD -->')) {
     return result.replace('<!-- SEO_HEAD -->', block);
