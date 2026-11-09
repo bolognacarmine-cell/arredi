@@ -55,7 +55,8 @@ import restoSudContactRoutes from './routes/restoSudContact.js';
 import siteConfigRoutes from './routes/siteConfig.js';
 import blogRoutes from './routes/blog.js';
 import sitemapRoutes, { publishSitemapToCloudflare } from './routes/sitemap.js';
-import { getSeoHead, injectSeoHead } from './seo.js';
+import { injectSeoHead } from './seo.js';
+import { resolveSeoHead } from './seoDynamic.js';
 import adminRoutes from './routes/admin.js';
 import { adminApiRateLimiter } from './middleware/rateLimiter.js';
 
@@ -284,6 +285,7 @@ app.get('/showroom/offerte', (_req: Request, res: Response) => {
 // qualcuno crea un file dist/api/admin/index.html, non verrà MAI servito
 // su /api/admin/me — la richiesta passa oltre e arriva alla guardia L2/L3.
 const staticPath = resolveDistDir();
+
 // Cache: i bundle in /assets/ hanno un hash nel nome, quindi sono immutabili.
 // Senza questo header `express.static` risponde "public, max-age=0" e ogni
 // visita rivalida JS/CSS (LCP penalizzato su tutte le pagine).
@@ -392,7 +394,7 @@ try {
   console.warn('[SPA fallback] Impossibile verificare esistenza index.html:', e);
   indexHtmlExists = false;
 }
-app.use((req: Request, res: Response, next: NextFunction) => {
+app.use(async (req: Request, res: Response, next: NextFunction) => {
   const accept = req.headers.accept || ''
   const rawUrl = req.originalUrl || req.url || '/'
 
@@ -451,19 +453,22 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     );
   }
 
-  const seo = getSeoHead(pathname);
+  const seo = await resolveSeoHead(pathname);
 
-  fs.promises.readFile(INDEX_HTML_PATH, 'utf-8')
-    .then((html) => {
-      res.status(200);
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-      res.setHeader('X-Content-Type-Options', 'nosniff');
-      res.type('html').send(injectSeoHead(html, seo));
-    })
-    .catch((err: Error) => {
-      console.error('[SPA fallback] lettura index.html fallita:', err.message, INDEX_HTML_PATH);
-      res.status(500).json({ error: 'Errore interno nel caricamento della SPA.' });
-    })
+  try {
+    const html = await fs.promises.readFile(INDEX_HTML_PATH, 'utf-8');
+    // Le route inesistenti devono rispondere 404: con 200 + meta noindex
+    // Google le tratta come soft 404 e le tiene in "Scansionate ma non
+    // ancora indicizzate" senza mai rimuoverle dal crawl.
+    res.status(seo.notFound ? 404 : 200);
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.type('html').send(injectSeoHead(html, seo));
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('[SPA fallback] lettura index.html fallita:', message, INDEX_HTML_PATH);
+    res.status(500).json({ error: 'Errore interno nel caricamento della SPA.' });
+  }
 })
 
 // 🛡️ GUARDIA /api LIVELLO 3 — ULTIMA CHANCE, DOPO SPA FALLBACK.

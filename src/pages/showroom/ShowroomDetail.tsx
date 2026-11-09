@@ -15,6 +15,7 @@ import ImageCarousel from "../../components/ImageCarousel"
 import PromoCountdown from "../../components/showroom/PromoCountdown"
 import SEOHead from "../../components/SEOHead"
 import { LOCAL_KEYWORDS_STRING } from "../../lib/localSeo"
+import { buildProductMeta, productSectorLabel } from "../../lib/seoMeta"
 
 const eur = (n: number) =>
   n.toLocaleString("it-IT", {
@@ -212,12 +213,17 @@ export default function ShowroomDetail() {
   }
 
   const p = product
+  const meta = buildProductMeta({
+    name: p.name,
+    description: p.description,
+    sectorLabel: productSectorLabel(p.activitySector, p.activitySectorOther),
+  })
 
   return (
     <main className="pt-24 pb-24 bg-[var(--background)] min-h-screen">
       <SEOHead
-        title={`${p.name} - Arredamento ${displaySector(p.activitySector, p.activitySectorOther)} | Farcom`}
-        description={`${p.description} Scopri questo arredo professionale ${displaySector(p.activitySector, p.activitySectorOther)} nel showroom Farcom a Macerata Campania. Qualità artigianale Made in Italy con servizio in tutta Italia.`}
+        title={meta.title}
+        description={meta.description}
         canonical={`https://www.farcomarredi.it/showroom/${p.slug}`}
         keywords={LOCAL_KEYWORDS_STRING}
         schema={getProductSchema(p, eff)}

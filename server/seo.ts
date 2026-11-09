@@ -9,6 +9,10 @@ const DEFAULT_OG_TYPE = 'website';
 const INDEX_ROBOTS = 'index, follow';
 const NOINDEX_ROBOTS = 'noindex, nofollow';
 
+// Limiti oltre i quali Google tronca i metadati nei risultati di ricerca.
+export const META_TITLE_MAX = 60;
+export const META_DESCRIPTION_MAX = 160;
+
 // Keyword SEO locali generali (area Macerata Campania + Caserta).
 // Tenute allineate con src/lib/localSeo.ts lato frontend.
 const LOCAL_KEYWORDS = [
@@ -55,12 +59,51 @@ const SECTOR_IDS = new Set([
   'centri-estetici',
 ]);
 
+// Title e description univoci per le pagine settore: senza questa mappa
+// ereditavano il title/description generico del sito (contenuto duplicato).
+const SECTOR_META: Record<string, { title: string; description: string }> = {
+  barbieri: {
+    title: 'Arredamento Barberie e Saloni - Farcom Design',
+    description:
+      'Arredi su misura per barberie e parrucchieri: postazioni taglio, lavatesta, banconi e specchiere. Progettazione e installazione a Caserta e in tutta Italia.',
+  },
+  uffici: {
+    title: 'Arredamento Uffici su Misura - Farcom Design',
+    description:
+      'Arredi per uffici su misura: scrivanie, reception, sale riunioni e pareti divisorie. Progettazione e installazione a Caserta e in tutta Italia.',
+  },
+  negozi: {
+    title: 'Arredamento Negozi e Retail - Farcom Design',
+    description:
+      'Allestimento negozi e arredi commerciali su misura: espositori, banconi e vetrine. Progettazione e installazione a Caserta e in tutta Italia.',
+  },
+  scuole: {
+    title: 'Arredamento Scuole e Aule - Farcom Design',
+    description:
+      'Arredi scolastici su misura per aule, laboratori e biblioteche. Progettazione e installazione per istituti a Caserta e in tutta Italia.',
+  },
+  bar: {
+    title: 'Arredamento Bar e Ristoranti - Farcom Design',
+    description:
+      'Arredi su misura per bar e ristoranti: banconi, tavoli e zone lounge. Progettazione e installazione a Caserta e in tutta Italia.',
+  },
+  'centri-estetici': {
+    title: 'Arredamento Centri Estetici e SPA - Farcom Design',
+    description:
+      'Arredi su misura per centri estetici e SPA: cabine, reception e zone relax. Progettazione e installazione a Caserta e in tutta Italia.',
+  },
+};
+
 type PageMeta = {
   title: string;
   description: string;
   keywords?: string;
 };
 
+// Mappa delle route pubbliche conosciute dal server.
+// ATTENZIONE: una route non elencata qui (e non riconducibile a un dettaglio
+// progetti/blog/showroom) risponde HTTP 404 anche se React Router la gestisce.
+// Quando aggiungi una pagina pubblica, registrala qui.
 const STATIC_PAGE_META: Record<string, PageMeta> = {
   '/': {
     title: DEFAULT_TITLE,
@@ -136,6 +179,15 @@ const STATIC_PAGE_META: Record<string, PageMeta> = {
   },
 };
 
+/** Esito della risoluzione dei metadati per una route. */
+export type SeoStatus = 'ok' | 'notFound' | 'redirect';
+
+export const STATUS = {
+  ok: 'ok',
+  notFound: 'notFound',
+  redirect: 'redirect',
+} as const satisfies Record<string, SeoStatus>;
+
 export interface SeoHead {
   title: string;
   description: string;
@@ -144,6 +196,9 @@ export interface SeoHead {
   robots: string;
   ogImage: string;
   ogType: string;
+  /** true quando la route non esiste: il chiamante deve rispondere HTTP 404. */
+  notFound?: boolean;
+  status: SeoStatus;
 }
 
 export function normalizePathname(pathname: string): string {
@@ -175,6 +230,7 @@ function buildSeoHead(
     robots,
     ogImage: DEFAULT_OG_IMAGE,
     ogType: DEFAULT_OG_TYPE,
+    status: 'ok',
   };
 }
 
@@ -196,25 +252,38 @@ export function getSeoHead(pathname: string): SeoHead {
       robots: NOINDEX_ROBOTS,
       ogImage: DEFAULT_OG_IMAGE,
       ogType: DEFAULT_OG_TYPE,
+      status: 'ok',
     };
   }
 
   if (path === '/showroom/offerte') {
-    return buildSeoHead(STATIC_PAGE_META['/showroom'], '/showroom');
+    // Route rediretta con 301 verso /showroom: non deve emettere structured data.
+    return {
+      ...buildSeoHead(STATIC_PAGE_META['/showroom'], '/showroom'),
+      status: 'redirect',
+    };
   }
 
   const staticMeta = STATIC_PAGE_META[path];
-  if (staticMeta) return buildSeoHead(staticMeta, path);
+  if (staticMeta) {
+    return buildSeoHead(staticMeta, path);
+  }
 
   if (path.startsWith('/settori/')) {
     const sector = path.slice('/settori/'.length);
     if (SECTOR_IDS.has(sector)) {
-      const meta = defaultMeta();
+      const sectorMeta = SECTOR_META[sector];
       const sectorKeywords = SECTOR_KEYWORDS[sector];
-      if (sectorKeywords) {
-        meta.keywords = `${sectorKeywords}, ${LOCAL_KEYWORDS}`;
-      }
-      return buildSeoHead(meta, path);
+      return buildSeoHead(
+        {
+          title: sectorMeta?.title ?? DEFAULT_TITLE,
+          description: sectorMeta?.description ?? DEFAULT_DESCRIPTION,
+          keywords: sectorKeywords
+            ? `${sectorKeywords}, ${LOCAL_KEYWORDS}`
+            : LOCAL_KEYWORDS,
+        },
+        path,
+      );
     }
   }
 
@@ -222,12 +291,147 @@ export function getSeoHead(pathname: string): SeoHead {
     return buildSeoHead(defaultMeta(), path);
   }
 
+  return buildNotFoundSeo();
+}
+
+/**
+ * Metadati della pagina 404. `notFound: true` segnala al chiamante di
+ * rispondere con HTTP 404 invece di 200: senza lo status corretto Google
+ * classifica queste URL come soft 404 e le mantiene in "Scansionate ma non
+ * indicizzate".
+ */
+export function buildNotFoundSeo(): SeoHead {
   return {
     title: 'Pagina non trovata | Farcom Design s.r.l.',
     description: DEFAULT_DESCRIPTION,
     robots: NOINDEX_ROBOTS,
     ogImage: DEFAULT_OG_IMAGE,
     ogType: DEFAULT_OG_TYPE,
+    notFound: true,
+    status: 'notFound',
+  };
+}
+
+/* ------------------------------------------------------------------------- *
+ * Metadati delle pagine di dettaglio (progetti, blog, showroom).
+ *
+ * Qui restano funzioni pure: la lettura da MongoDB vive in `seoDynamic.ts`,
+ * così sono testabili senza connessione al database.
+ * I formati replicano quelli dei componenti React lato client: se cambi qui,
+ * aggiorna anche `src/lib/seoMeta.ts`.
+ * ------------------------------------------------------------------------- */
+
+/** Normalizza gli spazi e tronca a `max` caratteri senza spezzare le parole. */
+export function truncateMeta(value: string, max: number): string {
+  const clean = (value || '').replace(/\s+/g, ' ').trim();
+  if (clean.length <= max) return clean;
+
+  const cut = clean.slice(0, max - 1);
+  const lastSpace = cut.lastIndexOf(' ');
+  const base = lastSpace >= Math.floor(max * 0.6) ? cut.slice(0, lastSpace) : cut;
+
+  return `${base.replace(/[\s,;:.\-–—]+$/, '')}…`;
+}
+
+function absoluteImage(raw?: string): string {
+  const value = (raw || '').trim();
+  if (!value) return DEFAULT_OG_IMAGE;
+  if (/^https?:\/\//i.test(value)) return value;
+  return `${SITE_URL}${value.startsWith('/') ? '' : '/'}${value}`;
+}
+
+export interface ProjectMetaSource {
+  title: string;
+  sector?: string;
+  location?: string;
+  year?: number | string;
+  description?: string;
+  coverImages?: string[];
+  image?: string;
+}
+
+export function buildProjectSeo(project: ProjectMetaSource, pathname: string): SeoHead {
+  const sector = (project.sector || '').trim();
+  const title = sector ? `${project.title} - Arredamento ${sector}` : project.title;
+
+  const place =
+    project.location && project.year
+      ? `Realizzato a ${project.location} nel ${project.year}.`
+      : '';
+  const description = [project.description, place].filter(Boolean).join(' ');
+
+  return {
+    title: truncateMeta(title, META_TITLE_MAX),
+    description: truncateMeta(description, META_DESCRIPTION_MAX),
+    keywords: LOCAL_KEYWORDS,
+    canonical: toCanonical(pathname),
+    robots: INDEX_ROBOTS,
+    ogImage: absoluteImage(project.coverImages?.[0] || project.image),
+    ogType: 'website',
+    status: 'ok',
+  };
+}
+
+export interface ProductMetaSource {
+  name: string;
+  slug: string;
+  description?: string;
+  /** Etichetta breve del settore, es. "Barberie" o "Uffici". */
+  sectorLabel?: string;
+  images?: string[];
+}
+
+export function buildProductSeo(product: ProductMetaSource, pathname: string): SeoHead {
+  const sector = (product.sectorLabel || '').trim();
+  const title = sector ? `${product.name} - Arredo ${sector} | Farcom` : `${product.name} | Farcom`;
+
+  const description = [
+    product.description,
+    sector
+      ? `Arredo ${sector} su misura nel showroom Farcom di Macerata Campania, con consegna in tutta Italia.`
+      : 'Showroom Farcom di Macerata Campania, con consegna in tutta Italia.',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  return {
+    title: truncateMeta(title, META_TITLE_MAX),
+    description: truncateMeta(description, META_DESCRIPTION_MAX),
+    keywords: LOCAL_KEYWORDS,
+    canonical: toCanonical(pathname),
+    robots: INDEX_ROBOTS,
+    ogImage: absoluteImage(product.images?.[0]),
+    ogType: 'website',
+    status: 'ok',
+  };
+}
+
+export interface PostMetaSource {
+  title: string;
+  slug: string;
+  excerpt?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  canonicalUrl?: string;
+  coverImage?: string;
+  ogImage?: string;
+}
+
+export function buildPostSeo(post: PostMetaSource, pathname: string): SeoHead {
+  const canonical = (post.canonicalUrl || '').trim() || toCanonical(pathname);
+
+  return {
+    title: truncateMeta(post.seoTitle || post.title, META_TITLE_MAX),
+    description: truncateMeta(
+      post.seoDescription || post.excerpt || DEFAULT_DESCRIPTION,
+      META_DESCRIPTION_MAX,
+    ),
+    keywords: LOCAL_KEYWORDS,
+    canonical,
+    robots: INDEX_ROBOTS,
+    ogImage: absoluteImage(post.ogImage || post.coverImage),
+    ogType: 'article',
+    status: 'ok',
   };
 }
 
@@ -288,14 +492,20 @@ function replaceTitle(html: string, title: string): string {
   return html.replace(/<\/head>/i, `  ${titleTag}\n</head>`);
 }
 
-// Rimuove eventuali meta keywords statici già presenti in index.html per
-// evitare duplicati: il layer server inietta quelli specifici per pagina.
-function stripKeywordsMeta(html: string): string {
-  return html.replace(/\s*<meta\s+name=["']keywords["'][^>]*>\s*/gi, '\n    ');
+// Rimuove i metadati SEO già presenti in index.html prima di iniettare quelli
+// della pagina. Senza questo passaggio l'HTML servito contiene due
+// <meta name="description"> e la statica, generica, viene prima: Google usa
+// quella e la description specifica della pagina non ha effetto.
+const MANAGED_META_TAGS =
+  /<meta\s+(?:name|property)=["'](?:description|robots|keywords|author|og:[a-z:_.-]+|twitter:[a-z:_.-]+)["'][^>]*>\s*/gi;
+const MANAGED_LINK_TAGS = /<link\s+rel=["'](?:canonical|alternate)["'][^>]*>\s*/gi;
+
+function stripManagedSeo(html: string): string {
+  return html.replace(MANAGED_META_TAGS, '').replace(MANAGED_LINK_TAGS, '');
 }
 
 export function injectSeoHead(html: string, seo: SeoHead): string {
-  const result = replaceTitle(stripKeywordsMeta(html), seo.title);
+  const result = replaceTitle(stripManagedSeo(html), seo.title);
   const block = renderSeoTags(seo);
 
   if (result.includes('<!-- SEO_HEAD -->')) {

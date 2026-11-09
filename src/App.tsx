@@ -25,6 +25,7 @@ const TermsPage = lazy(() => import("./pages/TermsPage"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 const RestoAlSud = lazy(() => import("./pages/RestoAlSud"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
 const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
@@ -111,6 +112,9 @@ export default function App() {
                   <ApiFallbackForceReload />
                 </div>
               } />
+
+              {/* 404 — qualsiasi URL non gestita sopra */}
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
         {/* Buffer di transizione cromatica tra ultimo contenuto e Footer (bianco → scuro) */}
