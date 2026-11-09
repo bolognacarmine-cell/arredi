@@ -165,7 +165,12 @@ describe("Pagina articolo — SEO", () => {
 
     await screen.findByRole("heading", { level: 1, name: barber.title as string })
 
-    expect(document.querySelector('meta[name="robots"]')).toBeNull()
+    const robots = document.querySelector('meta[name="robots"]')
+
+    expect(robots).not.toBeNull()
+    expect(robots?.getAttribute("content")).toContain("index")
+    expect(robots?.getAttribute("content")).toContain("follow")
+    expect(robots?.getAttribute("content")).not.toContain("noindex")
   })
 
   it("imposta il document.title con la meta title dell'articolo", async () => {
