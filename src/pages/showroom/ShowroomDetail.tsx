@@ -36,6 +36,8 @@ const itDate = (d: string) =>
     year: "numeric",
   })
 
+// TODO: Product client-only: unificare logica prezzo/promo server-client prima
+// di emettere Product nel JSON-LD server-side.
 // Generate Product schema
 const getProductSchema = (product: Product, effectivePrice: ReturnType<typeof computeEffectivePrice>) => {
   const finalPrice = effectivePrice?.finalPrice || product.basePrice

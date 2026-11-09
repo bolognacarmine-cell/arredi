@@ -299,6 +299,9 @@ export default function Home() {
           }
         ]}
       />
+      {/* TODO: FAQPage client-side: spostare FAQ in una fonte condivisa,
+          generare FAQPage nel JSON-LD server-side, renderizzare le stesse FAQ
+          visibilmente e rimuovere lo script client-side. */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
