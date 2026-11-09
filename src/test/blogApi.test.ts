@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest"
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 
 import {
   generateSlug,
@@ -10,6 +10,24 @@ import {
   getPostBySlug,
   type Post,
 } from "../api/blogApi"
+
+/**
+ * `fetch` non esiste come spy: va creato con `vi.fn()` e installato come
+ * globale. Senza questo, `expect(fetchMock).toHaveBeenCalledTimes(...)`
+ * fallirebbe ("not a spy") e `getPosts` farebbe una richiesta di rete vera.
+ */
+const fetchMock = vi.fn()
+
+beforeEach(() => {
+  fetchMock.mockReset()
+  // Rete non disponibile: ogni test resta sul fallback statico.
+  fetchMock.mockRejectedValue(new Error("API non raggiungibile"))
+  vi.stubGlobal("fetch", fetchMock)
+})
+
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
 
 const rawPost = {
   _id: "abc123",
@@ -113,10 +131,15 @@ describe("estimateReadingMinutes", () => {
 
 describe("getPosts — fallback statico (API non raggiungibile)", () => {
   it("prova l'API e usa i dati statici se la richiesta fallisce", async () => {
-    const fetchMock = globalThis.fetch as ReturnType<typeof vi.fn>
+    fetchMock.mockRejectedValueOnce(new Error("API non raggiungibile"))
+
     const response = await getPosts({ limit: 3 })
 
     expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining("/api/blog/posts"),
+      expect.objectContaining({ credentials: "include", cache: "no-store" }),
+    )
     expect(response.success).toBe(true)
     expect(response.data.length).toBeLessThanOrEqual(3)
     expect(response.pagination.total).toBe(6)

@@ -7,10 +7,10 @@ import path from "node:path"
  *
  * Separata da vite.config.ts per non toccare la build di produzione.
  * - jsdom: i componenti React vengono renderizzati in DOM finto
- * - src/test/setup.ts: cleanup di testing-library + matchers jest-dom
- * - VITE_API_BASE_URL può arrivare dal .env locale: i test non toccano mai la
- *   rete (fetch è stubblata e fallisce), quindi blogApi usa comunque il
- *   fallback statico (src/data/blogPosts.json)
+ * - setupFiles: src/test/setup.ts registra cleanup + matchers jest-dom e
+ *   stubba `fetch` perché nessun test tocchi mai la rete
+ * - include/exclude: i test del server usano node:test (`npm run test:server`),
+ *   non vanno eseguiti da Vitest
  */
 export default defineConfig({
   plugins: [react()],
@@ -21,7 +21,7 @@ export default defineConfig({
   },
   test: {
     environment: "jsdom",
-    // globals: true per coerenza con i test preesistenti (Loading.test.tsx)
+    pool: "vmThreads",
     globals: true,
     setupFiles: ["./src/test/setup.ts"],
     css: false,
