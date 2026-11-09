@@ -77,6 +77,16 @@ export const fallbackSiteSettings: SiteSettings = {
   mapTitle: "Farcom Design s.r.l. - Via P. Vertaldi, 27 Macerata Campania",
 }
 
+/**
+ * Coordinate dello showroom: unica fonte per i dati strutturati.
+ * Derivano da `mapEmbedSrc` qui sopra (`!2d` = longitudine, `!3d` = latitudine)
+ * e sostituiscono i valori prima duplicati e incoerenti nei JSON-LD.
+ */
+export const SITE_GEO = {
+  latitude: 41.056043,
+  longitude: 14.286449,
+} as const
+
 // Dicitura superata rimasta nelle impostazioni salvate dai browser.
 const LEGACY_HOURS_EXTRA = "Sabato su appuntamento"
 

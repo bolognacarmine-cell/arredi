@@ -9,6 +9,7 @@ import {
 } from "../api/blogApi"
 import SEOHead from "../components/SEOHead"
 import { LOCAL_KEYWORDS_STRING } from "../lib/localSeo"
+import { META_DESCRIPTION_MAX, META_TITLE_MAX, truncateMeta } from "../lib/seoMeta"
 import BlogBreadcrumb from "../components/blog/BlogBreadcrumb"
 import BlogFaq from "../components/blog/BlogFaq"
 import BlogCard from "../components/blog/BlogCard"
@@ -130,8 +131,8 @@ export default function BlogPost() {
   return (
     <>
       <SEOHead
-        title={post.seoTitle || post.title}
-        description={post.seoDescription || post.excerpt}
+        title={truncateMeta(post.seoTitle || post.title, META_TITLE_MAX)}
+        description={truncateMeta(post.seoDescription || post.excerpt, META_DESCRIPTION_MAX)}
         canonical={canonical}
         keywords={LOCAL_KEYWORDS_STRING}
         ogImage={ogImage}
