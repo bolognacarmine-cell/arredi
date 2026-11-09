@@ -284,7 +284,46 @@ app.get('/showroom/offerte', (_req: Request, res: Response) => {
 // qualcuno crea un file dist/api/admin/index.html, non verrà MAI servito
 // su /api/admin/me — la richiesta passa oltre e arriva alla guardia L2/L3.
 const staticPath = resolveDistDir();
-const staticMiddleware = express.static(staticPath, { index: false });
+// Cache: i bundle in /assets/ hanno un hash nel nome, quindi sono immutabili.
+// Senza questo header `express.static` risponde "public, max-age=0" e ogni
+// visita rivalida JS/CSS (LCP penalizzato su tutte le pagine).
+const IMMUTABLE_ASSET_DIRS = ['/assets/'];
+const LONG_LIVED_ASSET_DIRS = ['/fonts/', '/images-optimized/', '/images/', '/videos/'];
+const STATIC_ASSET_EXTENSIONS = /\.(?:woff2?|ttf|otf|avif|webp|png|jpe?g|gif|svg|ico|mp4|webm)$/i;
+const SHORT_LIVED_SEO_FILES = /\.(?:txt|xml|webmanifest)$/i;
+// Service worker e script di registrazione: devono essere rivalidati sempre,
+// altrimenti un utente resta bloccato su una versione vecchia della PWA.
+const SERVICE_WORKER_FILES = /(?:^|\/)(?:sw|registerSW|workbox-[^/]+)\.js$/i;
+
+const staticMiddleware = express.static(staticPath, {
+  index: false,
+  setHeaders: (res, filePath) => {
+    const normalized = filePath.split(path.sep).join('/');
+
+    if (SERVICE_WORKER_FILES.test(normalized)) {
+      res.setHeader('Cache-Control', 'no-cache');
+      return;
+    }
+
+    if (IMMUTABLE_ASSET_DIRS.some((dir) => normalized.includes(dir))) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      return;
+    }
+
+    if (
+      LONG_LIVED_ASSET_DIRS.some((dir) => normalized.includes(dir)) ||
+      STATIC_ASSET_EXTENSIONS.test(normalized)
+    ) {
+      res.setHeader('Cache-Control', 'public, max-age=2592000');
+      return;
+    }
+
+    if (SHORT_LIVED_SEO_FILES.test(normalized)) {
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+    }
+  },
+});
+
 app.use((req: Request, res: Response, next: NextFunction) => {
   if ((res as Response & { locals: Record<string, unknown> }).locals.isApiRequest) {
     return next()
